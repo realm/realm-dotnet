@@ -147,7 +147,7 @@ namespace Realms.Helpers
                     BsonSerializer.LookupDiscriminatorConvention(typeof(object)),
                     GuidRepresentation.Standard,
                     allowedSerializationTypes: _ => true,
-                    allowedDeserializationTypes: type => ObjectSerializer.DefaultAllowedTypes(type) || IsAnonymousType(type)),
+                    allowedDeserializationTypes: t => ObjectSerializer.DefaultAllowedTypes(t) || IsAnonymousType(t)),
                 _ => null
             };
 

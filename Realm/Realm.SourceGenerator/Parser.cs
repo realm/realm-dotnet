@@ -69,9 +69,9 @@ namespace Realms.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
-                    var implementingObjectTypes = classSymbol.ImplementingObjectTypes();
+                    var implementingObjectTypes = classSymbol.ImplementingObjectTypes().ToArray();
 
-                    if (implementingObjectTypes.Count() > 1)
+                    if (implementingObjectTypes.Length > 1)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
@@ -219,7 +219,7 @@ namespace Realms.SourceGenerator
 
                     var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.TypeSymbol, classInfo.TypeSymbol);
                     var isCollectionOfSameType = inversePropertyTypeInfo?.IsListOrSet == true
-                        && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.InternalType.TypeSymbol, classInfo.TypeSymbol);
+                        && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo.InternalType.TypeSymbol, classInfo.TypeSymbol);
 
                     if (inversePropertyTypeInfo == null || (!isSameType && !isCollectionOfSameType))
                     {
@@ -288,7 +288,7 @@ namespace Realms.SourceGenerator
                     return propertyTypeInfo;
                 }
 
-                if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
+                if (propertySymbol is INamedTypeSymbol { SpecialType: SpecialType.System_DateTime })
                 {
                     classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
@@ -308,7 +308,7 @@ namespace Realms.SourceGenerator
             {
                 var argument = propertyTypeInfo.TypeSymbol.AsNamed().TypeArguments.Single();
 
-                if (!argument.IsValidRealmIntgerType())
+                if (!argument.IsValidRealmIntegerType())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.RealmIntegerTypeUnsupported(classInfo.Name, propertySymbol.Name,
                         argument.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), propertyLocation));
@@ -463,7 +463,7 @@ namespace Realms.SourceGenerator
 
         private static bool HasParameterlessConstructor(List<ClassDeclarationSyntax> classDeclarations)
         {
-            var constructors = classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>());
+            var constructors = classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>()).ToArray();
             return !constructors.Any() || constructors.Any(c => !c.ParameterList.Parameters.Any());
         }
 

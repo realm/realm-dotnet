@@ -49,7 +49,7 @@ namespace Realms
 
         internal readonly Type ReferenceType;
 
-        internal ThreadSafeReference(IThreadConfined value, Type type)
+        private ThreadSafeReference(IThreadConfined value, Type type)
         {
             if (value is null)
             {
@@ -78,12 +78,12 @@ namespace Realms
         /// </summary>
         /// <param name="value">
         /// The thread-confined <see cref="IQueryable{T}"/> to create a thread-safe reference to. It must be a collection,
-        /// obtained by calling <see cref="Realm.All"/> or a subsequent LINQ query.
+        /// obtained by calling <see cref="Realm.All{T}"/> or a subsequent LINQ query.
         /// </param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> contained in the query.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Query{T})"/> on a different thread.</returns>
         public static Query<T> Create<T>(IQueryable<T> value)
-            => new Query<T>(Argument.EnsureType<RealmResults<T>>(value, "value must be a managed Query (i.e. the result of realm.All<T>).", nameof(value)));
+            => new(Argument.EnsureType<RealmResults<T>>(value, "value must be a managed Query (i.e. the result of realm.All<T>).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Object{T}"/> class.
@@ -107,7 +107,7 @@ namespace Realms
         /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(List{T})"/> on a different thread.</returns>
         public static List<T> Create<T>(IList<T> value)
-            => new List<T>(Argument.EnsureType<RealmList<T>>(value, "value must be a managed List (i.e. property of a RealmObject).", nameof(value)));
+            => new(Argument.EnsureType<RealmList<T>>(value, "value must be a managed List (i.e. property of a RealmObject).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Set{T}"/> class.
@@ -119,7 +119,7 @@ namespace Realms
         /// <typeparam name="T">The type of the objects contained in the set.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Set{T})"/> on a different thread.</returns>
         public static Set<T> Create<T>(ISet<T> value)
-            => new Set<T>(Argument.EnsureType<RealmSet<T>>(value, "value must be a managed Set (i.e. property of a RealmObject).", nameof(value)));
+            => new(Argument.EnsureType<RealmSet<T>>(value, "value must be a managed Set (i.e. property of a RealmObject).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dictionary{TValue}"/> class.
@@ -131,7 +131,7 @@ namespace Realms
         /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/> on a different thread.</returns>
         public static Dictionary<TValue> Create<TValue>(IDictionary<string, TValue> value)
-            => new Dictionary<TValue>(Argument.EnsureType<RealmDictionary<TValue>>(value, "value must be a managed dictionary (i.e. property of a RealmObject).", nameof(value)));
+            => new(Argument.EnsureType<RealmDictionary<TValue>>(value, "value must be a managed dictionary (i.e. property of a RealmObject).", nameof(value)));
 
         #endregion
 
@@ -141,7 +141,7 @@ namespace Realms
         /// A reference to a <see cref="IQueryable{T}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="Realm.ResolveReference{T}(Query{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(ThreadSafeReference.Query{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -164,7 +164,7 @@ namespace Realms
         /// A reference to a <see cref="RealmObject"/> or an <see cref="EmbeddedObject"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="Realm.ResolveReference{T}(Object{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(ThreadSafeReference.Object{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -200,7 +200,7 @@ namespace Realms
         /// A reference to a <see cref="IList{T}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="Realm.ResolveReference{T}(List{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(ThreadSafeReference.List{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -223,7 +223,7 @@ namespace Realms
         /// A reference to a <see cref="ISet{T}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="Realm.ResolveReference{T}(Set{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(ThreadSafeReference.Set{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -247,7 +247,7 @@ namespace Realms
         /// A reference to a <see cref="IDictionary{String, TValue}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/>.
+        /// <see cref="Realm.ResolveReference{TValue}(ThreadSafeReference.Dictionary{TValue})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.

@@ -219,7 +219,13 @@ namespace Realms.Logging
                 }
             }
 
-            public void Clear() => _builder.Clear();
+            public void Clear()
+            {
+                lock (_builder)
+                {
+                    _builder.Clear();
+                }
+            }
         }
 
         internal class AsyncFileLogger : Logger, IDisposable

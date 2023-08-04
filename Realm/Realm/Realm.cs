@@ -34,6 +34,7 @@ using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync;
+using Realms.Weaving;
 
 namespace Realms
 {
@@ -336,7 +337,7 @@ namespace Realms
         private Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
             var tableKey = SharedRealmHandle.GetTableKey(schema.Name);
-            Weaving.IRealmObjectHelper helper;
+            IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.IsDynamic)
             {
@@ -346,7 +347,7 @@ namespace Realms
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObjectBase but has not been woven.");
                 }
 
-                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType)!;
+                helper = (IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType)!;
             }
             else
             {
@@ -1714,7 +1715,7 @@ namespace Realms
             /// <remarks>
             /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
             /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
-            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// <see cref="IDictionary{String, TValue}.Add(String, TValue)"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
             public IEmbeddedObject AddEmbeddedObjectToDictionary(object dictionary, string key)
@@ -1733,7 +1734,7 @@ namespace Realms
             /// <remarks>
             /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
             /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
-            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// <see cref="IDictionary{String, TValue}.Add(String, TValue)"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
             public IEmbeddedObject SetEmbeddedObjectInDictionary(object dictionary, string key)

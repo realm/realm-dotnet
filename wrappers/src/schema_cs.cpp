@@ -34,6 +34,7 @@ util::Optional<Schema> create_schema(MarshaledVector<SchemaObject> objects)
         for (auto& property : object.properties) {
             Property p;
             p.name = capi_to_std(property.name);
+            p.public_name = capi_to_std(property.managed_name);
             p.type = property.type;
             p.object_type = capi_to_std(property.object_type);
             p.link_origin_property_name = capi_to_std(property.link_origin_property_name);

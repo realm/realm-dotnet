@@ -31,6 +31,7 @@ namespace realm::binding {
 struct SchemaProperty
 {
     realm_string_t name;
+    realm_string_t managed_name;
     realm_string_t object_type;
     realm_string_t link_origin_property_name;
     PropertyType type;
@@ -73,6 +74,7 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
 {
     return {
         to_capi(property.name),
+        to_capi(property.public_name),
         to_capi(property.object_type),
         to_capi(property.link_origin_property_name),
         property.type,

@@ -92,7 +92,7 @@ namespace Realms
         {
             FrameworkName = TryInitializeUnity() ? "Unity" : ".NET";
 
-            AppDomain.CurrentDomain.DomainUnload += (_, __) =>
+            AppDomain.CurrentDomain.DomainUnload += (_, _) =>
             {
                 NativeCommon.CleanupNativeResources("AppDomain is unloading");
             };

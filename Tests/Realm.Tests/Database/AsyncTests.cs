@@ -78,11 +78,18 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var tcs = new TaskCompletionSource();
+                var tcsBgRealmOpened = new TaskCompletionSource();
+                var tcsWriteComplete = new TaskCompletionSource();
+
+                // Access the _realm on the original thread before accessing it on the bg thread;
+                _ = _realm;
                 var bgTask = Task.Run(async () =>
                 {
                     using var realm = GetRealm(_realm.Config);
-                    tcs.Task.Wait();
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+
+                    tcsBgRealmOpened.TrySetResult();
+                    tcsWriteComplete.Task.Wait();
 
                     Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
 
@@ -91,12 +98,14 @@ namespace Realms.Tests.Database
                     Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
                 });
 
+                await tcsBgRealmOpened.Task;
+
                 _realm.Write(() =>
                 {
                     _realm.Add(new IntPrimaryKeyWithValueObject());
                 });
 
-                tcs.TrySetResult();
+                tcsWriteComplete.TrySetResult();
 
                 await bgTask;
             });

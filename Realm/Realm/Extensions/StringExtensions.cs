@@ -59,7 +59,7 @@ namespace Realms
         /// more characters, such that <c>?bc*</c> matches <c>abcde</c> and <c>bbc</c>, but does not match <c>bcd</c>.
         /// <para/>
         /// This extension method can be used in LINQ queries against the <see cref="IQueryable"/> returned from
-        /// <see cref="Realm.All"/>. If used outside of a query context, it will use a <see cref="Regex"/> to perform
+        /// <see cref="Realm.All{T}"/>. If used outside of a query context, it will use a <see cref="Regex"/> to perform
         /// the comparison using the same rules.
         /// </remarks>
         /// <param name="str">The string to compare against the pattern.</param>

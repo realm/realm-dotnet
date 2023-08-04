@@ -1633,7 +1633,8 @@ namespace Realms.Tests.Database
                     using var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config);
                     var bgSet = bgRealm.ResolveReference(tsr);
 
-                    Assert.That(bgSet, Is.EquivalentTo(new HashSet<T>(InitialValues)));
+                    var reference = new HashSet<T>(InitialValues, RealmSet<T>.Comparer);
+                    Assert.That(bgSet, Is.EquivalentTo(reference));
                 });
             }
 

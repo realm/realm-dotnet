@@ -1811,6 +1811,116 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectList.Add(embeddedItem)), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
+        [Test]
+        public void Results_Filter_WithRemappedProperty()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new RemappedTypeObject
+                {
+                    Id = 0,
+                    StringValue = "abc"
+                });
+
+                _realm.Add(new RemappedTypeObject
+                {
+                    Id = 1,
+                    StringValue = "cde"
+                });
+            });
+
+            // Id is mapped to _id - we validate that the query works both with Id and _id
+            foreach (var columnName in new[] { "Id", "_id" })
+            {
+                var objects = _realm.All<RemappedTypeObject>().Filter($"{columnName} > 0");
+
+                Assert.That(objects.Count(), Is.EqualTo(1));
+                Assert.That(objects.Single().StringValue, Is.EqualTo("cde"));
+            }
+        }
+
+        [Test]
+        public void List_Filter_WithRemappedProperty()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new SyncCollectionsObject
+                {
+                    ObjectList =
+                    {
+                        new() { Int = 5 },
+                        new() { Int = 10 },
+                    }
+                });
+            });
+
+            var list = obj.ObjectList;
+
+            // Id is mapped to _id - we validate that the query works both with Id and _id
+            foreach (var columnName in new[] { "Id", "_id" })
+            {
+                var objects = list.Filter($"{columnName} = $0", list[0].Id);
+
+                Assert.That(objects.Count(), Is.EqualTo(1));
+                Assert.That(objects.Single().Int, Is.EqualTo(list[0].Int));
+            }
+        }
+
+        [Test]
+        public void Set_Filter_WithRemappedProperty()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new SyncCollectionsObject
+                {
+                    ObjectSet =
+                    {
+                        new() { Int = 5 },
+                        new() { Int = 10 },
+                    }
+                });
+            });
+
+            var set = obj.ObjectSet;
+
+            // Id is mapped to _id - we validate that the query works both with Id and _id
+            foreach (var columnName in new[] { "Id", "_id" })
+            {
+                var toMatch = set.First();
+                var objects = set.Filter($"{columnName} = $0", toMatch.Id);
+
+                Assert.That(objects.Count(), Is.EqualTo(1));
+                Assert.That(objects.Single().Int, Is.EqualTo(toMatch.Int));
+            }
+        }
+
+        [Test]
+        public void Dict_Filter_WithRemappedProperty()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new SyncCollectionsObject
+                {
+                    ObjectDict =
+                    {
+                        ["a"] = new() { Int = 5 },
+                        ["b"] = new() { Int = 10 },
+                    }
+                });
+            });
+
+            var dict = obj.ObjectDict;
+
+            // Id is mapped to _id - we validate that the query works both with Id and _id
+            foreach (var columnName in new[] { "Id", "_id" })
+            {
+                var objects = dict.Filter($"{columnName} = $0", dict["a"]!.Id);
+
+                Assert.That(objects.Count(), Is.EqualTo(1));
+                Assert.That(objects.Single().Int, Is.EqualTo(dict["a"]!.Int));
+            }
+        }
+
         public struct FtsTestData
         {
             public string Query;
@@ -1822,7 +1932,7 @@ namespace Realms.Tests.Database
                 ExpectedResults = expectedResults;
             }
 
-            public override string ToString() => Query;
+            public override readonly string ToString() => Query;
         }
 
         private static readonly object[] FtsTestCases = new object[]

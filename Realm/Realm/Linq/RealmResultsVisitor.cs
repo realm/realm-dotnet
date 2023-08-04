@@ -593,7 +593,7 @@ namespace Realms
             if (node.NodeType == ExpressionType.AndAlso)
             {
                 // Boolean And with short-circuit
-                VisitCombination(node, (qh) => { /* noop -- AND is the default combinator */ });
+                VisitCombination(node, _ => { /* noop -- AND is the default combinator */ });
             }
             else if (node.NodeType == ExpressionType.OrElse)
             {
@@ -630,13 +630,11 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase.\nUnable to process '{node.Right}'.");
                 }
 
-                string? leftName = null;
-
-                if (IsRealmValueTypeExpression(memberExpression, out leftName))
+                if (IsRealmValueTypeExpression(memberExpression, out var leftName))
                 {
                     if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
                     {
-                        throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
+                        throw new NotSupportedException("Only expressions of type Equal and NotEqual can be used with RealmValueType.");
                     }
 
                     if (rightValue is int intValue)
@@ -677,13 +675,6 @@ namespace Realms
             return node;
         }
 
-        private enum OutOfRangeBehavior
-        {
-            Throw,
-            Ignore,
-            Convert
-        }
-
         private Expression GetObjectAtIndex(int index, ResultsHandle rh, string methodName)
         {
             try
@@ -717,7 +708,7 @@ namespace Realms
             switch (value)
             {
                 case null:
-                case RealmValue rv when rv.Type == RealmValueType.Null:
+                case RealmValue { Type: RealmValueType.Null }:
                     queryHandle.NullEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
@@ -739,7 +730,7 @@ namespace Realms
             switch (value)
             {
                 case null:
-                case RealmValue rv when rv.Type == RealmValueType.Null:
+                case RealmValue { Type: RealmValueType.Null }:
                     queryHandle.NullNotEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
@@ -965,19 +956,19 @@ namespace Realms
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
+            if (node.Expression is not { NodeType: ExpressionType.Parameter })
             {
-                if (node.Type == typeof(bool))
-                {
-                    object rhs = true;  // box value
-                    var leftName = GetColumnName(node, node.NodeType);
-                    AddQueryEqual(_coreQueryHandle, leftName, rhs, node.Type);
-                }
-
-                return node;
+                throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
             }
 
-            throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
+            if (node.Type == typeof(bool))
+            {
+                object rhs = true;  // box value
+                var leftName = GetColumnName(node, node.NodeType);
+                AddQueryEqual(_coreQueryHandle, leftName, rhs, node.Type);
+            }
+
+            return node;
         }
 
         public ResultsHandle MakeResultsForQuery()

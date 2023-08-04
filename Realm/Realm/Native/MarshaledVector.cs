@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Realms.Native;
@@ -110,7 +109,7 @@ namespace Realms
             return new MarshaledVector<T>(buffer.Data, capacity);
         }
 
-        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T>? collection, Arena arena)
+        public static MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T>? collection, Arena arena)
         {
             if (collection == null || collection.Count == 0)
             {

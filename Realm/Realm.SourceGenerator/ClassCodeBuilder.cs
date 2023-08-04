@@ -27,7 +27,7 @@ namespace Realms.SourceGenerator
 {
     internal class ClassCodeBuilder
     {
-        private readonly string[] _defaultNamespaces = new string[]
+        private readonly string[] _defaultNamespaces =
         {
             "System",
             "System.Collections.Generic",
@@ -315,7 +315,7 @@ public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
-$@"/// <inheritdoc />
+@"/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
@@ -348,31 +348,31 @@ void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAc
 partial void OnManaged();
 
 {(_classInfo.HasPropertyChangedEvent ? string.Empty :
-$@"private event PropertyChangedEventHandler? _propertyChanged;
+@"private event PropertyChangedEventHandler? _propertyChanged;
 
 /// <inheritdoc />
 public event PropertyChangedEventHandler? PropertyChanged
-{{
+{
     add
-    {{
+    {
         if (_propertyChanged == null)
-        {{
+        {
             SubscribeForNotifications();
-        }}
+        }
 
         _propertyChanged += value;
-    }}
+    }
 
     remove
-    {{
+    {
         _propertyChanged -= value;
 
         if (_propertyChanged == null)
-        {{
+        {
             UnsubscribeFromNotifications();
-        }}
-    }}
-}}
+        }
+    }
+}
 
 /// <summary>
 /// Called when a property has changed on this class.
@@ -385,17 +385,17 @@ public event PropertyChangedEventHandler? PropertyChanged
 /// <example>
 /// <code>
 /// class MyClass : IRealmObject
-/// {{
-///     public int StatusCodeRaw {{ get; set; }}
+/// {
+///     public int StatusCodeRaw { get; set; }
 ///     public StatusCodeEnum StatusCode => (StatusCodeEnum)StatusCodeRaw;
 ///     partial void OnPropertyChanged(string propertyName)
-///     {{
+///     {
 ///         if (propertyName == nameof(StatusCodeRaw))
-///         {{
+///         {
 ///             RaisePropertyChanged(nameof(StatusCode));
-///         }}
-///     }}
-/// }}
+///         }
+///     }
+/// }
 /// </code>
 /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref=""PropertyChanged""/>
 /// subscribers that <c>StatusCode</c> has changed, we implement <see cref=""OnPropertyChanged""/> and
@@ -404,20 +404,20 @@ public event PropertyChangedEventHandler? PropertyChanged
 partial void OnPropertyChanged(string? propertyName);
 
 private void RaisePropertyChanged([CallerMemberName] string propertyName = """")
-{{
+{
     _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     OnPropertyChanged(propertyName);
-}}
+}
 
 private void SubscribeForNotifications()
-{{
+{
     Accessor.SubscribeForNotifications(RaisePropertyChanged);
-}}
+}
 
 private void UnsubscribeFromNotifications()
-{{
+{
     Accessor.UnsubscribeFromNotifications();
-}}")}
+}")}
 
 /// <summary>
 /// Converts a <see cref=""Realms.RealmValue""/> to <see cref=""{_classInfo.Name}""/>. Equivalent to <see cref=""Realms.RealmValue.AsNullableRealmObject{{T}}""/>.
@@ -445,38 +445,38 @@ public static implicit operator Realms.QueryArgument({_classInfo.Name}? val) => 
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
 {(_classInfo.OverridesEquals ? string.Empty :
-$@"/// <inheritdoc />
+@"/// <inheritdoc />
 public override bool Equals(object? obj)
-{{
+{
     if (obj is null)
-    {{
+    {
         return false;
-    }}
+    }
 
     if (ReferenceEquals(this, obj))
-    {{
+    {
         return true;
-    }}
+    }
 
     if (obj is InvalidObject)
-    {{
+    {
         return !IsValid;
-    }}
+    }
 
     if (obj is not Realms.IRealmObjectBase iro)
-    {{
+    {
         return false;
-    }}
+    }
 
     return Accessor.Equals(iro.Accessor);
-}}")}
+}")}
 
 {(_classInfo.OverridesGetHashCode ? string.Empty :
-$@"/// <inheritdoc />
+@"/// <inheritdoc />
 public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
 
 {(_classInfo.OverridesToString ? string.Empty :
-$@"/// <inheritdoc />
+@"/// <inheritdoc />
 public override string? ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
@@ -638,7 +638,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 
                     if (property.IsPrimaryKey)
                     {
-                        setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
+                        setValueLines.AppendLine(@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
 
                         setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
 {{
@@ -660,13 +660,13 @@ return;".Indent());
 
             if (getValueLines.Length == 0)
             {
-                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}"");";
+                getValueBody = @"throw new MissingMemberException($""The object does not have a gettable Realm property with name {propertyName}"");";
             }
             else
             {
                 getValueBody = $@"return propertyName switch
 {{
-{getValueLines.Indent(1, trimNewLines: true)}
+{getValueLines.Indent(trimNewLines: true)}
     _ => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
 }};";
             }
@@ -676,13 +676,13 @@ return;".Indent());
 
             if (setValueLines.Length == 0)
             {
-                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");";
+                setValueBody = @"throw new MissingMemberException($""The object does not have a settable Realm property with name {propertyName}"");";
             }
             else
             {
                 setValueBody = $@"switch (propertyName)
 {{
-{setValueLines.Indent(1, trimNewLines: true)}
+{setValueLines.Indent(trimNewLines: true)}
     default:
         throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
 }}";
@@ -699,7 +699,7 @@ return;".Indent());
 
             if (getListValueLines.Length == 0)
             {
-                getListValueBody = $@"throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}"");";
+                getListValueBody = @"throw new MissingMemberException($""The object does not have a Realm list property with name {propertyName}"");";
             }
             else
             {
@@ -715,7 +715,7 @@ return;".Indent());
 
             if (getSetValueLines.Length == 0)
             {
-                getSetValueBody = $@"throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}"");";
+                getSetValueBody = @"throw new MissingMemberException($""The object does not have a Realm set property with name {propertyName}"");";
             }
             else
             {
@@ -731,7 +731,7 @@ return;".Indent());
 
             if (getDictionaryValueLines.Length == 0)
             {
-                getDictionaryValueBody = $@"throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}"");";
+                getDictionaryValueBody = @"throw new MissingMemberException($""The object does not have a Realm dictionary property with name {propertyName}"");";
             }
             else
             {

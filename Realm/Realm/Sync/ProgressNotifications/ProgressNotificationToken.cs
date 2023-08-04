@@ -30,7 +30,7 @@ namespace Realms.Sync
         private readonly Action<SyncProgress> _observer;
         private readonly Action<ulong> _unregister;
 
-        private bool isDisposed;
+        private bool _isDisposed;
 
         public ProgressNotificationToken(Action<SyncProgress> observer, Func<GCHandle, ulong> register, Action<ulong> unregister)
         {
@@ -65,11 +65,11 @@ namespace Realms.Sync
 
         public void Dispose()
         {
-            if (!isDisposed)
+            if (!_isDisposed)
             {
                 GC.SuppressFinalize(this);
 
-                isDisposed = true;
+                _isDisposed = true;
                 _unregister(_nativeToken);
                 _gcHandle.Free();
             }
