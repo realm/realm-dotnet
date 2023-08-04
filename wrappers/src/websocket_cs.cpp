@@ -41,6 +41,7 @@ using PostWorkT = void(void* managed_provider, SyncSocketProvider::FunctionHandl
 using WebSocketConnectT = void*(void* managed_provider, WebSocketObserver* observer, MarshaledEndpoint endpoint);
 using WebSocketWriteT = void(void* managed_websocket, realm_binary_t data, SyncSocketProvider::FunctionHandler* callback);
 using WebSocketCloseT = void(void* managed_websocket);
+using SyncProviderDisposeT = void(void* managed_provider);
 
 std::function<CreateTimerT> s_create_timer;
 std::function<CancelTimerT> s_cancel_timer;
@@ -48,6 +49,7 @@ std::function<PostWorkT> s_post_work;
 std::function<WebSocketConnectT> s_websocket_connect;
 std::function<WebSocketWriteT> s_websocket_write;
 std::function<WebSocketCloseT> s_websocket_close;
+std::function<SyncProviderDisposeT> s_provider_dispose;
 
 struct Timer final : SyncSocketProvider::Timer {
     using LongMiliseconds = std::chrono::duration<int64_t, std::chrono::milliseconds::period>;
@@ -121,6 +123,10 @@ public:
     : m_managed_provider(managed_provider)
     {}
 
+    ~SocketProvider() {
+        s_provider_dispose(m_managed_provider);
+    }
+
     SyncTimer create_timer(std::chrono::milliseconds delay, FunctionHandler&& handler) final {
         return std::make_unique<realm::binding::Timer>(delay, std::move(handler), m_managed_provider);
     }
@@ -140,11 +146,12 @@ private:
 std::shared_ptr<SyncSocketProvider> make_websocket_provider(void* managed_provider) { return std::make_shared<SocketProvider>(managed_provider); }
 
 extern "C" {
-    REALM_EXPORT void realm_websocket_install_callbacks(CreateTimerT* create_timer, CancelTimerT* cancel_timer, PostWorkT* post_work, 
+    REALM_EXPORT void realm_websocket_install_callbacks(PostWorkT* post_work, CreateTimerT* create_timer, CancelTimerT* cancel_timer, SyncProviderDisposeT* provider_dispose, 
                                                         WebSocketConnectT* websocket_connect, WebSocketWriteT* websocket_write, WebSocketCloseT* websocket_close) {
+        s_post_work = wrap_managed_callback(post_work);
+        s_provider_dispose = wrap_managed_callback(provider_dispose);
         s_create_timer = wrap_managed_callback(create_timer);
         s_cancel_timer = wrap_managed_callback(cancel_timer);
-        s_post_work = wrap_managed_callback(post_work);
         s_websocket_connect = wrap_managed_callback(websocket_connect);
         s_websocket_write = wrap_managed_callback(websocket_write);
         s_websocket_close = wrap_managed_callback(websocket_close);

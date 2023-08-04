@@ -53,6 +53,9 @@ namespace Realms.Native
             public delegate void post_work(IntPtr socket_provider, IntPtr native_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void provider_dispose(IntPtr managed_provider);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate IntPtr create_timer(IntPtr socket_provider, UInt64 delay_miliseconds, IntPtr native_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -68,7 +71,7 @@ namespace Realms.Native
             public delegate void websocket_close(IntPtr managed_websocket);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_callbacks(post_work post, create_timer create_timer, cancel_timer cancel_timer, websocket_connect connect, websocket_write write, websocket_close close);
+            public static extern void install_callbacks(post_work post, provider_dispose dispose, create_timer create_timer, cancel_timer cancel_timer, websocket_connect connect, websocket_write write, websocket_close close);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason);
@@ -90,6 +93,14 @@ namespace Realms.Native
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
             provider._workQueue.Writer.TryWrite(new EventLoopWork(nativeCallback, Status.OK));
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.provider_dispose))]
+        private static void ProviderDispose(IntPtr managed_provider)
+        {
+            var handle = GCHandle.FromIntPtr(managed_provider);
+            ((SyncSocketProvider)handle.Target).Dispose();
+            handle.Free();
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.create_timer))]
@@ -114,6 +125,7 @@ namespace Realms.Native
             }
         }
 
+        [MonoPInvokeCallback(typeof(NativeMethods.websocket_connect))]
         private static IntPtr WebSocketConnect(IntPtr managed_provider, IntPtr observer, NativeMethods.Endpoint endpoint)
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
@@ -125,12 +137,14 @@ namespace Realms.Native
             return GCHandle.ToIntPtr(GCHandle.Alloc(socket));
         }
 
+        [MonoPInvokeCallback(typeof(NativeMethods.websocket_write))]
         private static void WebSocketWrite(IntPtr managed_socket, BinaryValue data, IntPtr native_callback)
         {
             var socket = (Socket)GCHandle.FromIntPtr(managed_socket).Target;
             socket.Write(data, native_callback);
         }
 
+        [MonoPInvokeCallback (typeof(NativeMethods.websocket_close))]
         private static void WebSocketClose(IntPtr managed_websocket)
         {
             var handle = GCHandle.FromIntPtr(managed_websocket);
@@ -141,6 +155,7 @@ namespace Realms.Native
         static SyncSocketProvider()
         {
             NativeMethods.post_work post = PostWork;
+            NativeMethods.provider_dispose dispose = ProviderDispose;
             NativeMethods.create_timer create_timer = CreateTimer;
             NativeMethods.cancel_timer cancel_timer = CancelTimer;
             NativeMethods.websocket_connect websocket_connect = WebSocketConnect;
@@ -148,13 +163,14 @@ namespace Realms.Native
             NativeMethods.websocket_close websocket_close = WebSocketClose;
 
             GCHandle.Alloc(post);
+            GCHandle.Alloc(dispose);
             GCHandle.Alloc(create_timer);
             GCHandle.Alloc(cancel_timer);
             GCHandle.Alloc(websocket_connect);
             GCHandle.Alloc(websocket_write);
             GCHandle.Alloc(websocket_close);
 
-            NativeMethods.install_callbacks(post, create_timer, cancel_timer, websocket_connect, websocket_write, websocket_close);
+            NativeMethods.install_callbacks(post, dispose, create_timer, cancel_timer, websocket_connect, websocket_write, websocket_close);
         }
 
         private struct Status
@@ -186,7 +202,6 @@ namespace Realms.Native
         public void Dispose()
         {
             _workQueue.Writer.Complete();
-            _workThread.Dispose();
         }
     }
 }
