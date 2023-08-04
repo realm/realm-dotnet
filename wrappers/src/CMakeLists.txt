@@ -19,6 +19,7 @@ set(SOURCES
     sync_user_cs.cpp
     transport_cs.cpp
     guid_representation_migration.cpp
+    websocket_cs.cpp
 )
 
 set(HEADERS

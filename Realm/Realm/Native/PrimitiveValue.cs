@@ -283,13 +283,6 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct BinaryValue
-        {
-            public byte* data;
-            public IntPtr size;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         private struct LinkValue
         {
             public IntPtr object_ptr;
@@ -344,5 +337,12 @@ namespace Realms.Native
         public static implicit operator bool(StringValue value) => value.data != null;
 
         public static implicit operator string?(StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct BinaryValue
+    {
+        public byte* data;
+        public IntPtr size;
     }
 }

@@ -23,6 +23,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -180,6 +181,12 @@ namespace Realms.Sync
                 sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
                 use_cache = config.UseAppCache,
             };
+
+            if (Environment.GetEnvironmentVariable("REALM_DOTNET_USE_LEGACY_WEBSOCKET") == null)
+            {
+                var provider = new SyncSocketProvider(config.OnSyncWebSocketConnection);
+                nativeConfig.managed_websocket_provider = GCHandle.ToIntPtr(GCHandle.Alloc(provider));
+            }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
             return new App(handle);
