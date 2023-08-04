@@ -100,7 +100,6 @@ namespace QuickJournalSync.ViewModels
         private void HandleSyncConnectionStateChanged(object? sender, ConnectionState newConnectionState)
         {
             ConnectionState = newConnectionState;
-            //MainThread.BeginInvokeOnMainThread(() => DialogService.ShowToast(newConnectionState.ToString()));
         }
 
         private async Task GoToEntry(JournalEntry entry)
