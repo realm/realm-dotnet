@@ -11,7 +11,8 @@ namespace QuickJournalSync.Services
 {
     public static class RealmService
     {
-        private static readonly string _appId = "application-quickjournal-amhqr";
+        private static readonly string _appId = "";
+
         private static object _mainRealmLock = new();
 
         private static bool _serviceInitialised;
