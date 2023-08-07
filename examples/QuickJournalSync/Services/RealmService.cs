@@ -242,7 +242,7 @@ namespace QuickJournalSync.Services
             LogAndShowToast("After Reset Discard Callback called");
         }
 
-        private static async void HandleManualReset(ClientResetException clientResetException)
+        private static void HandleManualReset(ClientResetException clientResetException)
         {
             // Callback invoked if automatic Client Reset handling fails.
             LogAndShowToast("Manual Reset Callback called");
