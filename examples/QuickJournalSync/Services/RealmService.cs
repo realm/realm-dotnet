@@ -78,7 +78,7 @@ namespace QuickJournalSync.Services
 
             await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-            using var realm = await Realm.GetInstanceAsync(GetRealmConfig());  //TODO Should we do this like in the code example? (put a try catch around this to catch TaskCanceledException)...?
+            using var realm = await Realm.GetInstanceAsync(GetRealmConfig());
         }
 
         public static async Task LogoutAsync()
@@ -153,8 +153,9 @@ namespace QuickJournalSync.Services
             // automatically, and there will be no error.
             realm.Subscriptions.Update(() =>
             {
-                var queryFake = realm.All<JournalEntry>().Where(j => j.Title == "test");
-                realm.Subscriptions.Add(queryFake, new SubscriptionOptions { Name = subErrorName });
+                var filterString = "{'personal', 'work'} IN Tags";
+                var unsupportedQuery = realm.All<JournalEntry>().Filter(filterString);
+                realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
             });
 
             try
@@ -208,6 +209,7 @@ namespace QuickJournalSync.Services
 
             if (e.PropertyName == nameof(Session.ConnectionState))
             {
+                // React to connection state changes
                 LogAndShowToast($"New connection state: {session.ConnectionState}");
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }

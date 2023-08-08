@@ -15,6 +15,7 @@ namespace QuickJournalSync.ViewModels
         {
             RealmService.Init();
 
+            // If the user has already logged in, go to the main page.
             if (RealmService.CurrentUser != null)
             {
                 await GoToMainPage();

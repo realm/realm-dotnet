@@ -17,6 +17,8 @@ namespace QuickJournalSync.Models
 
         public string? Body { get; set; }
 
+        public IList<string> Tags { get; } = null!;
+
         public DateTimeOffset CreatedDate { get; set; }
 
         public JournalEntry()
