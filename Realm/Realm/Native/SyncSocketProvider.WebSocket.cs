@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Realms.Logging;
 
 namespace Realms.Native
 {
@@ -58,6 +59,11 @@ namespace Realms.Native
                 }
                 catch (WebSocketException e)
                 {
+                    if (e.InnerException is not null)
+                    {
+                        Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException}");
+                    }
+
                     await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer));
                     return;
                 }
