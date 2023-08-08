@@ -40,9 +40,10 @@ namespace Realms.Native
 
             private MemoryStream _receiveBuffer = new();
 
-            internal Socket(ClientWebSocket webSocket, ChannelWriter<IWork> workQueue, Uri uri) 
+            internal Socket(ClientWebSocket webSocket, IntPtr observer, ChannelWriter<IWork> workQueue, Uri uri) 
             {
                 _webSocket = webSocket;
+                _observer = observer;
                 _workQueue = workQueue;
                 _uri = uri;
                 _workerThread = Task.Factory.StartNew(ReadThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach).Unwrap();
@@ -57,7 +58,7 @@ namespace Realms.Native
                 }
                 catch (WebSocketException e)
                 {
-                    // TODO: handle connect error
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer));
                     return;
                 }
 
@@ -79,12 +80,13 @@ namespace Realms.Native
                         }
                         else if (result.MessageType == WebSocketMessageType.Close)
                         {
-                            await _workQueue.WriteAsync(new ClosedMessageReceivedWork(result.CloseStatus!.Value, result.CloseStatusDescription, _observer));
+                            await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer));
                         }
                     }
-                    catch(WebSocketException e)
+                    catch (WebSocketException e)
                     {
-                        // TODO: handle read error
+                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer));
+                        return;
                     }
                 } while (_webSocket.State == WebSocketState.Open);
             }
@@ -104,7 +106,10 @@ namespace Realms.Native
                     var status = Status.OK;
                     if (t.IsFaulted)
                     {
-                        // TODO: handle write error
+                        // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
+                        // but the default implementation always calls it with Ok. Which is it?
+                        // status = new Status(NativeMethods.ErrorCode.RuntimeError, t.Exception.Message);
+                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_WRITE_ERROR, t.Exception.Message, _observer));
                     }
 
                     await _workQueue.WriteAsync(new EventLoopWork(native_callback, status));
@@ -178,24 +183,31 @@ namespace Realms.Native
             }
         }
 
-        private sealed class ClosedMessageReceivedWork : WebSocketWork
+        private sealed class WebSocketClosedWork : WebSocketWork
         {
+            private bool _clean;
             private WebSocketCloseStatus _status;
             private string _description;
 
-            public ClosedMessageReceivedWork(WebSocketCloseStatus status, string description, IntPtr observer)
+            public WebSocketClosedWork(bool clean, WebSocketCloseStatus status, string description, IntPtr observer)
             : base(observer)
             {
+                _clean = clean;
                 _status = status;
                 _description = description;
             }
 
             protected unsafe override void Execute(IntPtr observer)
             {
+                if (!_clean)
+                {
+                    NativeMethods.observer_error_handler(observer);
+                }
+
                 var bytes = Encoding.UTF8.GetBytes(_description);
                 fixed(byte* data = bytes)
                 {
-                    NativeMethods.observer_closed_handler(observer, _status, new() { data = data, size = bytes.Length });
+                    NativeMethods.observer_closed_handler(observer, _clean, _status, new() { data = data, size = bytes.Length });
                 }
             }
         }

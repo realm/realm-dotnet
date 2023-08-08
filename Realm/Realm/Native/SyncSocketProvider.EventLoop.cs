@@ -32,12 +32,12 @@ namespace Realms.Native
 
             internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
             {
-                Task.Delay(delay).ContinueWith(t =>
+                Task.Delay(delay, _cts.Token).ContinueWith(t =>
                 {
                     var status = Status.OK;
                     if (t.IsCanceled)
                     {
-                        status = new() { code = NativeMethods.ErrorCode.OperationAborted, reason = "Timer canceled" };
+                        status = new(NativeMethods.ErrorCode.OperationAborted, "Timer canceled");
                     }
 
                     return workQueue.WriteAsync(new EventLoopWork(nativeCallback, status));
@@ -64,18 +64,18 @@ namespace Realms.Native
 
             public unsafe void Execute()
             {
-                if (!string.IsNullOrEmpty(_status.reason))
+                if (!string.IsNullOrEmpty(_status.Reason))
                 {
-                    var bytes = Encoding.UTF8.GetBytes(_status.reason);
+                    var bytes = Encoding.UTF8.GetBytes(_status.Reason);
                     fixed (byte* data = bytes)
                     {
                         var reason = new StringValue { data = data, size = bytes.Length };
-                        NativeMethods.run_callback(_nativeCallback, _status.code, reason);
+                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason);
                     }
                 }
                 else
                 {
-                    NativeMethods.run_callback(_nativeCallback, _status.code, new());
+                    NativeMethods.run_callback(_nativeCallback, _status.Code, new());
                 }
             }
         }

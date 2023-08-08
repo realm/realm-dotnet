@@ -91,12 +91,13 @@ public:
         for (const auto& protocol : endpoint.protocols) {
             protocols.push_back(to_capi(protocol));
         }
+        marshaled_endpoint.protocols = protocols;
 
         m_managed_websocket = s_websocket_connect(managed_provider, m_observer.get(), marshaled_endpoint);
     }
 
     std::string_view get_appservices_request_id() const noexcept final {
-        return m_app_services_coid;
+        return {};
     }
 
     void async_write_binary(util::Span<const char> data, SyncSocketProvider::FunctionHandler&& handler) final {
@@ -112,7 +113,6 @@ public:
     }
 
 private:
-    std::string m_app_services_coid;
     void* m_managed_websocket;
     std::unique_ptr<WebSocketObserver> m_observer;
 };
@@ -146,7 +146,7 @@ private:
 std::shared_ptr<SyncSocketProvider> make_websocket_provider(void* managed_provider) { return std::make_shared<SocketProvider>(managed_provider); }
 
 extern "C" {
-    REALM_EXPORT void realm_websocket_install_callbacks(PostWorkT* post_work, CreateTimerT* create_timer, CancelTimerT* cancel_timer, SyncProviderDisposeT* provider_dispose, 
+    REALM_EXPORT void realm_websocket_install_callbacks(PostWorkT* post_work, SyncProviderDisposeT* provider_dispose, CreateTimerT* create_timer, CancelTimerT* cancel_timer,
                                                         WebSocketConnectT* websocket_connect, WebSocketWriteT* websocket_write, WebSocketCloseT* websocket_close) {
         s_post_work = wrap_managed_callback(post_work);
         s_provider_dispose = wrap_managed_callback(provider_dispose);

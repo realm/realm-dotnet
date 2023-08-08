@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
@@ -28,10 +29,15 @@ namespace Realms.Native
     {
         private static class NativeMethods
         {
+            public const int RLM_ERR_WEBSOCKET_CONNECTION_FAILED = 4401;
+            public const int RLM_ERR_WEBSOCKET_READ_ERROR = 4402;
+            public const int RLM_ERR_WEBSOCKET_WRITE_ERROR = 4403;
+
             // equivalent to ErrorCodes::Error in <realm/error_codes.hpp>
             public enum ErrorCode : int
             {
                 Ok = 0,
+                RuntimeError = 1000,
                 OperationAborted = 1027
             }
 
@@ -86,7 +92,7 @@ namespace Realms.Native
             public static extern void observer_binary_message_received(IntPtr observer, BinaryValue data);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_closed_handler", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void observer_closed_handler(IntPtr observer, WebSocketCloseStatus status, StringValue reason);
+            public static extern void observer_closed_handler(IntPtr observer, NativeBool was_clean, WebSocketCloseStatus status, StringValue reason);
         }
 
         private static void PostWork(IntPtr managed_provider, IntPtr nativeCallback)
@@ -130,10 +136,26 @@ namespace Realms.Native
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
             var webSocket = new ClientWebSocket();
+            foreach (string? subProtocol in endpoint.protocols)
+            {
+                webSocket.Options.AddSubProtocol(subProtocol!);
+            }
+
             provider._onWebSocketConnection?.Invoke(webSocket.Options);
 
             var builder = new UriBuilder();
-            var socket = new Socket(webSocket, provider._workQueue, builder.Uri);
+            builder.Scheme = endpoint.is_ssl ? "wss" : "ws";
+            builder.Host = endpoint.address;
+            builder.Host += "123";
+            builder.Port = endpoint.port;
+            if (endpoint.path)
+            {
+                var pathAndQuery = ((string)endpoint.path)!.Split('?');
+                builder.Path = pathAndQuery.ElementAtOrDefault(0);
+                builder.Query = pathAndQuery.ElementAtOrDefault(1);
+            }
+
+            var socket = new Socket(webSocket, observer, provider._workQueue, builder.Uri);
             return GCHandle.ToIntPtr(GCHandle.Alloc(socket));
         }
 
@@ -175,10 +197,16 @@ namespace Realms.Native
 
         private struct Status
         {
-            internal NativeMethods.ErrorCode code;
-            internal string? reason;
+            internal NativeMethods.ErrorCode Code;
+            internal string? Reason;
 
-            internal static readonly Status OK = new() { code = NativeMethods.ErrorCode.Ok };
+            internal static readonly Status OK = new() { Code = NativeMethods.ErrorCode.Ok };
+
+            public Status(NativeMethods.ErrorCode code, string reason)
+            {
+                Code = code;
+                Reason = reason;
+            }
         }
 
         private interface IWork
