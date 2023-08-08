@@ -116,13 +116,15 @@ namespace Realms.Native
                 });
             }
 
-            public void Dispose()
+            public async void Dispose()
             {
-                _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, default).ContinueWith(t =>
+                if (_webSocket.State == WebSocketState.Open)
                 {
-                    _webSocket.Dispose();
-                    _receiveBuffer.Dispose();
-                });
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, default);
+                }
+
+                _webSocket.Dispose();
+                _receiveBuffer.Dispose();
             }
         }
 
