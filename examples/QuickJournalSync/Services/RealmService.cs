@@ -200,6 +200,8 @@ namespace QuickJournalSync.Services
 
         #endregion
 
+        #region Connection state changes
+
         private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             var session = (Session)sender!;
@@ -210,6 +212,8 @@ namespace QuickJournalSync.Services
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }
         }
+
+        #endregion
 
         #region ClientReset
 
