@@ -2,7 +2,7 @@
 
 **QuickJournalSync** shows how to integrate Realm and [Atlas Device Sync](https://www.mongodb.com/docs/atlas/app-services/sync/get-started/) in a sample MAUI application, with particular focus on error handling, connection state changes and offline realms. This app is a synced version of [`QuickJournal`](https://github.com/realm/realm-dotnet/tree/main/examples/QuickJournal), so check that if you are mainly interested in how Realm can be used effectively in conjunction with MVVM and data binding.
 
-The app allows the user to keep a very minimal synced journal, where each entry is made up of a title and a body. Every time a new journal entry is added or modified it gets persisted to a realm, and thanks to the bindings the UI gets updated immediately, with no additional code required. The app uses Device Sync to keep the journal entries synchronised with Atlas and other devices. 
+The app allows the user to keep a very minimal synced journal, where each entry is made up of a title and a body. Every time a new journal entry is added or modified it gets persisted to a realm, and thanks to the bindings the UI gets updated immediately, with no additional code required. The app uses Device Sync to keep the journal entries synchronised with MongoDB Atlas and other devices. 
 
 Additionally, the app is built to show some common use cases when dealing with synced application:
 - [How to open a realm while offline](#offline-synced-realm)
@@ -29,12 +29,16 @@ In order to run the example project you need to:
 - Enable [Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/).
 - Change `_appId` variable in `RealmService` to the App ID of the application you have created. 
 
-
 ## Application structure
 
+<p align="center">
+    <img src="Images/app.png">
+</p>
+
 The sample app is composed of 3 pages:
-- `LoginPage`: it is the page that appears on the first startup of the application, where the user can signup or login. After the user is logged in the app transitions to the `EntriesPage`;
-- `EntriesPage`: it is the main page of the application. On the top there is the list of the journal entries, and at the bottom there are 3 buttons that can be used to simulate different kind of errors. It is possible to delete entries or add new one by clicking the plus button in the toolbar. It is also possible to logout the current user by clicking the corresponding button in the toolbar, and this will make the app return to the login page
+- `LoginPage`: it is the page that appears on the first startup of the application, where the user can sign up or login. After the user is logged in, the app transitions to the `EntriesPage`;
+- `EntriesPage`: it is the main page of the application. On the top there is the list of the journal entries, and at the bottom there are 3 buttons that can be used to simulate different kind of errors. It is possible to delete entries or add new one by clicking the plus button in the toolbar. It is also possible to logout the current user by clicking the corresponding button in the toolbar, and this will make the app return to the login page.
+The bottom part of the screen also contains a label that contains the current connection state.
 - `EntryDetailPage`: it is the page where users can modify or create journal entries by specifying their title and body. 
 
 There is only one realm object in the sample application, `JournalEntry`:
@@ -54,6 +58,9 @@ public partial class JournalEntry : IRealmObject
 
     public DateTimeOffset CreatedDate { get; set; }
 
+    // This is only used to simulate a subscription error at the moment.
+    public IList<string> Tags { get; } = null!;
+
     public JournalEntry()
     {
         if (RealmService.CurrentUser == null)
@@ -66,11 +73,13 @@ public partial class JournalEntry : IRealmObject
 }
 ```
 
-This object represent an entry in the journal, with a title, a body, a creation date, and the id of the user that created it.
+This object represent an entry in the journal, with a title, a body, a creation date, and the id of the user that created it. The model also contains `Tags`, that is only used to simplify simulating a subscription error, as we will see later.
+
+Finally, `RealmService` is the class responsible for retrieving realms, logging in and out, and everything related to Device Sync as well.
 
 ## Offline synced realm
 
-With MongoDB Realm offline-first capabilities, it is always possible to read and write to the database even when using Device Sync, independently from the connection status of the app. In this small article, we are going to see how to open a synced realm depending on the situation in the .NET Realm SDK
+With Realm offline-first capabilities, it is always possible to read and write to the database even when using Device Sync, independently from the connection status of the app. In this section we are going to see how to open a synced realm, without needing to worry about connectivity.
 
 There are two methods in the .NET Realm SDK that can be used to open a Realm: `Realm.GetInstance` (synchronously) and `Realm.GetInstanceAsync` (asynchronously). The two methods not only differ in asynchronicity, but have a different behavior when used to open a synced realm. We will first take a look at those two methods on their own, then show a recommended flow for opening a realm. 
 
@@ -159,9 +168,34 @@ else
     realm = Realm.GetInstance(realmConfig);
 }
 ```
+Please note that this snippet is here only to give an idea about the logical flow of obtaining a realm, but the actual code in your application could look different.
 
+#### How the realm is opened in the sample application
 
-dsadasdsadsaddasds
+The way that the sample application deals with offline realms loosely follow the snippet for the recommended flow that was shown in the previous section:
+- When the application opens, the `LoginPage` is the first to be loaded.
+- If the user is not logged in already (`CurrentUser == null`), then the user can specify its email and password and login. The login method (`RealmService.LoginAsync`) uses `Realm.GetInstanceAsync`, because we want to be sure to have a completely synchronized realm before showing the main page to the user:
+    ```csharp
+    public static async Task LoginAsync(string email, string password)
+    {
+        // ...
+
+        await _app.LogInAsync(Credentials.EmailPassword(email, password));
+
+        using var realm = await Realm.GetInstanceAsync(GetRealmConfig());
+    }
+    ```
+- If the user just logged in, or was already logged in (`CurrentUser != null`), then we go to the main page (`EntriesPage`). Here, the method to open a realm (`RealmService.GetMainThreadRealm`) uses `Realm.GetInstance`, because we don't need to have the application completely synchronized before showing the main page.
+    ```csharp
+    public static Realm GetMainThreadRealm()
+    {
+        // ...
+        _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
+        // ...
+
+        return _mainThreadRealm;
+    }
+    ```
 
 ### Connection state changes
 
@@ -173,7 +207,7 @@ public static Realm GetRealm()
     var config = new FlexibleSyncConfiguration(CurrentUser);
 
     var realm = Realm.GetInstance(config);
-    realm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged
+    realm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
 }
 
 // ...
@@ -190,7 +224,7 @@ private static void HandleSyncSessionPropertyChanged(object? sender, PropertyCha
 }
 ```
 
-When reacting to connection state changes, please remember that those changes could be momentary, for example due to a drop in the internet connection of the device
+When reacting to connection state changes, please remember that those changes could be momentary, for example due to a drop in the internet connection of the device.
 
 #### Simulate connection state changes in the app
 
@@ -199,14 +233,13 @@ You can simulate connection state changes in the app by disabling the internet c
 ## Error handling
 
 There are different kind of errors that can happen when working on a synced application:
-- Subscription errors, that are raised when there are issues with subscriptions in Flexible Sync;
-- Session errors, that are raised when there is an issue with the synchronization or the connection;
-- Client resets, that are raised when a client cannot sync data with the backend.
+- [Subscription errors](#subscription-errors), that are raised when there are issues with subscriptions in Flexible Sync;
+- [Session errors](#session-errors), that are raised when there is an issue with the synchronization or the connection;
+- [Client resets](#client-reset), that are raised in exceptional cases when a client cannot sync data with the backend.
 
 The sample application has been designed to show how to handle these different kind of errors. 
 
-For an easier testing, there are 3 buttons on the main page, that simulate different kind of errors, so you can experiment with them. The app also shows a [Toast](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/maui/alerts/toast?tabs=android) with the exceptions being raised, and simultaneously logs them to the console. 
-
+For an easier testing, there are 3 buttons on the main page, that simulate different kind of errors, so you can experiment with them. The app also logs to the console the corresponding exception, and at the same time shows a [Toast](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/maui/alerts/toast?tabs=android) with the exception itself.
 ### Subscription errors
 
 Subscription errors can happen when there is an issue with the subscriptions used in Flexible Sync, for example when trying to create a subscription for a property that is not in the list of [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields). In the .NET SDK subscription errors are represented by the `SubscriptionException` class. 
@@ -215,13 +248,13 @@ When there is an error with the subscriptions, then `realm.Subscriptions.State` 
 
 #### Simulate subscription error
 
-Clicking on the *Simulate Subscription Error* button in the app will simulate a subscription error by subscribing for a property that is not in the list of queryable fields (`Title`). We then catch the exception and remove the invalid subscription from the set:
+Clicking on the *Simulate Subscription Error* button in the app will simulate a subscription error by subscribing to an unsupported flexible sync query. We then catch the exception and remove the invalid subscription from the set:
 
 ```csharp
 realm.Subscriptions.Update(() =>
 {
-    var invalidQuery = realm.All<JournalEntry>().Where(j => j.Title == "test");
-    realm.Subscriptions.Add(invalidQuery);
+    var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
+    realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
 });
 
 try
@@ -243,8 +276,8 @@ When using the new subscription API, this is equivalent to:
 ```csharp
 try
 {
-    var invalidQuery = realm.All<JournalEntry>().Where(j => j.Title == "test");
-    await invalidQuery.SubscribeAsync();
+    var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
+    await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
 }
 catch (SubscriptionException ex)
 {
@@ -256,13 +289,9 @@ catch (SubscriptionException ex)
 }
 ```
 
-TODO - Add note about development mode (Can we recognise it from the client?)
-
-TODO - The two snippets can be inverted if we use the new API
-
 ### Session errors
 
-Session errors are raised due to different kind of events, such as adding an object outside of the current subscription set or when the server has received too many sessions from the client. In the .NET SDK session errors are represented by the `SessionException` class, that has an `ErrorCode` property to indicate the type of error. 
+Session errors are raised due to different kind of events, such as adding an object outside of the current subscription set or when the server has received too many sessions from the client. In the .NET SDK session errors are represented by the `SessionException` class, that has an `ErrorCode` property to indicate the type of error. You can find more information about this in the [documentation](https://www.mongodb.com/docs/realm/sdk/dotnet/sync/handle-sync-errors/).
 
 In order to handle session errors, you need to provide a `SessionErrorCallback` to the `FlexibleSyncConfiguration` object that is passed to `Realm.GetInstance` or `Realm.GetInstanceAsync`. For instance:
 
@@ -281,6 +310,7 @@ public static Realm GetRealm()
 
 private static void HandleSessionErrorCallback(Session session, SessionException error)
 {
+    // Handle the error here.
     Console.WriteLine($"Session error! {error}");
 }
 ```
@@ -291,7 +321,7 @@ Clicking on the *Simulate Session Error* button in the app will simulate a sessi
 
 ### Client reset
 
-A client reset error is raised when a client realm cannot sync data with the application backend, for example in case of client/backend schema mismatch or re-enabling and disabling sync. When a client reset error is raised, clients may continue to write to the realm locally, but the changes will not be synchronised until the client reset is performed. The Realm SDKs provides methods to automatically handle client resets under most scenarios, and you can read more about that in the [documentation](https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset/). 
+A client reset error is raised when a client realm cannot sync data with the application backend, for example in case of client/backend schema mismatch or re-enabling and disabling sync. When a client reset error is raised, clients may continue to write to the realm locally, but the changes will not be synchronized until the client reset is performed. The Realm SDKs provides methods to automatically handle client resets under most scenarios, and you can read more about that in the [documentation](https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset/). 
 
 In order to handle session errors, you need to provide a `ClientResetHandler` to the `FlexibleSyncConfiguration` object that is passed to `Realm.GetInstance` or `Realm.GetInstanceAsync`. For example:
 

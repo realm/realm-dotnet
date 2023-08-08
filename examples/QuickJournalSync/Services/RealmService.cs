@@ -147,14 +147,11 @@ namespace QuickJournalSync.Services
             const string subErrorName = "subError";
             var realm = GetMainThreadRealm();
 
-            // Here we are adding a subscription on a property (Title) that is not in the list of queryable fields on the service.
+            // Here we are adding a subscription with an unsupported query.
             // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
-            // In order for this to work you need to disable Development Mode, otherwise Title will be added in the queryable fields
-            // automatically, and there will be no error.
             realm.Subscriptions.Update(() =>
             {
-                var filterString = "{'personal', 'work'} IN Tags";
-                var unsupportedQuery = realm.All<JournalEntry>().Filter(filterString);
+                var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
                 realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
             });
 
