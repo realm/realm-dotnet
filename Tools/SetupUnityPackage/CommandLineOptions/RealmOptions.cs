@@ -41,7 +41,8 @@ namespace SetupUnityPackage
             "Microsoft.CSharp",
             "Fody",
             "System.Dynamic.Runtime",
-            "Realm.PlatformHelpers"
+            "Realm.PlatformHelpers",
+            "System.Net.WebSockets.Client"
         };
 
         private static readonly IEnumerable<DependencyInfo> _realmDependencies = new[]
