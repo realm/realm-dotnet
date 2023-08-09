@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedAllTypesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedAllTypesObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static EmbeddedAllTypesObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedAllTypesObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedAllTypesObject"/> class.
         /// </summary>
@@ -489,7 +497,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedAllTypesObjectManagedAccessor : Realms.ManagedAccessor, IEmbeddedAllTypesObjectAccessor
+        private class EmbeddedAllTypesObjectManagedAccessor : Realms.ManagedAccessor, IEmbeddedAllTypesObjectAccessor
         {
             public char CharProperty
             {
@@ -711,7 +719,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedAllTypesObjectAccessor
+        private class EmbeddedAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedAllTypesObject.RealmSchema;
 
@@ -1267,6 +1275,168 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class EmbeddedAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedAllTypesObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedAllTypesObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "CharProperty", value.CharProperty);
+                WriteValue(context, args, "ByteProperty", value.ByteProperty);
+                WriteValue(context, args, "Int16Property", value.Int16Property);
+                WriteValue(context, args, "Int32Property", value.Int32Property);
+                WriteValue(context, args, "Int64Property", value.Int64Property);
+                WriteValue(context, args, "SingleProperty", value.SingleProperty);
+                WriteValue(context, args, "DoubleProperty", value.DoubleProperty);
+                WriteValue(context, args, "DecimalProperty", value.DecimalProperty);
+                WriteValue(context, args, "Decimal128Property", value.Decimal128Property);
+                WriteValue(context, args, "BooleanProperty", value.BooleanProperty);
+                WriteValue(context, args, "StringProperty", value.StringProperty);
+                WriteValue(context, args, "DateTimeOffsetProperty", value.DateTimeOffsetProperty);
+                WriteValue(context, args, "ObjectIdProperty", value.ObjectIdProperty);
+                WriteValue(context, args, "GuidProperty", value.GuidProperty);
+                WriteValue(context, args, "ByteArrayProperty", value.ByteArrayProperty);
+                WriteValue(context, args, "NullableCharProperty", value.NullableCharProperty);
+                WriteValue(context, args, "NullableByteProperty", value.NullableByteProperty);
+                WriteValue(context, args, "NullableInt16Property", value.NullableInt16Property);
+                WriteValue(context, args, "NullableInt32Property", value.NullableInt32Property);
+                WriteValue(context, args, "NullableInt64Property", value.NullableInt64Property);
+                WriteValue(context, args, "NullableSingleProperty", value.NullableSingleProperty);
+                WriteValue(context, args, "NullableDoubleProperty", value.NullableDoubleProperty);
+                WriteValue(context, args, "NullableBooleanProperty", value.NullableBooleanProperty);
+                WriteValue(context, args, "NullableDecimalProperty", value.NullableDecimalProperty);
+                WriteValue(context, args, "NullableDecimal128Property", value.NullableDecimal128Property);
+                WriteValue(context, args, "NullableDateTimeOffsetProperty", value.NullableDateTimeOffsetProperty);
+                WriteValue(context, args, "ByteCounterProperty", value.ByteCounterProperty);
+                WriteValue(context, args, "Int16CounterProperty", value.Int16CounterProperty);
+                WriteValue(context, args, "Int32CounterProperty", value.Int32CounterProperty);
+                WriteValue(context, args, "Int64CounterProperty", value.Int64CounterProperty);
+                WriteValue(context, args, "NullableByteCounterProperty", value.NullableByteCounterProperty);
+                WriteValue(context, args, "NullableInt16CounterProperty", value.NullableInt16CounterProperty);
+                WriteValue(context, args, "NullableInt32CounterProperty", value.NullableInt32CounterProperty);
+                WriteValue(context, args, "NullableInt64CounterProperty", value.NullableInt64CounterProperty);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override EmbeddedAllTypesObject CreateInstance() => new EmbeddedAllTypesObject();
+
+            protected override void ReadValue(EmbeddedAllTypesObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "CharProperty":
+                        instance.CharProperty = BsonSerializer.LookupSerializer<char>().Deserialize(context);
+                        break;
+                    case "ByteProperty":
+                        instance.ByteProperty = BsonSerializer.LookupSerializer<byte>().Deserialize(context);
+                        break;
+                    case "Int16Property":
+                        instance.Int16Property = BsonSerializer.LookupSerializer<short>().Deserialize(context);
+                        break;
+                    case "Int32Property":
+                        instance.Int32Property = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Int64Property":
+                        instance.Int64Property = BsonSerializer.LookupSerializer<long>().Deserialize(context);
+                        break;
+                    case "SingleProperty":
+                        instance.SingleProperty = BsonSerializer.LookupSerializer<float>().Deserialize(context);
+                        break;
+                    case "DoubleProperty":
+                        instance.DoubleProperty = BsonSerializer.LookupSerializer<double>().Deserialize(context);
+                        break;
+                    case "DecimalProperty":
+                        instance.DecimalProperty = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
+                        break;
+                    case "Decimal128Property":
+                        instance.Decimal128Property = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    case "BooleanProperty":
+                        instance.BooleanProperty = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    case "StringProperty":
+                        instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "DateTimeOffsetProperty":
+                        instance.DateTimeOffsetProperty = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    case "ObjectIdProperty":
+                        instance.ObjectIdProperty = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "GuidProperty":
+                        instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "ByteArrayProperty":
+                        instance.ByteArrayProperty = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
+                        break;
+                    case "NullableCharProperty":
+                        instance.NullableCharProperty = BsonSerializer.LookupSerializer<char?>().Deserialize(context);
+                        break;
+                    case "NullableByteProperty":
+                        instance.NullableByteProperty = BsonSerializer.LookupSerializer<byte?>().Deserialize(context);
+                        break;
+                    case "NullableInt16Property":
+                        instance.NullableInt16Property = BsonSerializer.LookupSerializer<short?>().Deserialize(context);
+                        break;
+                    case "NullableInt32Property":
+                        instance.NullableInt32Property = BsonSerializer.LookupSerializer<int?>().Deserialize(context);
+                        break;
+                    case "NullableInt64Property":
+                        instance.NullableInt64Property = BsonSerializer.LookupSerializer<long?>().Deserialize(context);
+                        break;
+                    case "NullableSingleProperty":
+                        instance.NullableSingleProperty = BsonSerializer.LookupSerializer<float?>().Deserialize(context);
+                        break;
+                    case "NullableDoubleProperty":
+                        instance.NullableDoubleProperty = BsonSerializer.LookupSerializer<double?>().Deserialize(context);
+                        break;
+                    case "NullableBooleanProperty":
+                        instance.NullableBooleanProperty = BsonSerializer.LookupSerializer<bool?>().Deserialize(context);
+                        break;
+                    case "NullableDecimalProperty":
+                        instance.NullableDecimalProperty = BsonSerializer.LookupSerializer<decimal?>().Deserialize(context);
+                        break;
+                    case "NullableDecimal128Property":
+                        instance.NullableDecimal128Property = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128?>().Deserialize(context);
+                        break;
+                    case "NullableDateTimeOffsetProperty":
+                        instance.NullableDateTimeOffsetProperty = BsonSerializer.LookupSerializer<System.DateTimeOffset?>().Deserialize(context);
+                        break;
+                    case "ByteCounterProperty":
+                        instance.ByteCounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<byte>>().Deserialize(context);
+                        break;
+                    case "Int16CounterProperty":
+                        instance.Int16CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<short>>().Deserialize(context);
+                        break;
+                    case "Int32CounterProperty":
+                        instance.Int32CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>>().Deserialize(context);
+                        break;
+                    case "Int64CounterProperty":
+                        instance.Int64CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>>().Deserialize(context);
+                        break;
+                    case "NullableByteCounterProperty":
+                        instance.NullableByteCounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<byte>?>().Deserialize(context);
+                        break;
+                    case "NullableInt16CounterProperty":
+                        instance.NullableInt16CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<short>?>().Deserialize(context);
+                        break;
+                    case "NullableInt32CounterProperty":
+                        instance.NullableInt32CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>?>().Deserialize(context);
+                        break;
+                    case "NullableInt64CounterProperty":
+                        instance.NullableInt64CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(EmbeddedAllTypesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

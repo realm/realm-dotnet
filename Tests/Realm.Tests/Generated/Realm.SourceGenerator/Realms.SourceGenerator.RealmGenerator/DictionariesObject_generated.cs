@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(DictionariesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static DictionariesObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new DictionariesObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="DictionariesObject"/> class.
         /// </summary>
@@ -414,7 +422,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
+        private class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
         {
             private System.Collections.Generic.IDictionary<string, char> _charDictionary = null!;
             public System.Collections.Generic.IDictionary<string, char> CharDictionary
@@ -866,7 +874,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
+        private class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DictionariesObject.RealmSchema;
 
@@ -1001,6 +1009,62 @@ namespace Realms.Tests
                     "RealmValueDictionary" => (IDictionary<string, TValue>)RealmValueDictionary,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializer<DictionariesObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DictionariesObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteDictionary(context, args, "CharDictionary", value.CharDictionary);
+                WriteDictionary(context, args, "ByteDictionary", value.ByteDictionary);
+                WriteDictionary(context, args, "Int16Dictionary", value.Int16Dictionary);
+                WriteDictionary(context, args, "Int32Dictionary", value.Int32Dictionary);
+                WriteDictionary(context, args, "Int64Dictionary", value.Int64Dictionary);
+                WriteDictionary(context, args, "SingleDictionary", value.SingleDictionary);
+                WriteDictionary(context, args, "DoubleDictionary", value.DoubleDictionary);
+                WriteDictionary(context, args, "BooleanDictionary", value.BooleanDictionary);
+                WriteDictionary(context, args, "DecimalDictionary", value.DecimalDictionary);
+                WriteDictionary(context, args, "Decimal128Dictionary", value.Decimal128Dictionary);
+                WriteDictionary(context, args, "ObjectIdDictionary", value.ObjectIdDictionary);
+                WriteDictionary(context, args, "StringDictionary", value.StringDictionary);
+                WriteDictionary(context, args, "NullableStringDictionary", value.NullableStringDictionary);
+                WriteDictionary(context, args, "ByteArrayDictionary", value.ByteArrayDictionary);
+                WriteDictionary(context, args, "DateTimeOffsetDictionary", value.DateTimeOffsetDictionary);
+                WriteDictionary(context, args, "NullableCharDictionary", value.NullableCharDictionary);
+                WriteDictionary(context, args, "NullableByteDictionary", value.NullableByteDictionary);
+                WriteDictionary(context, args, "NullableInt16Dictionary", value.NullableInt16Dictionary);
+                WriteDictionary(context, args, "NullableInt32Dictionary", value.NullableInt32Dictionary);
+                WriteDictionary(context, args, "NullableInt64Dictionary", value.NullableInt64Dictionary);
+                WriteDictionary(context, args, "NullableSingleDictionary", value.NullableSingleDictionary);
+                WriteDictionary(context, args, "NullableDoubleDictionary", value.NullableDoubleDictionary);
+                WriteDictionary(context, args, "NullableBooleanDictionary", value.NullableBooleanDictionary);
+                WriteDictionary(context, args, "NullableDateTimeOffsetDictionary", value.NullableDateTimeOffsetDictionary);
+                WriteDictionary(context, args, "NullableDecimalDictionary", value.NullableDecimalDictionary);
+                WriteDictionary(context, args, "NullableDecimal128Dictionary", value.NullableDecimal128Dictionary);
+                WriteDictionary(context, args, "NullableObjectIdDictionary", value.NullableObjectIdDictionary);
+                WriteDictionary(context, args, "NullableBinaryDictionary", value.NullableBinaryDictionary);
+                WriteDictionary(context, args, "BinaryDictionary", value.BinaryDictionary);
+                WriteDictionary(context, args, "ObjectDictionary", value.ObjectDictionary);
+                WriteDictionary(context, args, "EmbeddedObjectDictionary", value.EmbeddedObjectDictionary);
+                WriteDictionary(context, args, "RealmValueDictionary", value.RealmValueDictionary);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override DictionariesObject CreateInstance() => new DictionariesObject();
+
+            protected override void ReadValue(DictionariesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
+            }
+
+            protected override void ReadArrayElement(DictionariesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

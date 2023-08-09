@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(RequiredPropertyClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RequiredPropertyClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static RequiredPropertyClass()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new RequiredPropertyClassSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="RequiredPropertyClass"/> class.
         /// </summary>
@@ -252,7 +260,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
+        private class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
         {
             public string FooRequired
             {
@@ -262,7 +270,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
+        private class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
         {
             public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
 
@@ -320,6 +328,36 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class RequiredPropertyClassSerializer : Realms.Serialization.RealmObjectSerializer<RequiredPropertyClass>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RequiredPropertyClass value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "FooRequired", value.FooRequired);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override RequiredPropertyClass CreateInstance() => new RequiredPropertyClass();
+
+            protected override void ReadValue(RequiredPropertyClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "FooRequired":
+                        instance.FooRequired = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(RequiredPropertyClass instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

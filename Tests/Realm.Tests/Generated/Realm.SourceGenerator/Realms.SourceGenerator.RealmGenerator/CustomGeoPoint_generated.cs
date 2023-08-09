@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -27,6 +28,13 @@ namespace Realms.Tests.Database
         [Woven(typeof(CustomGeoPointObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class CustomGeoPoint : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
         {
+
+            [Realms.Preserve]
+            static CustomGeoPoint()
+            {
+                Realms.Serialization.RealmObjectSerializer.Register(new CustomGeoPointSerializer());
+            }
+
             /// <summary>
             /// Defines the schema for the <see cref="CustomGeoPoint"/> class.
             /// </summary>
@@ -273,7 +281,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CustomGeoPointManagedAccessor : Realms.ManagedAccessor, ICustomGeoPointAccessor
+            private class CustomGeoPointManagedAccessor : Realms.ManagedAccessor, ICustomGeoPointAccessor
             {
                 private System.Collections.Generic.IList<double> _coordinates = null!;
                 public System.Collections.Generic.IList<double> Coordinates
@@ -297,7 +305,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CustomGeoPointUnmanagedAccessor : Realms.UnmanagedAccessor, ICustomGeoPointAccessor
+            private class CustomGeoPointUnmanagedAccessor : Realms.UnmanagedAccessor, ICustomGeoPointAccessor
             {
                 public override ObjectSchema ObjectSchema => CustomGeoPoint.RealmSchema;
 
@@ -361,6 +369,42 @@ namespace Realms.Tests.Database
                 public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
                 {
                     throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                }
+            }
+
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<CustomGeoPoint>
+            {
+                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CustomGeoPoint value)
+                {
+                    context.Writer.WriteStartDocument();
+
+                    WriteList(context, args, "coordinates", value.Coordinates);
+                    WriteValue(context, args, "type", value.Type);
+
+                    context.Writer.WriteEndDocument();
+                }
+
+                protected override CustomGeoPoint CreateInstance() => new CustomGeoPoint();
+
+                protected override void ReadValue(CustomGeoPoint instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "type":
+                            instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                            break;
+                    }
+                }
+
+                protected override void ReadArrayElement(CustomGeoPoint instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "coordinates":
+                            instance.Coordinates.Add(BsonSerializer.LookupSerializer<double>().Deserialize(context));
+                            break;
+                    }
                 }
             }
         }

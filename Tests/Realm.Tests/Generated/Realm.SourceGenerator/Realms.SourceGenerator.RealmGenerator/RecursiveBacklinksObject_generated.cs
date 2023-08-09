@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(RecursiveBacklinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static RecursiveBacklinksObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new RecursiveBacklinksObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="RecursiveBacklinksObject"/> class.
         /// </summary>
@@ -268,7 +276,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RecursiveBacklinksObjectManagedAccessor : Realms.ManagedAccessor, IRecursiveBacklinksObjectAccessor
+        private class RecursiveBacklinksObjectManagedAccessor : Realms.ManagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public int Id
             {
@@ -298,7 +306,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RecursiveBacklinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
+        private class RecursiveBacklinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RecursiveBacklinksObject.RealmSchema;
 
@@ -374,6 +382,40 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class RecursiveBacklinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<RecursiveBacklinksObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RecursiveBacklinksObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "Parent", value.Parent);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override RecursiveBacklinksObject CreateInstance() => new RecursiveBacklinksObject();
+
+            protected override void ReadValue(RecursiveBacklinksObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Parent":
+                        instance.Parent = LookupSerializer<Realms.Tests.RecursiveBacklinksObject?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(RecursiveBacklinksObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

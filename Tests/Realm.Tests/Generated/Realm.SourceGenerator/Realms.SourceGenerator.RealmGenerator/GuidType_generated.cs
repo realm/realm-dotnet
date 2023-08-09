@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Logging;
@@ -26,6 +27,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(GuidTypeObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class GuidType : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static GuidType()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new GuidTypeSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="GuidType"/> class.
         /// </summary>
@@ -337,7 +345,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class GuidTypeManagedAccessor : Realms.ManagedAccessor, IGuidTypeAccessor
+        private class GuidTypeManagedAccessor : Realms.ManagedAccessor, IGuidTypeAccessor
         {
             public System.Guid Id
             {
@@ -503,7 +511,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class GuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IGuidTypeAccessor
+        private class GuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IGuidTypeAccessor
         {
             public override ObjectSchema ObjectSchema => GuidType.RealmSchema;
 
@@ -676,6 +684,85 @@ namespace Realms.Tests.Database
                     "MixedDict" => (IDictionary<string, TValue>)MixedDict,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class GuidTypeSerializer : Realms.Serialization.RealmObjectSerializer<GuidType>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, GuidType value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "RegularProperty", value.RegularProperty);
+                WriteList(context, args, "GuidList", value.GuidList);
+                WriteSet(context, args, "GuidSet", value.GuidSet);
+                WriteDictionary(context, args, "GuidDict", value.GuidDict);
+                WriteValue(context, args, "OptionalProperty", value.OptionalProperty);
+                WriteList(context, args, "OptionalList", value.OptionalList);
+                WriteSet(context, args, "OptionalSet", value.OptionalSet);
+                WriteDictionary(context, args, "OptionalDict", value.OptionalDict);
+                WriteValue(context, args, "LinkProperty", value.LinkProperty);
+                WriteValue(context, args, "MixedProperty", value.MixedProperty);
+                WriteList(context, args, "MixedList", value.MixedList);
+                WriteSet(context, args, "MixedSet", value.MixedSet);
+                WriteDictionary(context, args, "MixedDict", value.MixedDict);
+                WriteValue(context, args, "EmbeddedProperty", value.EmbeddedProperty);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override GuidType CreateInstance() => new GuidType();
+
+            protected override void ReadValue(GuidType instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "RegularProperty":
+                        instance.RegularProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "OptionalProperty":
+                        instance.OptionalProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
+                        break;
+                    case "LinkProperty":
+                        instance.LinkProperty = LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
+                        break;
+                    case "MixedProperty":
+                        instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "EmbeddedProperty":
+                        instance.EmbeddedProperty = LookupSerializer<Realms.Tests.Database.EmbeddedGuidType?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(GuidType instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "GuidList":
+                        instance.GuidList.Add(BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context));
+                        break;
+                    case "GuidSet":
+                        instance.GuidSet.Add(BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context));
+                        break;
+                    case "OptionalList":
+                        instance.OptionalList.Add(BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context));
+                        break;
+                    case "OptionalSet":
+                        instance.OptionalSet.Add(BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context));
+                        break;
+                    case "MixedList":
+                        instance.MixedList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                        break;
+                    case "MixedSet":
+                        instance.MixedSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                        break;
+                }
             }
         }
     }

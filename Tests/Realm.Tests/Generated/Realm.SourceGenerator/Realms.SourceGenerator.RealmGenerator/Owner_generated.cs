@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(OwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Owner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Owner()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new OwnerSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Owner"/> class.
         /// </summary>
@@ -284,7 +292,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
+        private class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
         {
             public string? Name
             {
@@ -342,7 +350,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
+        private class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
         {
             public override ObjectSchema ObjectSchema => Owner.RealmSchema;
 
@@ -433,6 +441,51 @@ namespace Realms.Tests
                     "DictOfDogs" => (IDictionary<string, TValue>)DictOfDogs,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class OwnerSerializer : Realms.Serialization.RealmObjectSerializer<Owner>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Owner value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Name", value.Name);
+                WriteValue(context, args, "TopDog", value.TopDog);
+                WriteList(context, args, "ListOfDogs", value.ListOfDogs);
+                WriteSet(context, args, "SetOfDogs", value.SetOfDogs);
+                WriteDictionary(context, args, "DictOfDogs", value.DictOfDogs);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Owner CreateInstance() => new Owner();
+
+            protected override void ReadValue(Owner instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Name":
+                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "TopDog":
+                        instance.TopDog = LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Owner instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "ListOfDogs":
+                        instance.ListOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        break;
+                    case "SetOfDogs":
+                        instance.SetOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        break;
+                }
             }
         }
     }

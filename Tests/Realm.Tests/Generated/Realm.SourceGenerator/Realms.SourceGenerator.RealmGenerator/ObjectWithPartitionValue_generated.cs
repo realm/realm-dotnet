@@ -2,6 +2,7 @@
 #nullable enable
 
 using Baas;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions.Sync;
@@ -35,6 +36,13 @@ namespace Realms.Tests.Sync
     [Woven(typeof(ObjectWithPartitionValueObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ObjectWithPartitionValue()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithPartitionValueSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithPartitionValue"/> class.
         /// </summary>
@@ -292,7 +300,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
+        private class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
             public string? Id
             {
@@ -320,7 +328,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
+        private class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
 
@@ -427,6 +435,48 @@ namespace Realms.Tests.Sync
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithPartitionValue>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithPartitionValue value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "Value", value.Value);
+                WriteValue(context, args, "realm_id", value.Partition);
+                WriteValue(context, args, "Guid", value.Guid);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ObjectWithPartitionValue CreateInstance() => new ObjectWithPartitionValue();
+
+            protected override void ReadValue(ObjectWithPartitionValue instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Value":
+                        instance.Value = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "realm_id":
+                        instance.Partition = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Guid":
+                        instance.Guid = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ObjectWithPartitionValue instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

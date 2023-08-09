@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithEmbeddedPropertiesObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithEmbeddedProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ObjectWithEmbeddedProperties()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithEmbeddedPropertiesSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithEmbeddedProperties"/> class.
         /// </summary>
@@ -279,7 +287,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithEmbeddedPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
+        private class ObjectWithEmbeddedPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
         {
             public int PrimaryKey
             {
@@ -329,7 +337,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithEmbeddedPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithEmbeddedPropertiesAccessor
+        private class ObjectWithEmbeddedPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithEmbeddedPropertiesAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithEmbeddedProperties.RealmSchema;
 
@@ -433,6 +441,51 @@ namespace Realms.Tests
                     "DictionaryOfAllTypesObjects" => (IDictionary<string, TValue>)DictionaryOfAllTypesObjects,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ObjectWithEmbeddedPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithEmbeddedProperties>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithEmbeddedProperties value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "PrimaryKey", value.PrimaryKey);
+                WriteValue(context, args, "AllTypesObject", value.AllTypesObject);
+                WriteList(context, args, "ListOfAllTypesObjects", value.ListOfAllTypesObjects);
+                WriteValue(context, args, "RecursiveObject", value.RecursiveObject);
+                WriteDictionary(context, args, "DictionaryOfAllTypesObjects", value.DictionaryOfAllTypesObjects);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ObjectWithEmbeddedProperties CreateInstance() => new ObjectWithEmbeddedProperties();
+
+            protected override void ReadValue(ObjectWithEmbeddedProperties instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "PrimaryKey":
+                        instance.PrimaryKey = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "AllTypesObject":
+                        instance.AllTypesObject = LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>()!.DeserializeById(context);
+                        break;
+                    case "RecursiveObject":
+                        instance.RecursiveObject = LookupSerializer<Realms.Tests.EmbeddedLevel1?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ObjectWithEmbeddedProperties instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "ListOfAllTypesObjects":
+                        instance.ListOfAllTypesObjects.Add(LookupSerializer<Realms.Tests.EmbeddedAllTypesObject>()!.DeserializeById(context)!);
+                        break;
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ListsObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ListsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ListsObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ListsObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ListsObject"/> class.
         /// </summary>
@@ -409,7 +417,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ListsObjectManagedAccessor : Realms.ManagedAccessor, IListsObjectAccessor
+        private class ListsObjectManagedAccessor : Realms.ManagedAccessor, IListsObjectAccessor
         {
             private System.Collections.Generic.IList<char> _charList = null!;
             public System.Collections.Generic.IList<char> CharList
@@ -847,7 +855,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ListsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IListsObjectAccessor
+        private class ListsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IListsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ListsObject.RealmSchema;
 
@@ -979,6 +987,156 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializer<ListsObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ListsObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteList(context, args, "CharList", value.CharList);
+                WriteList(context, args, "ByteList", value.ByteList);
+                WriteList(context, args, "Int16List", value.Int16List);
+                WriteList(context, args, "Int32List", value.Int32List);
+                WriteList(context, args, "Int64List", value.Int64List);
+                WriteList(context, args, "SingleList", value.SingleList);
+                WriteList(context, args, "DoubleList", value.DoubleList);
+                WriteList(context, args, "BooleanList", value.BooleanList);
+                WriteList(context, args, "DecimalList", value.DecimalList);
+                WriteList(context, args, "Decimal128List", value.Decimal128List);
+                WriteList(context, args, "ObjectIdList", value.ObjectIdList);
+                WriteList(context, args, "GuidList", value.GuidList);
+                WriteList(context, args, "StringList", value.StringList);
+                WriteList(context, args, "ByteArrayList", value.ByteArrayList);
+                WriteList(context, args, "DateTimeOffsetList", value.DateTimeOffsetList);
+                WriteList(context, args, "NullableCharList", value.NullableCharList);
+                WriteList(context, args, "NullableByteList", value.NullableByteList);
+                WriteList(context, args, "NullableInt16List", value.NullableInt16List);
+                WriteList(context, args, "NullableInt32List", value.NullableInt32List);
+                WriteList(context, args, "NullableInt64List", value.NullableInt64List);
+                WriteList(context, args, "NullableSingleList", value.NullableSingleList);
+                WriteList(context, args, "NullableDoubleList", value.NullableDoubleList);
+                WriteList(context, args, "NullableBooleanList", value.NullableBooleanList);
+                WriteList(context, args, "NullableDateTimeOffsetList", value.NullableDateTimeOffsetList);
+                WriteList(context, args, "NullableDecimalList", value.NullableDecimalList);
+                WriteList(context, args, "NullableDecimal128List", value.NullableDecimal128List);
+                WriteList(context, args, "NullableObjectIdList", value.NullableObjectIdList);
+                WriteList(context, args, "NullableGuidList", value.NullableGuidList);
+                WriteList(context, args, "NullableStringList", value.NullableStringList);
+                WriteList(context, args, "NullableByteArrayList", value.NullableByteArrayList);
+                WriteList(context, args, "RealmValueList", value.RealmValueList);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ListsObject CreateInstance() => new ListsObject();
+
+            protected override void ReadValue(ListsObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
+            }
+
+            protected override void ReadArrayElement(ListsObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "CharList":
+                        instance.CharList.Add(BsonSerializer.LookupSerializer<char>().Deserialize(context));
+                        break;
+                    case "ByteList":
+                        instance.ByteList.Add(BsonSerializer.LookupSerializer<byte>().Deserialize(context));
+                        break;
+                    case "Int16List":
+                        instance.Int16List.Add(BsonSerializer.LookupSerializer<short>().Deserialize(context));
+                        break;
+                    case "Int32List":
+                        instance.Int32List.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
+                        break;
+                    case "Int64List":
+                        instance.Int64List.Add(BsonSerializer.LookupSerializer<long>().Deserialize(context));
+                        break;
+                    case "SingleList":
+                        instance.SingleList.Add(BsonSerializer.LookupSerializer<float>().Deserialize(context));
+                        break;
+                    case "DoubleList":
+                        instance.DoubleList.Add(BsonSerializer.LookupSerializer<double>().Deserialize(context));
+                        break;
+                    case "BooleanList":
+                        instance.BooleanList.Add(BsonSerializer.LookupSerializer<bool>().Deserialize(context));
+                        break;
+                    case "DecimalList":
+                        instance.DecimalList.Add(BsonSerializer.LookupSerializer<decimal>().Deserialize(context));
+                        break;
+                    case "Decimal128List":
+                        instance.Decimal128List.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context));
+                        break;
+                    case "ObjectIdList":
+                        instance.ObjectIdList.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context));
+                        break;
+                    case "GuidList":
+                        instance.GuidList.Add(BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context));
+                        break;
+                    case "StringList":
+                        instance.StringList.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
+                        break;
+                    case "ByteArrayList":
+                        instance.ByteArrayList.Add(BsonSerializer.LookupSerializer<byte[]>().Deserialize(context));
+                        break;
+                    case "DateTimeOffsetList":
+                        instance.DateTimeOffsetList.Add(BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context));
+                        break;
+                    case "NullableCharList":
+                        instance.NullableCharList.Add(BsonSerializer.LookupSerializer<char?>().Deserialize(context));
+                        break;
+                    case "NullableByteList":
+                        instance.NullableByteList.Add(BsonSerializer.LookupSerializer<byte?>().Deserialize(context));
+                        break;
+                    case "NullableInt16List":
+                        instance.NullableInt16List.Add(BsonSerializer.LookupSerializer<short?>().Deserialize(context));
+                        break;
+                    case "NullableInt32List":
+                        instance.NullableInt32List.Add(BsonSerializer.LookupSerializer<int?>().Deserialize(context));
+                        break;
+                    case "NullableInt64List":
+                        instance.NullableInt64List.Add(BsonSerializer.LookupSerializer<long?>().Deserialize(context));
+                        break;
+                    case "NullableSingleList":
+                        instance.NullableSingleList.Add(BsonSerializer.LookupSerializer<float?>().Deserialize(context));
+                        break;
+                    case "NullableDoubleList":
+                        instance.NullableDoubleList.Add(BsonSerializer.LookupSerializer<double?>().Deserialize(context));
+                        break;
+                    case "NullableBooleanList":
+                        instance.NullableBooleanList.Add(BsonSerializer.LookupSerializer<bool?>().Deserialize(context));
+                        break;
+                    case "NullableDateTimeOffsetList":
+                        instance.NullableDateTimeOffsetList.Add(BsonSerializer.LookupSerializer<System.DateTimeOffset?>().Deserialize(context));
+                        break;
+                    case "NullableDecimalList":
+                        instance.NullableDecimalList.Add(BsonSerializer.LookupSerializer<decimal?>().Deserialize(context));
+                        break;
+                    case "NullableDecimal128List":
+                        instance.NullableDecimal128List.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128?>().Deserialize(context));
+                        break;
+                    case "NullableObjectIdList":
+                        instance.NullableObjectIdList.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context));
+                        break;
+                    case "NullableGuidList":
+                        instance.NullableGuidList.Add(BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context));
+                        break;
+                    case "NullableStringList":
+                        instance.NullableStringList.Add(BsonSerializer.LookupSerializer<string?>().Deserialize(context));
+                        break;
+                    case "NullableByteArrayList":
+                        instance.NullableByteArrayList.Add(BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context));
+                        break;
+                    case "RealmValueList":
+                        instance.RealmValueList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                        break;
+                }
             }
         }
     }

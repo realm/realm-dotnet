@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -2124,6 +2125,8 @@ namespace Realms.Tests.Sync
                 var result = await collection.FindOneAsync();
                 Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
                 Assert.That(result.StringValue, Is.EqualTo(inserted[0].StringValue));
+                Assert.That(result.MappedLink!.Id, Is.EqualTo(inserted[1].Id));
+                Assert.That(result.MappedList[0].Id, Is.EqualTo(inserted[2].Id));
             });
         }
 
@@ -2136,6 +2139,9 @@ namespace Realms.Tests.Sync
                     StringValue = $"Doc #{i}",
                 })
                 .ToArray();
+
+            docs[0].MappedLink = docs[1];
+            docs[0].MappedList.Add(docs[2]);
 
             await collection.InsertManyAsync(docs);
 
@@ -2199,6 +2205,13 @@ namespace Realms.Tests.Sync
             where T : class, IRealmObject
         {
             var user = await GetUserAsync();
+
+            // Use sync to create the schema/rules
+            var config = GetIntegrationConfig(user);
+            config.Schema = new[] { typeof(T) };
+            using var realm = await GetRealmAsync(config);
+            await WaitForUploadAsync(realm);
+
             var client = user.GetMongoClient(ServiceName); // TODO: this should be provided by Sync
             var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName()); // TODO: this should be provided by Sync
             var collection = db.GetCollection<T>();

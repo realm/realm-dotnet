@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -27,6 +28,13 @@ namespace Realms.Tests.Database
         [Woven(typeof(CompanyObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class Company : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
+
+            [Realms.Preserve]
+            static Company()
+            {
+                Realms.Serialization.RealmObjectSerializer.Register(new CompanySerializer());
+            }
+
             /// <summary>
             /// Defines the schema for the <see cref="Company"/> class.
             /// </summary>
@@ -276,7 +284,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CompanyManagedAccessor : Realms.ManagedAccessor, ICompanyAccessor
+            private class CompanyManagedAccessor : Realms.ManagedAccessor, ICompanyAccessor
             {
                 public MongoDB.Bson.ObjectId Id
                 {
@@ -312,7 +320,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CompanyUnmanagedAccessor : Realms.UnmanagedAccessor, ICompanyAccessor
+            private class CompanyUnmanagedAccessor : Realms.UnmanagedAccessor, ICompanyAccessor
             {
                 public override ObjectSchema ObjectSchema => Company.RealmSchema;
 
@@ -406,6 +414,50 @@ namespace Realms.Tests.Database
                 public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
                 {
                     throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                }
+            }
+
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+            private class CompanySerializer : Realms.Serialization.RealmObjectSerializer<Company>
+            {
+                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Company value)
+                {
+                    context.Writer.WriteStartDocument();
+
+                    WriteValue(context, args, "_id", value.Id);
+                    WriteValue(context, args, "Name", value.Name);
+                    WriteValue(context, args, "Location", value.Location);
+                    WriteList(context, args, "Offices", value.Offices);
+
+                    context.Writer.WriteEndDocument();
+                }
+
+                protected override Company CreateInstance() => new Company();
+
+                protected override void ReadValue(Company instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "_id":
+                            instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                            break;
+                        case "Name":
+                            instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                            break;
+                        case "Location":
+                            instance.Location = LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>()!.DeserializeById(context);
+                            break;
+                    }
+                }
+
+                protected override void ReadArrayElement(Company instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "Offices":
+                            instance.Offices.Add(LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>()!.DeserializeById(context)!);
+                            break;
+                    }
                 }
             }
         }

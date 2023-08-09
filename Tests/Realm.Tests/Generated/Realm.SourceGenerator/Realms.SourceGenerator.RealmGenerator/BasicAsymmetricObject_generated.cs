@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Realms;
@@ -28,6 +29,13 @@ namespace Realms.Tests.Sync
     [Woven(typeof(BasicAsymmetricObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class BasicAsymmetricObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static BasicAsymmetricObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new BasicAsymmetricObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="BasicAsymmetricObject"/> class.
         /// </summary>
@@ -267,7 +275,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class BasicAsymmetricObjectManagedAccessor : Realms.ManagedAccessor, IBasicAsymmetricObjectAccessor
+        private class BasicAsymmetricObjectManagedAccessor : Realms.ManagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -283,7 +291,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class BasicAsymmetricObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBasicAsymmetricObjectAccessor
+        private class BasicAsymmetricObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public override ObjectSchema ObjectSchema => BasicAsymmetricObject.RealmSchema;
 
@@ -360,6 +368,40 @@ namespace Realms.Tests.Sync
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class BasicAsymmetricObjectSerializer : Realms.Serialization.RealmObjectSerializer<BasicAsymmetricObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, BasicAsymmetricObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "PartitionLike", value.PartitionLike);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override BasicAsymmetricObject CreateInstance() => new BasicAsymmetricObject();
+
+            protected override void ReadValue(BasicAsymmetricObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "PartitionLike":
+                        instance.PartitionLike = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(BasicAsymmetricObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

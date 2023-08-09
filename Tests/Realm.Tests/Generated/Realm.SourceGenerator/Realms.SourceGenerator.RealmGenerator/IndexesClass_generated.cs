@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(IndexesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IndexesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static IndexesClass()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new IndexesClassSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="IndexesClass"/> class.
         /// </summary>
@@ -304,7 +312,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IndexesClassManagedAccessor : Realms.ManagedAccessor, IIndexesClassAccessor
+        private class IndexesClassManagedAccessor : Realms.ManagedAccessor, IIndexesClassAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -356,7 +364,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IndexesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexesClassAccessor
+        private class IndexesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexesClassAccessor
         {
             public override ObjectSchema ObjectSchema => IndexesClass.RealmSchema;
 
@@ -523,6 +531,64 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class IndexesClassSerializer : Realms.Serialization.RealmObjectSerializer<IndexesClass>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexesClass value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "StringFts", value.StringFts);
+                WriteValue(context, args, "StringGeneral", value.StringGeneral);
+                WriteValue(context, args, "StringDefault", value.StringDefault);
+                WriteValue(context, args, "StringNone", value.StringNone);
+                WriteValue(context, args, "IntGeneral", value.IntGeneral);
+                WriteValue(context, args, "IntDefault", value.IntDefault);
+                WriteValue(context, args, "IntNone", value.IntNone);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override IndexesClass CreateInstance() => new IndexesClass();
+
+            protected override void ReadValue(IndexesClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "StringFts":
+                        instance.StringFts = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "StringGeneral":
+                        instance.StringGeneral = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "StringDefault":
+                        instance.StringDefault = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "StringNone":
+                        instance.StringNone = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "IntGeneral":
+                        instance.IntGeneral = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "IntDefault":
+                        instance.IntDefault = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "IntNone":
+                        instance.IntNone = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(IndexesClass instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

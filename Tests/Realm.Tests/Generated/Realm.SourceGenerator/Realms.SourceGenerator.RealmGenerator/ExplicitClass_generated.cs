@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(ExplicitClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ExplicitClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ExplicitClass()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ExplicitClassSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ExplicitClass"/> class.
         /// </summary>
@@ -255,7 +263,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ExplicitClassManagedAccessor : Realms.ManagedAccessor, IExplicitClassAccessor
+        private class ExplicitClassManagedAccessor : Realms.ManagedAccessor, IExplicitClassAccessor
         {
             public int Foo
             {
@@ -265,7 +273,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ExplicitClassUnmanagedAccessor : Realms.UnmanagedAccessor, IExplicitClassAccessor
+        private class ExplicitClassUnmanagedAccessor : Realms.UnmanagedAccessor, IExplicitClassAccessor
         {
             public override ObjectSchema ObjectSchema => ExplicitClass.RealmSchema;
 
@@ -323,6 +331,36 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializer<ExplicitClass>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ExplicitClass value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Foo", value.Foo);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ExplicitClass CreateInstance() => new ExplicitClass();
+
+            protected override void ReadValue(ExplicitClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Foo":
+                        instance.Foo = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ExplicitClass instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

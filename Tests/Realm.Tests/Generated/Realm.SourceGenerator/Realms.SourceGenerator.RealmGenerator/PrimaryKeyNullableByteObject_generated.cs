@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyNullableByteObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableByteObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static PrimaryKeyNullableByteObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyNullableByteObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyNullableByteObject"/> class.
         /// </summary>
@@ -257,7 +265,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyNullableByteObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableByteObjectAccessor
+        private class PrimaryKeyNullableByteObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableByteObjectAccessor
         {
             public byte? Id
             {
@@ -267,7 +275,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyNullableByteObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableByteObjectAccessor
+        private class PrimaryKeyNullableByteObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableByteObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableByteObject.RealmSchema;
 
@@ -329,6 +337,36 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class PrimaryKeyNullableByteObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyNullableByteObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyNullableByteObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override PrimaryKeyNullableByteObject CreateInstance() => new PrimaryKeyNullableByteObject();
+
+            protected override void ReadValue(PrimaryKeyNullableByteObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<byte?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(PrimaryKeyNullableByteObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

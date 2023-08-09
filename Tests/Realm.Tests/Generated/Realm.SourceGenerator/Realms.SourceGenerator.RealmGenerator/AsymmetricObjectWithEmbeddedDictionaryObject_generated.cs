@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Realms;
@@ -28,6 +29,13 @@ namespace Realms.Tests.Sync
     [Woven(typeof(AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AsymmetricObjectWithEmbeddedDictionaryObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static AsymmetricObjectWithEmbeddedDictionaryObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new AsymmetricObjectWithEmbeddedDictionaryObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/> class.
         /// </summary>
@@ -269,7 +277,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class AsymmetricObjectWithEmbeddedDictionaryObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
+        private class AsymmetricObjectWithEmbeddedDictionaryObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -293,7 +301,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
+        private class AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedDictionaryObject.RealmSchema;
 
@@ -361,6 +369,37 @@ namespace Realms.Tests.Sync
                     "EmbeddedDictionaryObject" => (IDictionary<string, TValue>)EmbeddedDictionaryObject,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class AsymmetricObjectWithEmbeddedDictionaryObjectSerializer : Realms.Serialization.RealmObjectSerializer<AsymmetricObjectWithEmbeddedDictionaryObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AsymmetricObjectWithEmbeddedDictionaryObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteDictionary(context, args, "EmbeddedDictionaryObject", value.EmbeddedDictionaryObject);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override AsymmetricObjectWithEmbeddedDictionaryObject CreateInstance() => new AsymmetricObjectWithEmbeddedDictionaryObject();
+
+            protected override void ReadValue(AsymmetricObjectWithEmbeddedDictionaryObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(AsymmetricObjectWithEmbeddedDictionaryObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

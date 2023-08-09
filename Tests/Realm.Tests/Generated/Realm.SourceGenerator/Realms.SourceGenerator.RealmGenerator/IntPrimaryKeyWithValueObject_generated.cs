@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(IntPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IntPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static IntPrimaryKeyWithValueObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new IntPrimaryKeyWithValueObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="IntPrimaryKeyWithValueObject"/> class.
         /// </summary>
@@ -264,7 +272,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IntPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
+        private class IntPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
         {
             public int Id
             {
@@ -280,7 +288,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IntPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
+        private class IntPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IntPrimaryKeyWithValueObject.RealmSchema;
 
@@ -357,6 +365,40 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class IntPrimaryKeyWithValueObjectSerializer : Realms.Serialization.RealmObjectSerializer<IntPrimaryKeyWithValueObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPrimaryKeyWithValueObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "StringValue", value.StringValue);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override IntPrimaryKeyWithValueObject CreateInstance() => new IntPrimaryKeyWithValueObject();
+
+            protected override void ReadValue(IntPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "StringValue":
+                        instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(IntPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

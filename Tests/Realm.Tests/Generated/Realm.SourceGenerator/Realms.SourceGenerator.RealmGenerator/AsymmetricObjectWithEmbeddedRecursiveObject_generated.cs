@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Realms;
@@ -28,6 +29,13 @@ namespace Realms.Tests.Sync
     [Woven(typeof(AsymmetricObjectWithEmbeddedRecursiveObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AsymmetricObjectWithEmbeddedRecursiveObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static AsymmetricObjectWithEmbeddedRecursiveObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new AsymmetricObjectWithEmbeddedRecursiveObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="AsymmetricObjectWithEmbeddedRecursiveObject"/> class.
         /// </summary>
@@ -264,7 +272,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+        private class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -280,7 +288,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+        private class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
 
@@ -357,6 +365,40 @@ namespace Realms.Tests.Sync
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class AsymmetricObjectWithEmbeddedRecursiveObjectSerializer : Realms.Serialization.RealmObjectSerializer<AsymmetricObjectWithEmbeddedRecursiveObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AsymmetricObjectWithEmbeddedRecursiveObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "RecursiveObject", value.RecursiveObject);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override AsymmetricObjectWithEmbeddedRecursiveObject CreateInstance() => new AsymmetricObjectWithEmbeddedRecursiveObject();
+
+            protected override void ReadValue(AsymmetricObjectWithEmbeddedRecursiveObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "RecursiveObject":
+                        instance.RecursiveObject = LookupSerializer<Realms.Tests.EmbeddedLevel1?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(AsymmetricObjectWithEmbeddedRecursiveObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

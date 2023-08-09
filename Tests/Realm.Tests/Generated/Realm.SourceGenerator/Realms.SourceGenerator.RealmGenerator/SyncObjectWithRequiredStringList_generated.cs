@@ -2,6 +2,7 @@
 #nullable enable
 
 using Baas;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions.Sync;
@@ -35,6 +36,13 @@ namespace Realms.Tests.Sync
     [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SyncObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static SyncObjectWithRequiredStringList()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new SyncObjectWithRequiredStringListSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="SyncObjectWithRequiredStringList"/> class.
         /// </summary>
@@ -276,7 +284,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
+        private class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public string? Id
             {
@@ -300,7 +308,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
+        private class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
 
@@ -368,6 +376,42 @@ namespace Realms.Tests.Sync
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<SyncObjectWithRequiredStringList>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SyncObjectWithRequiredStringList value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteList(context, args, "Strings", value.Strings);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override SyncObjectWithRequiredStringList CreateInstance() => new SyncObjectWithRequiredStringList();
+
+            protected override void ReadValue(SyncObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(SyncObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Strings":
+                        instance.Strings.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
+                        break;
+                }
             }
         }
     }

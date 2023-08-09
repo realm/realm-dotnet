@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -26,6 +27,7 @@ using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
+using Realms.Serialization;
 using Realms.Sync;
 
 namespace Realms.Helpers
@@ -141,6 +143,7 @@ namespace Realms.Helpers
             public IBsonSerializer? GetSerializer(Type type) => type switch
             {
                 _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
+                _ when type == typeof(Decimal128) => new Decimal128Serializer(BsonType.Decimal128),
                 _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),
                 _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.String),
                 _ when type == typeof(object) => new ObjectSerializer(
@@ -148,7 +151,9 @@ namespace Realms.Helpers
                     GuidRepresentation.Standard,
                     allowedSerializationTypes: _ => true,
                     allowedDeserializationTypes: t => ObjectSerializer.DefaultAllowedTypes(t) || IsAnonymousType(t)),
-                _ => null
+                _ when type.IsClosedGeneric(typeof(RealmInteger<>), out var typeArgs) => CreateRealmIntegerSerializer(typeArgs.Single()),
+                _ when type == typeof(RealmValue) => new RealmValueSerializer(),
+                _ => RealmObjectSerializer.LookupSerializer(type)
             };
 
             // TODO: remove this when https://github.com/mongodb/mongo-csharp-driver/commit/e0c14c80e6c31f337439d2915b5dd90fe38f9562
@@ -157,6 +162,113 @@ namespace Realms.Helpers
                 type.GetCustomAttributes(false).Any(x => x is CompilerGeneratedAttribute) &&
                 type.IsGenericType &&
                 type.Name.Contains("Anon");
+
+            private static IBsonSerializer CreateRealmIntegerSerializer(Type type)
+            {
+                var serializerType = typeof(RealmIntegerSerializer<>).MakeGenericType(type);
+                return (IBsonSerializer)Activator.CreateInstance(serializerType);
+            }
+        }
+
+        [Preserve(AllMembers = true)]
+        private class RealmIntegerSerializer<T> :
+            IBsonSerializer<RealmInteger<T>>
+            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
+        {
+            public Type ValueType => typeof(RealmInteger<T>);
+
+            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                => Deserialize(context, args);
+
+            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+            {
+                var intValue = value switch
+                {
+                    RealmInteger<T> ri => (T)ri,
+                    T => value,
+                    _ => throw new NotSupportedException($"Unexpected RealmInteger type: got {value.GetType()} but expected {ValueType}"),
+                };
+
+                BsonSerializer.LookupSerializer<T>().Serialize(context, args, intValue);
+            }
+
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmInteger<T> value)
+            {
+                BsonSerializer.LookupSerializer<T>().Serialize(context, args, value);
+            }
+
+            public RealmInteger<T> Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                => BsonSerializer.LookupSerializer<T>().Deserialize(context, args);
+        }
+
+        [Preserve(AllMembers = true)]
+        private class RealmValueSerializer : IBsonSerializer<RealmValue>
+        {
+            public Type ValueType => typeof(RealmValue);
+
+            public RealmValue Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+            {
+                var reader = context.Reader;
+                switch (reader.CurrentBsonType)
+                {
+                    case BsonType.Null:
+                        reader.ReadNull();
+                        return RealmValue.Null;
+                    case BsonType.Double:
+                        return reader.ReadDouble();
+                    case BsonType.String:
+                        var value = reader.ReadString();
+                        if (DateTimeOffset.TryParseExact(value, "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date))
+                        {
+                            return date;
+                        }
+
+                        return value;
+                    case BsonType.Document:
+                        throw new NotImplementedException("TODO");
+                    case BsonType.Binary:
+                        var binary = reader.ReadBinaryData();
+                        if (binary.SubType == BsonBinarySubType.UuidStandard)
+                        {
+                            return GuidConverter.FromBytes(binary.Bytes, GuidRepresentation.Standard);
+                        }
+
+                        return binary.Bytes;
+                    case BsonType.ObjectId:
+                        return reader.ReadObjectId();
+                    case BsonType.Boolean:
+                        return reader.ReadBoolean();
+                    case BsonType.DateTime:
+                        return DateTimeOffset.FromUnixTimeMilliseconds(reader.ReadDateTime());
+                    case BsonType.Int32:
+                        return reader.ReadInt32();
+                    case BsonType.Int64:
+                        return reader.ReadInt64();
+                    case BsonType.Decimal128:
+                        return reader.ReadDecimal128();
+                    default:
+                        throw new NotSupportedException($"Can't deserialize RealmValue from json type: {reader.CurrentBsonType}.");
+                }
+            }
+
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
+            {
+                if (value.Type == RealmValueType.Null)
+                {
+                    context.Writer.WriteNull();
+                }
+                else
+                {
+                    var boxed = value.AsAny()!;
+                    BsonSerializer.LookupSerializer(boxed.GetType()).Serialize(context, args, boxed);
+                }
+            }
+
+            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+                => Serialize(context, args, (RealmValue)value);
+
+            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                => Deserialize(context, args);
         }
     }
 }

@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ClassWithUnqueryableMembersObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ClassWithUnqueryableMembers()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ClassWithUnqueryableMembersSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ClassWithUnqueryableMembers"/> class.
         /// </summary>
@@ -284,7 +292,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
+        private class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
         {
             public string? RealPropertyToSatisfyWeaver
             {
@@ -334,7 +342,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ClassWithUnqueryableMembersUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
+        private class ClassWithUnqueryableMembersUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
         {
             public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
 
@@ -431,6 +439,50 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ClassWithUnqueryableMembersSerializer : Realms.Serialization.RealmObjectSerializer<ClassWithUnqueryableMembers>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ClassWithUnqueryableMembers value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "RealPropertyToSatisfyWeaver", value.RealPropertyToSatisfyWeaver);
+                WriteValue(context, args, "RealmObjectProperty", value.RealmObjectProperty);
+                WriteList(context, args, "RealmListProperty", value.RealmListProperty);
+                WriteValue(context, args, "FirstName", value.FirstName);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ClassWithUnqueryableMembers CreateInstance() => new ClassWithUnqueryableMembers();
+
+            protected override void ReadValue(ClassWithUnqueryableMembers instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RealPropertyToSatisfyWeaver":
+                        instance.RealPropertyToSatisfyWeaver = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "RealmObjectProperty":
+                        instance.RealmObjectProperty = LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
+                        break;
+                    case "FirstName":
+                        instance.FirstName = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ClassWithUnqueryableMembers instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RealmListProperty":
+                        instance.RealmListProperty.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        break;
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -26,6 +27,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(OnManagedTestClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OnManagedTestClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static OnManagedTestClass()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new OnManagedTestClassSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="OnManagedTestClass"/> class.
         /// </summary>
@@ -275,7 +283,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
+        private class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
         {
             public int Id
             {
@@ -305,7 +313,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
+        private class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
         {
             public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;
 
@@ -388,6 +396,46 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class OnManagedTestClassSerializer : Realms.Serialization.RealmObjectSerializer<OnManagedTestClass>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OnManagedTestClass value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "RelatedObject", value.RelatedObject);
+                WriteList(context, args, "RelatedCollection", value.RelatedCollection);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override OnManagedTestClass CreateInstance() => new OnManagedTestClass();
+
+            protected override void ReadValue(OnManagedTestClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "RelatedObject":
+                        instance.RelatedObject = LookupSerializer<Realms.Tests.Database.OnManagedTestClass?>()!.DeserializeById(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(OnManagedTestClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RelatedCollection":
+                        instance.RelatedCollection.Add(LookupSerializer<Realms.Tests.Database.OnManagedTestClass>()!.DeserializeById(context)!);
+                        break;
+                }
             }
         }
     }

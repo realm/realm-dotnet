@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ContainerObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ContainerObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ContainerObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ContainerObject"/> class.
         /// </summary>
@@ -259,7 +267,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
+        private class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
         {
             private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _items = null!;
             public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items
@@ -277,7 +285,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
+        private class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ContainerObject.RealmSchema;
 
@@ -319,6 +327,36 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ContainerObjectSerializer : Realms.Serialization.RealmObjectSerializer<ContainerObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ContainerObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteList(context, args, "Items", value.Items);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ContainerObject CreateInstance() => new ContainerObject();
+
+            protected override void ReadValue(ContainerObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
+            }
+
+            protected override void ReadArrayElement(ContainerObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Items":
+                        instance.Items.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        break;
+                }
             }
         }
     }

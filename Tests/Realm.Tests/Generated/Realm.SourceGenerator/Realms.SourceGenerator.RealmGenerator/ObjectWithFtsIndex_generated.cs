@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithFtsIndexObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithFtsIndex : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ObjectWithFtsIndex()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithFtsIndexSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithFtsIndex"/> class.
         /// </summary>
@@ -269,7 +277,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithFtsIndexManagedAccessor : Realms.ManagedAccessor, IObjectWithFtsIndexAccessor
+        private class ObjectWithFtsIndexManagedAccessor : Realms.ManagedAccessor, IObjectWithFtsIndexAccessor
         {
             public string Title
             {
@@ -291,7 +299,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithFtsIndexUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithFtsIndexAccessor
+        private class ObjectWithFtsIndexUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithFtsIndexAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithFtsIndex.RealmSchema;
 
@@ -383,6 +391,44 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithFtsIndex>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithFtsIndex value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Title", value.Title);
+                WriteValue(context, args, "Summary", value.Summary);
+                WriteValue(context, args, "NullableSummary", value.NullableSummary);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ObjectWithFtsIndex CreateInstance() => new ObjectWithFtsIndex();
+
+            protected override void ReadValue(ObjectWithFtsIndex instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Title":
+                        instance.Title = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "Summary":
+                        instance.Summary = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "NullableSummary":
+                        instance.NullableSummary = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ObjectWithFtsIndex instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }

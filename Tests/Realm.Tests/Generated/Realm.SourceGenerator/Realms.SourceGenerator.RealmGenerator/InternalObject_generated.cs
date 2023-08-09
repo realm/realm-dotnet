@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(InternalObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class InternalObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static InternalObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new InternalObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="InternalObject"/> class.
         /// </summary>
@@ -233,7 +241,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class InternalObjectManagedAccessor : Realms.ManagedAccessor, IInternalObjectAccessor
+        private class InternalObjectManagedAccessor : Realms.ManagedAccessor, IInternalObjectAccessor
         {
             public int IntProperty
             {
@@ -249,7 +257,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class InternalObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IInternalObjectAccessor
+        private class InternalObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IInternalObjectAccessor
         {
             public override ObjectSchema ObjectSchema => InternalObject.RealmSchema;
 
@@ -322,6 +330,40 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class InternalObjectSerializer : Realms.Serialization.RealmObjectSerializer<InternalObject>
+        {
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InternalObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "IntProperty", value.IntProperty);
+                WriteValue(context, args, "StringProperty", value.StringProperty);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override InternalObject CreateInstance() => new InternalObject();
+
+            protected override void ReadValue(InternalObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "IntProperty":
+                        instance.IntProperty = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "StringProperty":
+                        instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(InternalObject instance, string name, BsonDeserializationContext context)
+            {
+                // No Realm properties to deserialize
             }
         }
     }
