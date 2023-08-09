@@ -189,7 +189,7 @@ namespace Realms.Tests.Sync
                     null
                 };
 
-                var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos!))!;
+                var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos!));
                 Assert.That(ex.ParamName, Is.EqualTo("docs"));
                 Assert.That(ex.Message, Does.Contain("null elements"));
             });
@@ -328,11 +328,6 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertSomeData(collection, 3);
 
                 var upsertId = ObjectId.GenerateNewId();
-
-                var test = new BsonDocument
-                {
-                    { "foo", upsertId }
-                }.ToJson();
 
                 var update = BsonDocument.Parse(@"{
                     $set: {
@@ -660,7 +655,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+                await InsertSomeData(collection, 3);
 
                 var result = await collection.DeleteManyAsync();
 
@@ -737,7 +732,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+                await InsertSomeData(collection, 3);
 
                 var result = await collection.CountAsync();
                 Assert.That(result, Is.EqualTo(3));
@@ -751,7 +746,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+                await InsertSomeData(collection, 3);
 
                 var filter = new BsonDocument
                 {
@@ -776,7 +771,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+                await InsertSomeData(collection, 3);
 
                 var filter = new BsonDocument
                 {
@@ -1124,15 +1119,14 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                object projection;
 #if UNITY
-                projection = new BsonDocument
+                var projection = new BsonDocument
                 {
                     { "_id",  0 },
                     { "LongValue", 1 }
                 };
 #else
-                projection = new
+                var projection = new
                 {
                     _id = 0,
                     LongValue = 1
@@ -1159,18 +1153,16 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                object projection;
-                object sort;
 #if UNITY
-                sort = new BsonDocument { { "LongValue", -1 } };
-                projection = new BsonDocument
+                var sort = new BsonDocument { { "LongValue", -1 } };
+                var projection = new BsonDocument
                 {
                     { "_id", 1 },
                     { "LongValue", 1 }
                 };
 #else
-                sort = new { LongValue = -1 };
-                projection = new
+                var sort = new { LongValue = -1 };
+                var projection = new
                 {
                     _id = 1,
                     LongValue = 1
@@ -1206,19 +1198,17 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                object projection;
-                object sort;
 #if UNITY
-                sort = new BsonDocument { { "LongValue", -1 } };
-                projection = new BsonDocument
+                var sort = new BsonDocument { { "LongValue", -1 } };
+                var projection = new BsonDocument
                 {
                     { "_id", 0 },
                     { "LongValue", 1 },
                     { "StringValue", 1 },
                 };
 #else
-                sort = new { LongValue = -1 };
-                projection = new
+                var sort = new { LongValue = -1 };
+                var projection = new
                 {
                     _id = 0,
                     LongValue = 1,
@@ -2123,6 +2113,38 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void MongoCollection_FindOne_Remapped()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<RemappedTypeObject>();
+                var inserted = await InsertRemappedData(collection, 3);
+
+                var result = await collection.FindOneAsync();
+                Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
+                Assert.That(result.StringValue, Is.EqualTo(inserted[0].StringValue));
+            });
+        }
+
+        private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection, int documentCount)
+        {
+            var docs = Enumerable.Range(0, documentCount)
+                .Select(i => new RemappedTypeObject
+                {
+                    Id = ObjectId.GenerateNewId().GetHashCode(),
+                    StringValue = $"Doc #{i}",
+                })
+                .ToArray();
+
+            await collection.InsertManyAsync(docs);
+
+            var remoteCount = await collection.CountAsync();
+            Assert.That(remoteCount, Is.EqualTo(documentCount));
+
+            return docs;
+        }
+
         private static async Task<Foo[]> InsertSomeData(MongoClient.Collection<Foo> collection, int documentCount)
         {
             var docs = Enumerable.Range(0, documentCount)
@@ -2173,6 +2195,19 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
+        private async Task<MongoClient.Collection<T>> GetCollection<T>()
+            where T : class, IRealmObject
+        {
+            var user = await GetUserAsync();
+            var client = user.GetMongoClient(ServiceName); // TODO: this should be provided by Sync
+            var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName()); // TODO: this should be provided by Sync
+            var collection = db.GetCollection<T>();
+
+            await collection.DeleteManyAsync();
+
+            return collection;
+        }
+
         private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
         {
             var user = await GetUserAsync();
@@ -2214,12 +2249,10 @@ namespace Realms.Tests.Sync
                 LongValue = longValue;
             }
 
-            public static Foo WithoutId(string? stringValue, long longValue)
+            public static Foo WithoutId(string? stringValue, long longValue) => new(stringValue, longValue)
             {
-                var result = new Foo(stringValue, longValue);
-                result.Id = default;
-                return result;
-            }
+                Id = default
+            };
 
             public override bool Equals(object? obj) =>
                 (obj is Foo foo) &&

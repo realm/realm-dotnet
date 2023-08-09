@@ -17,14 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Realms.Helpers;
+using Realms.Schema;
 
 namespace Realms.Sync
 {
@@ -75,6 +78,8 @@ namespace Realms.Sync
         /// </summary>
         public class Database
         {
+            private static readonly ConcurrentDictionary<Type, ObjectSchema> _schemas = new();
+
             /// <summary>
             /// Gets the <see cref="MongoClient"/> that manages this database.
             /// </summary>
@@ -123,6 +128,16 @@ namespace Realms.Sync
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
                 return new Collection<TDocument>(this, name);
+            }
+
+            public Collection<TDocument> GetCollection<TDocument>()
+                where TDocument : class, IRealmObject
+            {
+                var schema = _schemas.GetOrAdd(typeof(TDocument),
+                    type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
+                        ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
+
+                return new Collection<TDocument>(this, schema.Name);
             }
         }
 
