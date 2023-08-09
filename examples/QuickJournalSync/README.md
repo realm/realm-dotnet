@@ -376,5 +376,3 @@ The default client handler is `RecoverOrDiscardUnsyncedChangesHandler` that atte
 #### Simulate client reset
 
 The easiest way to simulate a client reset is to terminate and re-enable Device Sync, so clicking on the *Simulate Client Reset* button will just show a dialog reminding of this possibility.
-
-

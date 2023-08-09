@@ -17,9 +17,10 @@ namespace QuickJournalSync.Models
 
         public string? Body { get; set; }
 
-        public IList<string> Tags { get; } = null!;
-
         public DateTimeOffset CreatedDate { get; set; }
+
+        // This is only used to simulate a subscription error at the moment.
+        public IList<string> Tags { get; } = null!;
 
         public JournalEntry()
         {
