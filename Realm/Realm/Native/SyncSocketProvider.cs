@@ -146,7 +146,6 @@ namespace Realms.Native
             var builder = new UriBuilder();
             builder.Scheme = endpoint.is_ssl ? "wss" : "ws";
             builder.Host = endpoint.address;
-            builder.Host += "123";
             builder.Port = endpoint.port;
             if (endpoint.path)
             {
