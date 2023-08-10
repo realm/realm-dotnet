@@ -34,6 +34,10 @@ namespace Realms.Sync
     {
         private readonly SessionHandle _handle;
 
+        internal event EventHandler? Subscribed;
+
+        internal event EventHandler? Unsubscribed;
+
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler? _propertyChanged;
 
@@ -64,6 +68,7 @@ namespace Realms.Sync
                 if (_propertyChanged == null)
                 {
                     Handle.SubscribeNotifications(this);
+                    Subscribed?.Invoke(this, EventArgs.Empty);
                 }
 
                 _propertyChanged += value;
@@ -75,6 +80,7 @@ namespace Realms.Sync
 
                 if (_propertyChanged == null)
                 {
+                    Unsubscribed?.Invoke(this, EventArgs.Empty);
                     Handle.UnsubscribeNotifications();
                 }
             }
@@ -209,6 +215,7 @@ namespace Realms.Sync
                 }
 
                 _propertyChanged = null;
+                Unsubscribed?.Invoke(this, EventArgs.Empty);
                 _handle.Close();
             }
         }
