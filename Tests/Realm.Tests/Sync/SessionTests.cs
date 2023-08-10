@@ -1052,6 +1052,38 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void AnotherTest()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                WeakReference weakSessionRef = null!;
+
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+
+                weakSessionRef = new Func<WeakReference>(() => {
+                    return new WeakReference(realm.SyncSession);
+                })();
+
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+
+                realm.SyncSession.PropertyChanged += HandlePropertyChanged;
+
+                GC.Collect();
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+
+                realm.SyncSession.PropertyChanged -= HandlePropertyChanged;
+
+                GC.Collect();
+                Assert.That(weakSessionRef.IsAlive, Is.False);  //TODO This fails
+            });
+
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+            }
+        }
+
+        [Test]
         public void Session_NotificationToken_Freed_When_Close_Realm()
         {
             WeakReference weakNotificationTokenRef = null!;
