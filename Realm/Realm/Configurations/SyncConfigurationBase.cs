@@ -57,7 +57,7 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="RecoverOrDiscardUnsyncedChangesHandler"/>
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="RecoverOrDiscardUnsyncedChangesHandler"/>,
         /// that attempts to automatically recover any unsynchronized changes and, if that fails, falls back to the discarding unsynced changes.
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
