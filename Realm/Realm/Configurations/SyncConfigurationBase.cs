@@ -57,14 +57,14 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="RecoverUnsyncedChangesHandler"/>
-        /// with fallback to discarding unsynced local changes.
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="RecoverOrDiscardUnsyncedChangesHandler"/>
+        /// that attempts to automatically recover any unsynchronized changes and, if that fails, falls back to the discarding unsynced changes.
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
         /// <remarks>
-        /// Supported values are instances of <see cref="ManualRecoveryHandler"/>, <see cref="DiscardUnsyncedChangesHandler"/> and
-        /// <see cref="RecoverUnsyncedChangesHandler"/>.
-        /// The default <see cref="RecoverUnsyncedChangesHandler"/> will have no custom actions set for the before and after callbacks.
+        /// Supported values are instances of <see cref="RecoverOrDiscardUnsyncedChangesHandler"/>, <see cref="RecoverUnsyncedChangesHandler"/>,
+        /// <see cref="DiscardUnsyncedChangesHandler"/> and <see cref="ManualRecoveryHandler"/>.
+        /// The default <see cref="RecoverOrDiscardUnsyncedChangesHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>
         /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public virtual ClientResetHandlerBase ClientResetHandler
