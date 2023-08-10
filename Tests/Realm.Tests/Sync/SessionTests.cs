@@ -1019,12 +1019,12 @@ namespace Realms.Tests.Sync
                 session.PropertyChanged += HandlePropertyChanged;
             });
 
-            static void HandlePropertyChanged(object sender, EventArgs e)
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
             {
             }
 
             GC.Collect();
-            Assert.That(weakSessionRef.IsAlive, Is.False);
+            Assert.That(weakSessionRef.IsAlive, Is.True);
         }
 
         [Test]
@@ -1043,7 +1043,7 @@ namespace Realms.Tests.Sync
                 session.PropertyChanged -= HandlePropertyChanged;
             });
 
-            static void HandlePropertyChanged(object sender, EventArgs e)
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
             {
             }
 
