@@ -1005,7 +1005,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_Free_Instance_Even_With_PropertyChanged_Subscribers()
+        public void Session_Should_Not_Free_Instance_With_PropertyChanged_Subscribers()
         {
             WeakReference weakSessionRef = null!;
 
@@ -1028,7 +1028,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_Free2_Instance_Even_With_PropertyChanged_Subscribers()
+        public void Session_Should_Free_Instance_With_No_PropertyChanged_Subscribers()
         {
             WeakReference weakSessionRef = null!;
 
@@ -1047,54 +1047,6 @@ namespace Realms.Tests.Sync
             {
             }
 
-            GC.Collect();
-            Assert.That(weakSessionRef.IsAlive, Is.False);
-        }
-
-        [Test]
-        public async Task Session_AAAAAA()
-        {
-            // SyncTestHelpers.RunBaasTestAsync(async () =>
-            // {
-            //     var config = await GetIntegrationConfigAsync();
-            //     using var realm = GetRealm(config);
-
-            //     Func<WeakReference> ctr = () =>
-            //     {
-            //         return new WeakReference(realm.SyncSession);
-            //     };
-
-            //     WeakReference weakSessionRef = ctr();
-            //     Assert.That(weakSessionRef.IsAlive, Is.True);
-            //     realm.SyncSession.PropertyChanged += (sender, e) => { };
-
-            //     GC.Collect();
-            //     GC.WaitForPendingFinalizers();
-            //     Assert.That(weakSessionRef.IsAlive, Is.True);
-            // });
-
-            WeakReference weakSessionRef = null!;
-
-            var tcs1 = new TaskCompletionSource();
-            var tcs2 = new TaskCompletionSource();
-
-            Task.Run(() =>
-            {
-                SyncTestHelpers.RunBaasTestAsync(async () =>
-                {
-                    var config = await GetIntegrationConfigAsync();
-                    using var realm = GetRealm(config);
-                    var session = realm.SyncSession;
-                    weakSessionRef = new WeakReference(session);
-                    Assert.That(weakSessionRef.IsAlive, Is.True);
-                    session.PropertyChanged += (sender, e) => { };
-                });
-
-                tcs1.TrySetResult();
-
-            });
-
-            await tcs1.Task;
             GC.Collect();
             Assert.That(weakSessionRef.IsAlive, Is.False);
         }
