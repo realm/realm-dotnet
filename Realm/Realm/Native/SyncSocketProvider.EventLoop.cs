@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Realms.Logging;
 
 namespace Realms.Native
 {
@@ -32,6 +33,7 @@ namespace Realms.Native
 
             internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
             {
+                Logger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
                 Task.Delay(delay, _cts.Token).ContinueWith(t =>
                 {
                     var status = Status.OK;
@@ -40,12 +42,13 @@ namespace Realms.Native
                         status = new(NativeMethods.ErrorCode.OperationAborted, "Timer canceled");
                     }
 
-                    return workQueue.WriteAsync(new EventLoopWork(nativeCallback, status));
+                    return workQueue.WriteAsync(new EventLoopWork(nativeCallback, status, default));
                 });
             }
 
             internal void Cancel()
             {
+                Logger.LogDefault(LogLevel.Trace, $"Canceling timer.");
                 _cts.Cancel();
                 _cts.Dispose();
             }
@@ -55,27 +58,36 @@ namespace Realms.Native
         {
             private readonly IntPtr _nativeCallback;
             private readonly Status _status;
+            private readonly CancellationToken _cancellationToken;
 
-            public EventLoopWork(IntPtr nativeCallback, Status status)
+            public EventLoopWork(IntPtr nativeCallback, Status status, CancellationToken cancellationToken)
             {
                 _nativeCallback = nativeCallback;
                 _status = status;
+                _cancellationToken = cancellationToken;
+
             }
 
             public unsafe void Execute()
             {
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    NativeMethods.run_callback(_nativeCallback, NativeMethods.ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    return;
+                }
+
                 if (!string.IsNullOrEmpty(_status.Reason))
                 {
                     var bytes = Encoding.UTF8.GetBytes(_status.Reason);
                     fixed (byte* data = bytes)
                     {
                         var reason = new StringValue { data = data, size = bytes.Length };
-                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason);
+                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason, false);
                     }
                 }
                 else
                 {
-                    NativeMethods.run_callback(_nativeCallback, _status.Code, new());
+                    NativeMethods.run_callback(_nativeCallback, _status.Code, StringValue.Null, false);
                 }
             }
         }

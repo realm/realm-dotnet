@@ -159,8 +159,11 @@ extern "C" {
         realm::binding::s_can_call_managed = true;
     }
 
-    REALM_EXPORT void realm_websocket_run_callback(SyncSocketProvider::FunctionHandler* handler, ErrorCodes::Error error_code, realm_string_t reason) {
+    REALM_EXPORT void realm_websocket_run_callback(SyncSocketProvider::FunctionHandler* handler, ErrorCodes::Error error_code, realm_string_t reason, bool delete_only) {
         std::unique_ptr<SyncSocketProvider::FunctionHandler> safe_handler(handler);
+        if (delete_only) {
+            return;
+        }
 
         Status status = Status::OK();
         if (error_code != ErrorCodes::OK) {

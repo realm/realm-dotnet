@@ -319,6 +319,8 @@ namespace Realms.Native
         public byte* data;
         public nint size;
 
+        public static readonly StringValue Null = new() { data = null };
+
         public static StringValue AllocateFrom(string? value, Arena arena)
         {
             if (value is null)

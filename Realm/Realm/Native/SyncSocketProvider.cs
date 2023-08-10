@@ -20,8 +20,10 @@ using System;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Realms.Logging;
 
 namespace Realms.Native
 {
@@ -80,7 +82,7 @@ namespace Realms.Native
             public static extern void install_callbacks(post_work post, provider_dispose dispose, create_timer create_timer, cancel_timer cancel_timer, websocket_connect connect, websocket_write write, websocket_close close);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason);
+            public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason, NativeBool delete_only);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_connected_handler", CallingConvention = CallingConvention.Cdecl)]
             public static extern void observer_connected_handler(IntPtr observer, StringValue protocol);
@@ -98,7 +100,7 @@ namespace Realms.Native
         private static void PostWork(IntPtr managed_provider, IntPtr nativeCallback)
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
-            provider._workQueue.Writer.TryWrite(new EventLoopWork(nativeCallback, Status.OK));
+            provider._workQueue.Writer.TryWrite(new EventLoopWork(nativeCallback, Status.OK, provider._cts.Token));
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.provider_dispose))]
@@ -198,7 +200,7 @@ namespace Realms.Native
         {
             internal NativeMethods.ErrorCode Code;
             internal string? Reason;
-
+            internal static readonly Status OperationAborted = new(NativeMethods.ErrorCode.OperationAborted, "Operation canceled");
             internal static readonly Status OK = new() { Code = NativeMethods.ErrorCode.Ok };
 
             public Status(NativeMethods.ErrorCode code, string reason)
@@ -216,9 +218,11 @@ namespace Realms.Native
         private readonly Channel<IWork> _workQueue;
         private readonly Task _workThread;
         private readonly Action<ClientWebSocketOptions>? _onWebSocketConnection;
+        private readonly CancellationTokenSource _cts = new();
 
         internal SyncSocketProvider(Action<ClientWebSocketOptions>? onWebSocketConnection)
         {
+            Logger.LogDefault(LogLevel.Trace, "Creating SyncSocketProvider.");
             _onWebSocketConnection = onWebSocketConnection;
             _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
             _workThread = Task.Factory.StartNew(WorkThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach).Unwrap();
@@ -228,7 +232,10 @@ namespace Realms.Native
 
         public void Dispose()
         {
+            Logger.LogDefault(LogLevel.Trace, "Destroying SyncSocketProvider.");
             _workQueue.Writer.Complete();
+            _cts.Cancel();
+            _cts.Dispose();
         }
     }
 }
