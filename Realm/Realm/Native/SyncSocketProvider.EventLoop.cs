@@ -39,7 +39,7 @@ namespace Realms.Native
                     var status = Status.OK;
                     if (t.IsCanceled)
                     {
-                        status = new(NativeMethods.ErrorCode.OperationAborted, "Timer canceled");
+                        status = new(ErrorCode.OperationAborted, "Timer canceled");
                     }
 
                     return workQueue.WriteAsync(new EventLoopWork(nativeCallback, status, default));
@@ -72,7 +72,7 @@ namespace Realms.Native
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
-                    NativeMethods.run_callback(_nativeCallback, NativeMethods.ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    NativeMethods.run_callback(_nativeCallback, ErrorCode.Ok, StringValue.Null, delete_only: true);
                     return;
                 }
 
@@ -92,15 +92,32 @@ namespace Realms.Native
             }
         }
 
+        private async Task PostWorkAsync(IntPtr nativeCallback)
+        {
+            Logger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
+            await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, Status.OK, _cts.Token));
+        }
+
         private partial async Task WorkThread()
         {
-            while (await _workQueue.Reader.WaitToReadAsync())
+            Logger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
+            try
             {
-                while (_workQueue.Reader.TryRead(out var work))
+                while (await _workQueue.Reader.WaitToReadAsync())
                 {
-                    work.Execute();
+                    while (_workQueue.Reader.TryRead(out var work))
+                    {
+                        work.Execute();
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Logger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
+                Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+            }
+
+            Logger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
         }
     }
 }

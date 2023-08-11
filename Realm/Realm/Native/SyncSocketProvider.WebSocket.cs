@@ -39,7 +39,7 @@ namespace Realms.Native
             private readonly CancellationTokenSource _cts = new();
 
             private readonly Uri _uri;
-            private readonly Task _workerThread;
+            private readonly Task _readThread;
 
             private MemoryStream _receiveBuffer = new();
 
@@ -50,7 +50,7 @@ namespace Realms.Native
                 _observer = observer;
                 _workQueue = workQueue;
                 _uri = uri;
-                _workerThread = Task.Factory.StartNew(ReadThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach, cancellationToken: _cts.Token, scheduler: TaskScheduler.Default).Unwrap();
+                _readThread = Task.Factory.StartNew(ReadThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach, cancellationToken: _cts.Token, scheduler: TaskScheduler.Default).Unwrap();
             }
 
             private async Task ReadThread()
@@ -62,14 +62,15 @@ namespace Realms.Native
                     await _webSocket.ConnectAsync(_uri, _cts.Token);
                     await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol, _observer, _cts.Token));
                 }
-                catch (WebSocketException e)
+                catch (Exception e)
                 {
                     if (e.InnerException is not null)
                     {
-                        Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException}");
+                        Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection {e.InnerException.GetType().FullName}: {e.InnerException.Message}");
+                        Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
                     }
 
-                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cts.Token));
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cts.Token));
                     return;
                 }
 
@@ -88,18 +89,22 @@ namespace Realms.Native
                                 _receiveBuffer = new MemoryStream();
                                 await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, _cts.Token));
                             }
-
                         }
                         else if (result.MessageType == WebSocketMessageType.Close)
                         {
                             Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
                             await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer, _cts.Token));
                         }
+                        else if (result.MessageType == WebSocketMessageType.Text)
+                        {
+                            Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                        }
                     }
-                    catch (WebSocketException e)
+                    catch (Exception e)
                     {
-                        Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket: {e}");
-                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cts.Token));
+                        Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket {e.GetType().FullName}: {e.Message}");
+                        Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cts.Token));
                         return;
                     }
                 }
@@ -109,7 +114,7 @@ namespace Realms.Native
             {
                 if (_webSocket.State == WebSocketState.Aborted)
                 {
-                    NativeMethods.run_callback(native_callback, NativeMethods.ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    NativeMethods.run_callback(native_callback, ErrorCode.Ok, StringValue.Null, delete_only: true);
                     return;
                 }
 
@@ -126,13 +131,14 @@ namespace Realms.Native
                 }
                 catch (Exception e)
                 {
-                    Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket: {e}");
+                    Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {e.GetType().FullName}: {e.Message}");
+                    Logger.LogDefault(LogLevel.Trace, e.StackTrace);
 
                     // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
                     // but the default implementation always calls it with Ok. Which is it?
                     // status = new Status(NativeMethods.ErrorCode.RuntimeError, e.Message);
-                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)NativeMethods.RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cts.Token));
-                    NativeMethods.run_callback(native_callback, NativeMethods.ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cts.Token));
+                    NativeMethods.run_callback(native_callback, ErrorCode.Ok, StringValue.Null, delete_only: true);
                     return;
                 }
                 finally
@@ -168,7 +174,6 @@ namespace Realms.Native
             {
                 _observer = observer;
                 _cancellationToken = cancellationToken;
-
             }
 
             protected abstract void Execute(IntPtr observer);

@@ -29,78 +29,10 @@ namespace Realms.Native
 {
     internal partial class SyncSocketProvider : IDisposable
     {
-        private static class NativeMethods
-        {
-            public const int RLM_ERR_WEBSOCKET_CONNECTION_FAILED = 4401;
-            public const int RLM_ERR_WEBSOCKET_READ_ERROR = 4402;
-            public const int RLM_ERR_WEBSOCKET_WRITE_ERROR = 4403;
-
-            // equivalent to ErrorCodes::Error in <realm/error_codes.hpp>
-            public enum ErrorCode : int
-            {
-                Ok = 0,
-                RuntimeError = 1000,
-                OperationAborted = 1027
-            }
-
-            [StructLayout(LayoutKind.Sequential)]
-            public readonly struct Endpoint
-            {
-                public readonly StringValue address;
-
-                public readonly ushort port;
-
-                public readonly StringValue path;
-
-                public readonly MarshaledVector<StringValue> protocols;
-
-                public readonly NativeBool is_ssl;
-            }
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void post_work(IntPtr socket_provider, IntPtr native_callback);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void provider_dispose(IntPtr managed_provider);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate IntPtr create_timer(IntPtr socket_provider, UInt64 delay_miliseconds, IntPtr native_callback);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void cancel_timer(IntPtr timer);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate IntPtr websocket_connect(IntPtr socket_provider, IntPtr observer, Endpoint endpoint);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void websocket_write(IntPtr managed_websocket, BinaryValue data, IntPtr native_callback);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void websocket_close(IntPtr managed_websocket);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_callbacks(post_work post, provider_dispose dispose, create_timer create_timer, cancel_timer cancel_timer, websocket_connect connect, websocket_write write, websocket_close close);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason, NativeBool delete_only);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_connected_handler", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void observer_connected_handler(IntPtr observer, StringValue protocol);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_error_handler", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void observer_error_handler(IntPtr observer);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_binary_message_received", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void observer_binary_message_received(IntPtr observer, BinaryValue data);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_closed_handler", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void observer_closed_handler(IntPtr observer, NativeBool was_clean, WebSocketCloseStatus status, StringValue reason);
-        }
-
-        private static void PostWork(IntPtr managed_provider, IntPtr nativeCallback)
+        private static void PostWork(IntPtr managed_provider, IntPtr native_callback)
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
-            provider._workQueue.Writer.TryWrite(new EventLoopWork(nativeCallback, Status.OK, provider._cts.Token));
+            _ = provider.PostWorkAsync(native_callback);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.provider_dispose))]
@@ -134,7 +66,7 @@ namespace Realms.Native
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.websocket_connect))]
-        private static IntPtr WebSocketConnect(IntPtr managed_provider, IntPtr observer, NativeMethods.Endpoint endpoint)
+        private static IntPtr WebSocketConnect(IntPtr managed_provider, IntPtr observer, Endpoint endpoint)
         {
             var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
             var webSocket = new ClientWebSocket();
@@ -167,7 +99,7 @@ namespace Realms.Native
             socket.Write(data, native_callback);
         }
 
-        [MonoPInvokeCallback (typeof(NativeMethods.websocket_close))]
+        [MonoPInvokeCallback(typeof(NativeMethods.websocket_close))]
         private static void WebSocketClose(IntPtr managed_websocket)
         {
             var handle = GCHandle.FromIntPtr(managed_websocket);
@@ -198,12 +130,12 @@ namespace Realms.Native
 
         private struct Status
         {
-            internal NativeMethods.ErrorCode Code;
+            internal ErrorCode Code;
             internal string? Reason;
-            internal static readonly Status OperationAborted = new(NativeMethods.ErrorCode.OperationAborted, "Operation canceled");
-            internal static readonly Status OK = new() { Code = NativeMethods.ErrorCode.Ok };
+            internal static readonly Status OperationAborted = new(ErrorCode.OperationAborted, "Operation canceled");
+            internal static readonly Status OK = new() { Code = ErrorCode.Ok };
 
-            public Status(NativeMethods.ErrorCode code, string reason)
+            public Status(ErrorCode code, string reason)
             {
                 Code = code;
                 Reason = reason;
