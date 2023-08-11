@@ -247,9 +247,9 @@ namespace Realms
                     throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
                 }
 
-                _sessionProvider ??= new SessionProvider();
+                _sessionProvider ??= new SessionProvider(SharedRealmHandle);
 
-                return _sessionProvider.GetSession(SharedRealmHandle);
+                return _sessionProvider.GetSession();
             }
         }
 
@@ -1346,47 +1346,40 @@ namespace Realms
 
         internal class SessionProvider
         {
+            private readonly SharedRealmHandle _sharedRealmHandle;
             private WeakReference<Session>? _weakSessionRef;
             private Session? _strongSessionRef;
 
-            public Session GetSession(SharedRealmHandle handle)
+            public SessionProvider(SharedRealmHandle sharedRealmHandle)
+            {
+                _sharedRealmHandle = sharedRealmHandle;
+            }
+
+            public Session GetSession()
             {
                 if(_strongSessionRef?.IsClosed == false)
                 {
                     return _strongSessionRef;
                 }
-                else if (_weakSessionRef?.TryGetTarget(out var targetSession) == true && !targetSession.IsClosed)
+
+                if (_weakSessionRef?.TryGetTarget(out var targetSession) == true && !targetSession.IsClosed)
                 {
                     return targetSession;
                 }
 
-                var session = new Session(handle.GetSession());
-                session.Subscribed += Session_Subscribed;
-                session.Unsubscribed += Session_Unsubscribed;
+                var session = new Session(_sharedRealmHandle.GetSession(), OnSessionSubscribed, OnSessionUnsubscribed);
 
-                if (_weakSessionRef is null)
-                {
-                    _weakSessionRef = new WeakReference<Session>(session);
-                }
-                else
-                {
-                    _weakSessionRef.SetTarget(session);
-                }
+                _weakSessionRef = new WeakReference<Session>(session);
 
                 return session;
             }
 
-            private void Session_Subscribed(object? sender, EventArgs e)
+            private void OnSessionSubscribed(Session session)
             {
-                if (sender is not Session session)
-                {
-                    return;
-                }
-
                 _strongSessionRef = session;
             }
 
-            private void Session_Unsubscribed(object? sender, EventArgs e)
+            private void OnSessionUnsubscribed()
             {
                 _strongSessionRef = null;
             }

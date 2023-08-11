@@ -1052,7 +1052,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void AnotherTest()
+        public void Session_Should_Keep_Instance_Until_There_Are_Subscribers()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1069,13 +1069,16 @@ namespace Realms.Tests.Sync
 
                 realm.SyncSession.PropertyChanged += HandlePropertyChanged;
 
+                // We want to have more assurance that the reference is not being collected at a later time
+                await WaitUntilReferencesAreCollected(500, weakSessionRef);
                 GC.Collect();
                 Assert.That(weakSessionRef.IsAlive, Is.True);
 
                 realm.SyncSession.PropertyChanged -= HandlePropertyChanged;
 
+                await WaitUntilReferencesAreCollected(500, weakSessionRef);
                 GC.Collect();
-                Assert.That(weakSessionRef.IsAlive, Is.False);  //TODO This fails
+                Assert.That(weakSessionRef.IsAlive, Is.False);
             });
 
             static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
