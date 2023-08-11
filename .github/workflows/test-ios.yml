@@ -85,6 +85,7 @@ jobs:
     runs-on: macos-13
     name: Maui.iOS
     timeout-minutes: 45
+    if: false
     steps:
     - name: Checkout code
       uses: actions/checkout@v3

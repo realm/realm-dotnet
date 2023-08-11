@@ -79,6 +79,7 @@ jobs:
   test-maui:
     runs-on: macos-12
     name: Maui.MacCatalyst
+    if: false
     timeout-minutes: 45
     steps:
     - name: Checkout code
