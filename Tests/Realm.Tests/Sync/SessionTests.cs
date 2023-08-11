@@ -1061,7 +1061,8 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
 
-                weakSessionRef = new Func<WeakReference>(() => {
+                weakSessionRef = new Func<WeakReference>(() =>
+                {
                     return new WeakReference(realm.SyncSession);
                 })();
 
@@ -1071,13 +1072,11 @@ namespace Realms.Tests.Sync
 
                 // We want to have more assurance that the reference is not being collected at a later time
                 await WaitUntilReferencesAreCollected(500, weakSessionRef);
-                GC.Collect();
                 Assert.That(weakSessionRef.IsAlive, Is.True);
 
                 realm.SyncSession.PropertyChanged -= HandlePropertyChanged;
 
                 await WaitUntilReferencesAreCollected(500, weakSessionRef);
-                GC.Collect();
                 Assert.That(weakSessionRef.IsAlive, Is.False);
             });
 
