@@ -65,14 +65,13 @@ namespace Realms.Native
                 _nativeCallback = nativeCallback;
                 _status = status;
                 _cancellationToken = cancellationToken;
-
             }
 
             public unsafe void Execute()
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
-                    NativeMethods.run_callback(_nativeCallback, ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    NativeMethods.delete_callback(_nativeCallback);
                     return;
                 }
 
@@ -82,12 +81,12 @@ namespace Realms.Native
                     fixed (byte* data = bytes)
                     {
                         var reason = new StringValue { data = data, size = bytes.Length };
-                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason, false);
+                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason);
                     }
                 }
                 else
                 {
-                    NativeMethods.run_callback(_nativeCallback, _status.Code, StringValue.Null, false);
+                    NativeMethods.run_callback(_nativeCallback, _status.Code, StringValue.Null);
                 }
             }
         }

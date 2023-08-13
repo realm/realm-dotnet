@@ -45,7 +45,7 @@ namespace Realms.Native
 
             internal Socket(ClientWebSocket webSocket, IntPtr observer, ChannelWriter<IWork> workQueue, Uri uri)
             {
-                Logger.LogDefault(LogLevel.Trace, $"Creating a WebSocket to ${uri.GetLeftPart(UriPartial.Path)}");
+                Logger.LogDefault(LogLevel.Trace, $"Creating a WebSocket to {uri.GetLeftPart(UriPartial.Path)}");
                 _webSocket = webSocket;
                 _observer = observer;
                 _workQueue = workQueue;
@@ -114,7 +114,7 @@ namespace Realms.Native
             {
                 if (_webSocket.State == WebSocketState.Aborted)
                 {
-                    NativeMethods.run_callback(native_callback, ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    NativeMethods.delete_callback(native_callback);
                     return;
                 }
 
@@ -138,7 +138,7 @@ namespace Realms.Native
                     // but the default implementation always calls it with Ok. Which is it?
                     // status = new Status(NativeMethods.ErrorCode.RuntimeError, e.Message);
                     await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cts.Token));
-                    NativeMethods.run_callback(native_callback, ErrorCode.Ok, StringValue.Null, delete_only: true);
+                    NativeMethods.delete_callback(native_callback);
                     return;
                 }
                 finally

@@ -77,7 +77,10 @@ namespace Realms.Native
             public static extern void install_callbacks(post_work post, provider_dispose dispose, create_timer create_timer, cancel_timer cancel_timer, websocket_connect connect, websocket_write write, websocket_close close);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason, NativeBool delete_only);
+            public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void delete_callback(IntPtr native_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_connected_handler", CallingConvention = CallingConvention.Cdecl)]
             public static extern void observer_connected_handler(IntPtr observer, StringValue protocol);
