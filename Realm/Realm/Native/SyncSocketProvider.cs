@@ -157,7 +157,7 @@ namespace Realms.Native
             Logger.LogDefault(LogLevel.Trace, "Creating SyncSocketProvider.");
             _onWebSocketConnection = onWebSocketConnection;
             _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
-            _workThread = Task.Factory.StartNew(WorkThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach).Unwrap();
+            _workThread = Task.Factory.StartNew(WorkThread, cancellationToken: default, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.RunContinuationsAsynchronously, scheduler: TaskScheduler.Default).Unwrap();
         }
 
         private partial Task WorkThread();
