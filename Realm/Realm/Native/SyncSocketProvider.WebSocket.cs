@@ -62,11 +62,11 @@ namespace Realms.Native
                     await _webSocket.ConnectAsync(_uri, _cts.Token);
                     await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol, _observer, _cts.Token));
                 }
-                catch (Exception e)
+                catch (WebSocketException e)
                 {
                     if (e.InnerException is not null)
                     {
-                        Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection {e.InnerException.GetType().FullName}: {e.InnerException.Message}");
+                        Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException.Message}");
                         Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
                     }
 
@@ -100,9 +100,9 @@ namespace Realms.Native
                             Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
                         }
                     }
-                    catch (Exception e)
+                    catch (WebSocketException e)
                     {
-                        Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket {e.GetType().FullName}: {e.Message}");
+                        Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket: {e.Message}");
                         Logger.LogDefault(LogLevel.Trace, e.StackTrace);
                         await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cts.Token));
                         return;
