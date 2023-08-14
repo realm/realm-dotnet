@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -244,16 +245,7 @@ namespace Realms.Native
 
         public readonly string AsString() => string_value!;
 
-        public readonly byte[] AsBinary()
-        {
-            var bytes = new byte[(int)data_value.size];
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                bytes[i] = data_value.data[i];
-            }
-
-            return bytes;
-        }
+        public readonly byte[] AsBinary() => data_value.AsBytes();
 
         public readonly IRealmObjectBase AsObject(Realm realm)
         {
@@ -349,5 +341,12 @@ namespace Realms.Native
     {
         public byte* data;
         public IntPtr size;
+
+        public readonly byte[] AsBytes(bool usePooledArray = false)
+        {
+            var bytes = usePooledArray ? ArrayPool<byte>.Shared.Rent((int)size) : new byte[(int)size];
+            Marshal.Copy((IntPtr)data, bytes, 0, (int)size);
+            return bytes;
+        }
     }
 }

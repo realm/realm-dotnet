@@ -20,7 +20,6 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -80,24 +79,25 @@ namespace Realms.Native
                     try
                     {
                         var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cts.Token);
-                        if (result.MessageType == WebSocketMessageType.Binary)
+                        switch (result.MessageType)
                         {
-                            await _receiveBuffer.WriteAsync(buffer, 0, result.Count);
-                            if (result.EndOfMessage)
-                            {
-                                var current_buffer = _receiveBuffer;
-                                _receiveBuffer = new MemoryStream();
-                                await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, _cts.Token));
-                            }
-                        }
-                        else if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
-                            await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer, _cts.Token));
-                        }
-                        else if (result.MessageType == WebSocketMessageType.Text)
-                        {
-                            Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                            case WebSocketMessageType.Binary:
+                                await _receiveBuffer.WriteAsync(buffer, 0, result.Count);
+                                if (result.EndOfMessage)
+                                {
+                                    var currentBuffer = _receiveBuffer;
+                                    _receiveBuffer = new MemoryStream();
+                                    await _workQueue.WriteAsync(new BinaryMessageReceivedWork(currentBuffer, _observer, _cts.Token));
+                                }
+
+                                break;
+                            case WebSocketMessageType.Close:
+                                Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
+                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer, _cts.Token));
+                                break;
+                            default:
+                                Logger.LogDefault(LogLevel.Trace, $"Received unexpected {result.MessageType} WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                                break;
                         }
                     }
                     catch (WebSocketException e)
@@ -118,16 +118,12 @@ namespace Realms.Native
                     return;
                 }
 
-                var buffer = ArrayPool<byte>.Shared.Rent((int)data.size);
-                unsafe
-                {
-                    Marshal.Copy((IntPtr)data.data, buffer, 0, (int)data.size);
-                }
+                var buffer = data.AsBytes(usePooledArray: true);
 
                 var status = Status.OK;
                 try
                 {
-                    await _webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Binary, true, _cts.Token);
+                    await _webSocket.SendAsync(new(buffer), WebSocketMessageType.Binary, true, _cts.Token);
                 }
                 catch (Exception e)
                 {
@@ -195,27 +191,24 @@ namespace Realms.Native
             private readonly string _protocol;
 
             public WebSocketConnectedWork(string protocol, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _protocol = protocol;
             }
 
-            protected unsafe override void Execute(IntPtr observer)
+            protected override void Execute(IntPtr observer)
             {
-                var bytes = Encoding.UTF8.GetBytes(_protocol);
-                fixed (byte* data = bytes)
-                {
-                    NativeMethods.observer_connected_handler(observer, new() { data = data, size = bytes.Length });
-                }
+                using var arena = new Arena();
+                NativeMethods.observer_connected_handler(observer, StringValue.AllocateFrom(_protocol, arena));
             }
         }
 
         private sealed class BinaryMessageReceivedWork : WebSocketWork
         {
-            private MemoryStream _receiveBuffer;
+            private readonly MemoryStream _receiveBuffer;
 
             public BinaryMessageReceivedWork(MemoryStream receiveBuffer, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _receiveBuffer = receiveBuffer;
             }
@@ -232,30 +225,28 @@ namespace Realms.Native
 
         private sealed class WebSocketClosedWork : WebSocketWork
         {
-            private bool _clean;
-            private WebSocketCloseStatus _status;
-            private string _description;
+            private readonly bool _clean;
+            private readonly WebSocketCloseStatus _status;
+            private readonly string _description;
 
             public WebSocketClosedWork(bool clean, WebSocketCloseStatus status, string description, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _clean = clean;
                 _status = status;
                 _description = description;
             }
 
-            protected unsafe override void Execute(IntPtr observer)
+            protected override void Execute(IntPtr observer)
             {
                 if (!_clean)
                 {
                     NativeMethods.observer_error_handler(observer);
                 }
 
-                var bytes = Encoding.UTF8.GetBytes(_description);
-                fixed(byte* data = bytes)
-                {
-                    NativeMethods.observer_closed_handler(observer, _clean, _status, new() { data = data, size = bytes.Length });
-                }
+                // TODO: should we execute the closed handler if the error handler is called?
+                using var arena = new Arena();
+                NativeMethods.observer_closed_handler(observer, _clean, _status, StringValue.AllocateFrom(_description, arena));
             }
         }
     }

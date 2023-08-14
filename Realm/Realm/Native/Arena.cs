@@ -67,10 +67,12 @@ namespace Realms.Native
             return new Buffer<T>((T*)slab.Grab(count), count);
         }
 
+#if DEBUG
         ~Arena()
         {
             Debug.Assert(_disposed, "BufferPool finalized without explicit disposal");
         }
+#endif
 
         public void Dispose()
         {

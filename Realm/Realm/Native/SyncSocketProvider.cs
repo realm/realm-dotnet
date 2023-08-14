@@ -31,7 +31,7 @@ namespace Realms.Native
     {
         private static void PostWork(IntPtr managed_provider, IntPtr native_callback)
         {
-            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
+            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target!;
             _ = provider.PostWorkAsync(native_callback);
         }
 
@@ -39,14 +39,14 @@ namespace Realms.Native
         private static void ProviderDispose(IntPtr managed_provider)
         {
             var handle = GCHandle.FromIntPtr(managed_provider);
-            ((SyncSocketProvider)handle.Target).Dispose();
+            ((SyncSocketProvider)handle.Target!).Dispose();
             handle.Free();
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.create_timer))]
         private static IntPtr CreateTimer(IntPtr managed_provider, ulong delay_milliseconds, IntPtr native_callback)
         {
-            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
+            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target!;
             var timer = new Timer(TimeSpan.FromMilliseconds(delay_milliseconds), native_callback, provider._workQueue);
             return GCHandle.ToIntPtr(GCHandle.Alloc(timer));
         }
@@ -57,7 +57,7 @@ namespace Realms.Native
             var handle = GCHandle.FromIntPtr(managed_timer);
             try
             {
-                ((Timer)handle.Target).Cancel();
+                ((Timer)handle.Target!).Cancel();
             }
             finally
             {
@@ -68,7 +68,7 @@ namespace Realms.Native
         [MonoPInvokeCallback(typeof(NativeMethods.websocket_connect))]
         private static IntPtr WebSocketConnect(IntPtr managed_provider, IntPtr observer, Endpoint endpoint)
         {
-            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target;
+            var provider = (SyncSocketProvider)GCHandle.FromIntPtr(managed_provider).Target!;
             var webSocket = new ClientWebSocket();
             foreach (string? subProtocol in endpoint.protocols)
             {
@@ -77,10 +77,13 @@ namespace Realms.Native
 
             provider._onWebSocketConnection?.Invoke(webSocket.Options);
 
-            var builder = new UriBuilder();
-            builder.Scheme = endpoint.is_ssl ? "wss" : "ws";
-            builder.Host = endpoint.address;
-            builder.Port = endpoint.port;
+            var builder = new UriBuilder
+            {
+                Scheme = endpoint.is_ssl ? "wss" : "ws",
+                Host = endpoint.address,
+                Port = endpoint.port
+            };
+
             if (endpoint.path)
             {
                 var pathAndQuery = ((string)endpoint.path)!.Split('?');
@@ -95,7 +98,7 @@ namespace Realms.Native
         [MonoPInvokeCallback(typeof(NativeMethods.websocket_write))]
         private static void WebSocketWrite(IntPtr managed_socket, BinaryValue data, IntPtr native_callback)
         {
-            var socket = (Socket)GCHandle.FromIntPtr(managed_socket).Target;
+            var socket = (Socket)GCHandle.FromIntPtr(managed_socket).Target!;
             socket.Write(data, native_callback);
         }
 
@@ -103,7 +106,7 @@ namespace Realms.Native
         private static void WebSocketClose(IntPtr managed_websocket)
         {
             var handle = GCHandle.FromIntPtr(managed_websocket);
-            ((Socket)handle.Target).Dispose();
+            ((Socket)handle.Target!).Dispose();
             handle.Free();
         }
 
@@ -130,12 +133,13 @@ namespace Realms.Native
 
         private struct Status
         {
-            internal ErrorCode Code;
-            internal string? Reason;
-            internal static readonly Status OperationAborted = new(ErrorCode.OperationAborted, "Operation canceled");
-            internal static readonly Status OK = new() { Code = ErrorCode.Ok };
+            internal readonly ErrorCode Code;
+            internal readonly string? Reason;
+            internal static readonly Status OK = new(ErrorCode.Ok, reason: null);
 
-            public Status(ErrorCode code, string reason)
+            internal static Status OperationAborted(string reason = "Operation canceled") => new(ErrorCode.OperationAborted, reason);
+
+            private Status(ErrorCode code, string? reason)
             {
                 Code = code;
                 Reason = reason;
