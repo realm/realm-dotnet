@@ -119,7 +119,7 @@ namespace Realms.Tests.Database
             Assert.That(() => tim.ListOfDogs.CopyTo(null!, 0), Throws.TypeOf<ArgumentNullException>());
             var copiedDogs = new Dog[2];
             Assert.That(() => tim.ListOfDogs.CopyTo(copiedDogs, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
-            Assert.That(() => tim.ListOfDogs.CopyTo(copiedDogs, 1), Throws.TypeOf<ArgumentException>()); // insuffiient room
+            Assert.That(() => tim.ListOfDogs.CopyTo(copiedDogs, 1), Throws.TypeOf<ArgumentException>()); // insufficient room
         }
 
         [Test]
