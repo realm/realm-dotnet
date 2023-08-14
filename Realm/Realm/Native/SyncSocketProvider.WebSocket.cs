@@ -59,14 +59,14 @@ namespace Realms.Native
                 try
                 {
                     await _webSocket.ConnectAsync(_uri, _cts.Token);
-                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol, _observer, _cts.Token));
+                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol!, _observer, _cts.Token));
                 }
                 catch (WebSocketException e)
                 {
                     if (e.InnerException is not null)
                     {
                         Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException.Message}");
-                        Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
+                        Logger.LogStackTrace(e.InnerException);
                     }
 
                     await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cts.Token));
@@ -93,7 +93,7 @@ namespace Realms.Native
                                 break;
                             case WebSocketMessageType.Close:
                                 Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
-                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer, _cts.Token));
+                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription!, _observer, _cts.Token));
                                 break;
                             default:
                                 Logger.LogDefault(LogLevel.Trace, $"Received unexpected {result.MessageType} WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
@@ -103,7 +103,7 @@ namespace Realms.Native
                     catch (WebSocketException e)
                     {
                         Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket: {e.Message}");
-                        Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                        Logger.LogStackTrace(e);
                         await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cts.Token));
                         return;
                     }
@@ -128,7 +128,7 @@ namespace Realms.Native
                 catch (Exception e)
                 {
                     Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {e.GetType().FullName}: {e.Message}");
-                    Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                    Logger.LogStackTrace(e);
 
                     // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
                     // but the default implementation always calls it with Ok. Which is it?
@@ -244,7 +244,6 @@ namespace Realms.Native
                     NativeMethods.observer_error_handler(observer);
                 }
 
-                // TODO: should we execute the closed handler if the error handler is called?
                 using var arena = new Arena();
                 NativeMethods.observer_closed_handler(observer, _clean, _status, StringValue.AllocateFrom(_description, arena));
             }

@@ -146,8 +146,18 @@ namespace Realms.Native
             }
         }
 
+        /// <summary>
+        /// Represents a unit of work to be executed by the socket provider <see cref="SyncSocketProvider.WorkThread"/>.
+        /// </summary>
+        /// <remarks>
+        /// Units of work may be executed on arbitrary threads but will be work will be serialized so that no two work items
+        /// are being executed simultaneously.
+        /// </remarks>
         private interface IWork
         {
+            /// <summary>
+            /// Executes the work item on the socket provider event loop.
+            /// </summary>
             void Execute();
         }
 

@@ -120,6 +120,17 @@ namespace Realms.Logging
 
         internal static void LogDefault(LogLevel level, string message) => Default?.Log(level, message);
 
+        internal static void LogStackTrace(Exception ex)
+        {
+            var stackTrace = ex.StackTrace;
+            if (string.IsNullOrEmpty(stackTrace))
+            {
+                stackTrace = "no stacktrace";
+            }
+
+            LogDefault(LogLevel.Trace, stackTrace);
+        }
+
         /// <summary>
         /// Log a message at the supplied level.
         /// </summary>

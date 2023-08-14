@@ -130,7 +130,7 @@ namespace Realms.Native
             catch (Exception e)
             {
                 Logger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
-                Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                Logger.LogStackTrace(e);
             }
 
             Logger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
