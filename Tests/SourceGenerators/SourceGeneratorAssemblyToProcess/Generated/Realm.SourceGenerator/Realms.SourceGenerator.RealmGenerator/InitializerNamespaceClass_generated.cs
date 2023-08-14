@@ -35,7 +35,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IInitializerNamespaceClassAccessor Accessor => _accessor ??= new InitializerNamespaceClassUnmanagedAccessor(typeof(InitializerNamespaceClass));
+        private IInitializerNamespaceClassAccessor Accessor => _accessor ??= new InitializerNamespaceClassUnmanagedAccessor(typeof(InitializerNamespaceClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

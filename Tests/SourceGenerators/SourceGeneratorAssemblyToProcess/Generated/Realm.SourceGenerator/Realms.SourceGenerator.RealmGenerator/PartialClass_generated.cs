@@ -35,7 +35,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IPartialClassAccessor Accessor => _accessor ??= new PartialClassUnmanagedAccessor(typeof(PartialClass));
+        private IPartialClassAccessor Accessor => _accessor ??= new PartialClassUnmanagedAccessor(typeof(PartialClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

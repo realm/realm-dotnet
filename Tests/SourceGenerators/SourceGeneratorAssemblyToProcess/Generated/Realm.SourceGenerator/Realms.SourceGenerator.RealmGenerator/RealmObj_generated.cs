@@ -34,7 +34,7 @@ namespace SourceGeneratorPlayground
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRealmObjAccessor Accessor => _accessor ??= new RealmObjUnmanagedAccessor(typeof(RealmObj));
+        private IRealmObjAccessor Accessor => _accessor ??= new RealmObjUnmanagedAccessor(typeof(RealmObj));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -38,7 +38,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IClassWithoutParameterlessConstructorAccessor Accessor => _accessor ??= new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor));
+        private IClassWithoutParameterlessConstructorAccessor Accessor => _accessor ??= new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -39,7 +39,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IIndexedClassAccessor Accessor => _accessor ??= new IndexedClassUnmanagedAccessor(typeof(IndexedClass));
+        private IIndexedClassAccessor Accessor => _accessor ??= new IndexedClassUnmanagedAccessor(typeof(IndexedClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
