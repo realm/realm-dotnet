@@ -37,7 +37,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAgedObjectAccessor Accessor => _accessor ??= new AgedObjectUnmanagedAccessor(typeof(AgedObject));
+        private IAgedObjectAccessor Accessor => _accessor ??= new AgedObjectUnmanagedAccessor(typeof(AgedObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

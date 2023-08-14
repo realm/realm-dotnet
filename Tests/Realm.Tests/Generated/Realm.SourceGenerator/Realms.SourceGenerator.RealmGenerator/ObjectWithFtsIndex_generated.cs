@@ -45,7 +45,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectWithFtsIndexAccessor Accessor => _accessor ??= new ObjectWithFtsIndexUnmanagedAccessor(typeof(ObjectWithFtsIndex));
+        private IObjectWithFtsIndexAccessor Accessor => _accessor ??= new ObjectWithFtsIndexUnmanagedAccessor(typeof(ObjectWithFtsIndex));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

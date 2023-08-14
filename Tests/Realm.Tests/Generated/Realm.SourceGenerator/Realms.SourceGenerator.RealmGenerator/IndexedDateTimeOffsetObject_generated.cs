@@ -38,7 +38,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IIndexedDateTimeOffsetObjectAccessor Accessor => _accessor ??= new IndexedDateTimeOffsetObjectUnmanagedAccessor(typeof(IndexedDateTimeOffsetObject));
+        private IIndexedDateTimeOffsetObjectAccessor Accessor => _accessor ??= new IndexedDateTimeOffsetObjectUnmanagedAccessor(typeof(IndexedDateTimeOffsetObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

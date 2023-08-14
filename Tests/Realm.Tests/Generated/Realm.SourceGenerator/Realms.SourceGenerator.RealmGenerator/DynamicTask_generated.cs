@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDynamicTaskAccessor Accessor => _accessor ??= new DynamicTaskUnmanagedAccessor(typeof(DynamicTask));
+        private IDynamicTaskAccessor Accessor => _accessor ??= new DynamicTaskUnmanagedAccessor(typeof(DynamicTask));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

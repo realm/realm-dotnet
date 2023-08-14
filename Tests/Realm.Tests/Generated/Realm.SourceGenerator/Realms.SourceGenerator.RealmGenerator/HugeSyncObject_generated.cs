@@ -40,7 +40,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IHugeSyncObjectAccessor Accessor => _accessor ??= new HugeSyncObjectUnmanagedAccessor(typeof(HugeSyncObject));
+        private IHugeSyncObjectAccessor Accessor => _accessor ??= new HugeSyncObjectUnmanagedAccessor(typeof(HugeSyncObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

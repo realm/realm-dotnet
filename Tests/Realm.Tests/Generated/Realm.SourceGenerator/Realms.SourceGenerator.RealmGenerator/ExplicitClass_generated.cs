@@ -37,7 +37,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IExplicitClassAccessor Accessor => _accessor ??= new ExplicitClassUnmanagedAccessor(typeof(ExplicitClass));
+        private IExplicitClassAccessor Accessor => _accessor ??= new ExplicitClassUnmanagedAccessor(typeof(ExplicitClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

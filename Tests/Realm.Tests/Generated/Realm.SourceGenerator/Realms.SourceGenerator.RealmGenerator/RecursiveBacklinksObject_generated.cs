@@ -41,7 +41,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRecursiveBacklinksObjectAccessor Accessor => _accessor ??= new RecursiveBacklinksObjectUnmanagedAccessor(typeof(RecursiveBacklinksObject));
+        private IRecursiveBacklinksObjectAccessor Accessor => _accessor ??= new RecursiveBacklinksObjectUnmanagedAccessor(typeof(RecursiveBacklinksObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

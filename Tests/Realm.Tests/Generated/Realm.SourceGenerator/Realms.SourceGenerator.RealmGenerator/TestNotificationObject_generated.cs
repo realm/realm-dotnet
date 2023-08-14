@@ -44,7 +44,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ITestNotificationObjectAccessor Accessor => _accessor ??= new TestNotificationObjectUnmanagedAccessor(typeof(TestNotificationObject));
+        private ITestNotificationObjectAccessor Accessor => _accessor ??= new TestNotificationObjectUnmanagedAccessor(typeof(TestNotificationObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

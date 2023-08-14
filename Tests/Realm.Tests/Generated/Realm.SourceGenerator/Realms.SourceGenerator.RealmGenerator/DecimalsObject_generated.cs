@@ -40,7 +40,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDecimalsObjectAccessor Accessor => _accessor ??= new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject));
+        private IDecimalsObjectAccessor Accessor => _accessor ??= new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

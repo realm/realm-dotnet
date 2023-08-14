@@ -57,7 +57,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ISyncAllTypesObjectAccessor Accessor => _accessor ??= new SyncAllTypesObjectUnmanagedAccessor(typeof(SyncAllTypesObject));
+        private ISyncAllTypesObjectAccessor Accessor => _accessor ??= new SyncAllTypesObjectUnmanagedAccessor(typeof(SyncAllTypesObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

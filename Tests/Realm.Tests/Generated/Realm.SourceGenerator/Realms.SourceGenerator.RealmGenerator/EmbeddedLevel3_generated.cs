@@ -39,7 +39,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedLevel3Accessor Accessor => _accessor ??= new EmbeddedLevel3UnmanagedAccessor(typeof(EmbeddedLevel3));
+        private IEmbeddedLevel3Accessor Accessor => _accessor ??= new EmbeddedLevel3UnmanagedAccessor(typeof(EmbeddedLevel3));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

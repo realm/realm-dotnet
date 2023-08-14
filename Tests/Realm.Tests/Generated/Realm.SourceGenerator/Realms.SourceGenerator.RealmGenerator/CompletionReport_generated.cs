@@ -38,7 +38,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ICompletionReportAccessor Accessor => _accessor ??= new CompletionReportUnmanagedAccessor(typeof(CompletionReport));
+        private ICompletionReportAccessor Accessor => _accessor ??= new CompletionReportUnmanagedAccessor(typeof(CompletionReport));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

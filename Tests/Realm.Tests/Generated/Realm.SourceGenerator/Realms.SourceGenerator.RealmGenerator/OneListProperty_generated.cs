@@ -36,7 +36,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IOneListPropertyAccessor Accessor => _accessor ??= new OneListPropertyUnmanagedAccessor(typeof(OneListProperty));
+        private IOneListPropertyAccessor Accessor => _accessor ??= new OneListPropertyUnmanagedAccessor(typeof(OneListProperty));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
