@@ -160,17 +160,17 @@ jobs:
       run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net7.0/linux-x64' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
-    - name: Publish Coverage
-      id: publish-coveralls
-      uses: coverallsapp/github-action@95b1a2355bd0e526ad2fd62da9fd386ad4c98474
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./report.lcov
-        git-commit: ${{ github.event.pull_request.head.sha }}
-        compare-sha: ${{ github.event.pull_request.base.sha }}
-    - name: Output Coveralls response
-      run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage
+    # - name: Publish Coverage
+    #   id: publish-coveralls
+    #   uses: coverallsapp/github-action@95b1a2355bd0e526ad2fd62da9fd386ad4c98474
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     file: ./report.lcov
+    #     git-commit: ${{ github.event.pull_request.head.sha }}
+    #     compare-sha: ${{ github.event.pull_request.base.sha }}
+    # - name: Output Coveralls response
+    #   run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
