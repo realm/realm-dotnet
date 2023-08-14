@@ -129,7 +129,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ICollectionsObjectAccessor Accessor => _accessor ??= new CollectionsObjectUnmanagedAccessor(typeof(CollectionsObject));
+        private ICollectionsObjectAccessor Accessor => _accessor ??= new CollectionsObjectUnmanagedAccessor(typeof(CollectionsObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

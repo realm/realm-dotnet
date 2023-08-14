@@ -39,7 +39,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRequiredStringObjectAccessor Accessor => _accessor ??= new RequiredStringObjectUnmanagedAccessor(typeof(RequiredStringObject));
+        private IRequiredStringObjectAccessor Accessor => _accessor ??= new RequiredStringObjectUnmanagedAccessor(typeof(RequiredStringObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

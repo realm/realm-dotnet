@@ -39,7 +39,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IPrimaryKeyObjectIdObjectAccessor Accessor => _accessor ??= new PrimaryKeyObjectIdObjectUnmanagedAccessor(typeof(PrimaryKeyObjectIdObject));
+        private IPrimaryKeyObjectIdObjectAccessor Accessor => _accessor ??= new PrimaryKeyObjectIdObjectUnmanagedAccessor(typeof(PrimaryKeyObjectIdObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

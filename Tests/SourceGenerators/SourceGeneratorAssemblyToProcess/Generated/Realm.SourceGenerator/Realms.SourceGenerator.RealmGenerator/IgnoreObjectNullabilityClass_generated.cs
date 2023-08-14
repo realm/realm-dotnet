@@ -43,7 +43,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IIgnoreObjectNullabilityClassAccessor Accessor => _accessor ??= new IgnoreObjectNullabilityClassUnmanagedAccessor(typeof(IgnoreObjectNullabilityClass));
+        private IIgnoreObjectNullabilityClassAccessor Accessor => _accessor ??= new IgnoreObjectNullabilityClassUnmanagedAccessor(typeof(IgnoreObjectNullabilityClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

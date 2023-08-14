@@ -41,7 +41,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectContainerEmbeddedAccessor Accessor => _accessor ??= new ObjectContainerEmbeddedUnmanagedAccessor(typeof(ObjectContainerEmbedded));
+        private IObjectContainerEmbeddedAccessor Accessor => _accessor ??= new ObjectContainerEmbeddedUnmanagedAccessor(typeof(ObjectContainerEmbedded));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

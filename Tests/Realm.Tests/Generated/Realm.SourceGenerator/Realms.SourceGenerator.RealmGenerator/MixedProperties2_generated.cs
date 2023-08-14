@@ -39,7 +39,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IMixedProperties2Accessor Accessor => _accessor ??= new MixedProperties2UnmanagedAccessor(typeof(MixedProperties2));
+        private IMixedProperties2Accessor Accessor => _accessor ??= new MixedProperties2UnmanagedAccessor(typeof(MixedProperties2));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

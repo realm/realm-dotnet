@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal ITopLevelGeoPointAccessor Accessor => _accessor ??= new TopLevelGeoPointUnmanagedAccessor(typeof(TopLevelGeoPoint));
+            private ITopLevelGeoPointAccessor Accessor => _accessor ??= new TopLevelGeoPointUnmanagedAccessor(typeof(TopLevelGeoPoint));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
