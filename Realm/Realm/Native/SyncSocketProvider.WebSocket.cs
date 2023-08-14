@@ -168,6 +168,9 @@ namespace Realms.Native
         private abstract class WebSocketWork : IWork
         {
             private readonly IntPtr _observer;
+
+            // Belongs to the Socket and canceled when Native destroys the socket.
+            // If it's canceled we shouldn't call any observer methods.
             private readonly CancellationToken _cancellationToken;
 
             protected WebSocketWork(IntPtr observer, CancellationToken cancellationToken)

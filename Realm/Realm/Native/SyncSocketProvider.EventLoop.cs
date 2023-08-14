@@ -34,15 +34,10 @@ namespace Realms.Native
             internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
             {
                 Logger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
-                Task.Delay(delay, _cts.Token).ContinueWith(t =>
+                var cancellationToken = _cts.Token;
+                Task.Delay(delay, cancellationToken).ContinueWith(async _ =>
                 {
-                    var status = Status.OK;
-                    if (t.IsCanceled)
-                    {
-                        status = new(ErrorCode.OperationAborted, "Timer canceled");
-                    }
-
-                    return workQueue.WriteAsync(new EventLoopWork(nativeCallback, status, default));
+                    await workQueue.WriteAsync(new Work(nativeCallback, cancellationToken));
                 });
             }
 
@@ -52,12 +47,38 @@ namespace Realms.Native
                 _cts.Cancel();
                 _cts.Dispose();
             }
+
+            private class Work : IWork
+            {
+                private readonly IntPtr _nativeCallback;
+                private readonly CancellationToken _cancellationToken;
+
+                public Work(IntPtr nativeCallback, CancellationToken cancellationToken)
+                {
+                    _nativeCallback = nativeCallback;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public void Execute()
+                {
+                    var status = Status.OK;
+                    if (_cancellationToken.IsCancellationRequested)
+                    {
+                        status = new(ErrorCode.OperationAborted, "Timer canceled");
+                    }
+
+                    RunCallback(_nativeCallback, status);
+                }
+            }
         }
 
         private class EventLoopWork : IWork
         {
             private readonly IntPtr _nativeCallback;
             private readonly Status _status;
+
+            // Belongs to SyncSocketProvider. When Native destroys the Provider we need to stop executing
+            // enqueued work, but we need to release all the callbacks we copied on the heap.
             private readonly CancellationToken _cancellationToken;
 
             public EventLoopWork(IntPtr nativeCallback, Status status, CancellationToken cancellationToken)
@@ -71,23 +92,34 @@ namespace Realms.Native
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
+                    Logger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
                     NativeMethods.delete_callback(_nativeCallback);
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(_status.Reason))
+                RunCallback(_nativeCallback, _status);
+            }
+        }
+
+        private static void RunCallback(IntPtr nativeCallback, Status status)
+        {
+            Logger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
+
+            if (!string.IsNullOrEmpty(status.Reason))
+            {
+                var bytes = Encoding.UTF8.GetBytes(status.Reason);
+                unsafe
                 {
-                    var bytes = Encoding.UTF8.GetBytes(_status.Reason);
                     fixed (byte* data = bytes)
                     {
                         var reason = new StringValue { data = data, size = bytes.Length };
-                        NativeMethods.run_callback(_nativeCallback, _status.Code, reason);
+                        NativeMethods.run_callback(nativeCallback, status.Code, reason);
                     }
                 }
-                else
-                {
-                    NativeMethods.run_callback(_nativeCallback, _status.Code, StringValue.Null);
-                }
+            }
+            else
+            {
+                NativeMethods.run_callback(nativeCallback, status.Code, StringValue.Null);
             }
         }
 

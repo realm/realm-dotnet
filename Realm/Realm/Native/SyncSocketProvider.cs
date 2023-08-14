@@ -154,7 +154,7 @@ namespace Realms.Native
 
         internal SyncSocketProvider(Action<ClientWebSocketOptions>? onWebSocketConnection)
         {
-            Logger.LogDefault(LogLevel.Trace, "Creating SyncSocketProvider.");
+            Logger.LogDefault(LogLevel.Debug, "Creating SyncSocketProvider.");
             _onWebSocketConnection = onWebSocketConnection;
             _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
             _workThread = Task.Factory.StartNew(WorkThread, cancellationToken: default, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.RunContinuationsAsynchronously, scheduler: TaskScheduler.Default).Unwrap();
@@ -164,10 +164,11 @@ namespace Realms.Native
 
         public void Dispose()
         {
-            Logger.LogDefault(LogLevel.Trace, "Destroying SyncSocketProvider.");
+            Logger.LogDefault(LogLevel.Debug, "Destroying SyncSocketProvider.");
             _workQueue.Writer.Complete();
             _cts.Cancel();
             _cts.Dispose();
+            _workThread.GetAwaiter().GetResult();
         }
     }
 }
