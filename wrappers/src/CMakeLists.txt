@@ -35,6 +35,7 @@ set(HEADERS
     sync_session_cs.hpp
     transport_cs.hpp
     notifications_cs.hpp
+    websocket_cs.hpp
 )
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
