@@ -80,7 +80,7 @@ namespace Realms.Native
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void run_callback(IntPtr native_callback, ErrorCode result, StringValue reason);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_run_callback", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_delete_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void delete_callback(IntPtr native_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_websocket_observer_connected_handler", CallingConvention = CallingConvention.Cdecl)]
