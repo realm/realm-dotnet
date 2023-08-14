@@ -24,9 +24,10 @@ namespace Realms.Native
 {
     internal partial class SyncSocketProvider
     {
-        public const int RLM_ERR_WEBSOCKET_CONNECTION_FAILED = 4401;
-        public const int RLM_ERR_WEBSOCKET_READ_ERROR = 4402;
-        public const int RLM_ERR_WEBSOCKET_WRITE_ERROR = 4403;
+        // additional websocket close status codes that Sync understands
+        private const int RLM_ERR_WEBSOCKET_CONNECTION_FAILED = 4401;
+        private const int RLM_ERR_WEBSOCKET_READ_ERROR = 4402;
+        private const int RLM_ERR_WEBSOCKET_WRITE_ERROR = 4403;
 
         // equivalent to ErrorCodes::Error in <realm/error_codes.hpp>
         public enum ErrorCode : int

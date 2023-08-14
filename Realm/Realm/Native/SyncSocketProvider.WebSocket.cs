@@ -50,27 +50,31 @@ namespace Realms.Native
                 _observer = observer;
                 _workQueue = workQueue;
                 _uri = uri;
-                _readThread = Task.Factory.StartNew(ReadThread, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach, cancellationToken: _cts.Token, scheduler: TaskScheduler.Default).Unwrap();
+                _readThread = Task.Run(ReadThread);
             }
 
             private async Task ReadThread()
             {
                 Logger.LogDefault(LogLevel.Trace, "Entering WebSocket event loop.");
+                var cancellationToken = _cts.Token;
 
                 try
                 {
-                    await _webSocket.ConnectAsync(_uri, _cts.Token);
-                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol, _observer, _cts.Token));
+                    await _webSocket.ConnectAsync(_uri, cancellationToken);
+                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol!, _observer, cancellationToken));
                 }
-                catch (WebSocketException e)
+                catch (Exception e)
                 {
                     if (e.InnerException is not null)
                     {
                         Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException.Message}");
-                        Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
+                        if (!string.IsNullOrEmpty(e.InnerException.StackTrace))
+                        {
+                            Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
+                        }
                     }
 
-                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cts.Token));
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, cancellationToken));
                     return;
                 }
 
@@ -79,32 +83,37 @@ namespace Realms.Native
                 {
                     try
                     {
-                        var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cts.Token);
-                        if (result.MessageType == WebSocketMessageType.Binary)
+                        var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                        switch (result.MessageType)
                         {
-                            await _receiveBuffer.WriteAsync(buffer, 0, result.Count);
-                            if (result.EndOfMessage)
-                            {
-                                var current_buffer = _receiveBuffer;
-                                _receiveBuffer = new MemoryStream();
-                                await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, _cts.Token));
-                            }
-                        }
-                        else if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
-                            await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription, _observer, _cts.Token));
-                        }
-                        else if (result.MessageType == WebSocketMessageType.Text)
-                        {
-                            Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                            case WebSocketMessageType.Binary:
+                                await _receiveBuffer.WriteAsync(buffer, 0, result.Count);
+                                if (result.EndOfMessage)
+                                {
+                                    var current_buffer = _receiveBuffer;
+                                    _receiveBuffer = new MemoryStream();
+                                    await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, cancellationToken));
+                                }
+
+                                break;
+                            case WebSocketMessageType.Close:
+                                Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
+                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription!, _observer, cancellationToken));
+                                break;
+                            default:
+                                Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                                break;
                         }
                     }
-                    catch (WebSocketException e)
+                    catch (Exception e)
                     {
                         Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket: {e.Message}");
-                        Logger.LogDefault(LogLevel.Trace, e.StackTrace);
-                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cts.Token));
+                        if (!string.IsNullOrEmpty(e.StackTrace))
+                        {
+                            Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                        }
+
+                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, cancellationToken));
                         return;
                     }
                 }
@@ -118,21 +127,20 @@ namespace Realms.Native
                     return;
                 }
 
-                var buffer = ArrayPool<byte>.Shared.Rent((int)data.size);
-                unsafe
-                {
-                    Marshal.Copy((IntPtr)data.data, buffer, 0, (int)data.size);
-                }
+                var buffer = data.AsBytes(usePooledArray: true);
 
                 var status = Status.OK;
                 try
                 {
-                    await _webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Binary, true, _cts.Token);
+                    await _webSocket.SendAsync(new(buffer), WebSocketMessageType.Binary, true, _cts.Token);
                 }
                 catch (Exception e)
                 {
                     Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {e.GetType().FullName}: {e.Message}");
-                    Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                    if (!string.IsNullOrEmpty(e.StackTrace))
+                    {
+                        Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                    }
 
                     // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
                     // but the default implementation always calls it with Ok. Which is it?
@@ -155,13 +163,31 @@ namespace Realms.Native
 
                 if (_webSocket.State == WebSocketState.Open)
                 {
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, default);
+                    try
+                    {
+                        // If the websocket is still open close it, but throw away any close errors.
+                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, default);
+                    }
+                    catch
+                    {
+                    }
                 }
 
                 _webSocket.Dispose();
                 _receiveBuffer.Dispose();
                 _cts.Dispose();
                 Logger.LogDefault(LogLevel.Trace, "Disposing WebSocket.");
+
+                try
+                {
+                    await _readThread;
+                }
+                catch(TaskCanceledException)
+                {
+                }
+                catch(ChannelClosedException)
+                {
+                }
             }
         }
 
@@ -195,27 +221,24 @@ namespace Realms.Native
             private readonly string _protocol;
 
             public WebSocketConnectedWork(string protocol, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _protocol = protocol;
             }
 
-            protected unsafe override void Execute(IntPtr observer)
+            protected override void Execute(IntPtr observer)
             {
-                var bytes = Encoding.UTF8.GetBytes(_protocol);
-                fixed (byte* data = bytes)
-                {
-                    NativeMethods.observer_connected_handler(observer, new() { data = data, size = bytes.Length });
-                }
+                using var arena = new Arena();
+                NativeMethods.observer_connected_handler(observer, StringValue.AllocateFrom(_protocol, arena));
             }
         }
 
         private sealed class BinaryMessageReceivedWork : WebSocketWork
         {
-            private MemoryStream _receiveBuffer;
+            private readonly MemoryStream _receiveBuffer;
 
             public BinaryMessageReceivedWork(MemoryStream receiveBuffer, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _receiveBuffer = receiveBuffer;
             }
@@ -232,30 +255,27 @@ namespace Realms.Native
 
         private sealed class WebSocketClosedWork : WebSocketWork
         {
-            private bool _clean;
-            private WebSocketCloseStatus _status;
-            private string _description;
+            private readonly bool _clean;
+            private readonly WebSocketCloseStatus _status;
+            private readonly string _description;
 
             public WebSocketClosedWork(bool clean, WebSocketCloseStatus status, string description, IntPtr observer, CancellationToken cancellationToken)
-            : base(observer, cancellationToken)
+                : base(observer, cancellationToken)
             {
                 _clean = clean;
                 _status = status;
                 _description = description;
             }
 
-            protected unsafe override void Execute(IntPtr observer)
+            protected override void Execute(IntPtr observer)
             {
                 if (!_clean)
                 {
                     NativeMethods.observer_error_handler(observer);
                 }
 
-                var bytes = Encoding.UTF8.GetBytes(_description);
-                fixed(byte* data = bytes)
-                {
-                    NativeMethods.observer_closed_handler(observer, _clean, _status, new() { data = data, size = bytes.Length });
-                }
+                using var arena = new Arena();
+                NativeMethods.observer_closed_handler(observer, _clean, _status, StringValue.AllocateFrom(_description, arena));
             }
         }
     }

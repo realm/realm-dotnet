@@ -142,8 +142,14 @@ namespace Realms.Native
             }
         }
 
+        /// <summary>
+        /// Basic unit of work for the provider's event loop.
+        /// </summary>
         private interface IWork
         {
+            /// <summary>
+            /// Execute the outstanding work.
+            /// </summary>
             void Execute();
         }
 
@@ -157,7 +163,7 @@ namespace Realms.Native
             Logger.LogDefault(LogLevel.Debug, "Creating SyncSocketProvider.");
             _onWebSocketConnection = onWebSocketConnection;
             _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
-            _workThread = Task.Factory.StartNew(WorkThread, cancellationToken: default, creationOptions: TaskCreationOptions.LongRunning | TaskCreationOptions.RunContinuationsAsynchronously, scheduler: TaskScheduler.Default).Unwrap();
+            _workThread = Task.Run(WorkThread);
         }
 
         private partial Task WorkThread();

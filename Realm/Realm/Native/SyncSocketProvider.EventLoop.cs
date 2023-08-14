@@ -88,7 +88,7 @@ namespace Realms.Native
                 _cancellationToken = cancellationToken;
             }
 
-            public unsafe void Execute()
+            public void Execute()
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
@@ -105,22 +105,8 @@ namespace Realms.Native
         {
             Logger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
 
-            if (!string.IsNullOrEmpty(status.Reason))
-            {
-                var bytes = Encoding.UTF8.GetBytes(status.Reason);
-                unsafe
-                {
-                    fixed (byte* data = bytes)
-                    {
-                        var reason = new StringValue { data = data, size = bytes.Length };
-                        NativeMethods.run_callback(nativeCallback, status.Code, reason);
-                    }
-                }
-            }
-            else
-            {
-                NativeMethods.run_callback(nativeCallback, status.Code, StringValue.Null);
-            }
+            using var arena = new Arena();
+            NativeMethods.run_callback(nativeCallback, status.Code, StringValue.AllocateFrom(status.Reason, arena));
         }
 
         private async Task PostWorkAsync(IntPtr nativeCallback)
@@ -129,7 +115,7 @@ namespace Realms.Native
             await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, Status.OK, _cts.Token));
         }
 
-        private partial async Task WorkThread()
+        private async partial Task WorkThread()
         {
             Logger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
             try
