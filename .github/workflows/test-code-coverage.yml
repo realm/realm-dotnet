@@ -160,7 +160,15 @@ jobs:
       run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net7.0/linux-x64' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage
+    - uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: crash-report
+        path: /tmp/*.crashreport.json
     # - name: Publish Coverage
     #   id: publish-coveralls
     #   uses: coverallsapp/github-action@95b1a2355bd0e526ad2fd62da9fd386ad4c98474
