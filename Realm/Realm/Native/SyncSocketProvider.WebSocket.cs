@@ -37,6 +37,7 @@ namespace Realms.Native
             private readonly IntPtr _observer;
             private readonly ChannelWriter<IWork> _workQueue;
             private readonly CancellationTokenSource _cts = new();
+            private readonly CancellationToken _cancellationToken;
 
             private readonly Uri _uri;
             private readonly Task _readThread;
@@ -50,18 +51,18 @@ namespace Realms.Native
                 _observer = observer;
                 _workQueue = workQueue;
                 _uri = uri;
+                _cancellationToken = _cts.Token;
                 _readThread = Task.Run(ReadThread);
             }
 
             private async Task ReadThread()
             {
                 Logger.LogDefault(LogLevel.Trace, "Entering WebSocket event loop.");
-                var cancellationToken = _cts.Token;
 
                 try
                 {
-                    await _webSocket.ConnectAsync(_uri, cancellationToken);
-                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol!, _observer, cancellationToken));
+                    await _webSocket.ConnectAsync(_uri, _cancellationToken);
+                    await _workQueue.WriteAsync(new WebSocketConnectedWork(_webSocket.SubProtocol!, _observer, _cancellationToken));
                 }
                 catch (Exception e)
                 {
@@ -74,7 +75,7 @@ namespace Realms.Native
                         }
                     }
 
-                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, cancellationToken));
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cancellationToken));
                     return;
                 }
 
@@ -83,7 +84,7 @@ namespace Realms.Native
                 {
                     try
                     {
-                        var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                        var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancellationToken);
                         switch (result.MessageType)
                         {
                             case WebSocketMessageType.Binary:
@@ -92,13 +93,13 @@ namespace Realms.Native
                                 {
                                     var current_buffer = _receiveBuffer;
                                     _receiveBuffer = new MemoryStream();
-                                    await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, cancellationToken));
+                                    await _workQueue.WriteAsync(new BinaryMessageReceivedWork(current_buffer, _observer, _cancellationToken));
                                 }
 
                                 break;
                             case WebSocketMessageType.Close:
                                 Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
-                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription!, _observer, cancellationToken));
+                                await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription!, _observer, _cancellationToken));
                                 break;
                             default:
                                 Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
@@ -113,7 +114,7 @@ namespace Realms.Native
                             Logger.LogDefault(LogLevel.Trace, e.StackTrace);
                         }
 
-                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, cancellationToken));
+                        await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cancellationToken));
                         return;
                     }
                 }
@@ -121,7 +122,7 @@ namespace Realms.Native
 
             public async void Write(BinaryValue data, IntPtr native_callback)
             {
-                if (_webSocket.State == WebSocketState.Aborted)
+                if (_webSocket.State == WebSocketState.Aborted || _cancellationToken.IsCancellationRequested)
                 {
                     NativeMethods.delete_callback(native_callback);
                     return;
@@ -132,7 +133,7 @@ namespace Realms.Native
                 var status = Status.OK;
                 try
                 {
-                    await _webSocket.SendAsync(new(buffer), WebSocketMessageType.Binary, true, _cts.Token);
+                    await _webSocket.SendAsync(new(buffer), WebSocketMessageType.Binary, true, _cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -145,7 +146,7 @@ namespace Realms.Native
                     // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
                     // but the default implementation always calls it with Ok. Which is it?
                     // status = new Status(NativeMethods.ErrorCode.RuntimeError, e.Message);
-                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cts.Token));
+                    await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cancellationToken));
                     NativeMethods.delete_callback(native_callback);
                     return;
                 }
@@ -154,7 +155,7 @@ namespace Realms.Native
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
 
-                await _workQueue.WriteAsync(new EventLoopWork(native_callback, status, _cts.Token));
+                await _workQueue.WriteAsync(new EventLoopWork(native_callback, status, _cancellationToken));
             }
 
             public async void Dispose()
