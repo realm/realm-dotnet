@@ -171,7 +171,7 @@ namespace Realms
         private WeakReference<SubscriptionSet>? _subscriptionRef;
 
         private State _state;
-        private WeakReference<Session>? _sessionRef;
+        private SessionProvider? _sessionProvider;
         private Transaction? _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
@@ -247,22 +247,9 @@ namespace Realms
                     throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
                 }
 
-                if (_sessionRef is null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
-                {
-                    var sessionHandle = SharedRealmHandle.GetSession();
-                    session = new Session(sessionHandle);
+                _sessionProvider ??= new SessionProvider(SharedRealmHandle);
 
-                    if (_sessionRef is null)
-                    {
-                        _sessionRef = new WeakReference<Session>(session);
-                    }
-                    else
-                    {
-                        _sessionRef.SetTarget(session);
-                    }
-                }
-
-                return session;
+                return _sessionProvider.GetSession();
             }
         }
 
@@ -1356,6 +1343,47 @@ namespace Realms
         }
 
         #endregion Transactions
+
+        internal class SessionProvider
+        {
+            private readonly SharedRealmHandle _sharedRealmHandle;
+            private WeakReference<Session>? _weakSessionRef;
+            private Session? _strongSessionRef;
+
+            public SessionProvider(SharedRealmHandle sharedRealmHandle)
+            {
+                _sharedRealmHandle = sharedRealmHandle;
+            }
+
+            public Session GetSession()
+            {
+                if(_strongSessionRef?.IsClosed == false)
+                {
+                    return _strongSessionRef;
+                }
+
+                if (_weakSessionRef?.TryGetTarget(out var targetSession) == true && !targetSession.IsClosed)
+                {
+                    return targetSession;
+                }
+
+                var session = new Session(_sharedRealmHandle.GetSession(), OnSessionSubscribed, OnSessionUnsubscribed);
+
+                _weakSessionRef = new WeakReference<Session>(session);
+
+                return session;
+            }
+
+            private void OnSessionSubscribed(Session session)
+            {
+                _strongSessionRef = session;
+            }
+
+            private void OnSessionUnsubscribed()
+            {
+                _strongSessionRef = null;
+            }
+        }
 
         internal class RealmMetadata
         {

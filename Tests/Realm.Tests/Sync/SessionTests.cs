@@ -1005,7 +1005,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_Free_Instance_Even_With_PropertyChanged_Subscribers()
+        public void Session_Should_Not_Free_Instance_With_PropertyChanged_Subscribers()
         {
             WeakReference weakSessionRef = null!;
 
@@ -1016,11 +1016,73 @@ namespace Realms.Tests.Sync
                 var session = realm.SyncSession;
                 weakSessionRef = new WeakReference(session);
                 Assert.That(weakSessionRef.IsAlive, Is.True);
-                session.PropertyChanged += (sender, e) => { };
+                session.PropertyChanged += HandlePropertyChanged;
             });
+
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+            }
+
+            GC.Collect();
+            Assert.That(weakSessionRef.IsAlive, Is.True);
+        }
+
+        [Test]
+        public void Session_Should_Free_Instance_With_No_PropertyChanged_Subscribers()
+        {
+            WeakReference weakSessionRef = null!;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+                weakSessionRef = new WeakReference(session);
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+                session.PropertyChanged += HandlePropertyChanged;
+                session.PropertyChanged -= HandlePropertyChanged;
+            });
+
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+            }
 
             GC.Collect();
             Assert.That(weakSessionRef.IsAlive, Is.False);
+        }
+
+        [Test]
+        public void Session_Should_Keep_Instance_Until_There_Are_Subscribers()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                WeakReference weakSessionRef = null!;
+
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+
+                weakSessionRef = new Func<WeakReference>(() =>
+                {
+                    return new WeakReference(realm.SyncSession);
+                })();
+
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+
+                realm.SyncSession.PropertyChanged += HandlePropertyChanged;
+
+                // We want to have more assurance that the reference is not being collected at a later time
+                await WaitUntilReferencesAreCollected(500, weakSessionRef);
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+
+                realm.SyncSession.PropertyChanged -= HandlePropertyChanged;
+
+                await WaitUntilReferencesAreCollected(500, weakSessionRef);
+                Assert.That(weakSessionRef.IsAlive, Is.False);
+            });
+
+            static void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+            }
         }
 
         [Test]
