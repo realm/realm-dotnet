@@ -32,9 +32,7 @@ In order to run the example project you need to:
 ## Application structure
 
 <p align="center">
-    <kbd>
-        <img src="Images/app.png">
-    <7kbd>
+    <img src="Images/app.png">
 </p>
 
 The sample app is composed of 3 pages:
