@@ -181,10 +181,14 @@ namespace Realms.Sync
                 use_cache = config.UseAppCache,
             };
 
-            if (Environment.GetEnvironmentVariable("REALM_DOTNET_USE_LEGACY_WEBSOCKET") == null)
+            if (config.UseManagedWebSockets)
             {
                 var provider = new SyncSocketProvider(config.OnSyncWebSocketConnection);
                 nativeConfig.managed_websocket_provider = GCHandle.ToIntPtr(GCHandle.Alloc(provider));
+            }
+            else if (config.OnSyncWebSocketConnection is not null)
+            {
+                throw new ArgumentException($"{nameof(AppConfiguration.OnSyncWebSocketConnection)} cannot be used unless {nameof(AppConfiguration.UseManagedWebSockets)} is enabled.");
             }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
