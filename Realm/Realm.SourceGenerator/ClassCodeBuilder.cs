@@ -284,7 +284,7 @@ private {_accessorInterfaceName}? _accessor;
 
 Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
+private {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
 /// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]

@@ -39,7 +39,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IUnqueryableBacklinksAccessor Accessor => _accessor ??= new UnqueryableBacklinksUnmanagedAccessor(typeof(UnqueryableBacklinks));
+        private IUnqueryableBacklinksAccessor Accessor => _accessor ??= new UnqueryableBacklinksUnmanagedAccessor(typeof(UnqueryableBacklinks));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

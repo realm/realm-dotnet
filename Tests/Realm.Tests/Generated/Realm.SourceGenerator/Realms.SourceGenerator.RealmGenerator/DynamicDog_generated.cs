@@ -39,7 +39,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDynamicDogAccessor Accessor => _accessor ??= new DynamicDogUnmanagedAccessor(typeof(DynamicDog));
+        private IDynamicDogAccessor Accessor => _accessor ??= new DynamicDogUnmanagedAccessor(typeof(DynamicDog));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

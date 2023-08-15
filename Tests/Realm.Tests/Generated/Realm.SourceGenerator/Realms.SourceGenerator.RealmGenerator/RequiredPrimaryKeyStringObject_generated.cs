@@ -40,7 +40,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRequiredPrimaryKeyStringObjectAccessor Accessor => _accessor ??= new RequiredPrimaryKeyStringObjectUnmanagedAccessor(typeof(RequiredPrimaryKeyStringObject));
+        private IRequiredPrimaryKeyStringObjectAccessor Accessor => _accessor ??= new RequiredPrimaryKeyStringObjectUnmanagedAccessor(typeof(RequiredPrimaryKeyStringObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

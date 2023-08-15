@@ -43,7 +43,7 @@ namespace Realms.Tests.Sync
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IBasicAsymmetricObjectAccessor Accessor => _accessor ??= new BasicAsymmetricObjectUnmanagedAccessor(typeof(BasicAsymmetricObject));
+        private IBasicAsymmetricObjectAccessor Accessor => _accessor ??= new BasicAsymmetricObjectUnmanagedAccessor(typeof(BasicAsymmetricObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

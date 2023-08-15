@@ -50,7 +50,7 @@ namespace Realms.Tests.Sync
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ISyncObjectWithRequiredStringListAccessor Accessor => _accessor ??= new SyncObjectWithRequiredStringListUnmanagedAccessor(typeof(SyncObjectWithRequiredStringList));
+        private ISyncObjectWithRequiredStringListAccessor Accessor => _accessor ??= new SyncObjectWithRequiredStringListUnmanagedAccessor(typeof(SyncObjectWithRequiredStringList));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -40,7 +40,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAAccessor Accessor => _accessor ??= new AUnmanagedAccessor(typeof(A));
+        private IAAccessor Accessor => _accessor ??= new AUnmanagedAccessor(typeof(A));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

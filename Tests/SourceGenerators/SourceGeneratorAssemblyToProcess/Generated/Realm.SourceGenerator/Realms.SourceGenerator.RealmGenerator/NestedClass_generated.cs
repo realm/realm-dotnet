@@ -37,7 +37,7 @@ namespace SourceGeneratorPlayground
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal INestedClassAccessor Accessor => _accessor ??= new NestedClassUnmanagedAccessor(typeof(NestedClass));
+            private INestedClassAccessor Accessor => _accessor ??= new NestedClassUnmanagedAccessor(typeof(NestedClass));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]

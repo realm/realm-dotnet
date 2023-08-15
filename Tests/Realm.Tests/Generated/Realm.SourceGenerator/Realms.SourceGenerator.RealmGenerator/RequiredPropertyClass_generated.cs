@@ -37,7 +37,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRequiredPropertyClassAccessor Accessor => _accessor ??= new RequiredPropertyClassUnmanagedAccessor(typeof(RequiredPropertyClass));
+        private IRequiredPropertyClassAccessor Accessor => _accessor ??= new RequiredPropertyClassUnmanagedAccessor(typeof(RequiredPropertyClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
