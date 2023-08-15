@@ -223,12 +223,11 @@ public static Realm GetRealm()
 
 private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
 {
-    var session = (Session)sender!;
-
-    if (e.PropertyName == nameof(Session.ConnectionState))
+    if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
     {
         // React to connection state changes
-        Console.WriteLine($"New connection state: {session.ConnectionState}");
+        LogAndShowToast($"New connection state: {session.ConnectionState}");
+        SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
     }
 }
 ```
@@ -253,22 +252,17 @@ For an easier testing, there are 3 buttons on the main page, that simulate diffe
 
 Subscription errors can happen when there is an issue with the subscriptions used in Flexible Sync, for example when trying to create a subscription for a property that is not in the list of [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields). In the .NET SDK subscription errors are represented by the `SubscriptionException` class. 
 
-When there is an error with the subscriptions, then `realm.Subscriptions.State` will be equal to `SubscriptionSetState.Error` and the corresponding exception will be set on `realm.Subscriptions.Error`. In general, after updating the subscription set, it is convenient to wait on `realm.Subscriptions.WaitForSynchronizationAsync` to catch possible exceptions. Please note that if you are using the new subscribe API, then you will need to wait on `query.SubscribeAsync`.
+When there is an error with the subscriptions, then `realm.Subscriptions.State` will be equal to `SubscriptionSetState.Error` and the corresponding exception will be set on `realm.Subscriptions.Error`. In general, after updating the subscription set, it is convenient to wait on on `query.SubscribeAsync` to catch possible exceptions. Please note that if you are using the the old subscription API, then you will need to wait on `realm.Subscriptions.WaitForSynchronizationAsync`.
 
 #### Simulate subscription error
 
 Clicking on the *Simulate Subscription Error* button in the app will simulate a subscription error by subscribing to an unsupported flexible sync query. We then catch the exception and remove the invalid subscription from the set:
 
 ```csharp
-realm.Subscriptions.Update(() =>
-{
-    var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
-    realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
-});
-
 try
 {
-    await realm.Subscriptions.WaitForSynchronizationAsync();
+    var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
+    await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
 }
 catch (SubscriptionException ex)
 {
@@ -280,13 +274,18 @@ catch (SubscriptionException ex)
 }
 ```
 
-When using the new subscription API, this is equivalent to:
+When using the old API, this is equivalent to:
 
 ```csharp
-try
+realm.Subscriptions.Update(() =>
 {
     var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
-    await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
+    realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
+});
+
+try
+{
+    await realm.Subscriptions.WaitForSynchronizationAsync();
 }
 catch (SubscriptionException ex)
 {

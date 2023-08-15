@@ -71,21 +71,21 @@ namespace QuickJournalSync.Services
 
         public static async Task LoginAsync(string email, string password)
         {
-            CheckIfInitialized();
+        CheckIfInitialized();
 
-            await _app.LogInAsync(Credentials.EmailPassword(email, password));
+        await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-            // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
-            var cts = new CancellationTokenSource(4000);
+        // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
+        var cts = new CancellationTokenSource(4000);
 
-            try
-            {
-                using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
-            }
-            catch (TaskCanceledException)
-            {
-                // If there are connectivity issues, or the synchronization is taking too long we arrive here
-            }
+        try
+        {
+            using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // If there are connectivity issues, or the synchronization is taking too long we arrive here
+        }
         }
 
         public static async Task LogoutAsync()
@@ -203,14 +203,12 @@ namespace QuickJournalSync.Services
 
         private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            var session = (Session)sender!;
-
-            if (e.PropertyName == nameof(Session.ConnectionState))
-            {
-                // React to connection state changes
-                LogAndShowToast($"New connection state: {session.ConnectionState}");
-                SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
-            }
+    if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
+    {
+        // React to connection state changes
+        LogAndShowToast($"New connection state: {session.ConnectionState}");
+        SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
+    }
         }
 
         #endregion
