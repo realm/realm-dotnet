@@ -51,6 +51,7 @@ runs:
             - $DEVICEFARM_LOG_DIR
         file_artifacts: |
           Customer Artifacts.zip
+        timeout: 5400 # 1.5 hours
     - run: |
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
         echo "results-path=${{ github.workspace }}/artifacts/Host_Machine_Files/`$DEVICEFARM_LOG_DIR/TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
