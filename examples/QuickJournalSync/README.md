@@ -197,9 +197,9 @@ The way that the sample application deals with offline realms loosely follow the
     }
     ```
 
-### Connection state changes
+## Connection state changes
 
-In order to react to connection state changes for the synchronisation you need to subscribe to `realm.SyncSession.PropertyChanges` and look out for the `Session.ConnectionState` property, like in the following example:
+In order to react to connection state changes for the synchronization you need to subscribe to `realm.SyncSession.PropertyChanges` and look out for the `Session.ConnectionState` property, like in the following example:
 
 ```csharp
 public static Realm GetRealm()
@@ -226,7 +226,7 @@ private static void HandleSyncSessionPropertyChanged(object? sender, PropertyCha
 
 When reacting to connection state changes, please remember that those changes could be momentary, for example due to a drop in the internet connection of the device.
 
-#### Simulate connection state changes in the app
+### Simulate connection state changes in the app
 
 You can simulate connection state changes in the app by disabling the internet connection of the testing device, for instance. The app will show a toast when the connection state changes, as well as show the current connection state in the bottom part of the main page.
 
