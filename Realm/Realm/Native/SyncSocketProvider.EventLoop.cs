@@ -23,123 +23,122 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Realms.Logging;
 
-namespace Realms.Native
+namespace Realms.Native;
+
+internal partial class SyncSocketProvider
 {
-    internal partial class SyncSocketProvider
+    private class Timer
     {
-        private class Timer
+        private readonly CancellationTokenSource _cts = new();
+
+        internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
         {
-            private readonly CancellationTokenSource _cts = new();
-
-            internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
+            Logger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
+            var cancellationToken = _cts.Token;
+            Task.Delay(delay, cancellationToken).ContinueWith(async _ =>
             {
-                Logger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
-                var cancellationToken = _cts.Token;
-                Task.Delay(delay, cancellationToken).ContinueWith(async _ =>
-                {
-                    await workQueue.WriteAsync(new Work(nativeCallback, cancellationToken));
-                });
-            }
-
-            internal void Cancel()
-            {
-                Logger.LogDefault(LogLevel.Trace, $"Canceling timer.");
-                _cts.Cancel();
-                _cts.Dispose();
-            }
-
-            private class Work : IWork
-            {
-                private readonly IntPtr _nativeCallback;
-                private readonly CancellationToken _cancellationToken;
-
-                public Work(IntPtr nativeCallback, CancellationToken cancellationToken)
-                {
-                    _nativeCallback = nativeCallback;
-                    _cancellationToken = cancellationToken;
-                }
-
-                public void Execute()
-                {
-                    var status = Status.OK;
-                    if (_cancellationToken.IsCancellationRequested)
-                    {
-                        status = new(ErrorCode.OperationAborted, "Timer canceled");
-                    }
-
-                    RunCallback(_nativeCallback, status);
-                }
-            }
+                await workQueue.WriteAsync(new Work(nativeCallback, cancellationToken));
+            });
         }
 
-        private class EventLoopWork : IWork
+        internal void Cancel()
+        {
+            Logger.LogDefault(LogLevel.Trace, $"Canceling timer.");
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+
+        private class Work : IWork
         {
             private readonly IntPtr _nativeCallback;
-            private readonly Status _status;
-
-            // Belongs to SyncSocketProvider. When Native destroys the Provider we need to stop executing
-            // enqueued work, but we need to release all the callbacks we copied on the heap.
             private readonly CancellationToken _cancellationToken;
 
-            public EventLoopWork(IntPtr nativeCallback, Status status, CancellationToken cancellationToken)
+            public Work(IntPtr nativeCallback, CancellationToken cancellationToken)
             {
                 _nativeCallback = nativeCallback;
-                _status = status;
                 _cancellationToken = cancellationToken;
             }
 
             public void Execute()
             {
+                var status = Status.OK;
                 if (_cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
-                    NativeMethods.delete_callback(_nativeCallback);
-                    return;
+                    status = new(ErrorCode.OperationAborted, "Timer canceled");
                 }
 
-                RunCallback(_nativeCallback, _status);
+                RunCallback(_nativeCallback, status);
             }
         }
+    }
 
-        private static void RunCallback(IntPtr nativeCallback, Status status)
+    private class EventLoopWork : IWork
+    {
+        private readonly IntPtr _nativeCallback;
+        private readonly Status _status;
+
+        // Belongs to SyncSocketProvider. When Native destroys the Provider we need to stop executing
+        // enqueued work, but we need to release all the callbacks we copied on the heap.
+        private readonly CancellationToken _cancellationToken;
+
+        public EventLoopWork(IntPtr nativeCallback, Status status, CancellationToken cancellationToken)
         {
-            Logger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
-
-            using var arena = new Arena();
-            NativeMethods.run_callback(nativeCallback, status.Code, StringValue.AllocateFrom(status.Reason, arena));
+            _nativeCallback = nativeCallback;
+            _status = status;
+            _cancellationToken = cancellationToken;
         }
 
-        private async Task PostWorkAsync(IntPtr nativeCallback)
+        public void Execute()
         {
-            Logger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
-            await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, Status.OK, _cts.Token));
-        }
-
-        private async partial Task WorkThread()
-        {
-            Logger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
-            try
+            if (_cancellationToken.IsCancellationRequested)
             {
-                while (await _workQueue.Reader.WaitToReadAsync())
-                {
-                    while (_workQueue.Reader.TryRead(out var work))
-                    {
-                        work.Execute();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
-                if (!string.IsNullOrEmpty(e.StackTrace))
-                {
-                    Logger.LogDefault(LogLevel.Trace, e.StackTrace);
-                }
-
-                throw;
+                Logger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
+                NativeMethods.delete_callback(_nativeCallback);
+                return;
             }
 
-            Logger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
+            RunCallback(_nativeCallback, _status);
         }
+    }
+
+    private static void RunCallback(IntPtr nativeCallback, Status status)
+    {
+        Logger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
+
+        using var arena = new Arena();
+        NativeMethods.run_callback(nativeCallback, status.Code, StringValue.AllocateFrom(status.Reason, arena));
+    }
+
+    private async Task PostWorkAsync(IntPtr nativeCallback)
+    {
+        Logger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
+        await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, Status.OK, _cts.Token));
+    }
+
+    private async partial Task WorkThread()
+    {
+        Logger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
+        try
+        {
+            while (await _workQueue.Reader.WaitToReadAsync())
+            {
+                while (_workQueue.Reader.TryRead(out var work))
+                {
+                    work.Execute();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
+            if (!string.IsNullOrEmpty(e.StackTrace))
+            {
+                Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+            }
+
+            throw;
+        }
+
+        Logger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
     }
 }
