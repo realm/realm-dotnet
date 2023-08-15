@@ -75,7 +75,17 @@ namespace QuickJournalSync.Services
 
             await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-            using var realm = await Realm.GetInstanceAsync(GetRealmConfig());
+            // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
+            var cts = new CancellationTokenSource(4000);
+
+            try
+            {
+                using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // If there are connectivity issues, or the synchronization is taking too long we arrive here
+            }
         }
 
         public static async Task LogoutAsync()

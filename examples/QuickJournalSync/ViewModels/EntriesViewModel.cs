@@ -82,7 +82,8 @@ namespace QuickJournalSync.ViewModels
             await RealmService.LogoutAsync();
             IsBusy = false;
 
-            await Shell.Current.GoToAsync($"//login");
+            // This is the simplest way to avoid reusing pages after logout
+            Application.Current!.MainPage = new AppShell();
         }
 
         [RelayCommand]

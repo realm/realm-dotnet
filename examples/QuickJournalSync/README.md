@@ -32,7 +32,7 @@ In order to run the example project you need to:
 ## Application structure
 
 <p align="center">
-    <img src="Images/app.png">
+    <img src="Images/app.png" style="border: 2px solid gray;">
 </p>
 
 The sample app is composed of 3 pages:
@@ -148,8 +148,7 @@ if (app.CurrentUser == null)
 
     try
     {
-        // The user just logged in, so we probably still have connectivity here.
-        // Therefore we can get the realm asynchronously, with all the data synchronized.
+        // We get the realm asynchronously after login, with all the data synchronized.
         realm = await Realm.GetInstanceAsync(realmConfig, cts.Token);
     }
     catch (TaskCanceledException)
@@ -182,7 +181,17 @@ The way that the sample application deals with offline realms loosely follow the
 
         await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-        using var realm = await Realm.GetInstanceAsync(GetRealmConfig());
+        // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
+        var cts = new CancellationTokenSource(4000);
+
+        try
+        {
+            using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // If there are connectivity issues, or the synchronization is taking too long we arrive here
+        }
     }
     ```
 - If the user just logged in, or was already logged in (`CurrentUser != null`), then we go to the main page (`EntriesPage`). Here, the method to open a realm (`RealmService.GetMainThreadRealm`) uses `Realm.GetInstance`, because we don't need to have the application completely synchronized before showing the main page.
