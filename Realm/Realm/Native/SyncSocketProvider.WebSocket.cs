@@ -143,9 +143,7 @@ internal partial class SyncSocketProvider
                     Logger.LogDefault(LogLevel.Trace, e.StackTrace);
                 }
 
-                // TODO: The documentation for WebSocketObserver::async_write_binary() says the handler should be called with RuntimeError in case of errors
-                // but the default implementation always calls it with Ok. Which is it?
-                // status = new Status(NativeMethods.ErrorCode.RuntimeError, e.Message);
+                // in case of errors notify the websocket observer and just dispose the callback
                 await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cancellationToken));
                 NativeMethods.delete_callback(native_callback);
                 return;
