@@ -19,6 +19,7 @@
 * Fixed a rare corruption of files on streaming format (often following compact, convert or copying to a new file). (Core 13.17.1)
 * Trying to search a full-text indexes created as a result of an additive schema change (i.e. applying the differences between the local schema and a synchronized realm's schema) could have resulted in an IllegalOperation error with the error code `Column has no fulltext index`. (Core 13.17.1)
 * Sync progress for DOWNLOAD messages from server state was updated wrongly. This may have resulted in an extra round-trip to the server. (Core 13.17.1)
+* Added option to use managed WebSockets ([`System.Net.WebSockets.ClientWebSocket`](https://learn.microsoft.com/en-us/dotnet/api/system.net.websockets.clientwebsocket)) instead of Realm's built-in WebSocket client for Sync traffic. Managed WebSockets offer improved support for proxies and firewalls that require authentication. This feature is currently opt-in and can be enabled by setting `AppConfiguration.UseManagedWebSockets` to true. Managed WebSockets will become the default in a future version. ([PR #3412](https://github.com/realm/realm-dotnet/pull/3412)).
 
 ### Fixed
 * Fixed a race condition between canceling an async write transaction and closing the Realm file, which could result in an `ObjectDisposedException : Safe handle has been closed` being thrown. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
