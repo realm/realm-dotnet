@@ -138,7 +138,7 @@ namespace Realms.Sync
         /// <remarks>
         /// You can use this to modify the default <see cref="ClientWebSocket"/> behavior. Normally this is not
         /// required to connect to MongoDB Atlas, but it can be useful if client devices are behind a corporate firewall
-        /// or use a more complex networking setup. Requires that <see cref="UseManagedWebSockets" /> is set to <c>true</c>. 
+        /// or use a more complex networking setup. Requires that <see cref="UseManagedWebSockets" /> is set to <c>true</c>.
         /// </remarks>
         public Action<ClientWebSocketOptions>? OnSyncWebSocketConnection { get; set; }
 
@@ -148,7 +148,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value><c>true</c> to use <see cref="ClientWebSocket"/>; <c>false</c> to use the built-in Realm WebSocket client.</value>
         /// <remarks>The default value is <c>false</c>, but this will change in a future version.</remarks>
-        /// <seealso cref="OnSyncWebSocketConnection" /> 
+        /// <seealso cref="OnSyncWebSocketConnection" />
         public bool UseManagedWebSockets { get; set; }
 
         /// <summary>
