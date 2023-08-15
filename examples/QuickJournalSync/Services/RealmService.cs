@@ -21,8 +21,6 @@ namespace QuickJournalSync.Services
 
         private static Realm? _mainThreadRealm;
 
-        private static Session? _session;
-
         public static User? CurrentUser => _app?.CurrentUser;
 
         public static event EventHandler<ConnectionState>? SyncConnectionStateChanged;
@@ -55,8 +53,7 @@ namespace QuickJournalSync.Services
                     var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
                         clientResetHandler: MakeClientResetHandler());
                     _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
-                    _session = _mainThreadRealm.SyncSession;
-                    _session.PropertyChanged += HandleSyncSessionPropertyChanged;
+                    _mainThreadRealm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
                 }
             }
 
@@ -91,13 +88,12 @@ namespace QuickJournalSync.Services
             }
 
             await CurrentUser.LogOutAsync();
-            _mainThreadRealm?.Dispose();
-            _mainThreadRealm = null;
 
-            if (_session is not null)
+            if (_mainThreadRealm is not null)
             {
-                _session.PropertyChanged -= HandleSyncSessionPropertyChanged;
-                _session = null;
+                _mainThreadRealm.SyncSession.PropertyChanged -= HandleSyncSessionPropertyChanged;
+                _mainThreadRealm.Dispose();
+                _mainThreadRealm = null;
             }
         }
 
@@ -147,17 +143,12 @@ namespace QuickJournalSync.Services
             const string subErrorName = "subError";
             var realm = GetMainThreadRealm();
 
-            // Here we are adding a subscription with an unsupported query.
-            // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
-            realm.Subscriptions.Update(() =>
-            {
-                var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
-                realm.Subscriptions.Add(unsupportedQuery, new SubscriptionOptions { Name = subErrorName });
-            });
-
             try
             {
-                await realm.Subscriptions.WaitForSynchronizationAsync();
+                // Here we are adding a subscription with an unsupported query.
+                // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
+                var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
+                await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
             }
             catch (SubscriptionException ex)
             {

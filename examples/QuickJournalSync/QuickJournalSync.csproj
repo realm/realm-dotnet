@@ -44,7 +44,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="5.2.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-		<PackageReference Include="Realm" Version="11.3.0" />
+		<PackageReference Include="Realm" Version="11.3.0-alpha.2348" />
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
