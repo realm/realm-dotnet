@@ -18,6 +18,7 @@
 
 using System;
 using System.Net.Http;
+using System.Net.WebSockets;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -125,10 +126,30 @@ namespace Realms.Sync
         /// <remarks>
         /// You can use this to override the default http client handler and configure settings like proxies,
         /// client certificates, and cookies. While these are not required to connect to MongoDB Atlas under
-        /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
+        /// normal circumstances, they can be useful if client devices are behind a corporate firewall or use
         /// a more complex networking setup.
         /// </remarks>
         public HttpMessageHandler? HttpClientHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate that will be used to configure outgoing WebSocket connections to MongoDB Atlas.
+        /// </summary>
+        /// <value>The delegate that will be used to configure outgoing WebSocket connections.</value>
+        /// <remarks>
+        /// You can use this to modify the default <see cref="ClientWebSocket"/> behavior. Normally this is not
+        /// required to connect to MongoDB Atlas, but it can be useful if client devices are behind a corporate firewall
+        /// or use a more complex networking setup. Requires that <see cref="UseManagedWebSockets" /> is set to <c>true</c>.
+        /// </remarks>
+        public Action<ClientWebSocketOptions>? OnSyncWebSocketConnection { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the .NET WEbSocket client or the built-in Realm WebSocket client
+        /// will be used for Sync traffic.
+        /// </summary>
+        /// <value><c>true</c> to use <see cref="ClientWebSocket"/>; <c>false</c> to use the built-in Realm WebSocket client.</value>
+        /// <remarks>The default value is <c>false</c>, but this will change in a future version.</remarks>
+        /// <seealso cref="OnSyncWebSocketConnection" />
+        public bool UseManagedWebSockets { get; set; }
 
         /// <summary>
         /// Gets or sets the options for the assorted types of connection timeouts for sync connections

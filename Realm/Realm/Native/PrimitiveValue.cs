@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -244,16 +245,7 @@ namespace Realms.Native
 
         public readonly string AsString() => string_value!;
 
-        public readonly byte[] AsBinary()
-        {
-            var bytes = new byte[(int)data_value.size];
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                bytes[i] = data_value.data[i];
-            }
-
-            return bytes;
-        }
+        public readonly byte[] AsBinary() => data_value.AsBytes();
 
         public readonly IRealmObjectBase AsObject(Realm realm)
         {
@@ -281,13 +273,6 @@ namespace Realms.Native
 
             handle = null;
             return false;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct BinaryValue
-        {
-            public byte* data;
-            public IntPtr size;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -326,6 +311,8 @@ namespace Realms.Native
         public byte* data;
         public nint size;
 
+        public static readonly StringValue Null = new() { data = null };
+
         public static StringValue AllocateFrom(string? value, Arena arena)
         {
             if (value is null)
@@ -335,17 +322,35 @@ namespace Realms.Native
 
             var byteCount = Encoding.UTF8.GetMaxByteCount(value.Length);
             var buffer = arena.Allocate<byte>(byteCount + 1);
+#if NETCOREAPP2_1_OR_GREATER
+            byteCount = Encoding.UTF8.GetBytes(value, new Span<byte>(buffer.Data, buffer.Length));
+#else
             fixed (char* stringBytes = value)
             {
                 byteCount = Encoding.UTF8.GetBytes(stringBytes, value.Length, buffer.Data, buffer.Length);
-                buffer.Data[byteCount] = 0;
             }
+#endif
 
+            buffer.Data[byteCount] = 0;
             return new StringValue { data = buffer.Data, size = byteCount };
         }
 
         public static implicit operator bool(in StringValue value) => value.data != null;
 
         public static implicit operator string?(in StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct BinaryValue
+    {
+        public byte* data;
+        public IntPtr size;
+
+        public readonly byte[] AsBytes(bool usePooledArray = false)
+        {
+            var bytes = usePooledArray ? ArrayPool<byte>.Shared.Rent((int)size) : new byte[(int)size];
+            Marshal.Copy((IntPtr)data, bytes, 0, (int)size);
+            return bytes;
+        }
     }
 }

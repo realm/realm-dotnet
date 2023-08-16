@@ -81,6 +81,8 @@ namespace Realms.Sync.Native
 
         internal IntPtr managed_http_client;
 
+        internal IntPtr managed_websocket_provider;
+
         internal UInt64 sync_connect_timeout_ms;
 
         internal UInt64 sync_connection_linger_time_ms;

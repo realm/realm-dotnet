@@ -41,7 +41,8 @@ namespace SetupUnityPackage
             "Microsoft.CSharp",
             "Fody",
             "System.Dynamic.Runtime",
-            "Realm.PlatformHelpers"
+            "Realm.PlatformHelpers",
+            "System.Net.WebSockets.Client"
         };
 
         private static readonly IEnumerable<DependencyInfo> _realmDependencies = new[]
@@ -52,6 +53,8 @@ namespace SetupUnityPackage
             new DependencyInfo("System.Buffers", "lib/netstandard2.0/System.Buffers.dll"),
             new DependencyInfo("System.Memory", "lib/netstandard2.0/System.Memory.dll"),
             new DependencyInfo("System.Numerics.Vectors", "lib/netstandard2.0/System.Numerics.Vectors.dll"),
+            new DependencyInfo("System.Threading.Tasks.Extensions", "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll"),
+            new DependencyInfo("System.Threading.Channels", "lib/netstandard2.0/System.Threading.Channels.dll"),
         };
 
         private static readonly IEnumerable<DependencyInfo> _weaverDependencies = new[]
