@@ -8,19 +8,16 @@ namespace QuickJournalSync.Services
 {
     public static class DialogService
     {
-        private static Page? MainPage => Application.Current?.MainPage;
+        private static Page MainPage => Application.Current?.MainPage ??
+            throw new InvalidOperationException("Cannot show dialogs without a Main Page!");
 
         public static Task ShowAlertAsync(string title, string message, string accept)
         {
-            CheckIfMainPageAvailable();
-
             return MainPage.DisplayAlert(title, message, accept);
         }
 
         public static Action ShowActivityIndicator()
         {
-            CheckIfMainPageAvailable();
-
             var popup = new BusyPopup();
             MainPage.ShowPopup(popup);
             return () => popup.Close();
@@ -30,15 +27,6 @@ namespace QuickJournalSync.Services
         {
             var toast = Toast.Make(text, duration, textSize: 18);
             return toast.Show();
-        }
-
-        [MemberNotNull(nameof(MainPage))]
-        private static void CheckIfMainPageAvailable()
-        {
-            if (MainPage == null)
-            {
-                throw new InvalidOperationException("Cannot show dialogs without a Main Page!");
-            }
         }
     }
 }

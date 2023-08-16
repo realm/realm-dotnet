@@ -13,7 +13,6 @@ namespace QuickJournalSync.Services
     {
         private static readonly string _appId = "";
 
-        private static object _mainRealmLock = new();
 
         private static bool _serviceInitialised;
 
@@ -46,15 +45,17 @@ namespace QuickJournalSync.Services
 
         public static Realm GetMainThreadRealm()
         {
-            lock (_mainRealmLock)
+            if (!MainThread.IsMainThread)
             {
-                if (_mainThreadRealm is null)
-                {
-                    var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
-                        clientResetHandler: MakeClientResetHandler());
-                    _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
-                    _mainThreadRealm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
-                }
+                throw new InvalidOperationException("This method should be called only from the main thread!");
+            }
+
+            if (_mainThreadRealm is null)
+            {
+                var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
+                    clientResetHandler: MakeClientResetHandler());
+                _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
+                _mainThreadRealm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
             }
 
             return _mainThreadRealm;
@@ -71,21 +72,21 @@ namespace QuickJournalSync.Services
 
         public static async Task LoginAsync(string email, string password)
         {
-        CheckIfInitialized();
+            CheckIfInitialized();
 
-        await _app.LogInAsync(Credentials.EmailPassword(email, password));
+            await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-        // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
-        var cts = new CancellationTokenSource(4000);
+            // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
+            var cts = new CancellationTokenSource(4000);
 
-        try
-        {
-            using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-            // If there are connectivity issues, or the synchronization is taking too long we arrive here
-        }
+            try
+            {
+                using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // If there are connectivity issues, or the synchronization is taking too long we arrive here
+            }
         }
 
         public static async Task LogoutAsync()
@@ -203,12 +204,12 @@ namespace QuickJournalSync.Services
 
         private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-    if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
-    {
-        // React to connection state changes
-        LogAndShowToast($"New connection state: {session.ConnectionState}");
-        SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
-    }
+            if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
+            {
+                // React to connection state changes
+                LogAndShowToast($"New connection state: {session.ConnectionState}");
+                SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
+            }
         }
 
         #endregion

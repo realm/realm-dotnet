@@ -51,10 +51,7 @@ namespace QuickJournalSync.ViewModels
         {
             var entry = await _realm.WriteAsync(() =>
             {
-                return _realm.Add(new JournalEntry
-                {
-                    CreatedDate = DateTimeOffset.Now,
-                });
+                return _realm.Add(new JournalEntry());
             });
 
             await GoToEntry(entry);
