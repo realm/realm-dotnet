@@ -1,6 +1,6 @@
 # QuickJournalSync
 
-**QuickJournalSync** shows how to integrate Realm and [Atlas Device Sync](https://www.mongodb.com/docs/atlas/app-services/sync/get-started/) in a sample MAUI application, with particular focus on error handling, connection state changes and offline realms. This app is a synced version of [`QuickJournal`](https://github.com/realm/realm-dotnet/tree/main/examples/QuickJournal), so check that if you are mainly interested in how Realm can be used effectively in conjunction with MVVM and data binding.
+**QuickJournalSync** shows how to integrate Realm and [Atlas Device Sync](https://www.mongodb.com/docs/atlas/app-services/sync/get-started/) in a sample MAUI application, with particular focus on error handling, connection state changes and offline realms. This app is a synced version of [`QuickJournal`](https://github.com/realm/realm-dotnet/tree/main/examples/QuickJournal), so check that out if you are mainly interested in how Realm can be used effectively in conjunction with MVVM and data binding.
 
 The app allows the user to keep a very minimal synced journal, where each entry is made up of a title and a body. Every time a new journal entry is added or modified it gets persisted to a realm, and thanks to the bindings the UI gets updated immediately, with no additional code required. The app uses Device Sync to keep the journal entries synchronised with MongoDB Atlas and other devices. 
 
@@ -171,9 +171,9 @@ Please note that this snippet is here only to give an idea about the logical flo
 
 #### How the realm is opened in the sample application
 
-The way that the sample application deals with offline realms loosely follow the snippet for the recommended flow that was shown in the previous section:
+The way that the sample application deals with offline realms loosely follows the snippet for the recommended flow that was shown in the previous section:
 - When the application opens, the `LoginPage` is the first to be loaded.
-- If the user is not logged in already (`CurrentUser == null`), then the user can specify its email and password and login. The login method (`RealmService.LoginAsync`) uses `Realm.GetInstanceAsync`, because we want to be sure to have a completely synchronized realm before showing the main page to the user:
+- If the user is not logged in already (`CurrentUser == null`), then the user can specify their email and password and login. The login method (`RealmService.LoginAsync`) uses `Realm.GetInstanceAsync`, because we want to be sure to have a completely synchronized realm before showing the main page to the user:
     ```csharp
     public static async Task LoginAsync(string email, string password)
     {
@@ -208,7 +208,7 @@ The way that the sample application deals with offline realms loosely follow the
 
 ## Connection state changes
 
-In order to react to connection state changes for the synchronization you need to subscribe to `realm.SyncSession.PropertyChanges` and look out for the `Session.ConnectionState` property, like in the following example:
+In order to react to connection state changes for the synchronization you need to subscribe to `realm.SyncSession.PropertyChanged` and look out for the `Session.ConnectionState` property, like in the following example:
 
 ```csharp
 public static Realm GetRealm()
@@ -243,7 +243,7 @@ You can simulate connection state changes in the app by disabling the internet c
 There are different kind of errors that can happen when working on a synced application:
 - [Subscription errors](#subscription-errors), that are raised when there are issues with subscriptions in Flexible Sync;
 - [Session errors](#session-errors), that are raised when there is an issue with the synchronization or the connection;
-- [Client resets](#client-reset), that are raised in exceptional cases when a client cannot sync data with the backend.
+- [Client reset errors](#client-reset), that are raised in exceptional cases when a client cannot sync data with the backend.
 
 The sample application has been designed to show how to handle these different kind of errors. 
 
@@ -252,7 +252,7 @@ For an easier testing, there are 3 buttons on the main page, that simulate diffe
 
 Subscription errors can happen when there is an issue with the subscriptions used in Flexible Sync, for example when trying to create a subscription for a property that is not in the list of [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields). In the .NET SDK subscription errors are represented by the `SubscriptionException` class. 
 
-When there is an error with the subscriptions, then `realm.Subscriptions.State` will be equal to `SubscriptionSetState.Error` and the corresponding exception will be set on `realm.Subscriptions.Error`. In general, after updating the subscription set, it is convenient to wait on on `query.SubscribeAsync` to catch possible exceptions. Please note that if you are using the the old subscription API, then you will need to wait on `realm.Subscriptions.WaitForSynchronizationAsync`.
+When there is an error with the subscriptions, then `realm.Subscriptions.State` will be equal to `SubscriptionSetState.Error` and the corresponding exception will be available via the `realm.Subscriptions.Error` property. In general, after updating the subscription set, it is convenient to wait on `query.SubscribeAsync` to catch possible exceptions. Please note that if you are using the the old subscription API, then you will need to wait on `realm.Subscriptions.WaitForSynchronizationAsync`.
 
 #### Simulate subscription error
 
