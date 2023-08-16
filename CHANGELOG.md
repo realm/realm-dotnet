@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.4.0 (2023-08-16)
 
 ### Enhancements
 * Added `IQueryable.SubscribeAsync` API as a shorthand for using `SubscriptionSet.Add`. It is a syntax sugar that roughly translates to:
