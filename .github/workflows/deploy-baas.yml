@@ -38,7 +38,7 @@ jobs:
     - name: Generate cluster name
       id: generate-cluster-name
       run: |
-        name=$( echo ${{ github.run_id }}-${{ github.run_attempt }} | md5 | cut -c1-15)
+        name=$( echo ${{ github.run_id }}-${{ github.run_attempt }} | md5sum | cut -c1-15)
         echo "clusterName=$name" >> "$GITHUB_OUTPUT"
     - name: Checkout code
       uses: actions/checkout@v3
