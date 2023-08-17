@@ -1,12 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.Messaging.Messages;
 using QuickJournalSync.Models;
 
-namespace QuickJournalSync.Messages
+namespace QuickJournalSync.Messages;
+
+public class EntryModifiedMessage : ValueChangedMessage<JournalEntry>
 {
-    public class EntryModifiedMessage : ValueChangedMessage<JournalEntry>
+    public EntryModifiedMessage(JournalEntry entry) : base(entry)
     {
-        public EntryModifiedMessage(JournalEntry entry) : base(entry)
-        {
-        }
     }
 }
