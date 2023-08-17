@@ -76,9 +76,16 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
@@ -96,36 +103,64 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-ios:
     uses: ./.github/workflows/test-ios.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-tvos:
     uses: ./.github/workflows/test-tvos.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-android:
     uses: ./.github/workflows/test-android.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
       AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
