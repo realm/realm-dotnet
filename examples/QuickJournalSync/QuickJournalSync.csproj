@@ -63,6 +63,8 @@
 	  <None Remove="Services\" />
 	  <None Remove="Resources\Images\logout.svg" />
 	  <None Remove="Resources\Images\add.svg" />
+	  <None Remove="Resources\Images\wifi_off.svg" />
+	  <None Remove="Resources\Images\wifi_on.svg" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Views\" />
@@ -82,5 +84,7 @@
 	<ItemGroup>
 	  <MauiImage Include="Resources\Images\add.svg" />
 	  <MauiImage Include="Resources\Images\logout.svg" />
+	  <MauiImage Include="Resources\Images\wifi_off.svg" />
+	  <MauiImage Include="Resources\Images\wifi_on.svg" />
 	</ItemGroup>
 </Project>

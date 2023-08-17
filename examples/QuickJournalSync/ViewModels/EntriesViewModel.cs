@@ -14,6 +14,11 @@ namespace QuickJournalSync.ViewModels
     {
         private readonly Realm _realm;
 
+        private bool isOnline = true;
+
+        [ObservableProperty]
+        private string connectionStatusIcon = "wifi_on.png";
+
         [ObservableProperty]
         private IQueryable<JournalEntry>? _entries;
 
@@ -102,6 +107,23 @@ namespace QuickJournalSync.ViewModels
             await DialogService.ShowAlertAsync("Client Reset",
                 "You can simulate a client reset by terminating an re-enabling Device Sync.",
                 "OK");
+        }
+
+        [RelayCommand]
+        public void ChangeConnectionStatus()
+        {
+            isOnline = !isOnline;
+
+            if (isOnline)
+            {
+                _realm.SyncSession.Start();
+            }
+            else
+            {
+                _realm.SyncSession.Stop();
+            }
+
+            ConnectionStatusIcon = isOnline ? "wifi_on.png" : "wifi_off.png";
         }
 
         private void HandleSyncConnectionStateChanged(object? sender, ConnectionState newConnectionState)

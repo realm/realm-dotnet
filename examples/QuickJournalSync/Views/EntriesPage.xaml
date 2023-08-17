@@ -31,7 +31,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="1.1*" />
             </Grid.RowDefinitions>
             <ListView ItemsSource="{Binding Entries}"
                   SelectionMode="None"
@@ -58,7 +58,16 @@
             <VerticalStackLayout BackgroundColor="#E3FCF7"
                 Padding="15" Spacing="15"
                 Grid.Row="1">
-                <Label Text="{Binding ConnectionState, StringFormat='Connection state: {0}'}" HorizontalTextAlignment="Center" />
+                <StackLayout Orientation="Horizontal"
+                             Padding="2">
+                   <Label Text="{Binding ConnectionState, StringFormat='Connection state: {0}'}" 
+                          HorizontalTextAlignment="Center" VerticalOptions="Center"
+                          HorizontalOptions="StartAndExpand"/>
+                   <Button ImageSource="{Binding ConnectionStatusIcon}"
+                                Command="{Binding ChangeConnectionStatusCommand}"
+                                HorizontalOptions="End"
+                                VerticalOptions="Center"/>
+                </StackLayout>
                 <Button Text="Simulate Session Error" Command="{Binding SimulateSessionErrorCommand}"/>
                 <Button Text="Simulate Subscription Error" Command="{Binding SimulateSubscriptionErrorCommand}"/>
                 <Button Text="Simulate Client Reset" Command="{Binding SimulateClientResetCommand}"/>

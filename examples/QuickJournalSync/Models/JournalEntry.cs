@@ -17,7 +17,7 @@ namespace QuickJournalSync.Models
 
         public string? Body { get; set; }
 
-        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset CreatedDate { get; private set; }
 
         // This is only used to simulate a subscription error at the moment.
         public IList<string> Tags { get; } = null!;
@@ -30,6 +30,7 @@ namespace QuickJournalSync.Models
             }
 
             UserId = RealmService.CurrentUser.Id;
+            CreatedDate = DateTimeOffset.Now;
         }
     }
 }

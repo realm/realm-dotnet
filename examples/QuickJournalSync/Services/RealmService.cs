@@ -187,7 +187,6 @@ namespace QuickJournalSync.Services
             {
                 return realm.Add(new JournalEntry
                 {
-                    CreatedDate = DateTimeOffset.Now,
                     UserId = ObjectId.GenerateNewId().ToString(),
                 });
             });

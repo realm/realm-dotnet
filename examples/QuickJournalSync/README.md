@@ -38,7 +38,7 @@ In order to run the example project you need to:
 The sample app is composed of 3 pages:
 - `LoginPage`: it is the page that appears on the first startup of the application, where the user can sign up or login. After the user is logged in, the app transitions to the `EntriesPage`;
 - `EntriesPage`: it is the main page of the application. On the top there is the list of the journal entries, and at the bottom there are 3 buttons that can be used to simulate different kind of errors. It is possible to delete entries or add new one by clicking the plus button in the toolbar. It is also possible to logout the current user by clicking the corresponding button in the toolbar, and this will make the app return to the login page.
-The bottom part of the screen also contains a label that contains the current connection state.
+The bottom part of the screen also contains a label that contains the current connection state, and a button to stop and resume sync.
 - `EntryDetailPage`: it is the page where users can modify or create journal entries by specifying their title and body. 
 
 There is only one realm object in the sample application, `JournalEntry`:
@@ -56,7 +56,7 @@ public partial class JournalEntry : IRealmObject
 
     public string? Body { get; set; }
 
-    public DateTimeOffset CreatedDate { get; set; }
+    public DateTimeOffset CreatedDate { get; private set; }
 
     // This is only used to simulate a subscription error at the moment.
     public IList<string> Tags { get; } = null!;
@@ -69,6 +69,7 @@ public partial class JournalEntry : IRealmObject
         }
 
         UserId = RealmService.CurrentUser.Id;
+        CreatedDate = DateTimeOffset.Now;
     }
 }
 ```
@@ -236,7 +237,7 @@ When reacting to connection state changes, please remember that those changes co
 
 ### Simulate connection state changes in the app
 
-You can simulate connection state changes in the app by disabling the internet connection of the testing device, for instance. The app will show a toast when the connection state changes, as well as show the current connection state in the bottom part of the main page.
+You can simulate connection state changes in the app by clicking the button next to the connection state label, that will stop and resume the sync session. The app will show a toast when the connection state changes, as well as show the current connection state in the bottom part of the main page.
 
 ## Error handling
 
