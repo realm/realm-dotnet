@@ -64,7 +64,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:TargetFramework=net461 -p:RealmTestsStandaloneExe=true
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-framework
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}_net-framework --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-framework
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

@@ -64,7 +64,7 @@ jobs:
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=xamarinmacos
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}_xamarinmacos --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=xamarinmacos
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
@@ -105,7 +105,7 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      run: Tests/Tests.Maui/bin/Release/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=maccatalyst
+      run: Tests/Tests.Maui/bin/Release/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}_maccatalyst --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=maccatalyst
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

@@ -93,7 +93,7 @@ jobs:
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}_net-core-${{ matrix.runner }}-${{ matrix.runtime }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
     - name: Archive core dump
       uses: actions/upload-artifact@v3
       if: failure()
