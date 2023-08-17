@@ -7,255 +7,253 @@ using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
-namespace QuickJournalSync.Services
+namespace QuickJournalSync.Services;
+
+public static class RealmService
 {
-    public static class RealmService
+    private static readonly string _appId = "";
+
+    private static bool _serviceInitialised;
+
+    private static Realms.Sync.App? _app;
+
+    private static Realm? _mainThreadRealm;
+
+    public static User? CurrentUser => _app?.CurrentUser;
+
+    public static event EventHandler<ConnectionState>? SyncConnectionStateChanged;
+
+    public static void Init()
     {
-        private static readonly string _appId = "";
-
-
-        private static bool _serviceInitialised;
-
-        private static Realms.Sync.App? _app;
-
-        private static Realm? _mainThreadRealm;
-
-        public static User? CurrentUser => _app?.CurrentUser;
-
-        public static event EventHandler<ConnectionState>? SyncConnectionStateChanged;
-
-        public static void Init()
+        if (_serviceInitialised)
         {
-            if (_serviceInitialised)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(_appId))
-            {
-                throw new Exception("Remember to add your appId!");
-            }
-
-            var appConfiguration = new AppConfiguration(_appId);
-
-            _app = Realms.Sync.App.Create(appConfiguration);
-
-            _serviceInitialised = true;
+            return;
         }
 
-        public static Realm GetMainThreadRealm()
+        if (string.IsNullOrEmpty(_appId))
         {
-            if (!MainThread.IsMainThread)
-            {
-                throw new InvalidOperationException("This method should be called only from the main thread!");
-            }
-
-            if (_mainThreadRealm is null)
-            {
-                var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
-                    clientResetHandler: MakeClientResetHandler());
-                _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
-                _mainThreadRealm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
-            }
-
-            return _mainThreadRealm;
+            throw new Exception("Remember to add your appId!");
         }
 
-        public static Realm GetBackgroundThreadRealm() => Realm.GetInstance(GetRealmConfig());
+        var appConfiguration = new AppConfiguration(_appId);
 
-        public static async Task RegisterAsync(string email, string password)
+        _app = Realms.Sync.App.Create(appConfiguration);
+
+        _serviceInitialised = true;
+    }
+
+    public static Realm GetMainThreadRealm()
+    {
+        if (!MainThread.IsMainThread)
         {
-            CheckIfInitialized();
-
-            await _app.EmailPasswordAuth.RegisterUserAsync(email, password);
+            throw new InvalidOperationException("This method should be called only from the main thread!");
         }
 
-        public static async Task LoginAsync(string email, string password)
+        if (_mainThreadRealm is null)
         {
-            CheckIfInitialized();
-
-            await _app.LogInAsync(Credentials.EmailPassword(email, password));
-
-            // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
-            var cts = new CancellationTokenSource(4000);
-
-            try
-            {
-                using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
-            }
-            catch (TaskCanceledException)
-            {
-                // If there are connectivity issues, or the synchronization is taking too long we arrive here
-            }
+            var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
+                clientResetHandler: MakeClientResetHandler());
+            _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
+            _mainThreadRealm.SyncSession.PropertyChanged += HandleSyncSessionPropertyChanged;
         }
 
-        public static async Task LogoutAsync()
+        return _mainThreadRealm;
+    }
+
+    public static Realm GetBackgroundThreadRealm() => Realm.GetInstance(GetRealmConfig());
+
+    public static async Task RegisterAsync(string email, string password)
+    {
+        CheckIfInitialized();
+
+        await _app.EmailPasswordAuth.RegisterUserAsync(email, password);
+    }
+
+    public static async Task LoginAsync(string email, string password)
+    {
+        CheckIfInitialized();
+
+        await _app.LogInAsync(Credentials.EmailPassword(email, password));
+
+        // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
+        var cts = new CancellationTokenSource(4000);
+
+        try
         {
-            CheckIfInitialized();
+            using var realm = await Realm.GetInstanceAsync(GetRealmConfig(), cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // If there are connectivity issues, or the synchronization is taking too long we arrive here
+        }
+    }
 
-            if (CurrentUser == null)
-            {
-                return;
-            }
+    public static async Task LogoutAsync()
+    {
+        CheckIfInitialized();
 
-            await CurrentUser.LogOutAsync();
-
-            if (_mainThreadRealm is not null)
-            {
-                _mainThreadRealm.SyncSession.PropertyChanged -= HandleSyncSessionPropertyChanged;
-                _mainThreadRealm.Dispose();
-                _mainThreadRealm = null;
-            }
+        if (CurrentUser == null)
+        {
+            return;
         }
 
-        [MemberNotNull(nameof(_app))]
-        private static void CheckIfInitialized()
+        await CurrentUser.LogOutAsync();
+
+        if (_mainThreadRealm is not null)
         {
-            if (_app == null)
-            {
-                throw new InvalidOperationException("Remember to initialize RealmService!");
-            }
+            _mainThreadRealm.SyncSession.PropertyChanged -= HandleSyncSessionPropertyChanged;
+            _mainThreadRealm.Dispose();
+            _mainThreadRealm = null;
+        }
+    }
+
+    [MemberNotNull(nameof(_app))]
+    private static void CheckIfInitialized()
+    {
+        if (_app == null)
+        {
+            throw new InvalidOperationException("Remember to initialize RealmService!");
+        }
+    }
+
+    private static FlexibleSyncConfiguration GetRealmConfig(SyncConfigurationBase.SessionErrorCallback? sessionErrorCallback = null,
+        ClientResetHandlerBase? clientResetHandler = null)
+    {
+        if (CurrentUser == null)
+        {
+            throw new InvalidOperationException("Cannot get Realm config before login!");
         }
 
-        private static FlexibleSyncConfiguration GetRealmConfig(SyncConfigurationBase.SessionErrorCallback? sessionErrorCallback = null,
-            ClientResetHandlerBase? clientResetHandler = null)
+        var config = new FlexibleSyncConfiguration(CurrentUser)
         {
-            if (CurrentUser == null)
+            PopulateInitialSubscriptions = (realm) =>
             {
-                throw new InvalidOperationException("Cannot get Realm config before login!");
-            }
+                var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
+                realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
+            },
+        };
 
-            var config = new FlexibleSyncConfiguration(CurrentUser)
-            {
-                PopulateInitialSubscriptions = (realm) =>
-                {
-                    var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
-                    realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
-                },
-            };
-
-            if (sessionErrorCallback is not null)
-            {
-                config.OnSessionError = sessionErrorCallback;
-            }
-
-            if (clientResetHandler is not null)
-            {
-                config.ClientResetHandler = clientResetHandler;
-            }
-
-            return config;
+        if (sessionErrorCallback is not null)
+        {
+            config.OnSessionError = sessionErrorCallback;
         }
 
-        #region Subscription Error
-
-        public static async Task SimulateSubscriptionError()
+        if (clientResetHandler is not null)
         {
-            const string subErrorName = "subError";
-            var realm = GetMainThreadRealm();
-
-            try
-            {
-                // Here we are adding a subscription with an unsupported query.
-                // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
-                var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
-                await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
-            }
-            catch (SubscriptionException ex)
-            {
-                LogAndShowToast($"Subscription Error: {ex}");
-
-                // Removing the invalid subscription
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Remove(subErrorName);
-                });
-            }
+            config.ClientResetHandler = clientResetHandler;
         }
 
-        #endregion
+        return config;
+    }
 
-        #region Session Error
+    #region Subscription Error
 
-        public static async Task SimulateSessionError()
+    public static async Task SimulateSubscriptionError()
+    {
+        const string subErrorName = "subError";
+        var realm = GetMainThreadRealm();
+
+        try
         {
-            var realm = GetMainThreadRealm();
+            // Here we are adding a subscription with an unsupported query.
+            // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
+            var unsupportedQuery = realm.All<JournalEntry>().Filter("{'personal', 'work'} IN Tags");
+            await unsupportedQuery.SubscribeAsync(new SubscriptionOptions { Name = subErrorName });
+        }
+        catch (SubscriptionException ex)
+        {
+            LogAndShowToast($"Subscription Error: {ex}");
 
-            // Here we are adding an object that has a UserId different from the id of the current user.
-            // This means that the object is outside of the current query subscriptions, and as such will provoke a session error.
-            await realm.WriteAsync(() =>
+            // Removing the invalid subscription
+            realm.Subscriptions.Update(() =>
             {
-                return realm.Add(new JournalEntry
-                {
-                    UserId = ObjectId.GenerateNewId().ToString(),
-                });
+                realm.Subscriptions.Remove(subErrorName);
             });
         }
+    }
 
-        private static void HandleSessionErrorCallback(Session session, SessionException error)
+    #endregion
+
+    #region Session Error
+
+    public static async Task SimulateSessionError()
+    {
+        var realm = GetMainThreadRealm();
+
+        // Here we are adding an object that has a UserId different from the id of the current user.
+        // This means that the object is outside of the current query subscriptions, and as such will provoke a session error.
+        await realm.WriteAsync(() =>
         {
-            LogAndShowToast($"Session error! {error}");
-        }
-
-        #endregion
-
-        #region Connection state changes
-
-        private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
+            return realm.Add(new JournalEntry
             {
-                // React to connection state changes
-                LogAndShowToast($"New connection state: {session.ConnectionState}");
-                SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
-            }
-        }
+                UserId = ObjectId.GenerateNewId().ToString(),
+            });
+        });
+    }
 
-        #endregion
+    private static void HandleSessionErrorCallback(Session session, SessionException error)
+    {
+        LogAndShowToast($"Session error! {error}");
+    }
 
-        #region ClientReset
+    #endregion
 
-        private static ClientResetHandlerBase MakeClientResetHandler()
+    #region Connection state changes
+
+    private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is Session session && e.PropertyName == nameof(Session.ConnectionState))
         {
-            return new RecoverOrDiscardUnsyncedChangesHandler()
-            {
-                OnBeforeReset = HandleBeforeClientReset,
-                OnAfterRecovery = HandleAfterClientResetRecovery,
-                OnAfterDiscard = HandleAfterClientResetDiscard,
-                ManualResetFallback = HandleManualReset,
-            };
+            // React to connection state changes
+            LogAndShowToast($"New connection state: {session.ConnectionState}");
+            SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
         }
+    }
 
-        private static void HandleBeforeClientReset(Realm beforeFrozen)
+    #endregion
+
+    #region ClientReset
+
+    private static ClientResetHandlerBase MakeClientResetHandler()
+    {
+        return new RecoverOrDiscardUnsyncedChangesHandler()
         {
-            // Callback invoked right before a Client Reset.
-            LogAndShowToast("Before Reset Callback called");
-        }
+            OnBeforeReset = HandleBeforeClientReset,
+            OnAfterRecovery = HandleAfterClientResetRecovery,
+            OnAfterDiscard = HandleAfterClientResetDiscard,
+            ManualResetFallback = HandleManualReset,
+        };
+    }
 
-        private static void HandleAfterClientResetRecovery(Realm beforeFrozen, Realm after)
-        {
-            // Callback invoked right after a Client Reset just succeeded.
-            LogAndShowToast("After Reset Discard Callback called");
-        }
+    private static void HandleBeforeClientReset(Realm beforeFrozen)
+    {
+        // Callback invoked right before a Client Reset.
+        LogAndShowToast("Before Reset Callback called");
+    }
 
-        private static void HandleAfterClientResetDiscard(Realm beforeFrozen, Realm after)
-        {
-            // Callback invoked right after a Client Reset that fell back to discard unsynced changes.
-            LogAndShowToast("After Reset Discard Callback called");
-        }
+    private static void HandleAfterClientResetRecovery(Realm beforeFrozen, Realm after)
+    {
+        // Callback invoked right after a Client Reset just succeeded.
+        LogAndShowToast("After Reset Discard Callback called");
+    }
 
-        private static void HandleManualReset(ClientResetException clientResetException)
-        {
-            // Callback invoked if automatic Client Reset handling fails.
-            LogAndShowToast("Manual Reset Callback called");
-        }
+    private static void HandleAfterClientResetDiscard(Realm beforeFrozen, Realm after)
+    {
+        // Callback invoked right after a Client Reset that fell back to discard unsynced changes.
+        LogAndShowToast("After Reset Discard Callback called");
+    }
 
-        #endregion
+    private static void HandleManualReset(ClientResetException clientResetException)
+    {
+        // Callback invoked if automatic Client Reset handling fails.
+        LogAndShowToast("Manual Reset Callback called");
+    }
 
-        private static void LogAndShowToast(string text)
-        {
-            Console.WriteLine(text);
-            MainThread.BeginInvokeOnMainThread(async () => await DialogService.ShowToast(text));
-        }
+    #endregion
+
+    private static void LogAndShowToast(string text)
+    {
+        Console.WriteLine(text);
+        MainThread.BeginInvokeOnMainThread(async () => await DialogService.ShowToast(text));
     }
 }
