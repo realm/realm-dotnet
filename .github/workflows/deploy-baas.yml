@@ -53,7 +53,7 @@ jobs:
         atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ steps.generate-cluster-name.outputs.clusterName }}_${{ matrix.differentiator }}
+        clusterName: ${{ steps.generate-cluster-name.outputs.clusterName }}-${{ matrix.differentiator }}
         clusterSize: M20
   deploy-apps:
     name: Deploy Apps
@@ -73,5 +73,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ inputs.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }}_${{ matrix.differentiator }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . --baasurl=${{ inputs.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }}-${{ matrix.differentiator }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps

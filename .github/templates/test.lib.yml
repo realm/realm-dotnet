@@ -2,7 +2,7 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode", "fetchPackageArtifacts")
 
 #@ def baasTestArgs(differentiator):
-#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}_"+ differentiator  +" --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
+#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-"+ differentiator  +" --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
 #@ end
 ---
 #@ def publishTestsResults(files, test_title):
