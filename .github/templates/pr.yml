@@ -31,7 +31,7 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  _: #@ template.replace(deployBaas(["Code Coverage"]))
+  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Android", "MacCatalyst"]))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package

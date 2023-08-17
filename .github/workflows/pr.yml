@@ -28,7 +28,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["code-coverage"]'
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
