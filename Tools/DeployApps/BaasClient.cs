@@ -135,29 +135,6 @@ namespace Baas
         private string _groupId = null!;
         private string? _refreshToken;
 
-        private string _shortDifferentiator
-        {
-            get
-            {
-                if (Differentiator.Length < 8)
-                {
-                    return Differentiator;
-                }
-
-                using var sha = SHA256.Create();
-                var inputBytes = Encoding.ASCII.GetBytes(Differentiator);
-                var hashBytes = sha.ComputeHash(inputBytes);
-
-                var sb = new StringBuilder();
-                for (var i = 0; i < 4; i++)
-                {
-                    sb.Append(hashBytes[i].ToString("X2"));
-                }
-
-                return sb.ToString().ToLower();
-            }
-        }
-
         private string _shortSuffix
         {
             get

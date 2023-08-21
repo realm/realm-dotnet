@@ -92,7 +92,9 @@ env:
 #@ else:
 - #@ template.replace(fetchPackageArtifacts())
 #@ end
+#! The following is used in case we need to re-run the action and the main deploy cluster job is not re-run too (because successful)
 - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+  name: Deploy Cluster (alternative)
   if: ${{ inputs.realmUrl }}
   with:
     projectId: ${{ secrets.AtlasProjectId}}

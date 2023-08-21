@@ -140,6 +140,7 @@ jobs:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
     - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      name: Deploy Cluster (alternative)
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
