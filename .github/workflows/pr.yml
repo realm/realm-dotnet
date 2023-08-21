@@ -166,6 +166,7 @@ jobs:
     if: always()
     name: Cleanup
     needs:
+    - deploy-cluster
     - test-code-coverage
     with:
       differentiators: '["code-coverage"]'

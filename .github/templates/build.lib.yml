@@ -44,7 +44,7 @@ deploy-cluster:
 #@ end
 
 #@ def cleanupBaas(dependencies = []):
-#@ needs = []
+#@ needs = ["deploy-cluster"]
 #@ differentiators = []
 #@ for dependency in dependencies:
 #@   needs.append(getJobName("test", dependency))
