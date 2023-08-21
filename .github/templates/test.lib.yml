@@ -92,4 +92,13 @@ env:
 #@ else:
 - #@ template.replace(fetchPackageArtifacts())
 #@ end
+- uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+  if: ${{ inputs.realmUrl }}
+  with:
+    projectId: ${{ secrets.AtlasProjectId}}
+    realmUrl: ${{ inputs.realmUrl }}
+    atlasUrl: ${{ inputs.atlasUrl}}
+    apiKey: ${{ secrets.AtlasPublicKey}}
+    privateApiKey: ${{ secrets.AtlasPrivateKey }}
+    clusterSize: M10
 #@ end
