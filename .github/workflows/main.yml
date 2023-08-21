@@ -308,6 +308,8 @@ jobs:
     - test-ios
     - test-android
     with:
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "macos", "ios", "android"]'
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:

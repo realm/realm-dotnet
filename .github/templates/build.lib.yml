@@ -45,8 +45,10 @@ deploy-cluster:
 
 #@ def cleanupBaas(dependencies = []):
 #@ needs = []
+#@ differentiators = []
 #@ for dependency in dependencies:
 #@   needs.append(getJobName("test", dependency))
+#@   differentiators.append('"' + getJobName("", dependency) + '"')
 #@ end
 cleanup-cluster:
   uses: ./.github/workflows/cleanup-baas.yml
@@ -54,6 +56,8 @@ cleanup-cluster:
   name: Cleanup
   needs: #@ needs
   with:
+    differentiators: #@ '[' + ", ".join(differentiators) + ']'
+    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     BaseUrl: #@ realm_BaseUrl
     AtlasBaseUrl: #@ atlas_BaseUrl
   secrets:
