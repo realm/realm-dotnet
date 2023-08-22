@@ -148,6 +148,7 @@ jobs:
         atlasUrl: ${{ inputs.atlasUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterName: ${{ inputs.clusterName }}-code-coverage
         clusterSize: M10
     - name: Setup Coverlet & Report Generator
       run: |

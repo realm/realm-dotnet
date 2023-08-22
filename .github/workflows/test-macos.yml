@@ -58,6 +58,7 @@ jobs:
         atlasUrl: ${{ inputs.atlasUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterName: ${{ inputs.clusterName }}-xamarinmacos
         clusterSize: M10
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497

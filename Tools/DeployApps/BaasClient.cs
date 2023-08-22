@@ -536,7 +536,7 @@ namespace Baas
                 {
                     var name = doc["name"].AsString;
 
-                    if (!name.EndsWith(_appSuffix))
+                    if (!name.EndsWith(_appSuffix))  //Don't we check this in the Where?
                     {
                         return null;
                     }
