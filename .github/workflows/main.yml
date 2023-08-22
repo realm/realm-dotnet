@@ -305,10 +305,9 @@ jobs:
     - test-net-framework
     - test-code-coverage
     - test-uwp-managed
-    - test-xamarinmacos
+    - test-macos
     - test-ios
     - test-android
-    - test-maccatalyst
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}

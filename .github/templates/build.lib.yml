@@ -43,12 +43,14 @@ deploy-cluster:
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
-#@ def cleanupBaas(dependencies = []):
+#@ def cleanupBaas(dependencies = [], targets = []):
 #@ needs = ["deploy-cluster"]
 #@ differentiators = []
 #@ for dependency in dependencies:
 #@   needs.append(getJobName("test", dependency))
-#@   differentiators.append('"' + getJobName("", dependency) + '"')
+#@ end
+#@ for target in targets:
+#@   differentiators.append('"' + getJobName("", target) + '"')
 #@ end
 cleanup-cluster:
   uses: ./.github/workflows/cleanup-baas.yml

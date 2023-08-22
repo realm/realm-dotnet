@@ -54,7 +54,7 @@ jobs:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
   _: #@ template.replace(runTests("Code Coverage"))
-  _: #@ template.replace(cleanupBaas(["Code Coverage"]))
+  _: #@ template.replace(cleanupBaas(dependencies = ["Code Coverage"], targets = ["Code Coverage"]))
   verify-namespaces:
     runs-on: ubuntu-latest
     name: Verify Namespaces
