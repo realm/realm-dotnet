@@ -41,7 +41,7 @@ jobs:
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
-    - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
+    #! - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))  //TODO To avoid uploading this
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
