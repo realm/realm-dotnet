@@ -28,7 +28,7 @@ jobs:
   test-xamarin:
     runs-on: macos-latest
     name: Xamarin.macOS
-    timeout-minutes: 50
+    timeout-minutes: 60
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -81,7 +81,7 @@ jobs:
   test-maui:
     runs-on: macos-12
     name: Maui.MacCatalyst
-    timeout-minutes: 50
+    timeout-minutes: 60
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
