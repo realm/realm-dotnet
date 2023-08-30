@@ -536,11 +536,6 @@ namespace Baas
                 {
                     var name = doc["name"].AsString;
 
-                    if (!name.EndsWith(_appSuffix))  //Don't we check this in the Where?
-                    {
-                        return null;
-                    }
-
                     var appName = name[..^_appSuffix.Length];
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
