@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

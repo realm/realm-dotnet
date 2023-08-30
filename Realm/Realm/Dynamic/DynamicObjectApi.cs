@@ -238,7 +238,7 @@ namespace Realms
         {
             if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
             {
-                throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_managedAccessor.ObjectSchema.Name}", propertyName);
+                throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
             }
 
             return property;
@@ -251,7 +251,7 @@ namespace Realms
 
             if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
             {
-                throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_managedAccessor.ObjectSchema.Name}", propertyName);
+                throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
             }
 
             if (!typeCheck(property.Type))
