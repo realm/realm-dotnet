@@ -20,6 +20,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
@@ -153,6 +154,34 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
                     reader.ReadEndArray();
 
                     break;
+                case BsonType.Document:
+                    if (result!.ObjectSchema!.TryFindProperty(name, out var property) && !property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object))
+                    {
+                        ReadValue(result, name, context);
+                    }
+                    else
+                    {
+                        reader.ReadStartDocument();
+                        if (reader.State == BsonReaderState.Type)
+                        {
+                            reader.ReadBsonType();
+                        }
+
+                        while (reader.State != BsonReaderState.EndOfDocument)
+                        {
+                            var fieldName = reader.ReadName();
+                            ReadDocumentField(result, name, fieldName, context);
+
+                            if (reader.State == BsonReaderState.Type)
+                            {
+                                reader.ReadBsonType();
+                            }
+                        }
+
+                        reader.ReadEndDocument();
+                    }
+
+                    break;
                 default:
                     ReadValue(result, name, context);
                     break;
@@ -203,6 +232,8 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
     protected abstract void ReadValue(T instance, string name, BsonDeserializationContext context);
 
     protected abstract void ReadArrayElement(T instance, string name, BsonDeserializationContext context);
+
+    protected abstract void ReadDocumentField(T instance, string name, string fieldName, BsonDeserializationContext context);
 
     protected abstract void SerializeValue(BsonSerializationContext context, BsonSerializationArgs args, T value);
 

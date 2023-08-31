@@ -1664,6 +1664,64 @@ namespace Realms.Tests
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(SyncCollectionsObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "CharDict":
+                        instance.CharDict[fieldName] = BsonSerializer.LookupSerializer<char>().Deserialize(context);
+                        break;
+                    case "ByteDict":
+                        instance.ByteDict[fieldName] = BsonSerializer.LookupSerializer<byte>().Deserialize(context);
+                        break;
+                    case "Int16Dict":
+                        instance.Int16Dict[fieldName] = BsonSerializer.LookupSerializer<short>().Deserialize(context);
+                        break;
+                    case "Int32Dict":
+                        instance.Int32Dict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Int64Dict":
+                        instance.Int64Dict[fieldName] = BsonSerializer.LookupSerializer<long>().Deserialize(context);
+                        break;
+                    case "FloatDict":
+                        instance.FloatDict[fieldName] = BsonSerializer.LookupSerializer<float>().Deserialize(context);
+                        break;
+                    case "DoubleDict":
+                        instance.DoubleDict[fieldName] = BsonSerializer.LookupSerializer<double>().Deserialize(context);
+                        break;
+                    case "BooleanDict":
+                        instance.BooleanDict[fieldName] = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    case "DecimalDict":
+                        instance.DecimalDict[fieldName] = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
+                        break;
+                    case "Decimal128Dict":
+                        instance.Decimal128Dict[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    case "ObjectIdDict":
+                        instance.ObjectIdDict[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "StringDict":
+                        instance.StringDict[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "ByteArrayDict":
+                        instance.ByteArrayDict[fieldName] = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
+                        break;
+                    case "DateTimeOffsetDict":
+                        instance.DateTimeOffsetDict[fieldName] = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    case "ObjectDict":
+                        instance.ObjectDict[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        break;
+                    case "EmbeddedObjectDict":
+                        instance.EmbeddedObjectDict[fieldName] = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context)!;
+                        break;
+                    case "RealmValueDict":
+                        instance.RealmValueDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                }
+            }
         }
     }
 }

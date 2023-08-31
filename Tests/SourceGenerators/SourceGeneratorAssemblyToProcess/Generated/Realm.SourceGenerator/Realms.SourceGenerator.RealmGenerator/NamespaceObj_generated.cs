@@ -384,14 +384,19 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "OtherNamespaceObj":
-                        instance.OtherNamespaceObj = LookupSerializer<OtherNamespace.OtherNamespaceObj?>()!.DeserializeById(context)!;
+                        instance.OtherNamespaceObj = LookupSerializer<OtherNamespace.OtherNamespaceObj?>()!.DeserializeById(context);
                         break;
                 }
             }
 
             protected override void ReadArrayElement(NamespaceObj instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(NamespaceObj instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

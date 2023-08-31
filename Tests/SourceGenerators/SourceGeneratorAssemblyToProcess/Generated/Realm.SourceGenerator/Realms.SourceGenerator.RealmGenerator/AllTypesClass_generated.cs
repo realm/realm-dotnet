@@ -1700,7 +1700,7 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     case "ObjectProperty":
-                        instance.ObjectProperty = LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass?>()!.DeserializeById(context)!;
+                        instance.ObjectProperty = LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -1710,7 +1710,7 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (name)
                 {
                     case "ObjectCollectionProperty":
-                        instance.ObjectCollectionProperty.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass>()!.DeserializeById(context));
+                        instance.ObjectCollectionProperty.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass>()!.DeserializeById(context)!);
                         break;
                     case "IntCollectionProperty":
                         instance.IntCollectionProperty.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
@@ -1733,6 +1733,19 @@ namespace SourceGeneratorAssemblyToProcess
                     case "NonRequiredStringSetProperty":
                         instance.NonRequiredStringSetProperty.Add(BsonSerializer.LookupSerializer<string?>().Deserialize(context));
                         break;
+                }
+            }
+
+            protected override void ReadDocumentField(AllTypesClass instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RequiredStringDictionaryProperty":
+                                                instance.RequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                                                break;
+                    case "NonRequiredStringDictionaryProperty":
+                                                instance.NonRequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                                                break;
                 }
             }
         }

@@ -559,6 +559,19 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(DynamicOwner instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DogsDictionary":
+                        instance.DogsDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context)!;
+                        break;
+                    case "TagsDictionary":
+                        instance.TagsDictionary[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                }
+            }
         }
     }
 }

@@ -487,6 +487,16 @@ namespace Realms.Tests
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(Owner instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DictOfDogs":
+                        instance.DictOfDogs[fieldName] = LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context)!;
+                        break;
+                }
+            }
         }
     }
 }

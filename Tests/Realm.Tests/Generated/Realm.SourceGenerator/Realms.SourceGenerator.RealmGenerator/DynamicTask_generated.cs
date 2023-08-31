@@ -514,6 +514,16 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(DynamicTask instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "SubTasksDictionary":
+                        instance.SubTasksDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.DynamicSubTask?>()!.DeserializeById(context)!;
+                        break;
+                }
+            }
         }
     }
 }

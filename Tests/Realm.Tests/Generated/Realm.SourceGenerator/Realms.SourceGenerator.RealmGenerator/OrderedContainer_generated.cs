@@ -385,6 +385,16 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(OrderedContainer instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "ItemsDictionary":
+                        instance.ItemsDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.OrderedObject?>()!.DeserializeById(context)!;
+                        break;
+                }
+            }
         }
     }
 }

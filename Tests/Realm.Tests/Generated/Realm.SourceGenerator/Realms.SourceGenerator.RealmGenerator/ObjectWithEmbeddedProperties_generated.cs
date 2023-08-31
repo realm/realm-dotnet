@@ -487,6 +487,16 @@ namespace Realms.Tests
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(ObjectWithEmbeddedProperties instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DictionaryOfAllTypesObjects":
+                        instance.DictionaryOfAllTypesObjects[fieldName] = LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>()!.DeserializeById(context)!;
+                        break;
+                }
+            }
         }
     }
 }

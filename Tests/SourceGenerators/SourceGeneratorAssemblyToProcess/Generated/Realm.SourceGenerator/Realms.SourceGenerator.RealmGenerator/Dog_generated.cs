@@ -383,14 +383,19 @@ namespace SourceGeneratorPlayground
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "Owner":
-                        instance.Owner = LookupSerializer<SourceGeneratorPlayground.Person?>()!.DeserializeById(context)!;
+                        instance.Owner = LookupSerializer<SourceGeneratorPlayground.Person?>()!.DeserializeById(context);
                         break;
                 }
             }
 
             protected override void ReadArrayElement(Dog instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(Dog instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

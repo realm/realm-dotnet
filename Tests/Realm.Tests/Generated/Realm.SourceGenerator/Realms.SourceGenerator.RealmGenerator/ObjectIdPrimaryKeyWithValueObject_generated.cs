@@ -398,7 +398,12 @@ namespace Realms.Tests
 
             protected override void ReadArrayElement(ObjectIdPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(ObjectIdPrimaryKeyWithValueObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

@@ -821,7 +821,7 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.NullableRealmInt = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>?>().Deserialize(context);
                         break;
                     case "NullableObject":
-                        instance.NullableObject = LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context)!;
+                        instance.NullableObject = LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context);
                         break;
                     case "NonNullableRealmValue":
                         instance.NonNullableRealmValue = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
@@ -846,11 +846,21 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.CollectionOfNonNullableString.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
                         break;
                     case "ListNonNullabeObject":
-                        instance.ListNonNullabeObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context));
+                        instance.ListNonNullabeObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
                         break;
                     case "SetNonNullableObject":
-                        instance.SetNonNullableObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context));
+                        instance.SetNonNullableObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
                         break;
+                }
+            }
+
+            protected override void ReadDocumentField(NullableClass instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DictionaryNullableObject":
+                                                instance.DictionaryNullableObject[fieldName] = LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context)!;
+                                                break;
                 }
             }
         }

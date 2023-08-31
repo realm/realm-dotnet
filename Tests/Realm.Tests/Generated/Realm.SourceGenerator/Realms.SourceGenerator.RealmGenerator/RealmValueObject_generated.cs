@@ -510,6 +510,19 @@ namespace Realms.Tests
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(RealmValueObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RealmValueDictionary":
+                        instance.RealmValueDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "TestDict":
+                        instance.TestDict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                }
+            }
         }
     }
 }

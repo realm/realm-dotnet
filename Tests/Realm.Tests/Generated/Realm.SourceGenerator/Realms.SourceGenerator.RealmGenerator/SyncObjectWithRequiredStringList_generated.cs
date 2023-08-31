@@ -413,6 +413,11 @@ namespace Realms.Tests.Sync
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(SyncObjectWithRequiredStringList instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
+            }
         }
     }
 }

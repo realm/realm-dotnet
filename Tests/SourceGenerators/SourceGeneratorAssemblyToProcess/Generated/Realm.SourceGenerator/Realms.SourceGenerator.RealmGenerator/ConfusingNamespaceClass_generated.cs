@@ -357,7 +357,12 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
             protected override void ReadArrayElement(ConfusingNamespaceClass instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(ConfusingNamespaceClass instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

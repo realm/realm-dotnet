@@ -17,11 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms.Helpers;
+using Realms.Schema;
 
 namespace Realms.Tests.Serialization
 {
@@ -105,13 +108,7 @@ namespace Realms.Tests.Serialization
         public void RealmObject_NoLinks_Serializes(TestCaseData<AllTypesObject> testCase)
         {
             var ato = testCase.Value;
-            if (_managed)
-            {
-                _realm.Write(() =>
-                {
-                    _realm.Add(ato);
-                });
-            }
+            AddIfNecessary(ato);
 
             var json = ato.ToJson();
             var deserialized = BsonSerializer.Deserialize<AllTypesObject>(json);
@@ -133,6 +130,44 @@ namespace Realms.Tests.Serialization
                 }
 
                 Assert.That(pi.GetValue(deserialized), Is.EqualTo(pi.GetValue(ato)));
+            }
+        }
+
+        [Test]
+        public void CollectionsObject_Serializes()
+        {
+            var obj = new CollectionsObject();
+
+            foreach (var prop in obj.ObjectSchema.Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object)))
+            {
+                var pi = typeof(CollectionsObject).GetProperty(prop.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
+                var collection = pi.GetValue(obj)!;
+                DataGenerator.FillCollection(collection, 5);
+            }
+
+            AddIfNecessary(obj);
+
+            var json = obj.ToJson();
+            var deserialized = BsonSerializer.Deserialize<CollectionsObject>(json);
+
+            foreach (var prop in obj.ObjectSchema.Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object)))
+            {
+                var pi = typeof(CollectionsObject).GetProperty(prop.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
+                var actual = pi.GetValue(deserialized)!;
+                var expected = pi.GetValue(obj)!;
+
+                Console.WriteLine("asd");
+            }
+        }
+
+        private void AddIfNecessary(IRealmObject obj)
+        {
+            if (_managed)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(obj);
+                });
             }
         }
 

@@ -764,6 +764,22 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(GuidType instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "GuidDict":
+                        instance.GuidDict[fieldName] = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "OptionalDict":
+                        instance.OptionalDict[fieldName] = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
+                        break;
+                    case "MixedDict":
+                        instance.MixedDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                }
+            }
         }
     }
 }

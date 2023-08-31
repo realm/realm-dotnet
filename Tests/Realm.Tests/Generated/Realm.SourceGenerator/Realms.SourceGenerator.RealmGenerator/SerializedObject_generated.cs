@@ -487,6 +487,16 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(SerializedObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Dict":
+                        instance.Dict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                }
+            }
         }
     }
 }

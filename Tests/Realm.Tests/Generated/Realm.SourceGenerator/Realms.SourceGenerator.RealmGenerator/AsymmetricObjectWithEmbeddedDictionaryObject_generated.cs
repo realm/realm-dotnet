@@ -399,7 +399,17 @@ namespace Realms.Tests.Sync
 
             protected override void ReadArrayElement(AsymmetricObjectWithEmbeddedDictionaryObject instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(AsymmetricObjectWithEmbeddedDictionaryObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "EmbeddedDictionaryObject":
+                        instance.EmbeddedDictionaryObject[fieldName] = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context)!;
+                        break;
+                }
             }
         }
     }

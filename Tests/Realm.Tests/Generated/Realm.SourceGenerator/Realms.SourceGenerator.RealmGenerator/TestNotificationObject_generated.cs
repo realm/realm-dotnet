@@ -611,6 +611,19 @@ namespace Realms.Tests.Database
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(TestNotificationObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DictionarySameType":
+                        instance.DictionarySameType[fieldName] = LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context)!;
+                        break;
+                    case "DictionaryDifferentType":
+                        instance.DictionaryDifferentType[fieldName] = LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context)!;
+                        break;
+                }
+            }
         }
     }
 }

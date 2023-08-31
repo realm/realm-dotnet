@@ -357,7 +357,12 @@ namespace SourceGeneratorPlayground
 
             protected override void ReadArrayElement(RealmObj instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(RealmObj instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

@@ -567,6 +567,11 @@ namespace Realms.Tests
                         break;
                 }
             }
+
+            protected override void ReadDocumentField(RemappedTypeObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
+            }
         }
     }
 }

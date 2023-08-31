@@ -869,6 +869,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
             var serializeValueLines = new StringBuilder();
             var readValueLines = new StringBuilder();
             var readArrayElementLines = new StringBuilder();
+            var readDocumentFieldLines = new StringBuilder();
 
             foreach (var property in _classInfo.Properties)
             {
@@ -884,7 +885,15 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
                     serializeValueLines.AppendLine($"Write{property.TypeInfo.CollectionType}(context, args, \"{stringName}\", value.{name});");
                     if (property.TypeInfo.IsDictionary)
                     {
-                        // TODO: implement me
+                        var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).InternalType;
+
+                        var deserialize = property.TypeInfo.InternalType!.ObjectType == ObjectType.None
+                            ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
+                            : $"LookupSerializer<{type}>()!.DeserializeById(context)!";
+
+                        readDocumentFieldLines.AppendLine($@"case ""{stringName}"":
+    instance.{name}[fieldName] = {deserialize};
+    break;");
                     }
                     else
                     {
@@ -940,10 +949,20 @@ private class {_serializerClassName} : Realms.Serialization.RealmObjectSerialize
     protected override void ReadArrayElement({_classInfo.Name} instance, string name, BsonDeserializationContext context)
     {{
 {(readArrayElementLines.Length == 0
-    ? "// No Realm properties to deserialize"
+    ? "// No persisted list/set properties to deserialize"
     : $@"switch (name)
 {{
 {readArrayElementLines.Indent(trimNewLines: true)}
+}}").Indent(2)}
+    }}
+
+    protected override void ReadDocumentField({_classInfo.Name} instance, string name, string fieldName, BsonDeserializationContext context)
+    {{
+{(readDocumentFieldLines.Length == 0
+    ? "// No persisted dictionary properties to deserialize"
+    : $@"switch (name)
+{{
+{readDocumentFieldLines.Indent(trimNewLines: true)}
 }}").Indent(2)}
     }}
 }}";

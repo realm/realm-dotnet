@@ -351,7 +351,12 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
         protected override void ReadArrayElement(NoNamespaceClass instance, string name, BsonDeserializationContext context)
         {
-            // No Realm properties to deserialize
+            // No persisted list/set properties to deserialize
+        }
+
+        protected override void ReadDocumentField(NoNamespaceClass instance, string name, string fieldName, BsonDeserializationContext context)
+        {
+            // No persisted dictionary properties to deserialize
         }
     }
 }

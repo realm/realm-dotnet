@@ -385,14 +385,19 @@ namespace SourceGeneratorPlayground
                             instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                             break;
                         case "Link":
-                            instance.Link = LookupSerializer<SourceGeneratorPlayground.OuterClass.NestedClass?>()!.DeserializeById(context)!;
+                            instance.Link = LookupSerializer<SourceGeneratorPlayground.OuterClass.NestedClass?>()!.DeserializeById(context);
                             break;
                     }
                 }
 
                 protected override void ReadArrayElement(NestedClass instance, string name, BsonDeserializationContext context)
                 {
-                    // No Realm properties to deserialize
+                    // No persisted list/set properties to deserialize
+                }
+
+                protected override void ReadDocumentField(NestedClass instance, string name, string fieldName, BsonDeserializationContext context)
+                {
+                    // No persisted dictionary properties to deserialize
                 }
             }
         }
