@@ -18,6 +18,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -34,6 +36,35 @@ namespace Realms.Sync
     /// </summary>
     public class User : IEquatable<User>
     {
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
+        private event EventHandler? _changed;
+
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event EventHandler? Changed
+        {
+            add
+            {
+                if (_changed == null)
+                {
+                    Handle.SubscribeNotifications(this);
+                }
+
+                _changed += value;
+            }
+
+            remove
+            {
+                _changed -= value;
+
+                if (_changed == null)
+                {
+                    Handle.UnsubscribeNotifications();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing MongoDB Atlas data and should be treated as sensitive information.
         /// </summary>
@@ -295,6 +326,11 @@ namespace Realms.Sync
         public override string ToString()
         {
             return $"User {Id}, State: {State}, Provider: {Provider}";
+        }
+
+        internal void RaiseChanged()
+        {
+            _changed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

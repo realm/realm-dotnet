@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using NUnit.Framework;
@@ -981,6 +982,107 @@ namespace Realms.Tests.Sync
             var user = GetFakeUser();
             Assert.That(user.ToString(), Does.Contain(user.Id));
             Assert.That(user.ToString(), Does.Contain(user.Provider.ToString()));
+        }
+
+        [Test]
+        public void UserLogOut_RaisesChanged()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var tcs = new TaskCompletionSource();
+                user.Changed += (s, _) =>
+                {
+                    try
+                    {
+                        Assert.That(s, Is.EqualTo(user));
+                        tcs.TrySetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                };
+
+                await user.LogOutAsync();
+
+                await tcs.Task;
+
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
+            });
+        }
+
+        [Test]
+        public void UserChanged_DoesntKeepObjectAlive()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var references = await new Func<Task<WeakReference>>(async () =>
+                {
+                    var user = await GetUserAsync();
+                    user.Changed += (s, e) => { };
+
+                    return new WeakReference(user);
+                })();
+
+                await TestHelpers.WaitUntilReferencesAreCollected(10000, references);
+            });
+        }
+
+        [Test]
+        public void UserCustomDataChange_RaisesChanged()
+        {
+            var tcs = new TaskCompletionSource();
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                user.Changed += OnUserChanged;
+
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
+
+                var customDataId = ObjectId.GenerateNewId();
+
+                var customDataDoc = new BsonDocument
+                {
+                    ["_id"] = ObjectId.GenerateNewId(),
+                    ["user_id"] = user.Id,
+                    ["age"] = 5
+                };
+
+                await collection.InsertOneAsync(customDataDoc);
+
+                var customUserData = await user.RefreshCustomDataAsync();
+                Assert.That(customUserData!["age"].AsInt32, Is.EqualTo(5));
+
+                await tcs.Task;
+
+                tcs = new();
+
+                // Unsubscribe and verify that it no longer raises user changed
+                user.Changed -= OnUserChanged;
+
+                var filter = BsonDocument.Parse(@"{
+                    user_id: { $eq: """ + user.Id + @""" }
+                }");
+                var update = BsonDocument.Parse(@"{
+                    $set: {
+                        age: 199
+                    }
+                }");
+
+                await collection.UpdateOneAsync(filter, update);
+
+                customUserData = await user.RefreshCustomDataAsync();
+                Assert.That(customUserData!["age"].AsInt32, Is.EqualTo(199));
+
+                await TestHelpers.AssertThrows<TimeoutException>(() => tcs.Task.Timeout(2000));
+            });
+
+            void OnUserChanged(object sender, EventArgs e)
+            {
+                tcs!.TrySetResult();
+            }
         }
 
         private class CustomDataDocument

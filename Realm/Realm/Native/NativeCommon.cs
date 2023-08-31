@@ -75,6 +75,7 @@ namespace Realms
                 SynchronizationContextScheduler.Initialize();
                 SharedRealmHandle.Initialize();
                 SessionHandle.Initialize();
+                SyncUserHandle.Initialize();
                 HttpClientTransport.Initialize();
                 AppHandle.Initialize();
                 SubscriptionSetHandle.Initialize();

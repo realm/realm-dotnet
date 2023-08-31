@@ -21,8 +21,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Realms.Logging;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -31,6 +33,9 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void UserChangedCallback(IntPtr managed_user);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -109,11 +114,31 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string? partition, IntPtr partition_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_register_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr register_changed_callback(SyncUserHandle user, IntPtr managed_user_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unregister_changed_callback(SyncUserHandle user, IntPtr token, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void install_syncuser_callbacks(UserChangedCallback changed_callback);
         }
+
+        private IntPtr _notificationToken;
 
         [Preserve]
         public SyncUserHandle(IntPtr handle) : base(handle)
         {
+        }
+
+        public static void Initialize()
+        {
+            NativeMethods.UserChangedCallback changed = HandleUserChanged;
+
+            GCHandle.Alloc(changed);
+
+            NativeMethods.install_syncuser_callbacks(changed);
         }
 
         public string GetUserId()
@@ -399,6 +424,54 @@ namespace Realms.Sync
                 isNull = false;
                 return NativeMethods.get_path_for_realm(this, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
             })!;
+        }
+
+        public void SubscribeNotifications(User user)
+        {
+            Debug.Assert(_notificationToken == IntPtr.Zero, $"{nameof(_notificationToken)} must be Zero before subscribing.");
+
+            var managedUserHandle = GCHandle.Alloc(user, GCHandleType.Weak);
+            var sessionPointer = GCHandle.ToIntPtr(managedUserHandle);
+            _notificationToken = NativeMethods.register_changed_callback(this, sessionPointer, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public void UnsubscribeNotifications()
+        {
+            if (_notificationToken != IntPtr.Zero)
+            {
+                NativeMethods.unregister_changed_callback(this, _notificationToken, out var ex);
+                _notificationToken = IntPtr.Zero;
+                ex.ThrowIfNecessary();
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.UserChangedCallback))]
+        private static void HandleUserChanged(IntPtr managedUserHandle)
+        {
+            try
+            {
+                if (managedUserHandle == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                var user = (User?)GCHandle.FromIntPtr(managedUserHandle).Target;
+                if (user is null)
+                {
+                    // We're taking a weak handle to the session, so it's possible that it's been collected
+                    return;
+                }
+
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    user.RaiseChanged();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while raising a property changed event: {ex}");
+            }
         }
     }
 }
