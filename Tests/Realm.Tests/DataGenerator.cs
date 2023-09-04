@@ -39,16 +39,16 @@ namespace Realms.Tests
         {
             [typeof(short)] = () => (short)_random.Next(short.MinValue, short.MaxValue),
             [typeof(byte)] = () => (byte)_random.Next(byte.MinValue, byte.MaxValue),
-            [typeof(int)] = () => _random.Next(),
+            [typeof(int)] = () => _random.Next(int.MinValue, int.MaxValue),
             [typeof(long)] = () => (long)_random.Next(),
             [typeof(float)] = () => Convert.ToSingle(GenerateDouble(float.MaxValue, float.MinValue)),
-            [typeof(double)] = () => GenerateDouble(),
+            [typeof(double)] = () => GenerateDouble(int.MinValue, int.MaxValue),
             [typeof(decimal)] = () => Convert.ToDecimal(GenerateDouble((double)decimal.MaxValue, (double)decimal.MinValue)),
-            [typeof(Decimal128)] = () => new Decimal128(GenerateDouble()),
+            [typeof(Decimal128)] = () => new Decimal128(GenerateDouble((double)decimal.MaxValue, (double)decimal.MinValue)),
             [typeof(ObjectId)] = () => ObjectId.GenerateNewId(),
             [typeof(string)] = () => Guid.NewGuid().ToString(),
             [typeof(byte[])] = () => TestHelpers.GetBytes(10),
-            [typeof(DateTimeOffset)] = () => new DateTimeOffset(_random.Next(), TimeSpan.Zero),
+            [typeof(DateTimeOffset)] = () => new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero).AddDays(GenerateDouble(-365 * 1000, 365 * 1000)),
             [typeof(Guid)] = () => Guid.NewGuid(),
             [typeof(RealmValue)] = () => GenerateRealmValue(),
         };
@@ -112,19 +112,27 @@ namespace Realms.Tests
             return items.GetValue(index)!;
         }
 
-        private static double GenerateDouble() => ((_random.NextDouble() * 2) - 1) * double.MaxValue;
+        private static T PickRandomElement<T>(T[] items) => (T)PickRandomElement((Array)items);
 
         private static double GenerateDouble(double minValue, double maxValue) => (_random.NextDouble() * (maxValue - minValue)) + minValue;
 
+        private static RealmValueType[] _realmValueTypes = Enum.GetValues(typeof(RealmValueType)).Cast<RealmValueType>().ToArray();
+
         private static RealmValue GenerateRealmValue()
         {
-            return _random.Next(0, 6) switch
+            var type = PickRandomElement(_realmValueTypes);
+            return type switch
             {
-                0 => _random.Next(),
-                1 => GenerateDouble(),
-                2 => Guid.NewGuid(),
-                3 => ObjectId.GenerateNewId(),
-                4 => Guid.NewGuid().ToString(),
+                RealmValueType.Int => GenerateRandom<int>(),
+                RealmValueType.Bool => GenerateRandom<bool>(),
+                RealmValueType.String => GenerateRandom<string>(),
+                RealmValueType.Data => GenerateRandom<byte[]>(),
+                RealmValueType.Date => GenerateRandom<DateTimeOffset>(),
+                RealmValueType.Float => GenerateRandom<float>(),
+                RealmValueType.Double => GenerateRandom<double>(),
+                RealmValueType.Decimal128 => GenerateRandom<Decimal128>(),
+                RealmValueType.ObjectId => GenerateRandom<ObjectId>(),
+                RealmValueType.Guid => GenerateRandom<Guid>(),
                 _ => RealmValue.Null,
             };
         }

@@ -115,7 +115,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
+        public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             string[] remainingArgs;
             (_baasClient, _baseUri, remainingArgs) = await BaasClient.CreateClientFromArgs(args, TestHelpers.Output);

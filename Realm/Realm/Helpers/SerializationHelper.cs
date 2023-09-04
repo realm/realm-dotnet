@@ -145,7 +145,7 @@ namespace Realms.Helpers
                 _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
                 _ when type == typeof(Decimal128) => new Decimal128Serializer(BsonType.Decimal128),
                 _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),
-                _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.String),
+                _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.DateTime),
                 _ when type == typeof(object) => new ObjectSerializer(
                     BsonSerializer.LookupDiscriminatorConvention(typeof(object)),
                     GuidRepresentation.Standard,

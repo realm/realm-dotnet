@@ -415,29 +415,24 @@ namespace Realms.Schema
         {
             var propertyName = prop.GetMappedOrOriginalName();
             var backlinksAttribute = prop.GetCustomAttribute<BacklinkAttribute>();
-            Property result;
             if (backlinksAttribute != null)
             {
                 var innerType = prop.PropertyType.GenericTypeArguments.Single();
                 var linkOriginProperty = innerType.GetProperty(backlinksAttribute.Property)!;
 
-                result = Backlinks(propertyName, innerType.GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
+                return Backlinks(propertyName, innerType.GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
             }
-            else
+
+            var propertyType = prop.PropertyType.ToPropertyType(out var objectType);
+            if (prop.HasCustomAttribute<RequiredAttribute>())
             {
-                var propertyType = prop.PropertyType.ToPropertyType(out var objectType);
-                if (prop.HasCustomAttribute<RequiredAttribute>())
-                {
-                    propertyType &= ~PropertyType.Nullable;
-                }
-
-                var objectTypeName = objectType?.GetMappedOrOriginalName();
-                var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
-                var indexType = prop.GetCustomAttribute<IndexedAttribute>()?.Type ?? IndexType.None;
-                result = new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: prop.Name);
+                propertyType &= ~PropertyType.Nullable;
             }
 
-            return result;
+            var objectTypeName = objectType?.GetMappedOrOriginalName();
+            var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
+            var indexType = prop.GetCustomAttribute<IndexedAttribute>()?.Type ?? IndexType.None;
+            return new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: prop.Name);
         }
 
         private static Property PrimitiveCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isPrimaryKey = false, IndexType indexType = IndexType.None,

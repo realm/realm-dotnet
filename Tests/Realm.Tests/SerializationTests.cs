@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -25,6 +26,8 @@ using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms.Helpers;
 using Realms.Schema;
+
+using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Serialization
 {
@@ -104,6 +107,14 @@ namespace Realms.Tests.Serialization
             new object[] { CreateTestCase("Guid RealmValue", new AllTypesObject { RealmValueProperty = Guid.NewGuid() }) },
         };
 
+        public static readonly object[] CollectionTestCases = CollectionsObject.RealmSchema
+            .Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object))
+            .Select(p => new object[]
+            {
+                CreateTestCase(p)
+            })
+            .ToArray();
+
         [TestCaseSource(nameof(ATOTestCases))]
         public void RealmObject_NoLinks_Serializes(TestCaseData<AllTypesObject> testCase)
         {
@@ -115,49 +126,37 @@ namespace Realms.Tests.Serialization
 
             foreach (var prop in ato.ObjectSchema)
             {
-                var pi = typeof(AllTypesObject).GetProperty(prop.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
-                var actual = pi.GetValue(deserialized);
-                var expected = pi.GetValue(ato);
+                var actual = deserialized.GetProperty<object?>(prop);
+                var expected = ato.GetProperty<object?>(prop);
 
-                if (expected is RealmValue rv)
+                if (expected is RealmValue { Type: RealmValueType.Float } rv)
                 {
-                    if (rv.Type == RealmValueType.Float)
-                    {
-                        // Json doesn't have a float type, so the deserialized value will be double
-                        Assert.That((double)(RealmValue)actual!, Is.EqualTo((double)rv.AsFloat()));
-                        continue;
-                    }
+                    // Json doesn't have a float type, so the deserialized value will be double
+                    Assert.That((double)(RealmValue)actual!, Is.EqualTo((double)rv.AsFloat()));
+                    continue;
                 }
 
-                Assert.That(pi.GetValue(deserialized), Is.EqualTo(pi.GetValue(ato)));
+                Assert.That(AreValuesEqual(actual, expected), $"Expected: {expected}, actual: {actual}");
             }
         }
 
-        [Test]
-        public void CollectionsObject_Serializes()
+        [TestCaseSource(nameof(CollectionTestCases))]
+        public void CollectionsObject_Serializes(TestCaseData<Property> testCase)
         {
+            var prop = testCase.Value;
             var obj = new CollectionsObject();
 
-            foreach (var prop in obj.ObjectSchema.Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object)))
-            {
-                var pi = typeof(CollectionsObject).GetProperty(prop.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
-                var collection = pi.GetValue(obj)!;
-                DataGenerator.FillCollection(collection, 5);
-            }
+            DataGenerator.FillCollection(obj.GetProperty<IEnumerable>(prop), 5);
 
             AddIfNecessary(obj);
 
             var json = obj.ToJson();
             var deserialized = BsonSerializer.Deserialize<CollectionsObject>(json);
 
-            foreach (var prop in obj.ObjectSchema.Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object)))
-            {
-                var pi = typeof(CollectionsObject).GetProperty(prop.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
-                var actual = pi.GetValue(deserialized)!;
-                var expected = pi.GetValue(obj)!;
+            var actual = deserialized.GetProperty<IEnumerable>(prop);
+            var expected = obj.GetProperty<IEnumerable>(prop);
 
-                Console.WriteLine("asd");
-            }
+            Assert.That(actual, Is.EquivalentTo(expected).Using((object a, object e) => AreValuesEqual(a, e)), $"Expected collections to match for {prop.ManagedName}");
         }
 
         private void AddIfNecessary(IRealmObject obj)
@@ -169,23 +168,6 @@ namespace Realms.Tests.Serialization
                     _realm.Add(obj);
                 });
             }
-        }
-
-        private static TestCaseData<T> CreateTestCase<T>(string description, T value) => new TestCaseData<T>(description, value);
-
-        public class TestCaseData<T>
-        {
-            private readonly string _description;
-
-            public T Value { get; }
-
-            public TestCaseData(string description, T value)
-            {
-                _description = description;
-                Value = value;
-            }
-
-            public override string ToString() => _description;
         }
     }
 }

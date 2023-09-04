@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -29,6 +30,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Schema;
 
 namespace Realms.Tests
 {
@@ -236,16 +238,38 @@ namespace Realms.Tests
             return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts, errorMessage);
         }
 
-        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string? errorMessage = null)
+        public static async Task WaitForEventAsync<T>(this IEnumerable<T> collection, Func<IRealmCollection<T>, ChangeSet?, bool> testFunc)
         {
-            var value = producer();
-            var success = tester(value);
+            var tcs = new TaskCompletionSource();
+            if (collection is not IRealmCollection<T> realmCollection)
+            {
+                throw new NotSupportedException();
+            }
+
+            using var token = realmCollection.SubscribeForNotifications((sender, changes) =>
+            {
+                if (testFunc(sender, changes))
+                {
+                    tcs.TrySetResult();
+                }
+            });
+
+            await tcs.Task;
+        }
+
+        public static Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string? errorMessage = null)
+            => WaitForConditionAsync<T>(() => Task.FromResult(producer()), item => Task.FromResult(tester(item)), retryDelay, attempts, errorMessage);
+
+        public static async Task<T> WaitForConditionAsync<T>(Func<Task<T>> producer, Func<T, Task<bool>> tester, int retryDelay = 100, int attempts = 100, string? errorMessage = null)
+        {
+            var value = await producer();
+            var success = await tester(value);
             var timeout = retryDelay * attempts;
             while (!success && attempts > 0)
             {
                 await Task.Delay(retryDelay);
-                value = producer();
-                success = tester(value);
+                value = await producer();
+                success = await tester(value);
                 attempts--;
             }
 
@@ -381,6 +405,46 @@ namespace Realms.Tests
             Assert.That(regex.IsMatch(testString), $"Expected {testString} to match {regex}");
         }
 
+        public static bool AreValuesEqual(object? actual, object? expected)
+        {
+            if (actual is null || expected is null)
+            {
+                return actual is null && expected is null;
+            }
+
+            var expectedType = expected.GetType();
+            if (expectedType.IsClosedGeneric(typeof(KeyValuePair<,>), out _))
+            {
+                var keyPi = expectedType.GetProperty("Key")!;
+                var valuePi = expectedType.GetProperty("Value")!;
+
+                // For kvp elements, we need to compare the keys and the values
+                return actual.GetType() == expectedType
+                    && (string)keyPi.GetValue(actual)! == (string)keyPi.GetValue(expected)!
+                    && AreValuesEqual(valuePi.GetValue(actual), valuePi.GetValue(expected));
+            }
+
+            if (expected is RealmValue rvExpected)
+            {
+                return actual is RealmValue rvActual && rvExpected.Type switch
+                {
+                    // float is not representable in json, so gets serialized as double
+                    RealmValueType.Float => rvActual.Type == RealmValueType.Double && rvActual.AsDouble() == (double)rvExpected.AsFloat(),
+
+                    // for binary, we compare the sequences rather than the addresses
+                    RealmValueType.Data => rvActual.Type == RealmValueType.Data && rvExpected.AsData().SequenceEqual(rvActual.AsData()),
+                    _ => rvExpected == rvActual,
+                };
+            }
+
+            if (expected is byte[] dataExpected)
+            {
+                return actual is byte[] dataActual && dataActual.SequenceEqual(dataExpected);
+            }
+
+            return actual.Equals(expected);
+        }
+
         private class FunctionObserver<T> : IObserver<T>
         {
             private readonly Action<T> _onNext;
@@ -409,6 +473,42 @@ namespace Realms.Tests
             public T? Value { get; set; }
 
             public static implicit operator StrongBox<T>(T value) => new() { Value = value };
+        }
+
+        public static TestCaseData<T> CreateTestCase<T>(string description, T value) => new(description, value);
+
+        public static TestCaseData<Property> CreateTestCase(Property prop)
+        {
+            var propType = $"{prop.Type.UnderlyingType()}{(prop.Type.IsNullable() ? "?" : string.Empty)}";
+            if (prop.Type.IsCollection(out var collection))
+            {
+                propType = $"{collection}<{propType}>";
+            }
+
+            return new(propType, prop);
+        }
+
+        public static T GetProperty<T>(this IRealmObjectBase o, Property property)
+        {
+            var pi = o.GetType().GetProperty(property.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
+#pragma warning disable CS8600, CS8603 // Caller needs to ensure T is nullable if property may be null
+            return (T)pi.GetValue(o);
+#pragma warning restore CS8600, CS8603
+        }
+
+        public class TestCaseData<T>
+        {
+            private readonly string _description;
+
+            public T Value { get; }
+
+            public TestCaseData(string description, T value)
+            {
+                _description = description;
+                Value = value;
+            }
+
+            public override string ToString() => _description;
         }
     }
 }
