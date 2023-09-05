@@ -34,7 +34,7 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public bool is_client_reset;
 
-        public MarshaledVector<KeyValuePair<StringValue, StringValue>> user_info_pairs;
+        public MarshaledVector<MarshaledPair<StringValue, StringValue>> user_info_pairs;
 
         public MarshaledVector<CompensatingWriteInfo> compensating_writes;
 
