@@ -133,7 +133,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
 
-                var rereshToken = second.RefreshToken;
                 var secondId = second.Id;
 
                 await DefaultApp.RemoveUserAsync(second);
@@ -997,6 +996,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         Assert.That(s, Is.EqualTo(user));
+                        Assert.That(user.State, Is.EqualTo(UserState.Removed));
                         tcs.TrySetResult();
                     }
                     catch (Exception ex)
@@ -1021,7 +1021,7 @@ namespace Realms.Tests.Sync
                 var references = await new Func<Task<WeakReference>>(async () =>
                 {
                     var user = await GetUserAsync();
-                    user.Changed += (s, e) => { };
+                    user.Changed += (_, _) => { };
 
                     return new WeakReference(user);
                 })();
@@ -1079,9 +1079,9 @@ namespace Realms.Tests.Sync
                 await TestHelpers.AssertThrows<TimeoutException>(() => tcs.Task.Timeout(2000));
             });
 
-            void OnUserChanged(object sender, EventArgs e)
+            void OnUserChanged(object? sender, EventArgs e)
             {
-                tcs!.TrySetResult();
+                tcs.TrySetResult();
             }
         }
 

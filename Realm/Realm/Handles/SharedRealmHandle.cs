@@ -641,7 +641,7 @@ namespace Realms
                 // If passed primary key value is not null, we should validate that the types match
                 if (primaryKey.Type != pkProperty.Type.ToRealmValueType())
                 {
-                    throw new ArgumentException($"{parentType}'s primary key is defined as {pkProperty.Type.ToRealmValueType()}, but the value passed is of type {pkProperty.Type}");
+                    throw new ArgumentException($"{parentType}'s primary key is defined as {primaryKey.Type}, but the value passed is of type {pkProperty.Type.ToRealmValueType()}");
                 }
             }
 

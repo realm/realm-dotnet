@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 
 ### Fixed
 * Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))
@@ -10,7 +10,7 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.17.1
 
 ## 11.4.0 (2023-08-16)
 
