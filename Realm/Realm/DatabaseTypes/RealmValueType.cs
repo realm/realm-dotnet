@@ -93,5 +93,20 @@ namespace Realms
         /// The value represents a <see cref="Guid"/>.
         /// </summary>
         Guid,
+
+        /// <summary>
+        /// The value represents a <see cref="IList"/>.
+        /// </summary>
+        List,
+
+        /// <summary>
+        /// The value represents a <see cref="ISet"/>.
+        /// </summary>
+        Set,
+
+        /// <summary>
+        /// The value represents a <see cref="IDictionary"/>.
+        /// </summary>
+        Dictionary,
     }
 }

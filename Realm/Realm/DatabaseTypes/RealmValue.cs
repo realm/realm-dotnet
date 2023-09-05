@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -811,6 +812,11 @@ namespace Realms
                 hashCode = (hashCode * -1521134295) + valueHashCode;
                 return hashCode;
             }
+        }
+
+        public static RealmValue List(IList list)
+        {
+
         }
 
         /// <summary>

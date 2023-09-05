@@ -551,12 +551,14 @@ public static class CollectionExtensions
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
+        Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
     public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
+        Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
     public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
@@ -583,7 +585,7 @@ public static class CollectionExtensions
     {
         Argument.NotNull(target, nameof(target));
 
-        if (!skipDefaults || source != null)
+        if (!skipDefaults || source != null)  //TODO Need to check what skipDefaults does
         {
             target.Clear();
         }
