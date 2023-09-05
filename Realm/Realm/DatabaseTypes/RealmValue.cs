@@ -62,6 +62,7 @@ namespace Realms
         private readonly string? _stringValue;
         private readonly byte[]? _dataValue;
         private readonly IRealmObjectBase? _objectValue;
+        private readonly IList? _listValue;
 
         private readonly ObjectHandle? _objectHandle;
         private readonly IntPtr _propertyIndex;
@@ -121,6 +122,12 @@ namespace Realms
             _objectValue = obj;
         }
 
+        private RealmValue(IList list) : this()
+        {
+            Type = RealmValueType.List;
+            _listValue = list;
+        }
+
         /// <summary>
         /// Gets a RealmValue representing <c>null</c>.
         /// </summary>
@@ -149,6 +156,8 @@ namespace Realms
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static RealmValue Object(IRealmObjectBase value) => new(value);
+
+        public static RealmValue List(IList value) => new(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -812,11 +821,6 @@ namespace Realms
                 hashCode = (hashCode * -1521134295) + valueHashCode;
                 return hashCode;
             }
-        }
-
-        public static RealmValue List(IList list)
-        {
-
         }
 
         /// <summary>

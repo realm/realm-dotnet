@@ -67,6 +67,11 @@ namespace Realms.Native
         [FieldOffset(0)]
         private LinkValue link_value;
 
+        /**
+         * We need to create something similar to LinkValue (maybe ListValue)
+         * that will contain a IntPtr to the list, because it seems this is the only thing we need to create the list handle
+         */
+
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
         public RealmValueType Type;
