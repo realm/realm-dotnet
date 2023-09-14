@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -210,6 +211,18 @@ namespace Realms.Native
             };
         }
 
+        public static PrimitiveValue List(ListHandle handle)
+        {
+            return new PrimitiveValue
+            {
+                Type = RealmValueType.List,
+                list_value = new ListValue
+                {
+                    list_ptr = handle.DangerousGetHandle()
+                }
+            };
+        }
+
         public readonly bool AsBool() => int_value == 1;
 
         public readonly long AsInt() => int_value;
@@ -264,6 +277,12 @@ namespace Realms.Native
             }
 
             return realm.MakeObject(objectMetadata, handle);
+        }
+
+        public readonly RealmList<RealmValue> AsList(Realm realm)
+        {
+            var handle = new ListHandle(realm.SharedRealmHandle, list_value.list_ptr);
+            return new RealmList<RealmValue>(realm, handle, null);
         }
 
         public readonly bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)

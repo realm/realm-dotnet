@@ -19,6 +19,7 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -62,7 +63,7 @@ namespace Realms
         private readonly string? _stringValue;
         private readonly byte[]? _dataValue;
         private readonly IRealmObjectBase? _objectValue;
-        private readonly IList? _listValue;
+        private readonly IList<RealmValue>? _listValue;
 
         private readonly ObjectHandle? _objectHandle;
         private readonly IntPtr _propertyIndex;
@@ -98,6 +99,10 @@ namespace Realms
                     Argument.NotNull(realm, nameof(realm));
                     _objectValue = primitive.AsObject(realm!);
                     break;
+                case RealmValueType.List:
+                    Argument.NotNull(realm, nameof(realm));
+                    _listValue = primitive.AsList(realm!);
+                    break;
                 default:
                     _primitiveValue = primitive;
                     break;
@@ -130,7 +135,7 @@ namespace Realms
          * we just need something to keep a link to the realmList
          * 
          */
-        private RealmValue(IList list) : this()
+        private RealmValue(IList<RealmValue> list) : this()
         {
             Type = RealmValueType.List;
             _listValue = list;
@@ -165,7 +170,7 @@ namespace Realms
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static RealmValue Object(IRealmObjectBase value) => new(value);
 
-        public static RealmValue List(IList value) => new(value);
+        public static RealmValue List(IList<RealmValue> value) => new(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -221,6 +226,9 @@ namespace Realms
                     }
 
                     return (PrimitiveValue.Object(obj.GetObjectHandle()!), null);
+                case RealmValueType.List:
+                    var realmList = _listValue as RealmList<RealmValue>;
+                    return (PrimitiveValue.List(realmList.Handle.Value as ListHandle), null);
                 default:
                     return (_primitiveValue, null);
             }
@@ -440,6 +448,12 @@ namespace Realms
         {
             EnsureType("string", RealmValueType.String);
             return _stringValue!;
+        }
+
+        public IList<RealmValue> AsList()
+        {
+            EnsureType("List", RealmValueType.List);
+            return _listValue!;
         }
 
         /// <summary>

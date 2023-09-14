@@ -45,6 +45,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_list_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_list_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -218,6 +221,36 @@ namespace Realms
                     case IAsymmetricObject:
                         throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
+            }
+            else if (value.Type == RealmValueType.List)
+            {
+                var listPtr = NativeMethods.set_list_value(this, propertyIndex, out var listNativeException);
+
+                var listHandle = new ListHandle(Root!, listPtr);
+                var realmList = new RealmList<RealmValue>(realm, listHandle, null);
+
+                foreach (var item in value.AsList())
+                {
+                    if (item is RealmValue { Type: RealmValueType.Object } val)
+                    {
+                        var wrappedObj = val.AsIRealmObject();
+                        if (wrappedObj is IRealmObject robj)
+                        {
+                            realm.Add(robj, false); //TODO Update?
+                        }
+                    }
+                    //TODO I think here we could need a new case for Collections of Mixed
+
+                    realmList.Add(item);
+                }
+
+                var newRealmVal = RealmValue.List(realmList);
+
+                var (prim, handl) = newRealmVal.ToNative();
+                NativeMethods.set_value(this, propertyIndex, prim, out var setValueNativeException);
+                handl?.Dispose();
+                setValueNativeException.ThrowIfNecessary();
+                return;
             }
 
             var (primitive, handles) = value.ToNative();

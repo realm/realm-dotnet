@@ -159,6 +159,15 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void object_set_list_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+
+            auto prop = get_property(object, property_ndx);
+        });
+    }
+
     REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {

@@ -101,6 +101,7 @@ enum class realm_value_type : uint8_t {
     RLM_TYPE_OBJECT_ID,
     RLM_TYPE_LINK,
     RLM_TYPE_UUID,
+    RLM_TYPE_LIST
 };
 
 enum class query_argument_type : uint8_t {
@@ -134,6 +135,10 @@ typedef struct realm_link {
     TableKey table_key;
 } realm_link_t;
 
+typedef struct realm_list {
+    List* list;
+} realm_list_t;
+
 typedef struct realm_object_id {
     uint8_t bytes[12];
 } realm_object_id_t;
@@ -156,6 +161,7 @@ typedef struct realm_value {
         realm_uuid_t uuid;
 
         realm_link_t link;
+        realm_list_t list;
 
         char data[16];
     };
