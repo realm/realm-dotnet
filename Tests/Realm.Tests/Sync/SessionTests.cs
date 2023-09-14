@@ -216,6 +216,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                await DisableClientResetRecoveryOnServer(appType);
+
                 var automaticResetCalled = false;
                 var discardLocalResetCalled = false;
 
@@ -254,7 +256,6 @@ namespace Realms.Tests.Sync
                     realm.Add(new ObjectWithPartitionValue(guid));
                 });
 
-                await DisableClientResetRecoveryOnServer(appType);
                 await TriggerClientReset(realm);
 
                 await tcsAfterClientReset.Task.Timeout(20_000, detail: "Expected client reset");
@@ -731,7 +732,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.InstanceOf<Session>());
                     Assert.That(e, Is.InstanceOf<SessionException>());
-                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.TooManySessions));
+                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
                     Assert.That(e.Message, Is.EqualTo(errorMsg));
                     Assert.That(e.InnerException, Is.Null);
                     Assert.That(sessionErrorTriggered, Is.False);
@@ -741,7 +742,9 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
-                session.SimulateError(ErrorCode.TooManySessions, errorMsg);
+
+                var protocolError = 230; // ProtocolError::write_not_allowed
+                session.SimulateError((ErrorCode)protocolError, errorMsg);
 
                 await tcs.Task;
 

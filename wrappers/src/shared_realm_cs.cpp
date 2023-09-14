@@ -178,7 +178,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, std::optional
         config.schema_mode = sync_configuration->schema_mode;
 
         if (sync_configuration->is_flexible_sync) {
-        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, realm::SyncConfig::FLXSyncEnabled{});
+            config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, realm::SyncConfig::FLXSyncEnabled{});
         }
         else {
             std::string partition(Utf16StringAccessor(sync_configuration->partition, sync_configuration->partition_len));
