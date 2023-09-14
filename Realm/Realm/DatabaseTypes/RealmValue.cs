@@ -127,14 +127,6 @@ namespace Realms
             _objectValue = obj;
         }
 
-        /*
-         * This is enough for when needing to call SetValue(RealmValue val,...)
-         * We get this value and we do what we need to do (maybe modify PopulateCollection..., probably yes)
-         * 
-         * For the opposite, we need to find a way to save this inside primitive value, maybe
-         * we just need something to keep a link to the realmList
-         * 
-         */
         private RealmValue(IList<RealmValue> list) : this()
         {
             Type = RealmValueType.List;
