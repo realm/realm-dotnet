@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Streamlined some of the error codes reported in `SessionException`. A few error codes have been combined and some have been deprecated since they are no longer reported by the server. (Issue [#3295](https://github.com/realm/realm-dotnet/issues/3295))
 
 ### Fixed
 * Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))

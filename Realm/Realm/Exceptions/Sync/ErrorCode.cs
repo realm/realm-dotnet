@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Sync.ErrorHandling;
+using static System.Net.WebRequestMethods;
 
 namespace Realms.Sync.Exceptions;
 
@@ -27,14 +29,19 @@ namespace Realms.Sync.Exceptions;
 public enum ErrorCode
 {
     /// <summary>
-    /// Unrecognized error code. It usually indicates incompatibility between the authentication server and client SDK versions.
+    /// Unrecognized error code. It usually indicates incompatibility between the App Services server and client SDK versions.
     /// </summary>
-    Unknown = -1,
-
     RuntimeError = 1000,
 
+    /// <summary>
+    /// The partition value specified by the user is not valid - i.e. its the wrong type or is encoded incorrectly.
+    /// </summary>
     BadPartitionValue = 1029,
 
+    /// <summary>
+    /// A fundamental invariant in the communication between the client and the server was not upheld. This typically indicates
+    /// a bug in the synchronization layer and should be reported at https://github.com/realm/realm-core/issues.
+    /// </summary>
     ProtocolInvariantFailed = 1038,
 
     /// <summary>
@@ -47,6 +54,13 @@ public enum ErrorCode
     /// </summary>
     BadQuery = 1031,
 
+    /// <summary>
+    /// A client reset has occurred. This error code will only be reported via a <see cref="ClientResetException"/> and only
+    /// in the case manual client reset handling is required - either via <see cref="ManualRecoveryHandler"/> or when
+    /// <c>ManualResetFallback</c> is invoked on one of the automatic client reset handlers.
+    /// </summary>
+    /// <seealso cref="SyncConfigurationBase.ClientResetHandler"/>
+    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset"/>
     ClientReset = 1032,
 
     /// <summary>
@@ -78,9 +92,26 @@ public enum ErrorCode
     /// </summary>
     WriteNotAllowed = 1044,
 
+    /// <summary>
+    /// Automatic client reset has failed. This will only be reported via <see cref="ClientResetException"/>
+    /// when an automatic client reset handler was used but it failed to perform the client reset operation -
+    /// typically due to a breaking schema change in the server schema or due to an exception occurring in the
+    /// before or after client reset callbacks.
+    /// </summary>
     AutoClientResetFailed = 1028,
 
+    /// <summary>
+    /// The wrong sync type was used to connect to the server. This means that you're using <see cref="PartitionSyncConfiguration"/>
+    /// to connect to an app configured for flexible sync or that you're using <see cref="FlexibleSyncConfiguration"/> to connect
+    /// to an app configured to use partition sync.
+    /// </summary>
     WrongSyncType = 1043,
+
+    /// <summary>
+    /// Unrecognized error code. It usually indicates incompatibility between the App Services server and client SDK versions.
+    /// </summary>
+    [Obsolete("Use RuntimeError instead.")]
+    Unknown = RuntimeError,
 
     /// <summary>
     /// Other session level error has occurred.
@@ -103,11 +134,8 @@ public enum ErrorCode
     /// <summary>
     /// The client file identifier is invalid.
     /// </summary>
-    /// <remarks>
-    /// Sync error reporting has been simplified and some errors have been unified. This error code is no longer reported via <see cref="SessionException"/>
-    /// and instead is thrown as <see cref="ClientResetException"/>.
-    /// </remarks>
-    [Obsolete("Use ClientResetException instead")]
+    /// <seealso cref="ClientResetException"/>
+    [Obsolete("Use ClientReset instead")]
     BadClientFileIdentifier = ClientReset,
 
     /// <summary>
@@ -131,31 +159,22 @@ public enum ErrorCode
     /// <summary>
     /// Histories have diverged and cannot be merged.
     /// </summary>
-    /// <remarks>
-    /// Sync error reporting has been simplified and some errors have been unified. This error code is no longer reported via <see cref="SessionException"/>
-    /// and instead is thrown as <see cref="ClientResetException"/>.
-    /// </remarks>
-    [Obsolete("Use ClientResetException instead")]
+    /// <seealso cref="ClientResetException"/>
+    [Obsolete("Use ClientReset instead")]
     DivergingHistories = ClientReset,
 
     /// <summary>
     /// The client file is invalid.
     /// </summary>
-    /// <remarks>
-    /// Sync error reporting has been simplified and some errors have been unified. This error code is no longer reported via <see cref="SessionException"/>
-    /// and instead is thrown as <see cref="ClientResetException"/>.
-    /// </remarks>
-    [Obsolete("Use ClientResetException instead")]
+    /// <seealso cref="ClientResetException"/>
+    [Obsolete("Use ClientReset instead")]
     BadClientFile = ClientReset,
 
     /// <summary>
     /// Client file has expired likely due to history compaction on the server.
     /// </summary>
-    /// <remarks>
-    /// Sync error reporting has been simplified and some errors have been unified. This error code is no longer reported via <see cref="SessionException"/>
-    /// and instead is thrown as <see cref="ClientResetException"/>.
-    /// </remarks>
-    [Obsolete("Use ClientResetException instead")]
+    /// <seealso cref="ClientResetException"/>
+    [Obsolete("Use ClientReset instead")]
     ClientFileExpired = ClientReset,
 
     /// <summary>
@@ -182,11 +201,7 @@ public enum ErrorCode
     /// Client attempted a write that is disallowed by permissions, or modifies an
     /// object outside the current query, and the server undid the modification.
     /// </summary>
-    /// <remarks>
-    /// Sync error reporting has been simplified and some errors have been unified. This error code is no longer reported via <see cref="SessionException"/>
-    /// and instead is thrown as <see cref="CompensatingWriteException"/>.
-    /// </remarks>
-    [Obsolete("Use CompensatingWriteException instead")]
+    /// <seealso cref="CompensatingWriteException"/>
     CompensatingWrite = 1033,
 
     /// <summary>
