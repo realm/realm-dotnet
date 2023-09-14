@@ -248,7 +248,7 @@ namespace Realms.Tests.Sync
                 schema.Add(typeof(AsymmetricObjectWithEmbeddedListObject));
             }
 
-            config.Schema = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
+            config.Schema = schema;
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
 
             return config;
