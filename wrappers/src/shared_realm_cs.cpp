@@ -202,7 +202,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, std::optional
             }
 
             realm_sync_error marshaled_error{
-                error.get_system_error().value(),
+                error.status.code(),
                 to_capi(error.simple_message),
                 to_capi(error.logURL),
                 error.is_client_reset_requested(),

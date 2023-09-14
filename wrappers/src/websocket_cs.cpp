@@ -187,7 +187,7 @@ extern "C" {
     }
 
     REALM_EXPORT void realm_websocket_observer_closed_handler(WebSocketObserver* observer, bool was_clean, websocket::WebSocketError error_code, realm_string_t reason) {
-        observer->websocket_closed_handler(was_clean, Status(error_code, from_capi(reason)));
+        observer->websocket_closed_handler(was_clean, error_code, capi_to_std(reason));
     }
 }
 
