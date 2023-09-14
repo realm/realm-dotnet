@@ -106,6 +106,11 @@ extern "C" {
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(val.get<ObjLink>(), object.realm());
                 }
+                if (val.get_type() == type_List)
+                {
+                    auto list = new List(object.realm(), object.get_obj(), prop.column_key);
+                    *value = to_capi(list);
+                }
                 else {
                     *value = to_capi(std::move(val));
                 }
@@ -159,12 +164,15 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_list_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT List* object_set_list_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        handle_errors(ex, [&]() {
+        return handle_errors(ex, [&]() {
             verify_can_set(object);
 
             auto prop = get_property(object, property_ndx);
+            object.get_obj().set_collection(prop.column_key, CollectionType::List);
+
+            return new List(object.realm(), object.get_obj(), prop.column_key);
         });
     }
 

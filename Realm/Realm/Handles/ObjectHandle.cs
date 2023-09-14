@@ -231,25 +231,10 @@ namespace Realms
 
                 foreach (var item in value.AsList())
                 {
-                    if (item is RealmValue { Type: RealmValueType.Object } val)
-                    {
-                        var wrappedObj = val.AsIRealmObject();
-                        if (wrappedObj is IRealmObject robj)
-                        {
-                            realm.Add(robj, false); //TODO Update?
-                        }
-                    }
-                    //TODO I think here we could need a new case for Collections of Mixed
-
+                    // TODO Need to add special cases for objects and other collections
                     realmList.Add(item);
                 }
 
-                var newRealmVal = RealmValue.List(realmList);
-
-                var (prim, handl) = newRealmVal.ToNative();
-                NativeMethods.set_value(this, propertyIndex, prim, out var setValueNativeException);
-                handl?.Dispose();
-                setValueNativeException.ThrowIfNecessary();
                 return;
             }
 

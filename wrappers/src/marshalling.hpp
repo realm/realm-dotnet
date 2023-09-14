@@ -507,6 +507,14 @@ static inline realm_value_t to_capi(ObjLink obj_link, SharedRealm realm)
     return to_capi(realm->read_group().get_object(obj_link), realm);
 }
 
+static inline realm_value_t to_capi(List* list)
+{
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_LIST;
+    val.list.list = list;
+    return val;
+}
+
 static inline realm_value_t to_capi(const Mixed& value)
 {
     realm_value_t val{};
