@@ -67,10 +67,8 @@ namespace Realms.Native
         [FieldOffset(0)]
         private LinkValue link_value;
 
-        /**
-         * We need to create something similar to LinkValue (maybe ListValue)
-         * that will contain a IntPtr to the list, because it seems this is the only thing we need to create the list handle
-         */
+        [FieldOffset(0)]
+        private ListValue list_value;
 
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
@@ -287,6 +285,12 @@ namespace Realms.Native
 
             [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1214:Readonly fields should appear before non-readonly fields", Justification = "The order of the struct matters.")]
             public readonly TableKey table_key;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ListValue
+        {
+            public IntPtr list_ptr;
         }
 
         [StructLayout(LayoutKind.Sequential)]
