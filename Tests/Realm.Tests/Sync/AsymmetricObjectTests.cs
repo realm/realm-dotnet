@@ -28,8 +28,6 @@ using Realms.Exceptions;
 using Realms.Sync;
 #if TEST_WEAVER
 using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
-using TestRealmObject = Realms.RealmObject;
 #else
 using TestAsymmetricObject = Realms.IAsymmetricObject;
 #endif
@@ -95,8 +93,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 Assert.Throws<ArgumentException>(() =>
                 {
@@ -114,7 +111,6 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
                 using var realm = await GetRealmAsync(flxConfig);
                 var partitionLike = Guid.NewGuid().ToString();
 
@@ -148,7 +144,6 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
                 using var realm = await GetRealmAsync(flxConfig);
                 var partitionLike = Guid.NewGuid().ToString();
 
@@ -183,7 +178,6 @@ namespace Realms.Tests.Sync
                 ObjectId id = default;
 
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
                 using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
@@ -206,9 +200,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionLike = Guid.NewGuid().ToString();
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 var asymmetribObj = new BasicAsymmetricObject
                 {
@@ -233,9 +225,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
                 var partitionLike = Guid.NewGuid().ToString();
                 var asymmetricObj = new BasicAsymmetricObject
                 {
@@ -261,8 +251,6 @@ namespace Realms.Tests.Sync
             {
                 ObjectId id = default;
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
-
                 using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
@@ -290,7 +278,6 @@ namespace Realms.Tests.Sync
                 var partitionLike = Guid.NewGuid().ToString();
                 var id = new Random().Next();
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject), typeof(PrimaryKeyInt32Object) };
 
                 flxConfig.PopulateInitialSubscriptions = (realm) =>
                 {
@@ -346,15 +333,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[]
-                {
-                    typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
-                    typeof(EmbeddedLevel1),
-                    typeof(EmbeddedLevel2),
-                    typeof(EmbeddedLevel3)
-                };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 var parent = new AsymmetricObjectWithEmbeddedRecursiveObject
                 {
@@ -387,9 +366,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedListObject), typeof(EmbeddedIntPropertyObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 var parent = new AsymmetricObjectWithEmbeddedListObject();
                 parent.EmbeddedListObject.Add(new EmbeddedIntPropertyObject());
@@ -408,9 +385,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedDictionaryObject), typeof(EmbeddedIntPropertyObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 var parent = new AsymmetricObjectWithEmbeddedDictionaryObject();
                 parent.EmbeddedDictionaryObject.Add("child", new EmbeddedIntPropertyObject());
@@ -452,9 +427,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetFLXIntegrationRealmAsync();
 
                 var topLevel = new BasicAsymmetricObject
                 {
@@ -627,7 +600,6 @@ namespace Realms.Tests.Sync
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.IsDynamic = isDynamic;
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
                 using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
@@ -698,7 +670,6 @@ namespace Realms.Tests.Sync
         private async Task<Realm> GetRealmWithRealmValueSchemaAsync()
         {
             var flxConfig = await GetFLXIntegrationConfigAsync();
-            flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
             flxConfig.PopulateInitialSubscriptions = (realm) =>
             {
                 var query = realm.All<RealmValueObject>();

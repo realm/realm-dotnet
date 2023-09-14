@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
+using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using static Realms.Tests.TestHelpers;
@@ -220,6 +221,33 @@ namespace Realms.Tests.Sync
         private static T UpdateConfig<T>(T config)
             where T : SyncConfigurationBase
         {
+            var schema = new RealmSchema.Builder()
+            {
+                typeof(HugeSyncObject),
+                typeof(PrimaryKeyStringObject),
+                typeof(ObjectIdPrimaryKeyWithValueObject),
+                typeof(SyncCollectionsObject),
+                typeof(IntPropertyObject),
+                typeof(EmbeddedIntPropertyObject),
+                typeof(SyncAllTypesObject)
+            };
+
+            if (config is FlexibleSyncConfiguration)
+            {
+                // We need to add all objects ever used by sync to the flx schema due to the way breaking schema changes work
+                // in dev mode. When a client connects with a subset of the server schema, they'll experience client reset as the
+                // server removes the missing tables and re-bootstraps.
+                schema.Add(typeof(BasicAsymmetricObject));
+                schema.Add(typeof(AsymmetricObjectWithAllTypes));
+                schema.Add(typeof(AsymmetricObjectWithEmbeddedRecursiveObject));
+                schema.Add(typeof(EmbeddedLevel1));
+                schema.Add(typeof(EmbeddedLevel2));
+                schema.Add(typeof(EmbeddedLevel3));
+                schema.Add(typeof(RealmValueObject));
+                schema.Add(typeof(AsymmetricObjectWithEmbeddedDictionaryObject));
+                schema.Add(typeof(AsymmetricObjectWithEmbeddedListObject));
+            }
+
             config.Schema = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
 
