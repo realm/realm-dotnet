@@ -43,6 +43,8 @@ deploy-cluster:
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
+#! We need to have two input arrays because there is not a 1-to-1 correspondence between dependencies
+#! and targets, for example for macOS.
 #@ def cleanupBaas(dependencies = [], targets = []):
 #@ needs = ["deploy-cluster"]
 #@ differentiators = []
