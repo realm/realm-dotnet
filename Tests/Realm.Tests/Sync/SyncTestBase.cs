@@ -229,7 +229,8 @@ namespace Realms.Tests.Sync
                 typeof(SyncCollectionsObject),
                 typeof(IntPropertyObject),
                 typeof(EmbeddedIntPropertyObject),
-                typeof(SyncAllTypesObject)
+                typeof(SyncAllTypesObject),
+                typeof(ObjectWithPartitionValue),
             };
 
             if (config is FlexibleSyncConfiguration)
@@ -246,6 +247,7 @@ namespace Realms.Tests.Sync
                 schema.Add(typeof(RealmValueObject));
                 schema.Add(typeof(AsymmetricObjectWithEmbeddedDictionaryObject));
                 schema.Add(typeof(AsymmetricObjectWithEmbeddedListObject));
+                schema.Add(typeof(PrimaryKeyInt32Object));
             }
 
             config.Schema = schema;

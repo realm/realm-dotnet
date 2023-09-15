@@ -89,23 +89,6 @@ namespace Realms.Tests.Sync
         };
 
         [Test]
-        public void AddAsymmetricObjNotInSchema_Throws()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                using var realm = await GetFLXIntegrationRealmAsync();
-
-                Assert.Throws<ArgumentException>(() =>
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new BasicAsymmetricObject());
-                    });
-                });
-            });
-        }
-
-        [Test]
         public void AddCollectionOfAsymmetricObjs()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

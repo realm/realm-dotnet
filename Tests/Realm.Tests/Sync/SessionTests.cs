@@ -411,8 +411,6 @@ namespace Realms.Tests.Sync
                 config = GetIntegrationConfig(user);
             }
 
-            config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-
             return (config, guid);
         }
 
