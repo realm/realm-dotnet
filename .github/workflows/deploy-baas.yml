@@ -54,7 +54,7 @@ jobs:
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
         clusterName: ${{ steps.generate-cluster-name.outputs.clusterName }}-${{ matrix.differentiator }}
-        clusterSize: M20
+        clusterSize: M5
   deploy-apps:
     name: Deploy Apps
     needs: deploy-baas
