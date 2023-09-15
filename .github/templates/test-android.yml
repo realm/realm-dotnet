@@ -11,7 +11,7 @@ jobs:
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
-      - #@ template.replace(prepareTest())
+      - #@ template.replace(prepareTest("android"))
       - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
       - name: Run the tests

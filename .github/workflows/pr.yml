@@ -166,8 +166,11 @@ jobs:
     if: always()
     name: Cleanup
     needs:
+    - deploy-cluster
     - test-code-coverage
     with:
+      differentiators: '["code-coverage"]'
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:

@@ -2,6 +2,12 @@ name: cleanup-baas
 "on":
   workflow_call:
     inputs:
+      differentiators:
+        required: true
+        type: string
+      clusterName:
+        required: true
+        type: string
       BaseUrl:
         required: true
         type: string
@@ -20,8 +26,11 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   cleanup-baas:
-    runs-on: ubuntu-latest
     name: Cleanup Cluster
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        differentiator: ${{ fromJson(inputs.differentiators) }}
     timeout-minutes: 5
     steps:
     - name: Checkout code
@@ -36,3 +45,4 @@ jobs:
         atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterName: ${{ inputs.clusterName }}-${{ matrix.differentiator }}
