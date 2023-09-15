@@ -2,7 +2,7 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode", "fetchPackageArtifacts")
 
 #@ def baasTestArgs(differentiator):
-#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
+#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-"+ differentiator  +" --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
 #@ end
 ---
 #@ def publishTestsResults(files, test_title):
@@ -81,7 +81,7 @@ env:
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
 ---
-#@ def prepareTest(fetchWrappers = False, cleanupWorkspace = False):
+#@ def prepareTest(differentiator = "", fetchWrappers = False, cleanupWorkspace = False):
 - #@ template.replace(checkoutCode())
 #@ if cleanupWorkspace:
 - name: Cleanup Workspace
@@ -92,7 +92,10 @@ env:
 #@ else:
 - #@ template.replace(fetchPackageArtifacts())
 #@ end
+#@ if (differentiator != ""):
+#! The following is used in case we need to re-run the action and the main deploy cluster job is not re-run too (because successful)
 - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+  name: Deploy Cluster (alternative)
   if: ${{ inputs.realmUrl }}
   with:
     projectId: ${{ secrets.AtlasProjectId}}
@@ -100,5 +103,7 @@ env:
     atlasUrl: ${{ inputs.atlasUrl}}
     apiKey: ${{ secrets.AtlasPublicKey}}
     privateApiKey: ${{ secrets.AtlasPrivateKey }}
+    clusterName: #@ "${{ inputs.clusterName }}-" + differentiator
     clusterSize: M10
+#@ end
 #@ end

@@ -15,5 +15,5 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(wovenClassesBuildTests("Tests/Realm.Tests", "net7.0", "win-x64"))
       - name: Run the tests
-        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.WovenClasses.xml --labels=After" + baasTestArgs("weaved-classes")
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.WovenClasses.xml --labels=After"
       - #@ publishTestsResults("TestResults.WovenClasses.xml", "Woven classes")
