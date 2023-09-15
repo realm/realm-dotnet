@@ -2,9 +2,11 @@
 
 ### Enhancements
 * Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
+* Streamlined some of the error codes reported in `SessionException`. A few error codes have been combined and some have been deprecated since they are no longer reported by the server. (Issue [#3295](https://github.com/realm/realm-dotnet/issues/3295))
 
 ### Fixed
 * Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))
+* Fixed a `Cannot marshal generic Windows Runtime types with a non Windows Runtime type as a generic type argument` build error when using .NET Native. (Issue [#3434](https://github.com/realm/realm-dotnet/issues/3434), since 11.4.0)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

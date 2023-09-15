@@ -95,4 +95,4 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Android"]))
+  _: #@ template.replace(cleanupBaas(dependencies = [".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Android"], targets=[".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Android", "MacCatalyst"]))

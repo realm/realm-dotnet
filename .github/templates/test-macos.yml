@@ -9,9 +9,9 @@ jobs:
   test-xamarin:
     runs-on: macos-latest
     name: Xamarin.macOS
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
-      - #@ template.replace(prepareTest())
+      - #@ template.replace(prepareTest("xamarinmacos"))
       - #@ template.replace(buildTests("Tests/Tests.XamarinMac"))
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All" + baasTestArgs("xamarinmacos")
@@ -19,7 +19,7 @@ jobs:
   test-maui:
     runs-on: macos-12
     name: Maui.MacCatalyst
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())

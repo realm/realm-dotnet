@@ -59,7 +59,7 @@ namespace Realms.Native
 
             public readonly UInt64 timeout_ms;
 
-            public readonly MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
+            public readonly MarshaledVector<MarshaledPair<StringValue, StringValue>> headers;
 
             private readonly StringValue body;
 
@@ -91,7 +91,7 @@ namespace Realms.Native
 
             public CustomErrorCode custom_status_code;
 
-            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
+            public MarshaledVector<MarshaledPair<StringValue, StringValue>> headers;
 
             public StringValue body;
         }
@@ -148,13 +148,13 @@ namespace Realms.Native
                     var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
 
                     var headers = response.Headers.Concat(response.Content.Headers)
-                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, arena), StringValue.AllocateFrom(h.Value.FirstOrDefault(), arena)))
+                        .Select(h => new MarshaledPair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, arena), StringValue.AllocateFrom(h.Value.FirstOrDefault(), arena)))
                         .ToArray();
 
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,
-                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers, arena),
+                        headers = MarshaledVector<MarshaledPair<StringValue, StringValue>>.AllocateFrom(headers, arena),
                         body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false), arena),
                     };
 

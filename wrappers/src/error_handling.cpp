@@ -62,7 +62,7 @@ namespace realm {
         catch (const SyncError& e) {
             REALM_ASSERT_DEBUG(false);
 
-            return NativeException(e);
+            return NativeException(e.status.code(), e.status.reason());
         }
         catch (const Exception& e) {
             return NativeException(e);

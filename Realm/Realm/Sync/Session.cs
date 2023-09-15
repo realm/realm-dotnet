@@ -222,7 +222,8 @@ namespace Realms.Sync
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal, ServerRequestsAction action) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal, action);
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal, ServerRequestsAction action)
+            => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal, action);
 
         internal void RaisePropertyChanged(string propertyName)
         {
