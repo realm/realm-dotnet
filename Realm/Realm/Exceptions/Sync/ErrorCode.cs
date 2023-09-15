@@ -88,7 +88,7 @@ public enum ErrorCode
 
     /// <summary>
     /// Client attempted a write that is disallowed by permissions, or modifies an object
-    /// outside the current query - requires client reset.
+    /// outside the current query - this will result in a <see cref="CompensatingWriteException"/>.
     /// </summary>
     WriteNotAllowed = 1044,
 
