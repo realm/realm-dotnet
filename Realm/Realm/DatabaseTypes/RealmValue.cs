@@ -218,9 +218,6 @@ namespace Realms
                     }
 
                     return (PrimitiveValue.Object(obj.GetObjectHandle()!), null);
-                case RealmValueType.List:
-                    var realmList = _listValue as RealmList<RealmValue>;
-                    return (PrimitiveValue.List(realmList.Handle.Value as ListHandle), null);
                 default:
                     return (_primitiveValue, null);
             }

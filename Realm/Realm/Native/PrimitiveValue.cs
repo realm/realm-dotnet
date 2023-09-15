@@ -211,18 +211,6 @@ namespace Realms.Native
             };
         }
 
-        public static PrimitiveValue List(ListHandle handle)
-        {
-            return new PrimitiveValue
-            {
-                Type = RealmValueType.List,
-                list_value = new ListValue
-                {
-                    list_ptr = handle.DangerousGetHandle()
-                }
-            };
-        }
-
         public readonly bool AsBool() => int_value == 1;
 
         public readonly long AsInt() => int_value;
