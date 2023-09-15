@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.5.0 (2023-09-15)
 
 ### Enhancements
 * Streamlined some of the error codes reported in `SessionException`. A few error codes have been combined and some have been deprecated since they are no longer reported by the server. (Issue [#3295](https://github.com/realm/realm-dotnet/issues/3295))
