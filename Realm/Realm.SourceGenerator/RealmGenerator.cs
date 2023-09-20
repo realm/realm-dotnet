@@ -39,10 +39,10 @@ namespace Realms.SourceGenerator
             var parser = new Parser(context, generatorConfig);
             var parsingResults = parser.Parse(scr.RealmClasses);
 
-            var diagnosticsEmitter = new DiagnosticsEmitter(context);
+            var diagnosticsEmitter = new DiagnosticsEmitter(context, generatorConfig);
             diagnosticsEmitter.Emit(parsingResults);
 
-            var codeEmitter = new CodeEmitter(context);
+            var codeEmitter = new CodeEmitter(context, generatorConfig);
             codeEmitter.Emit(parsingResults);
         }
     }
