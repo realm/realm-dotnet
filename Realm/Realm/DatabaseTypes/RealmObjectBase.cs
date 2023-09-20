@@ -78,7 +78,7 @@ namespace Realms
         /// Gets the accessor that encapsulates the methods and properties used by the object for its functioning.
         /// </summary>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         IRealmAccessor IRealmObjectBase.Accessor => _accessor;
@@ -89,7 +89,7 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsManaged => _accessor.IsManaged;
@@ -99,7 +99,7 @@ namespace Realms
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public DynamicObjectApi DynamicApi => _accessor.DynamicApi;
@@ -112,7 +112,7 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsValid => _accessor.IsValid;
@@ -125,7 +125,7 @@ namespace Realms
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsFrozen => _accessor.IsFrozen;
@@ -135,7 +135,7 @@ namespace Realms
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public Realm? Realm => _accessor.Realm;
@@ -145,7 +145,7 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public ObjectSchema? ObjectSchema => _accessor.ObjectSchema;
@@ -158,7 +158,7 @@ namespace Realms
         /// </remarks>
         /// <value>The number of objects referring to this one.</value>
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public int BacklinksCount => _accessor.BacklinksCount;

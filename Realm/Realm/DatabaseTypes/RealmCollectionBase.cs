@@ -94,7 +94,7 @@ namespace Realms
         }
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public int Count
@@ -103,7 +103,7 @@ namespace Realms
         }
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public ObjectSchema? ObjectSchema => Metadata?.Schema;
@@ -111,25 +111,25 @@ namespace Realms
         Metadata? IMetadataObject.Metadata => Metadata;
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsManaged => Realm != null;
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsValid => Handle.Value.IsValid;
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public bool IsFrozen => Realm?.IsFrozen == true;
 
         [IgnoreDataMember, XmlIgnore]
-#if NET6_0
+#if NET6_0_OR_GREATER
         [System.Text.Json.Serialization.JsonIgnore]
 #endif
         public Realm Realm { get; }
