@@ -93,27 +93,45 @@ namespace Realms
             }
         }
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public int Count
         {
             get => IsValid ? Handle.Value.Count() : 0;
         }
 
-        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public ObjectSchema? ObjectSchema => Metadata?.Schema;
 
         Metadata? IMetadataObject.Metadata => Metadata;
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsManaged => Realm != null;
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsValid => Handle.Value.IsValid;
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsFrozen => Realm?.IsFrozen == true;
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public Realm Realm { get; }
 
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;

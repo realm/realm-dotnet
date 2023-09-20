@@ -51,9 +51,19 @@ namespace Realms.SourceGenerator
             RealmObjectWithoutAutomaticProperty = 25,
             ParentOfNestedClassIsNotPartial = 27,
             IndexedPrimaryKey = 28,
+            InvalidGeneratorConfiguration = 1000,
         }
 
         #region Errors
+
+        public static Diagnostic InvalidConfiguration(string field, string description)
+        {
+            return CreateDiagnosticError(
+                Id.InvalidGeneratorConfiguration,
+                "Invalid source generator configuration",
+                $"The generator configuration for {field} is invalid: {description}",
+                Location.None);
+        }
 
         public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
