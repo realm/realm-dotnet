@@ -51,7 +51,7 @@ docker run --rm -it -v ${pwd}:/source cimg/android:2023.05.1-ndk /bin/bash
 
 You need Visual Studio 2017 (or later) with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
 
-Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can specify all or a subset to save time when building.
+Valid Windows platforms (architectures) are `Win32`, `x64`, `ARM` and `ARM64`. You can specify all or a subset to save time when building.
 
 * To build for regular Windows run `.\build.ps1 Windows -Configuration Debug/Release -Platforms Win32, x64`
 

@@ -288,11 +288,11 @@ namespace Realms.SourceGenerator
                     return propertyTypeInfo;
                 }
 
-                if (propertySymbol is INamedTypeSymbol { SpecialType: SpecialType.System_DateTime })
+                if (typeSymbol is INamedTypeSymbol { SpecialType: SpecialType.System_DateTime })
                 {
                     classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
-                else if (propertySymbol.Type.Name == "List")
+                else if (typeSymbol.Name == "List")
                 {
                     classInfo.Diagnostics.Add(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
@@ -434,7 +434,7 @@ namespace Realms.SourceGenerator
                 INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_Double => PropertyTypeInfo.Double,
                 INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_String => PropertyTypeInfo.String,
                 INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_Decimal || typeSymbol.Name == "Decimal128" => PropertyTypeInfo.Decimal,
-                ITypeSymbol when typeSymbol.ToDisplayString() == "byte[]" => PropertyTypeInfo.Data,
+                _ when typeSymbol.ToDisplayString() == "byte[]" => PropertyTypeInfo.Data,
                 INamedTypeSymbol when typeSymbol.Name == "ObjectId" => PropertyTypeInfo.ObjectId,
                 INamedTypeSymbol when typeSymbol.Name == "Guid" => PropertyTypeInfo.Guid,
                 INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" => PropertyTypeInfo.Date,
