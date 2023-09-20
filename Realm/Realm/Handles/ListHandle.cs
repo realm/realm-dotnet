@@ -32,6 +32,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_list_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_list_value(ListHandle listHandle, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
 
@@ -138,6 +141,15 @@ namespace Realms
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root!, result);
+        }
+
+        public ListHandle AddList()
+        {
+            EnsureIsOpen();
+
+            var listPtr = NativeMethods.add_list_value(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ListHandle(Root!, listPtr);
         }
 
         public void Set(int targetIndex, in RealmValue value)

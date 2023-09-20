@@ -88,6 +88,19 @@ namespace Realms
         {
             var realmValue = ValidateValueToInsert(value);
 
+            if (realmValue.Type == RealmValueType.List)
+            {
+                var newListHandle = _listHandle.AddList();
+                var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
+
+                foreach (var item in realmValue.AsList())
+                {
+                    newList.Add(item);
+                }
+
+                return;
+            }
+
             if (_isEmbedded)
             {
                 if (IsDynamic)

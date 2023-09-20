@@ -119,6 +119,24 @@ REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeExceptio
     list_insert_value(list, list.size(), value, ex);
 }
 
+REALM_EXPORT List* list_insert_list_value(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+
+        if (list_ndx > list.size()) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
+        }
+
+        list.insert_collection(list_ndx, CollectionType::List);
+        return new List(list.get_list(list_ndx));
+    });
+}
+
+REALM_EXPORT List* list_add_list_value(List& list, NativeException::Marshallable& ex)
+{
+    return list_insert_list_value(list, list.size(), ex);
+}
+
 REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -145,6 +163,11 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
             auto val = list.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
                 *value = to_capi(val.get<ObjLink>(), list.get_realm());
+            }
+            else if (val.get_type() == type_List)
+            {
+                auto internalList = new List(list.get_list(ndx));
+                *value = to_capi(internalList);
             }
             else {
                 *value = to_capi(std::move(val));

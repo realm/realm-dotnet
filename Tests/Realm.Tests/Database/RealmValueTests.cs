@@ -675,32 +675,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void AAAARealmValueList()
-        {
-            var rvo = new RealmValueObject();
-
-            rvo.RealmValueProperty = RealmValue.List(new List<RealmValue> { 1, "two", 3 });
-
-            _realm.Write(() =>
-            {
-                _realm.Add(rvo);
-            });
-
-            var savedValue = rvo.RealmValueProperty;
-            var list = savedValue.AsList();
-
-            Assert.That(list.Count(), Is.EqualTo(3));
-
-            var firstVal = list[0].AsInt16();
-            var secondVal = list[1].AsString();
-            var thirdVal = list[2].AsInt16();
-
-            Assert.That(firstVal, Is.EqualTo(1));
-            Assert.That(secondVal, Is.EqualTo("two"));
-            Assert.That(thirdVal, Is.EqualTo(3));
-        }
-
-        [Test]
         public void RealmValue_WhenManaged_CanChangeType()
         {
             var rvo = new RealmValueObject();

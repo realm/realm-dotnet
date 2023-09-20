@@ -225,13 +225,13 @@ namespace Realms
             else if (value.Type == RealmValueType.List)
             {
                 var listPtr = NativeMethods.set_list_value(this, propertyIndex, out var listNativeException);
+                //TODO Need to do something with the exception
 
                 var listHandle = new ListHandle(Root!, listPtr);
                 var realmList = new RealmList<RealmValue>(realm, listHandle, null);
 
                 foreach (var item in value.AsList())
                 {
-                    // TODO Need to add special cases for objects and other collections
                     realmList.Add(item);
                 }
 
