@@ -161,13 +161,17 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
         }
         else {
             auto val = list.get_any(ndx);
-            if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(val.get<ObjLink>(), list.get_realm());
-            }
-            else if (val.get_type() == type_List)
+            if (!val.is_null())
             {
-                auto internalList = new List(list.get_list(ndx));
-                *value = to_capi(internalList);
+                auto type = val.get_type();
+                if (type == type_TypedLink) {
+                    *value = to_capi(val.get<ObjLink>(), list.get_realm());
+                }
+                else if (type == type_List)
+                {
+                    auto internalList = new List(list.get_list(ndx));
+                    *value = to_capi(internalList);
+                }
             }
             else {
                 *value = to_capi(std::move(val));

@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using MongoDB.Bson;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -25,12 +27,75 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     internal class RealmValueWithCollections : RealmInstanceTest
     {
+        private RealmValueObject PersistAndFind(RealmValue rv)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new RealmValueObject { RealmValueProperty = rv });
+            });
+
+            return _realm.All<RealmValueObject>().First();
+        }
+
+        [Test]
+        public void TestA([Values(true, false)] bool isManaged)
+        {
+            var originalList = new List<RealmValue>
+            {
+                RealmValue.Null,
+                1,
+                true,
+                "string",
+                new byte[] { 0, 1, 2 },
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
+                1f,
+                2d,
+                3m,
+                new ObjectId("5f63e882536de46d71877979"),
+                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
+                new InternalObject { IntProperty = 10, StringProperty = "brown" },
+            };
+
+            RealmValue rv = originalList;
+
+            if (isManaged)
+            {
+                rv = PersistAndFind(rv).RealmValueProperty;
+            }
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
+            Assert.That(rv != RealmValue.Null);
+
+            var retrievedList = rv.AsList();
+
+            Assert.That(retrievedList, Is.EquivalentTo(originalList));
+        }
+
+        /* To test:
+         *  - everything works both managed and unmanaged
+         *  - explicit/implicit conversion work
+         *  - works with objects
+         *  - works with lists inside lists
+         *  - Can change type
+         *  - Can add/replace at index
+         *  - Can delete elements
+         *  
+         *  
+         *  DONE:
+         *  - 
+         *  
+         *  - Doesn't cause issues with queries
+         *  - Dynamic ?
+         *  - sets can't contain other collections
+         * 
+         */
+
         [Test]
         public void Test1()
         {
             var rvo = new RealmValueObject();
 
-            rvo.RealmValueProperty = RealmValue.List(new List<RealmValue> { 1, "two", 3 });
+            rvo.RealmValueProperty = new List<RealmValue> { 1, "two", 3 };
 
             _realm.Write(() =>
             {
@@ -56,7 +121,7 @@ namespace Realms.Tests.Database
         {
             var rvo = new RealmValueObject();
 
-            rvo.RealmValueProperty = RealmValue.List(new List<RealmValue> { 1, "two", RealmValue.List(new List<RealmValue> { 0, 15 }) });
+            rvo.RealmValueProperty = new List<RealmValue> { 1, "two", new List<RealmValue> { 0, 15 } };
 
             _realm.Write(() =>
             {

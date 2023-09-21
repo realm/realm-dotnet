@@ -1360,6 +1360,9 @@ namespace Realms
         /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmObjectBase? val) => val == null ? Null : Object(val);
 
+        //TODO Add docs
+        public static implicit operator RealmValue(List<RealmValue>? val) => val == null ? Null : List(val);
+
         private void EnsureType(string target, RealmValueType type)
         {
             if (Type != type)
