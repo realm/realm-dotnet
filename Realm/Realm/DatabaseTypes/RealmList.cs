@@ -66,6 +66,20 @@ namespace Realms
                 ValidateIndex(index);
                 var realmValue = ValidateValueToInsert(value);
 
+                if (realmValue.Type == RealmValueType.List)
+                {
+                    var newListHandle = _listHandle.SetList(index);
+                    var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
+
+                    foreach (var item in realmValue.AsList())
+                    {
+                        newList.Add(item);
+                    }
+
+                    return;
+                }
+
+
                 if (_isEmbedded)
                 {
                     if (IsDynamic)
@@ -132,6 +146,20 @@ namespace Realms
         {
             ValidateIndex(index);
             var realmValue = ValidateValueToInsert(value);
+
+            //TODO Can we do something better than this, so at least we can take out the common?
+            if (realmValue.Type == RealmValueType.List)
+            {
+                var newListHandle = _listHandle.InsertList(index);
+                var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
+
+                foreach (var item in realmValue.AsList())
+                {
+                    newList.Add(item);
+                }
+
+                return;
+            }
 
             if (_isEmbedded)
             {

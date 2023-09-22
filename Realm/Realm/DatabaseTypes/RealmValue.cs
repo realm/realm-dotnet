@@ -759,6 +759,7 @@ namespace Realms
                 RealmValueType.ObjectId => AsObjectId(),
                 RealmValueType.Guid => AsGuid(),
                 RealmValueType.Object => AsIRealmObject(),
+                RealmValueType.List => AsList(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
@@ -1427,6 +1428,7 @@ namespace Realms
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
+                RealmValueType.List => AsList().SequenceEqual(other.AsList()),
                 RealmValueType.Null => true,
                 _ => false,
             };

@@ -38,8 +38,11 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void TestA([Values(true, false)] bool isManaged)
+        public void List_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
         {
+            var innerList1 = new List<RealmValue> { "inner1" };
+            var innerList2 = new List<RealmValue> { "inner2", innerList1 };
+
             var originalList = new List<RealmValue>
             {
                 RealmValue.Null,
@@ -54,6 +57,7 @@ namespace Realms.Tests.Database
                 new ObjectId("5f63e882536de46d71877979"),
                 Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
                 new InternalObject { IntProperty = 10, StringProperty = "brown" },
+                innerList2,
             };
 
             RealmValue rv = originalList;
@@ -66,80 +70,164 @@ namespace Realms.Tests.Database
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
             Assert.That(rv != RealmValue.Null);
 
+            Assert.That(rv.AsList(), Is.EqualTo(originalList));
+            Assert.That(rv == originalList);
+            Assert.That(rv.Equals(originalList));
+        }
+
+        [Test]
+        public void List_WithConstructorMethodOrOperator_WorksTheSame([Values(true, false)] bool isManaged)
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            RealmValue rvOperator = originalList;
+            RealmValue rvConstructor = RealmValue.List(originalList);
+
+            if (isManaged)
+            {
+                rvOperator = PersistAndFind(rvOperator).RealmValueProperty;
+                rvConstructor = PersistAndFind(rvConstructor).RealmValueProperty;
+            }
+
+            Assert.That(rvOperator.AsList(), Is.EqualTo(originalList));
+            Assert.That(rvConstructor.AsList(), Is.EqualTo(originalList));
+        }
+
+        [Test]
+        public void List_WhenManaged_IsNotSameReferenceAsOriginalList()
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            RealmValue rv = originalList;
+            rv = PersistAndFind(rv).RealmValueProperty;
             var retrievedList = rv.AsList();
 
-            Assert.That(retrievedList, Is.EquivalentTo(originalList));
+            originalList.RemoveAt(1);
+            Assert.That(ReferenceEquals(originalList, retrievedList), Is.False);
+        }
+
+        [Test]
+        public void ListInsideMixed_WhenUnmanaged_IsSameReferenceAsOriginalList()
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            RealmValue rv = originalList;
+            var retrievedList = rv.AsList();
+
+            originalList.RemoveAt(1);
+            Assert.That(ReferenceEquals(originalList, retrievedList), Is.True);
+        }
+
+        [Test]
+        public void List_AfterCreation_CanBeAssigned([Values(true, false)] bool isManaged)
+        {
+            var stringVal = "Mario";
+            var rvo = new RealmValueObject { RealmValueProperty = stringVal };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            Assert.That(rvo.RealmValueProperty == stringVal);
+
+            var listVal = new List<RealmValue> { 1, "string", true };
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = listVal;
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            var newStringVal = "Luigi";
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = newStringVal;
+            });
+
+            Assert.That(rvo.RealmValueProperty == newStringVal);
+        }
+
+        [Test]
+        public void List_WhenManaged_CanBeModified()
+        {
+            var listVal = new List<RealmValue> { 1, "string", true };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[1] = "Mario";
+                listVal[1] = "Mario"; // To keep both list updated
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().RemoveAt(2);
+                listVal.RemoveAt(2);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().Add("newVal");
+                listVal.Add("newVal");
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            //TODO Maybe the set/insert/add lists and other collections can be made in another test
+            var innerList1 = new List<RealmValue> { "inner", 23, false };
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[1] = innerList1;
+                listVal[1] = innerList1;
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            var innerList2 = new List<RealmValue> { "inner2", 23, false };
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().Insert(1, innerList2);
+                listVal.Insert(1, innerList2);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
         }
 
         /* To test:
          *  - everything works both managed and unmanaged
-         *  - explicit/implicit conversion work
-         *  - works with objects
-         *  - works with lists inside lists
-         *  - Can change type
          *  - Can add/replace at index
          *  - Can delete elements
          *  
          *  
          *  DONE:
-         *  - 
+         *  - Works with objects
+         *  - Works with lists inside lists
+         *  - Explicit/implicit conversion works
+         *  - Can changeType
+         *  - Different equality comparer
+         *  - Can add/replace/modify elements
          *  
          *  - Doesn't cause issues with queries
          *  - Dynamic ?
          *  - sets can't contain other collections
+         *  - Notifications?
          * 
          */
-
-        [Test]
-        public void Test1()
-        {
-            var rvo = new RealmValueObject();
-
-            rvo.RealmValueProperty = new List<RealmValue> { 1, "two", 3 };
-
-            _realm.Write(() =>
-            {
-                _realm.Add(rvo);
-            });
-
-            var savedValue = rvo.RealmValueProperty;
-            var list = savedValue.AsList();
-
-            Assert.That(list.Count(), Is.EqualTo(3));
-
-            var firstVal = list[0].AsInt16();
-            var secondVal = list[1].AsString();
-            var thirdVal = list[2].AsInt16();
-
-            Assert.That(firstVal, Is.EqualTo(1));
-            Assert.That(secondVal, Is.EqualTo("two"));
-            Assert.That(thirdVal, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void Test2()
-        {
-            var rvo = new RealmValueObject();
-
-            rvo.RealmValueProperty = new List<RealmValue> { 1, "two", new List<RealmValue> { 0, 15 } };
-
-            _realm.Write(() =>
-            {
-                _realm.Add(rvo);
-            });
-
-            var savedValue = rvo.RealmValueProperty;
-            var list = savedValue.AsList();
-
-            Assert.That(list.Count(), Is.EqualTo(3));
-
-            var thirdVal = list[2].AsList();
-
-            var firstEl = thirdVal[0].AsInt16();
-            var secondEl = thirdVal[1].AsInt16();
-
-            Assert.That(firstEl, Is.EqualTo(0));
-            Assert.That(secondEl, Is.EqualTo(15));
-        }
     }
 }
