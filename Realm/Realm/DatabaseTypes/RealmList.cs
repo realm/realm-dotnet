@@ -79,7 +79,6 @@ namespace Realms
                     return;
                 }
 
-
                 if (_isEmbedded)
                 {
                     if (IsDynamic)

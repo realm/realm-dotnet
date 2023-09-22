@@ -585,7 +585,7 @@ public static class CollectionExtensions
     {
         Argument.NotNull(target, nameof(target));
 
-        if (!skipDefaults || source != null)  //TODO Need to check what skipDefaults does
+        if (!skipDefaults || source != null)
         {
             target.Clear();
         }
@@ -609,11 +609,9 @@ public static class CollectionExtensions
                         realm.Add(robj, update);
                     }
                 }
-                //TODO I think here we could need a new case for Collections of Mixed
 
                 target.Add(item);
             }
-
         }
     }
 }

@@ -76,6 +76,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void List_WhenSetBeforeBeingManaged_WorksAsIntended()
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            RealmValue rv = originalList;
+
+            var rvo = new RealmValueObject { RealmValueProperty = rv };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(rvo);
+            });
+
+            rv = rvo.RealmValueProperty;
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
+            Assert.That(rv != RealmValue.Null);
+
+            Assert.That(rv.AsList(), Is.EqualTo(originalList));
+        }
+
+        [Test]
         public void List_WithConstructorMethodOrOperator_WorksTheSame([Values(true, false)] bool isManaged)
         {
             var originalList = new List<RealmValue> { 1, "string", true };
@@ -186,8 +208,18 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+        }
 
-            //TODO Maybe the set/insert/add lists and other collections can be made in another test
+        [Test]
+        public void List_AddSetInsertList_WorksAsIntended()
+        {
+            var listVal = new List<RealmValue> { 1, "string", true };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
+            });
+
             var innerList1 = new List<RealmValue> { "inner", 23, false };
 
             _realm.Write(() =>
@@ -207,15 +239,22 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-        }
 
+            var innerList3 = new List<RealmValue> { "inner3", 23, false };
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().Add(innerList3);
+                listVal.Add(innerList3);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+        }
         /* To test:
-         *  - everything works both managed and unmanaged
-         *  - Can add/replace at index
-         *  - Can delete elements
          *  
          *  
          *  DONE:
+         *  - everything works both managed and unmanaged
          *  - Works with objects
          *  - Works with lists inside lists
          *  - Explicit/implicit conversion works
