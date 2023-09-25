@@ -19,11 +19,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -115,28 +117,155 @@ namespace Realms.Tests.Serialization
             })
             .ToArray();
 
+        public static readonly object[] LinksTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Single link", new LinksObject("first")
+                {
+                    Link = new("second") { Value = 2 },
+                    Value = 1,
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("List", new LinksObject("first")
+                {
+                    List =
+                    {
+                        new("list.1") { Value = 100 },
+                        new("list.2") { Value = 200 },
+                    },
+                    Value = 987
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new LinksObject("first")
+                {
+                    Dictionary =
+                    {
+                        ["key_1"] = new("dict.1") { Value = 100 },
+                        ["key_null"] = null,
+                        ["key_2"] = new("dict.2") { Value = 200 },
+                    },
+                    Value = 999
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Set", new LinksObject("first")
+                {
+                    Set =
+                    {
+                        new("list.1") { Value = 100 },
+                        new("list.2") { Value = 200 },
+                    },
+                    Value = 123
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new LinksObject("parent")
+                {
+                    Value = 1,
+                    Link = new("link") { Value = 2 },
+                    List =
+                    {
+                        new("list.1") { Value = 3 },
+                        new("list.2") { Value = 4 },
+                    },
+                    Set =
+                    {
+                        new("set.1") { Value = 5 },
+                        new("set.2") { Value = 6 },
+                    },
+                    Dictionary =
+                    {
+                        ["dict_1"] = new("dict.1") { Value = 7 },
+                        ["dict_2"] = new("dict.2") { Value = 8 },
+                        ["dict_null"] = null
+                    }
+                }),
+            }
+        };
+
         [TestCaseSource(nameof(ATOTestCases))]
         public void RealmObject_NoLinks_Serializes(TestCaseData<AllTypesObject> testCase)
         {
             var ato = testCase.Value;
             AddIfNecessary(ato);
 
-            var json = ato.ToJson();
+            var json = SerializationHelper.ToNativeJson(ato);
             var deserialized = BsonSerializer.Deserialize<AllTypesObject>(json);
 
-            foreach (var prop in ato.ObjectSchema)
-            {
-                var actual = deserialized.GetProperty<object?>(prop);
-                var expected = ato.GetProperty<object?>(prop);
+            AssertAreEqual(deserialized, ato);
+        }
 
-                if (expected is RealmValue { Type: RealmValueType.Float } rv)
+        [TestCaseSource(nameof(LinksTestCases))]
+        public void RealmObject_Links_Serializes(TestCaseData<LinksObject> testCase)
+        {
+            var linksObj = testCase.Value;
+            AddIfNecessary(linksObj);
+
+            var json = SerializationHelper.ToNativeJson(linksObj);
+            AssertPropertyInJson(linksObj.Value, expectContains: true);
+
+            var deserialized = BsonSerializer.Deserialize<LinksObject>(json);
+
+            Assert.That(linksObj.Id, Is.EqualTo(deserialized.Id));
+            Assert.That(linksObj.Value, Is.EqualTo(deserialized.Value));
+
+            if (linksObj.Link is not null)
+            {
+                // Only the Id should be serialized here.
+                var expected = new LinksObject(linksObj.Link.Id);
+                AssertAreEqual(deserialized.Link, expected);
+                AssertPropertyInJson(linksObj.Link.Value, expectContains: false);
+            }
+
+            var expectedList = linksObj.List.Select(o => new LinksObject(o.Id)).ToList();
+            Assert.That(deserialized.List.Count, Is.EqualTo(expectedList.Count));
+
+            for (var i = 0; i < expectedList.Count; i++)
+            {
+                AssertAreEqual(deserialized.List[i], expectedList[i], $"element: {i}");
+                AssertPropertyInJson(expectedList[i].Value, expectContains: false);
+            }
+
+            Assert.That(deserialized.Dictionary.Count, Is.EqualTo(linksObj.Dictionary.Count));
+            foreach (var kvp in linksObj.Dictionary)
+            {
+                Assert.That(deserialized.Dictionary.ContainsKey(kvp.Key), Is.True, $"Expected to contain key: {kvp.Key}");
+                if (kvp.Value is null)
                 {
-                    // Json doesn't have a float type, so the deserialized value will be double
-                    Assert.That((double)(RealmValue)actual!, Is.EqualTo((double)rv.AsFloat()));
-                    continue;
+                    Assert.That(deserialized.Dictionary[kvp.Key], Is.Null);
+                }
+                else
+                {
+                    AssertAreEqual(deserialized.Dictionary[kvp.Key], new LinksObject(kvp.Value.Id), $"key: {kvp.Key}");
+                    AssertPropertyInJson(kvp.Value.Value, expectContains: false);
+                }
+            }
+
+            Assert.That(deserialized.Set.Count, Is.EqualTo(linksObj.Set.Count));
+
+            foreach (var item in linksObj.Set)
+            {
+                var match = deserialized.Set.SingleOrDefault(o => o.Id == item.Id);
+                AssertAreEqual(match, new LinksObject(item.Id), $"element: {item.Value}");
+                AssertPropertyInJson(item.Value, expectContains: false);
+            }
+
+            void AssertPropertyInJson(int value, bool expectContains)
+            {
+                var does = new ConstraintExpression();
+                if (!expectContains)
+                {
+                    does = does.Not;
                 }
 
-                Assert.That(AreValuesEqual(actual, expected), $"Expected: {expected}, actual: {actual}");
+                Assert.That(json, does.Contains($"\"$numberInt\" : \"{value}\""));
             }
         }
 
@@ -150,13 +279,13 @@ namespace Realms.Tests.Serialization
 
             AddIfNecessary(obj);
 
-            var json = obj.ToJson();
+            var json = SerializationHelper.ToNativeJson(obj);
             var deserialized = BsonSerializer.Deserialize<CollectionsObject>(json);
 
             var actual = deserialized.GetProperty<IEnumerable>(prop);
             var expected = obj.GetProperty<IEnumerable>(prop);
 
-            Assert.That(actual, Is.EquivalentTo(expected).Using((object a, object e) => AreValuesEqual(a, e)), $"Expected collections to match for {prop.ManagedName}");
+            AssertAreEqual(actual, expected, $"property: {prop.Name}");
         }
 
         private void AddIfNecessary(IRealmObject obj)

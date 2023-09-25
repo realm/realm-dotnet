@@ -3,57 +3,60 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using NUnit.Framework;
 using Realms;
-using Realms.Exceptions;
-using Realms.Helpers;
 using Realms.Schema;
+using Realms.Tests;
 using Realms.Tests.Database;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Xml.Serialization;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
-namespace Realms.Tests.Database
+namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(SerializedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
-    public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(LinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
+    public partial class LinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
 
         [Realms.Preserve]
-        static SerializedObject()
+        static LinksObject()
         {
-            Realms.Serialization.RealmObjectSerializer.Register(new SerializedObjectSerializer());
+            Realms.Serialization.RealmObjectSerializer.Register(new LinksObjectSerializer());
         }
 
         /// <summary>
-        /// Defines the schema for the <see cref="SerializedObject"/> class.
+        /// Defines the schema for the <see cref="LinksObject"/> class.
         /// </summary>
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("LinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntValue"),
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.PrimitiveDictionary("Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Dict"),
-            Realms.Schema.Property.PrimitiveList("List", Realms.RealmValueType.String, areElementsNullable: false, managedName: "List"),
-            Realms.Schema.Property.PrimitiveSet("Set", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Set"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
+            Realms.Schema.Property.Object("Link", "LinksObject", managedName: "Link"),
+            Realms.Schema.Property.ObjectList("List", "LinksObject", managedName: "List"),
+            Realms.Schema.Property.ObjectSet("Set", "LinksObject", managedName: "Set"),
+            Realms.Schema.Property.ObjectDictionary("Dictionary", "LinksObject", managedName: "Dictionary"),
         }.Build();
+
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        private LinksObject() {}
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         #region IRealmObject implementation
 
-        private ISerializedObjectAccessor? _accessor;
+        private ILinksObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ISerializedObjectAccessor Accessor => _accessor ??= new SerializedObjectUnmanagedAccessor(typeof(SerializedObject));
+        internal ILinksObjectAccessor Accessor => _accessor ??= new LinksObjectUnmanagedAccessor(typeof(LinksObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
@@ -85,7 +88,7 @@ namespace Realms.Tests.Database
 
         void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
-            var newAccessor = (ISerializedObjectAccessor)managedAccessor;
+            var newAccessor = (ILinksObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
@@ -93,22 +96,24 @@ namespace Realms.Tests.Database
             {
                 if (!skipDefaults)
                 {
-                    newAccessor.Dict.Clear();
                     newAccessor.List.Clear();
                     newAccessor.Set.Clear();
+                    newAccessor.Dictionary.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.IntValue != default(int))
+                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Value != default(int))
                 {
-                    newAccessor.IntValue = oldAccessor.IntValue;
+                    newAccessor.Value = oldAccessor.Value;
                 }
-                if (!skipDefaults || oldAccessor.Name != default(string?))
+                if (oldAccessor.Link != null && newAccessor.Realm != null)
                 {
-                    newAccessor.Name = oldAccessor.Name;
+                    newAccessor.Realm.Add(oldAccessor.Link, update);
                 }
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Dict, newAccessor.Dict, update, skipDefaults);
+                newAccessor.Link = oldAccessor.Link;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.List, newAccessor.List, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.Set, newAccessor.Set, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Dictionary, newAccessor.Dictionary, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -203,25 +208,25 @@ namespace Realms.Tests.Database
         }
 
         /// <summary>
-        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="SerializedObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="LinksObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
         /// </summary>
         /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-        /// <returns>The <see cref="SerializedObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-        public static explicit operator SerializedObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<SerializedObject>();
+        /// <returns>The <see cref="LinksObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator LinksObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<LinksObject>();
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="SerializedObject"/>.
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="LinksObject"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.RealmValue(SerializedObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(LinksObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="SerializedObject"/>.
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="LinksObject"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
         /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.QueryArgument(SerializedObject? val) => (Realms.RealmValue)val;
+        public static implicit operator Realms.QueryArgument(LinksObject? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -260,130 +265,149 @@ namespace Realms.Tests.Database
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SerializedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class LinksObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new SerializedObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new LinksObjectManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new SerializedObject();
+            public Realms.IRealmObjectBase CreateInstance() => new LinksObject();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = RealmValue.Null;
-                return false;
+                value = ((ILinksObjectAccessor)instance.Accessor).Id;
+                return true;
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal interface ISerializedObjectAccessor : Realms.IRealmAccessor
+        internal interface ILinksObjectAccessor : Realms.IRealmAccessor
         {
-            int IntValue { get; set; }
+            string Id { get; set; }
 
-            string? Name { get; set; }
+            int Value { get; set; }
 
-            System.Collections.Generic.IDictionary<string, int> Dict { get; }
+            Realms.Tests.LinksObject? Link { get; set; }
 
-            System.Collections.Generic.IList<string> List { get; }
+            System.Collections.Generic.IList<Realms.Tests.LinksObject> List { get; }
 
-            System.Collections.Generic.ISet<string> Set { get; }
+            System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SerializedObjectManagedAccessor : Realms.ManagedAccessor, ISerializedObjectAccessor
+        private class LinksObjectManagedAccessor : Realms.ManagedAccessor, ILinksObjectAccessor
         {
-            public int IntValue
+            public string Id
             {
-                get => (int)GetValue("IntValue");
-                set => SetValue("IntValue", value);
+                get => (string)GetValue("Id")!;
+                set => SetValueUnique("Id", value);
             }
 
-            public string? Name
+            public int Value
             {
-                get => (string?)GetValue("Name");
-                set => SetValue("Name", value);
+                get => (int)GetValue("Value");
+                set => SetValue("Value", value);
             }
 
-            private System.Collections.Generic.IDictionary<string, int> _dict = null!;
-            public System.Collections.Generic.IDictionary<string, int> Dict
+            public Realms.Tests.LinksObject? Link
             {
-                get
-                {
-                    if (_dict == null)
-                    {
-                        _dict = GetDictionaryValue<int>("Dict");
-                    }
-
-                    return _dict;
-                }
+                get => (Realms.Tests.LinksObject?)GetValue("Link");
+                set => SetValue("Link", value);
             }
 
-            private System.Collections.Generic.IList<string> _list = null!;
-            public System.Collections.Generic.IList<string> List
+            private System.Collections.Generic.IList<Realms.Tests.LinksObject> _list = null!;
+            public System.Collections.Generic.IList<Realms.Tests.LinksObject> List
             {
                 get
                 {
                     if (_list == null)
                     {
-                        _list = GetListValue<string>("List");
+                        _list = GetListValue<Realms.Tests.LinksObject>("List");
                     }
 
                     return _list;
                 }
             }
 
-            private System.Collections.Generic.ISet<string> _set = null!;
-            public System.Collections.Generic.ISet<string> Set
+            private System.Collections.Generic.ISet<Realms.Tests.LinksObject> _set = null!;
+            public System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set
             {
                 get
                 {
                     if (_set == null)
                     {
-                        _set = GetSetValue<string>("Set");
+                        _set = GetSetValue<Realms.Tests.LinksObject>("Set");
                     }
 
                     return _set;
                 }
             }
+
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> _dictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary
+            {
+                get
+                {
+                    if (_dictionary == null)
+                    {
+                        _dictionary = GetDictionaryValue<Realms.Tests.LinksObject?>("Dictionary");
+                    }
+
+                    return _dictionary;
+                }
+            }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SerializedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISerializedObjectAccessor
+        private class LinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ILinksObjectAccessor
         {
-            public override ObjectSchema ObjectSchema => SerializedObject.RealmSchema;
+            public override ObjectSchema ObjectSchema => LinksObject.RealmSchema;
 
-            private int _intValue;
-            public int IntValue
+            private string _id = null!;
+            public string Id
             {
-                get => _intValue;
+                get => _id;
                 set
                 {
-                    _intValue = value;
-                    RaisePropertyChanged("IntValue");
+                    _id = value;
+                    RaisePropertyChanged("Id");
                 }
             }
 
-            private string? _name;
-            public string? Name
+            private int _value;
+            public int Value
             {
-                get => _name;
+                get => _value;
                 set
                 {
-                    _name = value;
-                    RaisePropertyChanged("Name");
+                    _value = value;
+                    RaisePropertyChanged("Value");
                 }
             }
 
-            public System.Collections.Generic.IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
+            private Realms.Tests.LinksObject? _link;
+            public Realms.Tests.LinksObject? Link
+            {
+                get => _link;
+                set
+                {
+                    _link = value;
+                    RaisePropertyChanged("Link");
+                }
+            }
 
-            public System.Collections.Generic.IList<string> List { get; } = new List<string>();
+            public System.Collections.Generic.IList<Realms.Tests.LinksObject> List { get; } = new List<Realms.Tests.LinksObject>();
 
-            public System.Collections.Generic.ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set { get; } = new HashSet<Realms.Tests.LinksObject>(RealmSet<Realms.Tests.LinksObject>.Comparer);
 
-            public SerializedObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary { get; } = new Dictionary<string, Realms.Tests.LinksObject?>();
+
+            public LinksObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 
@@ -391,8 +415,9 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "IntValue" => _intValue,
-                    "Name" => _name,
+                    "Id" => _id,
+                    "Value" => _value,
+                    "Link" => _link,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -401,11 +426,13 @@ namespace Realms.Tests.Database
             {
                 switch (propertyName)
                 {
-                    case "IntValue":
-                        IntValue = (int)val;
+                    case "Id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Value":
+                        Value = (int)val;
                         return;
-                    case "Name":
-                        Name = (string?)val;
+                    case "Link":
+                        Link = (Realms.Tests.LinksObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -414,7 +441,12 @@ namespace Realms.Tests.Database
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+                if (propertyName != "Id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (string)val!;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -439,62 +471,66 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Dict" => (IDictionary<string, TValue>)Dict,
+                    "Dictionary" => (IDictionary<string, TValue>)Dictionary,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SerializedObjectSerializer : Realms.Serialization.RealmObjectSerializer<SerializedObject>
+        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<LinksObject>
         {
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SerializedObject value)
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LinksObject value)
             {
                 context.Writer.WriteStartDocument();
 
-                WriteValue(context, args, "IntValue", value.IntValue);
-                WriteValue(context, args, "Name", value.Name);
-                WriteDictionary(context, args, "Dict", value.Dict);
+                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "Value", value.Value);
+                WriteValue(context, args, "Link", value.Link);
                 WriteList(context, args, "List", value.List);
                 WriteSet(context, args, "Set", value.Set);
+                WriteDictionary(context, args, "Dictionary", value.Dictionary);
 
                 context.Writer.WriteEndDocument();
             }
 
-            protected override SerializedObject CreateInstance() => new SerializedObject();
+            protected override LinksObject CreateInstance() => new LinksObject();
 
-            protected override void ReadValue(SerializedObject instance, string name, BsonDeserializationContext context)
+            protected override void ReadValue(LinksObject instance, string name, BsonDeserializationContext context)
             {
                 switch (name)
                 {
-                    case "IntValue":
-                        instance.IntValue = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                         break;
-                    case "Name":
-                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                    case "Value":
+                        instance.Value = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Link":
+                        instance.Link = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
                         break;
                 }
             }
 
-            protected override void ReadArrayElement(SerializedObject instance, string name, BsonDeserializationContext context)
+            protected override void ReadArrayElement(LinksObject instance, string name, BsonDeserializationContext context)
             {
                 switch (name)
                 {
                     case "List":
-                        instance.List.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
+                        instance.List.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                     case "Set":
-                        instance.Set.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
+                        instance.Set.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                 }
             }
 
-            protected override void ReadDocumentField(SerializedObject instance, string name, string fieldName, BsonDeserializationContext context)
+            protected override void ReadDocumentField(LinksObject instance, string name, string fieldName, BsonDeserializationContext context)
             {
                 switch (name)
                 {
-                    case "Dict":
-                        instance.Dict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                    case "Dictionary":
+                        instance.Dictionary[fieldName] = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }

@@ -37,6 +37,7 @@ namespace Realms.Helpers
         private static readonly JsonWriterSettings _jsonSettings = new()
         {
             OutputMode = JsonOutputMode.CanonicalExtendedJson,
+            Indent = false,
         };
 
         private static int _isInitialized;
@@ -166,7 +167,7 @@ namespace Realms.Helpers
             private static IBsonSerializer CreateRealmIntegerSerializer(Type type)
             {
                 var serializerType = typeof(RealmIntegerSerializer<>).MakeGenericType(type);
-                return (IBsonSerializer)Activator.CreateInstance(serializerType);
+                return (IBsonSerializer)Activator.CreateInstance(serializerType)!;
             }
         }
 

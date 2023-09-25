@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -405,6 +407,45 @@ namespace Realms.Tests
             Assert.That(regex.IsMatch(testString), $"Expected {testString} to match {regex}");
         }
 
+        public static void AssertAreEqual(object? actual, object? expected, string? message = null,
+            [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var locationString = $"in {memberName} - {sourceFilePath}:{sourceLineNumber}" + (message == null ? string.Empty : $" - {message}");
+
+            if (expected is null)
+            {
+                Assert.That(actual, Is.Null, $"Expected {actual} to be null {locationString}");
+            }
+            else
+            {
+                Assert.That(actual, Is.Not.Null, $"Expected {actual} to equal {locationString}");
+            }
+
+            if (expected is IRealmObjectBase robjExpected)
+            {
+                Assert.That(robjExpected.ObjectSchema, Is.Not.Null, $"This method should only be used with SG-generated classes, but the ObjectSchema was null {locationString}");
+
+                var robjActual = actual as IRealmObjectBase;
+                Assert.That(robjActual, Is.Not.Null, $"Expected {actual} to be a RealmObject {locationString}");
+                foreach (var prop in robjExpected.ObjectSchema!)
+                {
+                    var expectedProp = robjExpected.GetProperty<object?>(prop);
+                    var actualProp = robjActual!.GetProperty<object?>(prop);
+
+                    AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
+                }
+            }
+            else if (expected is IEnumerable enumerableExpected and not string and not byte[])
+            {
+                Assert.That(actual is IEnumerable, $"Expected {actual} to be a collection {locationString}");
+                Assert.That(actual, Is.EquivalentTo(enumerableExpected).Using((object a, object e) => AreValuesEqual(a, e)), $"Expected collections to match {locationString}");
+            }
+            else
+            {
+                Assert.That(AreValuesEqual(actual, expected), $"Expected {actual} to equal {expected} {locationString}");
+            }
+        }
+
         public static bool AreValuesEqual(object? actual, object? expected)
         {
             if (actual is null || expected is null)
@@ -432,7 +473,9 @@ namespace Realms.Tests
                     RealmValueType.Float => rvActual.Type == RealmValueType.Double && rvActual.AsDouble() == (double)rvExpected.AsFloat(),
 
                     // for binary, we compare the sequences rather than the addresses
-                    RealmValueType.Data => rvActual.Type == RealmValueType.Data && rvExpected.AsData().SequenceEqual(rvActual.AsData()),
+                    RealmValueType.Data => rvActual.Type == RealmValueType.Data && AreValuesEqual(rvActual.AsData(), rvExpected.AsData()),
+
+                    RealmValueType.Date => rvActual.Type == RealmValueType.Date && AreValuesEqual(rvActual.AsDate(), rvExpected.AsDate()),
                     _ => rvExpected == rvActual,
                 };
             }
@@ -440,6 +483,11 @@ namespace Realms.Tests
             if (expected is byte[] dataExpected)
             {
                 return actual is byte[] dataActual && dataActual.SequenceEqual(dataExpected);
+            }
+
+            if (expected is DateTimeOffset dateExpected)
+            {
+                return actual is DateTimeOffset dateActual && dateExpected.ToUnixTimeMilliseconds() == dateActual.ToUnixTimeMilliseconds();
             }
 
             return actual.Equals(expected);

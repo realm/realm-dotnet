@@ -1126,6 +1126,27 @@ namespace Realms.Tests
         public IDictionary<string, int> TestDict { get; } = null!;
     }
 
+    public partial class LinksObject : TestRealmObject
+    {
+        [PrimaryKey]
+        public string Id { get; private set; }
+
+        public int Value { get; set; }
+
+        public LinksObject? Link { get; set; }
+
+        public IList<LinksObject> List { get; } = null!;
+
+        public ISet<LinksObject> Set { get; } = null!;
+
+        public IDictionary<string, LinksObject?> Dictionary { get; } = null!;
+
+        public LinksObject(string id)
+        {
+            Id = id;
+        }
+    }
+
     public partial class ObjectWithFtsIndex : TestRealmObject
     {
         [PrimaryKey]
