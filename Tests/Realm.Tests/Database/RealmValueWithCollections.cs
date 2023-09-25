@@ -250,23 +250,54 @@ namespace Realms.Tests.Database
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
         }
-        /* To test:
-         *  
-         *  
-         *  DONE:
-         *  - everything works both managed and unmanaged
-         *  - Works with objects
-         *  - Works with lists inside lists
-         *  - Explicit/implicit conversion works
-         *  - Can changeType
-         *  - Different equality comparer
-         *  - Can add/replace/modify elements
-         *  
-         *  - Doesn't cause issues with queries
-         *  - Dynamic ?
-         *  - sets can't contain other collections
-         *  - Notifications?
-         * 
-         */
+
+        [Test]
+        public void List_WhenManaged_WorksWithDynamic()
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject());
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.DynamicApi.Set(nameof(RealmValueObject.RealmValueProperty), originalList);
+            });
+
+            var rvp = rvo.DynamicApi.Get<RealmValue>(nameof(RealmValueObject.RealmValueProperty));
+
+            Assert.That(rvp.AsList(), Is.EqualTo(originalList));
+        }
+
+        [Test]
+        public void List_WhenManaged_WorksWithNotifications()
+        {
+            var originalList = new List<RealmValue> { 1, "string", true };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = originalList });
+            });
+
+            var callbacks = new List<ChangeSet>();
+            using var token = rvo.RealmValueProperty.AsList().SubscribeForNotifications((collection, changes) =>
+            {
+                if (changes != null)
+                {
+                    callbacks.Add(changes);
+                }
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[2] = "mario";
+            });
+
+            _realm.Refresh();
+
+            Assert.That(callbacks.Count, Is.EqualTo(1));
+        }
     }
 }
