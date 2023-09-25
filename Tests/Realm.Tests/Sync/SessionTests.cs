@@ -136,7 +136,7 @@ namespace Realms.Tests.Sync
                 Assert.That(clientEx.Message, Does.Contain("Bad client file identifier"));
                 Assert.That(clientEx.InnerException, Is.Null);
 
-                await TryInitiateClientReset(realm, clientEx, (int)ErrorCode.BadClientFileIdentifier);
+                await TryInitiateClientReset(realm, clientEx, ErrorCode.ClientReset);
             });
         }
 
@@ -169,7 +169,7 @@ namespace Realms.Tests.Sync
 
                 var clientEx = await errorTcs.Task.Timeout(20_000, "Expected client reset");
 
-                await TryInitiateClientReset(realm, clientEx, (int)ClientError.AutoClientResetFailed);
+                await TryInitiateClientReset(realm, clientEx, ErrorCode.AutoClientResetFailed);
             });
         }
 
@@ -216,6 +216,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                await DisableClientResetRecoveryOnServer(appType);
+
                 var automaticResetCalled = false;
                 var discardLocalResetCalled = false;
 
@@ -254,7 +256,6 @@ namespace Realms.Tests.Sync
                     realm.Add(new ObjectWithPartitionValue(guid));
                 });
 
-                await DisableClientResetRecoveryOnServer(appType);
                 await TriggerClientReset(realm);
 
                 await tcsAfterClientReset.Task.Timeout(20_000, detail: "Expected client reset");
@@ -409,8 +410,6 @@ namespace Realms.Tests.Sync
             {
                 config = GetIntegrationConfig(user);
             }
-
-            config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
             return (config, guid);
         }
@@ -731,7 +730,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.InstanceOf<Session>());
                     Assert.That(e, Is.InstanceOf<SessionException>());
-                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.TooManySessions));
+                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
                     Assert.That(e.Message, Is.EqualTo(errorMsg));
                     Assert.That(e.InnerException, Is.Null);
                     Assert.That(sessionErrorTriggered, Is.False);
@@ -741,7 +740,9 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
-                session.SimulateError(ErrorCode.TooManySessions, errorMsg);
+
+                var protocolError = 230; // ProtocolError::write_not_allowed
+                session.SimulateError((ErrorCode)protocolError, errorMsg);
 
                 await tcs.Task;
 
@@ -1189,7 +1190,7 @@ namespace Realms.Tests.Sync
             Assert.Throws<ObjectDisposedException>(() => _ = session.Equals(session));
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForDownloadAsync());
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForUploadAsync());
-            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, SessionErrorCategory.SessionError, "test", false, ServerRequestsAction.ApplicationBug));
+            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, "test", false, ServerRequestsAction.ApplicationBug));
 
             // Calling CloseHandle multiple times should be fine
             session.CloseHandle();
@@ -1458,14 +1459,14 @@ namespace Realms.Tests.Sync
             return handler;
         }
 
-        private static async Task TryInitiateClientReset(Realm realm, ClientResetException ex, int expectedError)
+        private static async Task TryInitiateClientReset(Realm realm, ClientResetException ex, ErrorCode expectedError)
         {
             if (!realm.IsClosed)
             {
                 realm.Dispose();
             }
 
-            Assert.That((int)ex.ErrorCode, Is.EqualTo(expectedError));
+            Assert.That(ex.ErrorCode, Is.EqualTo(expectedError));
             Assert.That(File.Exists(realm.Config.DatabasePath), Is.True);
 
             var didReset = false;

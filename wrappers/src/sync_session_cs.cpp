@@ -175,24 +175,13 @@ enum class SessionErrorCategory : uint8_t {
     SessionError = 1
 };
 
-REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, SessionErrorCategory error_category, const uint16_t* message_buf, size_t message_len, bool is_fatal, int server_requests_action)
+REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* message_buf, size_t message_len, bool is_fatal, int server_requests_action)
 {
     Utf16StringAccessor message(message_buf, message_len);
     std::error_code error_code;
 
-    switch (error_category) {
-    case SessionErrorCategory::ClientError:
-        error_code = std::error_code(err, realm::sync::client_error_category());
-        break;
-    case SessionErrorCategory::SessionError:
-        error_code = std::error_code(err, realm::sync::protocol_error_category());
-        break;
-    default:
-        // in case a new category isn't handle, just don't trigger any error
-        return;
-    }
-
-    sync::SessionErrorInfo error{ error_code, std::move(message), is_fatal };
+    sync::ProtocolErrorInfo protocol_error(err, message, is_fatal);
+    sync::SessionErrorInfo error(protocol_error);
     error.server_requests_action = static_cast<realm::sync::ProtocolErrorInfo::Action>(server_requests_action);
 
     SyncSession::OnlyForTesting::handle_error(*session, std::move(error));

@@ -54,6 +54,7 @@ jobs:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      name: Deploy Cluster (alternative)
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -61,6 +62,7 @@ jobs:
         atlasUrl: ${{ inputs.atlasUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterName: ${{ inputs.clusterName }}-uwp-managed
         clusterSize: M10
     - name: Import test certificate
       run: |
@@ -75,7 +77,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword="${{ secrets.Pfx_Password }}" -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=uwp-managed'
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-uwp-managed --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=uwp-managed'
       shell: powershell
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b

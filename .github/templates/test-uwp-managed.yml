@@ -11,7 +11,7 @@ jobs:
     name: UWP
     timeout-minutes: 45
     steps:
-      - #@ template.replace(prepareTest())
+      - #@ template.replace(prepareTest("uwp-managed"))
       - name: Import test certificate
         run: |
           $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")

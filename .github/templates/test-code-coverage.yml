@@ -11,7 +11,7 @@ jobs:
     name: Code Coverage
     timeout-minutes: 90
     steps:
-      - #@ template.replace(prepareTest(fetchWrappers=True))
+      - #@ template.replace(prepareTest("code-coverage", fetchWrappers=True))
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
