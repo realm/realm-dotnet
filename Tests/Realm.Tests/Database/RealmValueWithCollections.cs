@@ -211,7 +211,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void List_AddSetInsertList_WorksAsIntended()
+        public void List_AddSetInsertMoveRemoveList_WorksAsIntended()
         {
             var listVal = new List<RealmValue> { 1, "string", true };
 
@@ -222,6 +222,7 @@ namespace Realms.Tests.Database
 
             var innerList1 = new List<RealmValue> { "inner", 23, false };
 
+            // Indexer
             _realm.Write(() =>
             {
                 rvo.RealmValueProperty.AsList()[1] = innerList1;
@@ -230,6 +231,7 @@ namespace Realms.Tests.Database
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
 
+            // Insert
             var innerList2 = new List<RealmValue> { "inner2", 23, false };
 
             _realm.Write(() =>
@@ -240,6 +242,7 @@ namespace Realms.Tests.Database
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
 
+            // Add
             var innerList3 = new List<RealmValue> { "inner3", 23, false };
 
             _realm.Write(() =>
@@ -249,6 +252,40 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            // Move
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().Move(0, 1);
+                listVal.Move(0, 1);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+
+            // Remove
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList().RemoveAt(2);
+                listVal.RemoveAt(2);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
+        }
+
+        public void List_RemoveWithListArgument_ReturnsFalse()
+        {
+            var innerListVal = new List<RealmValue> { 1, "string", true };
+            var listVal = new List<RealmValue> { innerListVal, 23 };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
+            });
+
+            _realm.Write(() =>
+            {
+                Assert.That(rvo.RealmValueProperty.AsList().Remove(innerListVal), Is.False);
+            });
         }
 
         [Test]
