@@ -225,11 +225,11 @@ namespace Realms
             return (int)result;
         }
 
-        public void Erase(IntPtr rowIndex)
+        public void Erase(int targetIndex)
         {
             EnsureIsOpen();
 
-            NativeMethods.erase(this, rowIndex, out var nativeException);
+            NativeMethods.erase(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

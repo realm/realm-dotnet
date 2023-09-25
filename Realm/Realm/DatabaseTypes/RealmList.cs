@@ -138,6 +138,11 @@ namespace Realms
                 return -1;
             }
 
+            if (realmValue.Type == RealmValueType.List)
+            {
+                return -1;
+            }
+
             return _listHandle.Find(realmValue);
         }
 
@@ -146,7 +151,6 @@ namespace Realms
             ValidateIndex(index);
             var realmValue = ValidateValueToInsert(value);
 
-            //TODO Can we do something better than this, so at least we can take out the common?
             if (realmValue.Type == RealmValueType.List)
             {
                 var newListHandle = _listHandle.InsertList(index);
@@ -191,7 +195,7 @@ namespace Realms
         {
             ValidateIndex(index);
 
-            _listHandle.Erase((IntPtr)index);
+            _listHandle.Erase(index);
         }
 
         #endregion
