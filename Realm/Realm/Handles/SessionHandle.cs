@@ -96,7 +96,7 @@ namespace Realms.Sync
             public static extern SessionNotificationToken register_property_changed_callback(SessionHandle session, IntPtr managed_session_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void unregister_property_changed_callback(SessionHandle session, SessionNotificationToken token, out NativeException ex);
+            public static extern void unregister_property_changed_callback(IntPtr session, SessionNotificationToken token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
@@ -204,7 +204,9 @@ namespace Realms.Sync
         {
             if (_notificationToken.HasValue)
             {
-                NativeMethods.unregister_property_changed_callback(this, _notificationToken.Value, out var ex);
+                // This needs to use the handle directly because it's being called in Unbind. At this point the SafeHandle is closed, which means we'll
+                // get an error if we attempted to marshal it to native. The raw pointer is fine though and we can use it.
+                NativeMethods.unregister_property_changed_callback(handle, _notificationToken.Value, out var ex);
                 _notificationToken = null;
                 ex.ThrowIfNecessary();
             }
