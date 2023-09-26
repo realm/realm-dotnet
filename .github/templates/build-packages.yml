@@ -19,7 +19,7 @@
   - name: Build docs
     if: inputs.build-docs
     env:
-      DOCFX_SOURCE_BRANCH_NAME: main
+      DOCFX_SOURCE_BRANCH_NAME: ${{ github.head_ref }}
     run: |
       New-Item global.json
       Set-Content global.json '{ "sdk": { "version": "6.0.402" } }'
@@ -34,7 +34,7 @@
       Get-ChildItem Docs/_site -Filter *.html -Recurse -File |
       ForEach-Object {
           $content = ($_ | Get-Content -Raw)
-          $content = $content -replace "new/main/Docs/apispec/new\?filename", "new/main/Docs/apispec?filename"
+          $content = $content -replace "/Docs/apispec/new\?filename", "/Docs/apispec?filename"
           Set-Content $_.FullName $content
       }
     shell: pwsh
