@@ -18,7 +18,8 @@
             "filter": "filterConfig.yml",
             "properties": {
                 "TargetFramework": "netstandard2.0"
-            }
+            },
+            "EnumSortOrder": "declaringOrder"
         }
     ],
     "build": {
