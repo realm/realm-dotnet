@@ -224,10 +224,21 @@ jobs:
         dotnet-version: 6.0.402
     - name: Build docs
       if: inputs.build-docs
+      env:
+        DOCFX_SOURCE_BRANCH_NAME: main
       run: |
         New-Item global.json
         Set-Content global.json '{ "sdk": { "version": "6.0.402" } }'
         C:\docfx\docfx Docs/docfx.json
+    - name: Update Improve this doc links
+      uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167
+      with:
+        find: new/main/Docs/apispec/new?filename
+        replace: new/main/Docs/apispec?filename
+        include: Docs/_site/**/*.html
+    - name: Archive docs
+      if: inputs.build-docs
+      run: |
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store artifacts for Docs.zip
       uses: actions/upload-artifact@v3
