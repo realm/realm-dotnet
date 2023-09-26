@@ -30,11 +30,15 @@
 #! instead of
 #! https://github.com/realm/realm-dotnet/new/main/Docs/apispec?filename=...
   - name: Update Improve this doc links
-    uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
-    with:
-      find: 'new/main/Docs/apispec/new?filename'
-      replace: 'new/main/Docs/apispec?filename'
-      include: 'Docs/_site/**/*.html'
+    run: |
+      Get-ChildItem Docs/_site -Filter *.html -Recurse -File |
+      ForEach-Object {
+          $content = ($_ | Get-Content -Raw)
+          $content = $content -replace "new/main/Docs/apispec/new\?filename", "new/main/Docs/apispec?filename"
+          Set-Content $_.FullName $content
+      }
+    shell: pwsh
+
   - name: Archive docs
     if: inputs.build-docs
     run: |
