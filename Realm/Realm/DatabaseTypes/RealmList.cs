@@ -69,12 +69,7 @@ namespace Realms
                 if (realmValue.Type == RealmValueType.List)
                 {
                     var newListHandle = _listHandle.SetList(index);
-                    var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
-
-                    foreach (var item in realmValue.AsList())
-                    {
-                        newList.Add(item);
-                    }
+                    CreateAndAdd(Realm, newListHandle, realmValue);
 
                     return;
                 }
@@ -95,6 +90,18 @@ namespace Realms
             }
         }
 
+        internal static RealmList<RealmValue> CreateAndAdd(Realm realm, ListHandle handle, RealmValue content)
+        {
+            var newList = new RealmList<RealmValue>(realm, handle, null);
+
+            foreach (var item in content.AsList())
+            {
+                newList.Add(item);
+            }
+
+            return newList;
+        }
+
         #region implementing IList members
 
         public void Add(T value)
@@ -104,12 +111,7 @@ namespace Realms
             if (realmValue.Type == RealmValueType.List)
             {
                 var newListHandle = _listHandle.AddList();
-                var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
-
-                foreach (var item in realmValue.AsList())
-                {
-                    newList.Add(item);
-                }
+                CreateAndAdd(Realm, newListHandle, realmValue);
 
                 return;
             }
@@ -154,12 +156,7 @@ namespace Realms
             if (realmValue.Type == RealmValueType.List)
             {
                 var newListHandle = _listHandle.InsertList(index);
-                var newList = new RealmList<RealmValue>(Realm, newListHandle, null);
-
-                foreach (var item in realmValue.AsList())
-                {
-                    newList.Add(item);
-                }
+                CreateAndAdd(Realm, newListHandle, realmValue);
 
                 return;
             }
