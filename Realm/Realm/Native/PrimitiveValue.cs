@@ -71,6 +71,12 @@ namespace Realms.Native
         [FieldOffset(0)]
         private ListValue list_value;
 
+        [FieldOffset(0)]
+        private SetValue set_value;
+
+        [FieldOffset(0)]
+        private DictionaryValue dictionary_value;
+
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
         public RealmValueType Type;
@@ -298,6 +304,18 @@ namespace Realms.Native
         private struct ListValue
         {
             public IntPtr list_ptr;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SetValue
+        {
+            public IntPtr set_ptr;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DictionaryValue
+        {
+            public IntPtr dict_ptr;
         }
 
         [StructLayout(LayoutKind.Sequential)]
