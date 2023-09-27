@@ -106,7 +106,7 @@ extern "C" {
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(val.get<ObjLink>(), object.realm());
                 }
-                if (val.get_type() == type_List)
+                if (!val.is_null() && val.get_type() == type_List)
                 {
                     auto list = new List(object.realm(), object.get_obj(), prop.column_key);
                     *value = to_capi(list);
