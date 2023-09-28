@@ -101,7 +101,9 @@ enum class realm_value_type : uint8_t {
     RLM_TYPE_OBJECT_ID,
     RLM_TYPE_LINK,
     RLM_TYPE_UUID,
-    RLM_TYPE_LIST
+    RLM_TYPE_LIST,
+    RLM_TYPE_SET,
+    RLM_TYPE_DICTIONARY,
 };
 
 enum class query_argument_type : uint8_t {
@@ -136,8 +138,16 @@ typedef struct realm_link {
 } realm_link_t;
 
 typedef struct realm_list {
-    List* list;
+    List* list_ptr;
 } realm_list_t;
+
+typedef struct realm_set {
+    object_store::Set* set_ptr;
+} realm_set_t;
+
+typedef struct realm_dict {
+    Dictionary* dictionary_ptr;
+} realm_dict_t;
 
 typedef struct realm_object_id {
     uint8_t bytes[12];
@@ -162,6 +172,8 @@ typedef struct realm_value {
 
         realm_link_t link;
         realm_list_t list;
+        realm_set_t set;
+        realm_dict_t dictionary;
 
         char data[16];
     };
@@ -511,7 +523,23 @@ static inline realm_value_t to_capi(List* list)
 {
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_LIST;
-    val.list.list = list;
+    val.list.list_ptr = list;
+    return val;
+}
+
+static inline realm_value_t to_capi(object_store::Set* set)
+{
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_SET;
+    val.set.set_ptr = set;
+    return val;
+}
+
+static inline realm_value_t to_capi(Dictionary* dictionary)
+{
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_DICTIONARY;
+    val.dictionary.dictionary_ptr = dictionary;
     return val;
 }
 
@@ -577,6 +605,10 @@ static inline realm_value_t to_capi(const Mixed& value)
             val.uuid = to_capi(value.get<UUID>());
             break;
         }
+        case type_List:
+        case type_Set:
+        case type_Dictionary:
+            REALM_TERMINATE("Can't use this overload of to_capi on values containing collections, use to_capi(Collection*) instead.");
         default:
             REALM_TERMINATE("Invalid Mixed value type");
         }
