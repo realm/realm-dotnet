@@ -362,6 +362,9 @@ namespace Realms.Helpers
             [(typeof(Decimal128), typeof(decimal))] = new Decimal128DecimalConverter(),
             [(typeof(RealmValue), typeof(IRealmObjectBase))] = new RealmValueIRealmObjectBaseConverter(),
             [(typeof(IRealmObjectBase), typeof(RealmValue))] = new IRealmObjectBaseRealmValueConverter(),
+
+            [(typeof(IList<RealmValue>), typeof(RealmValue))] = new IListRealmValueConverter(),
+            [(typeof(RealmValue), typeof(IList<RealmValue>))] = new RealmValueIListConverter(),
         };
 
         /// <summary>
@@ -801,6 +804,17 @@ namespace Realms.Helpers
         {
             public override RealmValue Convert(IRealmObjectBase? value) => value is null ? RealmValue.Null : RealmValue.Object(value);
         }
+
+        private class IListRealmValueConverter : SpecializedConverterBase<IList<RealmValue>, RealmValue>
+        {
+            public override RealmValue Convert(IList<RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.List(value);
+        }
+
+        private class RealmValueIListConverter : SpecializedConverterBase<RealmValue, IList<RealmValue>>
+        {
+            public override IList<RealmValue> Convert(RealmValue value) => value.AsList();
+        }
+
         #endregion ToRealmValue Converters
 
         #region FromRealmValue Converters

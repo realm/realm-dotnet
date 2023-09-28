@@ -232,6 +232,8 @@ namespace Realms
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
                 RealmValueType.Guid => Guid(Operator.Convert<T, Guid>(value)),
                 RealmValueType.Object => Object(Operator.Convert<T, IRealmObjectBase>(value)),
+                RealmValueType.List => List(Operator.Convert<T, IList<RealmValue>>(value)),
+                //TODO Need to add list here too?
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
         }
@@ -810,7 +812,7 @@ namespace Realms
                 RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
                 RealmValueType.Guid => Operator.Convert<Guid, T>(AsGuid()),
                 RealmValueType.Object => Operator.Convert<IRealmObjectBase, T>(AsIRealmObject()),
-                RealmValueType.List => (T)AsAny(),
+                RealmValueType.List => Operator.Convert<IList<RealmValue>, T>(AsList()),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }

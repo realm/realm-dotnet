@@ -101,21 +101,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void List_WithConstructorMethodOrOperator_WorksTheSame([Values(true, false)] bool isManaged)
+        public void List_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
         {
             var originalList = new List<RealmValue> { 1, "string", true };
 
             RealmValue rvOperator = originalList;
             RealmValue rvConstructor = RealmValue.List(originalList);
+            RealmValue rvCreate = RealmValue.Create(originalList, RealmValueType.List);
 
             if (isManaged)
             {
                 rvOperator = PersistAndFind(rvOperator).RealmValueProperty;
                 rvConstructor = PersistAndFind(rvConstructor).RealmValueProperty;
+                rvCreate = PersistAndFind(rvCreate).RealmValueProperty;
             }
 
             Assert.That(rvOperator.AsList(), Is.EqualTo(originalList));
             Assert.That(rvConstructor.AsList(), Is.EqualTo(originalList));
+            Assert.That(rvCreate.AsList(), Is.EqualTo(originalList));
         }
 
         [Test]
