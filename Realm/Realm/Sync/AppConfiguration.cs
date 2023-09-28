@@ -143,7 +143,7 @@ namespace Realms.Sync
         public Action<ClientWebSocketOptions>? OnSyncWebSocketConnection { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the .NET WEbSocket client or the built-in Realm WebSocket client
+        /// Gets or sets a value indicating whether the .NET WebSocket client or the built-in Realm WebSocket client
         /// will be used for Sync traffic.
         /// </summary>
         /// <value><c>true</c> to use <see cref="ClientWebSocket"/>; <c>false</c> to use the built-in Realm WebSocket client.</value>
