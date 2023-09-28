@@ -90,18 +90,6 @@ namespace Realms
             }
         }
 
-        internal static RealmList<RealmValue> CreateAndAdd(Realm realm, ListHandle handle, RealmValue content)
-        {
-            var newList = new RealmList<RealmValue>(realm, handle, null);
-
-            foreach (var item in content.AsList())
-            {
-                newList.Add(item);
-            }
-
-            return newList;
-        }
-
         #region implementing IList members
 
         public void Add(T value)
@@ -209,6 +197,18 @@ namespace Realms
         {
             var resultsHandle = _listHandle.ToResults();
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
+        internal static RealmList<RealmValue> CreateAndAdd(Realm realm, ListHandle handle, RealmValue content)
+        {
+            var newList = new RealmList<RealmValue>(realm, handle, null);
+
+            foreach (var item in content.AsList())
+            {
+                newList.Add(item);
+            }
+
+            return newList;
         }
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);

@@ -243,6 +243,18 @@ namespace Realms
             }
         }
 
+        internal static RealmDictionary<RealmValue> CreateAndAdd(Realm realm, DictionaryHandle handle, RealmValue content)
+        {
+            var newDictionary = new RealmDictionary<RealmValue>(realm, handle, null);
+
+            foreach (var item in content.AsList())
+            {
+                newDictionary.Add(item);
+            }
+
+            return newDictionary;
+        }
+
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;

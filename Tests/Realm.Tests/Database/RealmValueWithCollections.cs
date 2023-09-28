@@ -100,6 +100,8 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsList(), Is.EqualTo(originalList));
         }
 
+        //TODO Add test about setting the list from another "managed" list
+
         [Test]
         public void List_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
         {

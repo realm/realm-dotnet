@@ -48,6 +48,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_list_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_list_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_set_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_set_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_dictionary_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_dictionary_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -227,8 +233,28 @@ namespace Realms
                 var listPtr = NativeMethods.set_list_value(this, propertyIndex, out var listNativeException);
                 listNativeException.ThrowIfNecessary();
 
-                var listHandle = new ListHandle(Root!, listPtr);
-                RealmList<RealmValue>.CreateAndAdd(realm, listHandle, value);
+                var handle = new ListHandle(Root!, listPtr);
+                RealmList<RealmValue>.CreateAndAdd(realm, handle, value);
+
+                return;
+            }
+            else if (value.Type == RealmValueType.Set)
+            {
+                var setPtr = NativeMethods.set_set_value(this, propertyIndex, out var setNativeException);
+                setNativeException.ThrowIfNecessary();
+
+                var handle = new SetHandle(Root!, setPtr);
+                RealmSet<RealmValue>.CreateAndAdd(realm, handle, value);
+
+                return;
+            }
+            else if (value.Type == RealmValueType.Dictionary)
+            {
+                var dictPtr = NativeMethods.set_dictionary_value(this, propertyIndex, out var dictNativeException);
+                dictNativeException.ThrowIfNecessary();
+
+                var handle = new DictionaryHandle(Root!, dictPtr);
+                RealmDictionary<RealmValue>.CreateAndAdd(realm, handle, value);
 
                 return;
             }

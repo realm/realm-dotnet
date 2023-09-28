@@ -175,6 +175,30 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT object_store::Set* object_set_set_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_set(object);
+
+            auto prop = get_property(object, property_ndx);
+            object.get_obj().set_collection(prop.column_key, CollectionType::Set);
+
+            return new object_store::Set(object.realm(), object.get_obj(), prop.column_key);
+        });
+    }
+
+    REALM_EXPORT object_store::Dictionary* object_set_dictionary_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_set(object);
+
+            auto prop = get_property(object, property_ndx);
+            object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
+
+            return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+        });
+    }
+
     REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {

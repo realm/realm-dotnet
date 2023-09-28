@@ -146,7 +146,7 @@ typedef struct realm_set {
 } realm_set_t;
 
 typedef struct realm_dict {
-    Dictionary* dictionary_ptr;
+    object_store::Dictionary* dictionary_ptr;
 } realm_dict_t;
 
 typedef struct realm_object_id {
@@ -535,7 +535,7 @@ static inline realm_value_t to_capi(object_store::Set* set)
     return val;
 }
 
-static inline realm_value_t to_capi(Dictionary* dictionary)
+static inline realm_value_t to_capi(object_store::Dictionary* dictionary)
 {
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_DICTIONARY;

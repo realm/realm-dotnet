@@ -127,6 +127,18 @@ namespace Realms
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
         }
 
+        internal static RealmSet<RealmValue> CreateAndAdd(Realm realm, SetHandle handle, RealmValue content)
+        {
+            var newSet = new RealmSet<RealmValue>(realm, handle, null);
+
+            foreach (var item in content.AsList())
+            {
+                newSet.Add(item);
+            }
+
+            return newSet;
+        }
+
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _setHandle;
