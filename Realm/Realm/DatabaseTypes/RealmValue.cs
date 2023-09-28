@@ -63,7 +63,10 @@ namespace Realms
         private readonly string? _stringValue;
         private readonly byte[]? _dataValue;
         private readonly IRealmObjectBase? _objectValue;
+
         private readonly IList<RealmValue>? _listValue;
+        private readonly ISet<RealmValue>? _setValue;
+        private readonly IDictionary<string, RealmValue>? _dictionaryValue;
 
         private readonly ObjectHandle? _objectHandle;
         private readonly IntPtr _propertyIndex;
@@ -103,6 +106,14 @@ namespace Realms
                     Argument.NotNull(realm, nameof(realm));
                     _listValue = primitive.AsList(realm!);
                     break;
+                case RealmValueType.Set:
+                    Argument.NotNull(realm, nameof(realm));
+                    _setValue = primitive.AsSet(realm!);
+                    break;
+                case RealmValueType.Dictionary:
+                    Argument.NotNull(realm, nameof(realm));
+                    _dictionaryValue = primitive.AsDictionary(realm!);
+                    break;
                 default:
                     _primitiveValue = primitive;
                     break;
@@ -131,6 +142,18 @@ namespace Realms
         {
             Type = RealmValueType.List;
             _listValue = list;
+        }
+
+        private RealmValue(ISet<RealmValue> set) : this()
+        {
+            Type = RealmValueType.Set;
+            _setValue = set;
+        }
+
+        private RealmValue(IDictionary<string, RealmValue> dict) : this()
+        {
+            Type = RealmValueType.Dictionary;
+            _dictionaryValue = dict;
         }
 
         /// <summary>
@@ -162,7 +185,32 @@ namespace Realms
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static RealmValue Object(IRealmObjectBase value) => new(value);
 
+        /// <summary>
+        /// Gets a RealmValue representing a list.
+        /// </summary>
+        /// <param name="value"> The input list to copy. </param>
+        /// <returns> A new RealmValue representing the input list. </returns>
+        /// <remarks> Once created, this RealmValue will just wrap the input collection.
+        /// When the object containing this RealmValue gets managed, then this value will be a Realm list.</remarks>
         public static RealmValue List(IList<RealmValue> value) => new(value);
+
+        /// <summary>
+        /// Gets a RealmValue representing a set.
+        /// </summary>
+        /// <param name="value"> The input set to copy. </param>
+        /// <returns> A new RealmValue representing the input set. </returns>
+        /// <remarks> Once created, this RealmValue will just wrap the input collection.
+        /// When the object containing this RealmValue gets managed, then this value will be a Realm set.</remarks>
+        public static RealmValue Set(ISet<RealmValue> value) => new(value);
+
+        /// <summary>
+        /// Gets a RealmValue representing a dictionary.
+        /// </summary>
+        /// <param name="value"> The input dictionary to copy. </param>
+        /// <returns> A new RealmValue representing the input dictionary. </returns>
+        /// <remarks> Once created, this RealmValue will just wrap the input collection.
+        /// When the object containing this RealmValue gets managed, then this value will be a Realm dictionary.</remarks>
+        public static RealmValue Dictionary(IDictionary<string, RealmValue> value) => new(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -432,17 +480,44 @@ namespace Realms
         /// Returns the stored value as a string.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.String"/>.</exception>
-        /// <returns>/// A string representing the value stored in the database.</returns>
+        /// <returns> A string representing the value stored in the database.</returns>
         public string AsString()
         {
             EnsureType("string", RealmValueType.String);
             return _stringValue!;
         }
 
+        /// <summary>
+        /// Returns the stored value as a list.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.List"/>.</exception>
+        /// <returns> A list representing the value stored in the database.</returns>
         public IList<RealmValue> AsList()
         {
             EnsureType("List", RealmValueType.List);
             return _listValue!;
+        }
+
+        /// <summary>
+        /// Returns the stored value as a set.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Set"/>.</exception>
+        /// <returns> A set representing the value stored in the database.</returns>
+        public ISet<RealmValue> AsSet()
+        {
+            EnsureType("Set", RealmValueType.Set);
+            return _setValue!;
+        }
+
+        /// <summary>
+        /// Returns the stored value as a dictionary.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Dictionary"/>.</exception>
+        /// <returns> A dictionary representing the value stored in the database.</returns>
+        public IDictionary<string, RealmValue> AsDictionary()
+        {
+            EnsureType("Dictionary", RealmValueType.Dictionary);
+            return _dictionaryValue!;
         }
 
         /// <summary>
@@ -735,6 +810,7 @@ namespace Realms
                 RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
                 RealmValueType.Guid => Operator.Convert<Guid, T>(AsGuid()),
                 RealmValueType.Object => Operator.Convert<IRealmObjectBase, T>(AsIRealmObject()),
+                RealmValueType.List => (T)AsAny(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
@@ -760,6 +836,8 @@ namespace Realms
                 RealmValueType.Guid => AsGuid(),
                 RealmValueType.Object => AsIRealmObject(),
                 RealmValueType.List => AsList(),
+                RealmValueType.Set => AsSet(),
+                RealmValueType.Dictionary => AsDictionary(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
@@ -827,6 +905,9 @@ namespace Realms
                     RealmValueType.Decimal128 => AsDecimal128().GetHashCode(),
                     RealmValueType.ObjectId => AsObjectId().GetHashCode(),
                     RealmValueType.Object => AsIRealmObject().GetHashCode(),
+                    RealmValueType.List => AsList().GetHashCode(),
+                    RealmValueType.Set => AsSet().GetHashCode(),
+                    RealmValueType.Dictionary => AsDictionary().GetHashCode(),
                     _ => 0,
                 };
 
@@ -1361,8 +1442,26 @@ namespace Realms
         /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmObjectBase? val) => val == null ? Null : Object(val);
 
-        //TODO Add docs
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.List{T}">List&lt;RealmValue&gt;?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(List<RealmValue>? val) => val == null ? Null : List(val);
+
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.HashSet{T}">HashSet&lt;RealmValue&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator RealmValue(HashSet<RealmValue>? val) => val == null ? Null : Set(val);
+
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.Dictionary{TKey, TValue}">Dictionary&lt;string, RealmValue&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator RealmValue(Dictionary<string, RealmValue>? val) => val == null ? Null : Dictionary(val);
 
         private void EnsureType(string target, RealmValueType type)
         {
@@ -1429,6 +1528,8 @@ namespace Realms
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.List => AsList().SequenceEqual(other.AsList()),
+                RealmValueType.Set => AsSet().SequenceEqual(other.AsSet()),
+                RealmValueType.Dictionary => AsDictionary().SequenceEqual(other.AsDictionary()),
                 RealmValueType.Null => true,
                 _ => false,
             };

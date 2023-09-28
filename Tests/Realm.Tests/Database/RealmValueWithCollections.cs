@@ -71,6 +71,9 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
 
             Assert.That(rv.AsList(), Is.EqualTo(originalList));
+            Assert.That(rv.AsAny(), Is.EqualTo(originalList));
+            Assert.That(rv.As<IList<RealmValue>>(), Is.EqualTo(originalList));
+
             Assert.That(rv == originalList);
             Assert.That(rv.Equals(originalList));
         }

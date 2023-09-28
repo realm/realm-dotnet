@@ -279,6 +279,18 @@ namespace Realms.Native
             return new RealmList<RealmValue>(realm, handle, null);
         }
 
+        public readonly RealmSet<RealmValue> AsSet(Realm realm)
+        {
+            var handle = new SetHandle(realm.SharedRealmHandle, set_value.set_ptr);
+            return new RealmSet<RealmValue>(realm, handle, null);
+        }
+
+        public readonly RealmDictionary<RealmValue> AsDictionary(Realm realm)
+        {
+            var handle = new DictionaryHandle(realm.SharedRealmHandle, dictionary_value.dict_ptr);
+            return new RealmDictionary<RealmValue>(realm, handle, null);
+        }
+
         public readonly bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
         {
             if (Type == RealmValueType.Object)
