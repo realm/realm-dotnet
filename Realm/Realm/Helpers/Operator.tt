@@ -436,7 +436,7 @@ namespace Realms.Helpers
     private static readonly Regex _implicitTypeToRealmValueRegex = new Regex(@"public static implicit operator RealmValue\((?<fromType>\S*)");
     private static readonly Regex _explicitRealmValueToTypeRegex = new Regex(@"public static explicit operator (?<toType>[^\(]*)\(RealmValue");
 
-    private static readonly List<string> _implicitTypeExcludeList = new()
+    private static readonly string[] _implicitTypeExcludeList = new[]
     {
         "List<RealmValue>?",
         "HashSet<RealmValue>?",
