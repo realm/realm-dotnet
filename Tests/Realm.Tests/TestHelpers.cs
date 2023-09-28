@@ -410,5 +410,11 @@ namespace Realms.Tests
 
             public static implicit operator StrongBox<T>(T value) => new() { Value = value };
         }
+
+        public static IEnumerable<RealmValueType> CollectionRealmValueTypes =
+            new[] { RealmValueType.List, RealmValueType.Set, RealmValueType.Dictionary };
+
+        public static IEnumerable<RealmValueType> PrimitiveRealmValueTypes = ((RealmValueType[])Enum.GetValues(typeof(RealmValueType)))
+            .Except(CollectionRealmValueTypes);
     }
 }

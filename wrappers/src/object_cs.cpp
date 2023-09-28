@@ -108,8 +108,7 @@ extern "C" {
                 }
                 else if (!val.is_null() && val.get_type() == type_List)
                 {
-                    auto list = new List(object.realm(), object.get_obj(), prop.column_key);
-                    *value = to_capi(list);
+                    *value = to_capi(new List(object.realm(), object.get_obj(), prop.column_key));
                 }
                 else {
                     *value = to_capi(std::move(val));

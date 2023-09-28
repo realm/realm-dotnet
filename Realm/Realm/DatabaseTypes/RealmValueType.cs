@@ -95,17 +95,17 @@ namespace Realms
         Guid,
 
         /// <summary>
-        /// The value represents a <see cref="System.Collections.IList"/>.
+        /// The value represents a <see cref="System.Collections.Generic.IList{T}"/>.
         /// </summary>
         List,
 
         /// <summary>
-        /// The value represents a <see cref="System.Collections.ISet"/>.
+        /// The value represents a <see cref="System.Collections.Generic.ISet{T}"/>.
         /// </summary>
         Set,
 
         /// <summary>
-        /// The value represents a <see cref="System.Collections.IDictionary"/>.
+        /// The value represents a <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/>.
         /// </summary>
         Dictionary,
     }

@@ -67,7 +67,5 @@ namespace Realms
 
             return ObjectSchema.ObjectType.RealmObject;
         }
-
-        public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }
 }
