@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
 using Realms.Helpers;
@@ -66,10 +67,23 @@ namespace Realms
                 ValidateIndex(index);
                 var realmValue = ValidateValueToInsert(value);
 
-                if (realmValue.Type == RealmValueType.List)
+                if (realmValue.Type.IsCollection())
                 {
-                    var newListHandle = _listHandle.SetList(index);
-                    CreateAndAdd(Realm, newListHandle, realmValue);
+                    switch (realmValue.Type)
+                    {
+                        case RealmValueType.List:
+                            CollectionHelpers.ListCreateAndPopulate(Realm, _listHandle.SetList(index), realmValue);
+                            break;
+                        case RealmValueType.Set:
+                            CollectionHelpers.SetCreateAndPopulate(Realm, _listHandle.SetSet(index), realmValue);
+                            break;
+                        case RealmValueType.Dictionary:
+                            CollectionHelpers.DictionaryCreatePopulate(Realm, _listHandle.SetDictionary(index), realmValue);
+                            break;
+                        default:
+                            Debug.Fail("Invalid collection type");
+                            break;
+                    }
 
                     return;
                 }
@@ -96,10 +110,23 @@ namespace Realms
         {
             var realmValue = ValidateValueToInsert(value);
 
-            if (realmValue.Type == RealmValueType.List)
+            if (realmValue.Type.IsCollection())
             {
-                var newListHandle = _listHandle.AddList();
-                CreateAndAdd(Realm, newListHandle, realmValue);
+                switch (realmValue.Type)
+                {
+                    case RealmValueType.List:
+                        CollectionHelpers.ListCreateAndPopulate(Realm, _listHandle.AddList(), realmValue);
+                        break;
+                    case RealmValueType.Set:
+                        CollectionHelpers.SetCreateAndPopulate(Realm, _listHandle.AddSet(), realmValue);
+                        break;
+                    case RealmValueType.Dictionary:
+                        CollectionHelpers.DictionaryCreatePopulate(Realm, _listHandle.AddDictionary(), realmValue);
+                        break;
+                    default:
+                        Debug.Fail("Invalid collection type");
+                        break;
+                }
 
                 return;
             }
@@ -117,6 +144,10 @@ namespace Realms
 
             AddToRealmIfNecessary(realmValue);
             _listHandle.Add(realmValue);
+        }
+
+        private void CreateAndPopulate()
+        {
         }
 
         public override int IndexOf([AllowNull] T value)
@@ -143,8 +174,8 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.List)
             {
-                var newListHandle = _listHandle.InsertList(index);
-                CreateAndAdd(Realm, newListHandle, realmValue);
+                var newListHandle = _listHandle.InsertCollection(index, RealmValueType.List);
+                CollectionHelpers.ListCreateAndPopulate(Realm, newListHandle, realmValue);
 
                 return;
             }
@@ -197,18 +228,6 @@ namespace Realms
         {
             var resultsHandle = _listHandle.ToResults();
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
-        }
-
-        internal static RealmList<RealmValue> CreateAndAdd(Realm realm, ListHandle handle, RealmValue content)
-        {
-            var newList = new RealmList<RealmValue>(realm, handle, null);
-
-            foreach (var item in content.AsList())
-            {
-                newList.Add(item);
-            }
-
-            return newList;
         }
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);

@@ -83,16 +83,28 @@ REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeExcept
     });
 }
 
-REALM_EXPORT List* list_set_list(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void* list_set_collection(List& list, size_t list_ndx, realm_value_type type, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]()-> void*{
 
         if (list_ndx > list.size()) {
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
         }
 
-        list.set_collection(list_ndx, CollectionType::List);
-        return new List(list.get_list(list_ndx));
+        switch (type)
+        {
+        case realm::binding::realm_value_type::RLM_TYPE_LIST:
+            list.set_collection(list_ndx, CollectionType::List);
+            return new List(list.get_list(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_SET:
+            list.set_collection(list_ndx, CollectionType::Set);
+            return new object_store::Set(list.get_set(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+            list.set_collection(list_ndx, CollectionType::Dictionary);
+            return new object_store::Dictionary(list.get_dictionary(list_ndx));
+        default:
+            REALM_TERMINATE("Invalid collection type");
+        }
     });
 }
 
@@ -132,16 +144,28 @@ REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeExc
     });
 }
 
-REALM_EXPORT List* list_insert_list(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void* list_insert_collection(List& list, size_t list_ndx, realm_value_type type, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]()-> void*{
 
         if (list_ndx > list.size()) {
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
         }
 
-        list.insert_collection(list_ndx, CollectionType::List);
-        return new List(list.get_list(list_ndx));
+        switch (type)
+        {
+        case realm::binding::realm_value_type::RLM_TYPE_LIST:
+            list.insert_collection(list_ndx, CollectionType::List);
+            return new List(list.get_list(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_SET:
+            list.insert_collection(list_ndx, CollectionType::Set);
+            return new object_store::Set(list.get_set(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+            list.insert_collection(list_ndx, CollectionType::Dictionary);
+            return new object_store::Dictionary(list.get_dictionary(list_ndx));
+        default:
+            REALM_TERMINATE("Invalid collection type");
+        }
     });
 }
 
@@ -157,9 +181,9 @@ REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable
     });
 }
 
-REALM_EXPORT List* list_add_list(List& list, NativeException::Marshallable& ex)
+REALM_EXPORT void* list_add_collection(List& list, realm_value_type type, NativeException::Marshallable& ex)
 {
-    return list_insert_list(list, list.size(), ex);
+    return list_insert_collection(list, list.size(), type, ex);
 }
 
 REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)

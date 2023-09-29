@@ -32,8 +32,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_list", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_list(ListHandle listHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_collection(ListHandle listHandle, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
@@ -41,8 +41,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_list", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_list(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection(ListHandle listHandle, IntPtr targetIndex, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_value(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
@@ -50,8 +50,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_list", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr insert_list(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr insert_collection(ListHandle listHandle, IntPtr targetIndex, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_value(ListHandle listHandle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
@@ -149,13 +149,31 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public ListHandle AddList()
+        private IntPtr AddCollection(RealmValueType collectionType)
         {
             EnsureIsOpen();
 
-            var listPtr = NativeMethods.add_list(this, out var nativeException);
+            var collectionPtr = NativeMethods.add_collection(this, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ListHandle(Root!, listPtr);
+            return collectionPtr;
+        }
+
+        public ListHandle AddList()
+        {
+            var ptr = AddCollection(RealmValueType.List);
+            return new ListHandle(Root!, ptr);
+        }
+
+        public SetHandle AddSet()
+        {
+            var ptr = AddCollection(RealmValueType.Set);
+            return new SetHandle(Root!, ptr);
+        }
+
+        public DictionaryHandle AddDictionary()
+        {
+            var ptr = AddCollection(RealmValueType.Dictionary);
+            return new DictionaryHandle(Root!, ptr);
         }
 
         public void Set(int targetIndex, in RealmValue value)
@@ -177,13 +195,31 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public ListHandle SetList(int targetIndex)
+        private IntPtr SetCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
-            var listPtr = NativeMethods.set_list(this, (IntPtr)targetIndex, out var nativeException);
+            var collectionPtr = NativeMethods.set_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ListHandle(Root!, listPtr);
+            return collectionPtr;
+        }
+
+        public ListHandle SetList(int targetIndex)
+        {
+            var ptr = SetCollection(targetIndex, RealmValueType.List);
+            return new ListHandle(Root!, ptr);
+        }
+
+        public SetHandle SetSet(int targetIndex)
+        {
+            var ptr = SetCollection(targetIndex, RealmValueType.Set);
+            return new SetHandle(Root!, ptr);
+        }
+
+        public DictionaryHandle SetDictionary(int targetIndex)
+        {
+            var ptr = SetCollection(targetIndex, RealmValueType.Dictionary);
+            return new DictionaryHandle(Root!, ptr);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -205,13 +241,31 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public ListHandle InsertList(int targetIndex)
+        private IntPtr InsertCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
-            var listPtr = NativeMethods.insert_list(this, (IntPtr)targetIndex, out var nativeException);
+            var collectionPtr = NativeMethods.insert_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ListHandle(Root!, listPtr);
+            return collectionPtr;
+        }
+
+        public ListHandle InsertList(int targetIndex)
+        {
+            var ptr = InsertCollection(targetIndex, RealmValueType.List);
+            return new ListHandle(Root!, ptr);
+        }
+
+        public SetHandle InsertSet(int targetIndex)
+        {
+            var ptr = InsertCollection(targetIndex, RealmValueType.Set);
+            return new SetHandle(Root!, ptr);
+        }
+
+        public DictionaryHandle InsertDictionary(int targetIndex)
+        {
+            var ptr = InsertCollection(targetIndex, RealmValueType.Dictionary);
+            return new DictionaryHandle(Root!, ptr);
         }
 
         public int Find(in RealmValue value)

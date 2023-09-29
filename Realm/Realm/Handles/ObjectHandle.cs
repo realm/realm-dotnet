@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Extensions;
+using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
 
@@ -234,7 +235,7 @@ namespace Realms
                 listNativeException.ThrowIfNecessary();
 
                 var handle = new ListHandle(Root!, listPtr);
-                RealmList<RealmValue>.CreateAndAdd(realm, handle, value);
+                CollectionHelpers.ListCreateAndPopulate(realm, handle, value);
 
                 return;
             }
