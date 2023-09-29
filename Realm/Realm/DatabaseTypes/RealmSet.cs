@@ -73,6 +73,11 @@ namespace Realms
 
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
+            if (realmValue.Type.IsCollection())
+            {
+                throw new InvalidOperationException("Set cannot contain other collections.");
+            }
+
             AddToRealmIfNecessary(realmValue);
             return _setHandle.Add(realmValue);
         }

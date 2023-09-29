@@ -31,7 +31,16 @@ namespace Realms
             RealmValueType.Decimal128
         };
 
+        private static readonly HashSet<RealmValueType> _collectionTypes = new()
+        {
+            RealmValueType.List,
+            RealmValueType.Set,
+            RealmValueType.Dictionary,
+        };
+
         public static bool IsNumeric(this RealmValueType type) => _numericTypes.Contains(type);
+
+        public static bool IsCollection(this RealmValueType type) => _collectionTypes.Contains(type);
 
         public static (NativeQueryArgument[] Values, RealmValue.HandlesToCleanup?[] Handles) ToNativeValues(this QueryArgument[] arguments)
         {
