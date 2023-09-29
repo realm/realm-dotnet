@@ -69,22 +69,7 @@ namespace Realms
 
                 if (realmValue.Type.IsCollection())
                 {
-                    switch (realmValue.Type)
-                    {
-                        case RealmValueType.List:
-                            CollectionHelpers.ListCreateAndPopulate(Realm, _listHandle.SetList(index), realmValue);
-                            break;
-                        case RealmValueType.Set:
-                            CollectionHelpers.SetCreateAndPopulate(Realm, _listHandle.SetSet(index), realmValue);
-                            break;
-                        case RealmValueType.Dictionary:
-                            CollectionHelpers.DictionaryCreatePopulate(Realm, _listHandle.SetDictionary(index), realmValue);
-                            break;
-                        default:
-                            Debug.Fail("Invalid collection type");
-                            break;
-                    }
-
+                    CreateAndPopulate(realmValue, (t) => _listHandle.SetCollection(index, t));
                     return;
                 }
 
@@ -112,22 +97,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                switch (realmValue.Type)
-                {
-                    case RealmValueType.List:
-                        CollectionHelpers.ListCreateAndPopulate(Realm, _listHandle.AddList(), realmValue);
-                        break;
-                    case RealmValueType.Set:
-                        CollectionHelpers.SetCreateAndPopulate(Realm, _listHandle.AddSet(), realmValue);
-                        break;
-                    case RealmValueType.Dictionary:
-                        CollectionHelpers.DictionaryCreatePopulate(Realm, _listHandle.AddDictionary(), realmValue);
-                        break;
-                    default:
-                        Debug.Fail("Invalid collection type");
-                        break;
-                }
-
+                CreateAndPopulate(realmValue, (t) => _listHandle.AddCollection(t));
                 return;
             }
 
@@ -146,8 +116,28 @@ namespace Realms
             _listHandle.Add(realmValue);
         }
 
-        private void CreateAndPopulate()
+        private void CreateAndPopulate(RealmValue realmValue, Func<RealmValueType, IntPtr> createPtrFunc)
         {
+            var ptr = createPtrFunc(realmValue.Type);
+
+            switch (realmValue.Type)
+            {
+                case RealmValueType.List:
+                    var listHandle = new ListHandle(Realm.SharedRealmHandle, ptr);
+                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
+                    break;
+                case RealmValueType.Set:
+                    var setHandle = new SetHandle(Realm.SharedRealmHandle, ptr);
+                    CollectionHelpers.SetCreateAndPopulate(Realm, setHandle, realmValue);
+                    break;
+                case RealmValueType.Dictionary:
+                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, ptr);
+                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
+                    break;
+                default:
+                    Debug.Fail("Invalid collection type");
+                    break;
+            }
         }
 
         public override int IndexOf([AllowNull] T value)
@@ -172,11 +162,9 @@ namespace Realms
             ValidateIndex(index);
             var realmValue = ValidateValueToInsert(value);
 
-            if (realmValue.Type == RealmValueType.List)
+            if (realmValue.Type.IsCollection())
             {
-                var newListHandle = _listHandle.InsertCollection(index, RealmValueType.List);
-                CollectionHelpers.ListCreateAndPopulate(Realm, newListHandle, realmValue);
-
+                CreateAndPopulate(realmValue, (t) => _listHandle.InsertCollection(index, t));
                 return;
             }
 

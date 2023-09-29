@@ -149,31 +149,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        private IntPtr AddCollection(RealmValueType collectionType)
+        public IntPtr AddCollection(RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.add_collection(this, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
             return collectionPtr;
-        }
-
-        public ListHandle AddList()
-        {
-            var ptr = AddCollection(RealmValueType.List);
-            return new ListHandle(Root!, ptr);
-        }
-
-        public SetHandle AddSet()
-        {
-            var ptr = AddCollection(RealmValueType.Set);
-            return new SetHandle(Root!, ptr);
-        }
-
-        public DictionaryHandle AddDictionary()
-        {
-            var ptr = AddCollection(RealmValueType.Dictionary);
-            return new DictionaryHandle(Root!, ptr);
         }
 
         public void Set(int targetIndex, in RealmValue value)
@@ -195,31 +177,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        private IntPtr SetCollection(int targetIndex, RealmValueType collectionType)
+        public IntPtr SetCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.set_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
             return collectionPtr;
-        }
-
-        public ListHandle SetList(int targetIndex)
-        {
-            var ptr = SetCollection(targetIndex, RealmValueType.List);
-            return new ListHandle(Root!, ptr);
-        }
-
-        public SetHandle SetSet(int targetIndex)
-        {
-            var ptr = SetCollection(targetIndex, RealmValueType.Set);
-            return new SetHandle(Root!, ptr);
-        }
-
-        public DictionaryHandle SetDictionary(int targetIndex)
-        {
-            var ptr = SetCollection(targetIndex, RealmValueType.Dictionary);
-            return new DictionaryHandle(Root!, ptr);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -241,31 +205,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        private IntPtr InsertCollection(int targetIndex, RealmValueType collectionType)
+        public IntPtr InsertCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.insert_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
             return collectionPtr;
-        }
-
-        public ListHandle InsertList(int targetIndex)
-        {
-            var ptr = InsertCollection(targetIndex, RealmValueType.List);
-            return new ListHandle(Root!, ptr);
-        }
-
-        public SetHandle InsertSet(int targetIndex)
-        {
-            var ptr = InsertCollection(targetIndex, RealmValueType.Set);
-            return new SetHandle(Root!, ptr);
-        }
-
-        public DictionaryHandle InsertDictionary(int targetIndex)
-        {
-            var ptr = InsertCollection(targetIndex, RealmValueType.Dictionary);
-            return new DictionaryHandle(Root!, ptr);
         }
 
         public int Find(in RealmValue value)
