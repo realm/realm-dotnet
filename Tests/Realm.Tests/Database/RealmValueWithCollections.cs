@@ -37,11 +37,19 @@ namespace Realms.Tests.Database
             return _realm.All<RealmValueObject>().First();
         }
 
+        #region List
+
         [Test]
         public void List_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
         {
-            var innerList1 = new List<RealmValue> { "inner1" };
-            var innerList2 = new List<RealmValue> { "inner2", innerList1 };
+            var innerList = new List<RealmValue> { "inner2", true, 2.0 };
+            var innerDict = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+            var innerSet = new HashSet<RealmValue> { 1, "str", true };
 
             var originalList = new List<RealmValue>
             {
@@ -57,7 +65,9 @@ namespace Realms.Tests.Database
                 new ObjectId("5f63e882536de46d71877979"),
                 Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
                 new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                innerList2,
+                innerList,
+                innerDict,
+                innerSet,
             };
 
             RealmValue rv = originalList;
@@ -100,7 +110,34 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsList(), Is.EqualTo(originalList));
         }
 
-        //TODO Add test about setting the list from another "managed" list
+        [Test]
+        public void List_CanBeCopiedFromManagedList([Values(true, false)] bool isManaged)
+        {
+            var originalList = new List<RealmValue>() { 1, "string", true };
+
+            RealmValue rv = originalList;
+
+            if (isManaged)
+            {
+                rv = PersistAndFind(originalList).RealmValueProperty;
+            }
+
+            var newObj = new RealmValueObject { RealmValueProperty = rv };
+
+            RealmValue rv2;
+
+            if (isManaged)
+            {
+                rv2 = PersistAndFind(rv).RealmValueProperty;
+            }
+            else
+            {
+                rv2 = newObj.RealmValueProperty;
+            }
+
+            Assert.That(rv.AsList(), Is.EqualTo(originalList));
+            Assert.That(rv2.AsList(), Is.EqualTo(originalList));
+        }
 
         [Test]
         public void List_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
@@ -344,5 +381,48 @@ namespace Realms.Tests.Database
 
             Assert.That(callbacks.Count, Is.EqualTo(1));
         }
+
+        #endregion
+
+        #region Set
+
+        [Test]
+        public void Set_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
+        {
+            var originalSet = new HashSet<RealmValue>
+            {
+                RealmValue.Null,
+                1,
+                true,
+                "string",
+                new byte[] { 0, 1, 2 },
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
+                1f,
+                2d,
+                3m,
+                new ObjectId("5f63e882536de46d71877979"),
+                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
+                new InternalObject { IntProperty = 10, StringProperty = "brown" },
+            };
+
+            RealmValue rv = originalSet;
+
+            if (isManaged)
+            {
+                rv = PersistAndFind(rv).RealmValueProperty;
+            }
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Set));
+            Assert.That(rv != RealmValue.Null);
+
+            Assert.That(rv.AsSet(), Is.EqualTo(originalSet));
+            Assert.That(rv.AsAny(), Is.EqualTo(originalSet));
+            //Assert.That(rv.As<ISet<RealmValue>>(), Is.EqualTo(originalSet));
+
+            Assert.That(rv == originalSet);
+            Assert.That(rv.Equals(originalSet));
+        }
+
+        #endregion
     }
 }

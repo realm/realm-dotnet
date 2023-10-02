@@ -65,6 +65,12 @@ namespace Realms
                 ValidateKey(key);
                 var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
+                if (realmValue.Type.IsCollection())
+                {
+                    CreateInternalCollectionAndPopulate(realmValue, () => _dictionaryHandle.SetCollection(key, realmValue.Type));
+                    return;
+                }
+
                 if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
                     if (IsDynamic)
@@ -123,6 +129,12 @@ namespace Realms
         {
             ValidateKey(key);
             var realmValue = Operator.Convert<TValue, RealmValue>(value);
+
+            if (realmValue.Type.IsCollection())
+            {
+                CreateInternalCollectionAndPopulate(realmValue, () => _dictionaryHandle.AddCollection(key, realmValue.Type));
+                return;
+            }
 
             if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
@@ -225,6 +237,30 @@ namespace Realms
             _deliveredInitialKeyNotification = false;
         }
 
+        private void CreateInternalCollectionAndPopulate(RealmValue realmValue, Func<IntPtr> createCollectionFunc)
+        {
+            var collectionPtr = createCollectionFunc();
+
+            switch (realmValue.Type)
+            {
+                case RealmValueType.List:
+                    var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
+                    break;
+                case RealmValueType.Set:
+                    var setHandle = new SetHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.SetCreateAndPopulate(Realm, setHandle, realmValue);
+                    break;
+                case RealmValueType.Dictionary:
+                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
+                    break;
+                default:
+                    Debug.Fail("Invalid collection type");
+                    break;
+            }
+        }
+
         private static void ValidateKey(string key)
         {
             if (key == null)
@@ -241,18 +277,6 @@ namespace Realms
             {
                 throw new NotSupportedException($"A persisted dictionary cannot have a key that contains '.': {key}");
             }
-        }
-
-        internal static RealmDictionary<RealmValue> CreateAndAdd(Realm realm, DictionaryHandle handle, RealmValue content)
-        {
-            var newDictionary = new RealmDictionary<RealmValue>(realm, handle, null);
-
-            foreach (var item in content.AsList())
-            {
-                newDictionary.Add(item);
-            }
-
-            return newDictionary;
         }
 
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);

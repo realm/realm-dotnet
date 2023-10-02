@@ -195,19 +195,32 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
 
         if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             *value = to_capi(list.get(ndx), list.get_realm());
+            return;
         }
-        else {
-            auto val = list.get_any(ndx);
-            if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(val.get<ObjLink>(), list.get_realm());
-            }
-            else if (!val.is_null() && val.get_type() == type_List) {
-                auto internalList = new List(list.get_list(ndx));
-                *value = to_capi(internalList);
-            }
-            else {
-                *value = to_capi(std::move(val));
-            }
+
+        auto val = list.get_any(ndx);
+
+        if (val.is_null()) {
+            *value = to_capi(std::move(val));
+            return;
+        }
+
+        switch (val.get_type()) {
+        case type_TypedLink:
+            *value = to_capi(val.get<ObjLink>(), list.get_realm());
+            break;
+        case type_List:
+            *value = to_capi(new List(list.get_list(ndx)));
+            break;
+        case type_Set:
+            *value = to_capi(new object_store::Set(list.get_set(ndx)));
+            break;
+        case type_Dictionary:
+            *value = to_capi(new object_store::Dictionary(list.get_dictionary(ndx)));
+            break;
+        default:
+            *value = to_capi(std::move(val));
+            break;
         }
     });
 }

@@ -245,7 +245,7 @@ namespace Realms
                 setNativeException.ThrowIfNecessary();
 
                 var handle = new SetHandle(Root!, setPtr);
-                RealmSet<RealmValue>.CreateAndAdd(realm, handle, value);
+                CollectionHelpers.SetCreateAndPopulate(realm, handle, value);
 
                 return;
             }
@@ -255,7 +255,7 @@ namespace Realms
                 dictNativeException.ThrowIfNecessary();
 
                 var handle = new DictionaryHandle(Root!, dictPtr);
-                RealmDictionary<RealmValue>.CreateAndAdd(realm, handle, value);
+                CollectionHelpers.DictionaryCreatePopulate(realm, handle, value);
 
                 return;
             }

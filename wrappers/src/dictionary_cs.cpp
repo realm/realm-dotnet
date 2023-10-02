@@ -71,6 +71,33 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void* realm_dictionary_add_collection(object_store::Dictionary& dictionary, realm_value_t key, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+
+            auto dict_key = from_capi(key.string);
+            if (dictionary.contains(dict_key))
+            {
+                throw KeyAlreadyExistsException(dict_key);
+            }
+
+            switch (type)
+            {
+            case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                dictionary.insert_collection(dict_key, CollectionType::List);
+                return new List(dictionary.get_list(dict_key));
+            case realm::binding::realm_value_type::RLM_TYPE_SET:
+                dictionary.insert_collection(dict_key, CollectionType::Set);
+                return new object_store::Set(dictionary.get_set(dict_key));
+            case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                dictionary.insert_collection(dict_key, CollectionType::Dictionary);
+                return new object_store::Dictionary(dictionary.get_dictionary(dict_key));
+            default:
+                REALM_TERMINATE("Invalid collection type");
+            }
+        });
+    }
+
     REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
@@ -84,6 +111,29 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(from_capi(key.string)));
+        });
+    }
+
+    REALM_EXPORT void* realm_dictionary_set_collection(object_store::Dictionary& dictionary, realm_value_t key, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+
+            auto dict_key = from_capi(key.string);
+
+            switch (type)
+            {
+            case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                dictionary.insert_collection(dict_key, CollectionType::List);
+                return new List(dictionary.get_list(dict_key));
+            case realm::binding::realm_value_type::RLM_TYPE_SET:
+                dictionary.insert_collection(dict_key, CollectionType::Set);
+                return new object_store::Set(dictionary.get_set(dict_key));
+            case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                dictionary.insert_collection(dict_key, CollectionType::Dictionary);
+                return new object_store::Dictionary(dictionary.get_dictionary(dict_key));
+            default:
+                REALM_TERMINATE("Invalid collection type");
+            }
         });
     }
 

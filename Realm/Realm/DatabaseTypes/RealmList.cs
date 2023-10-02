@@ -69,7 +69,7 @@ namespace Realms
 
                 if (realmValue.Type.IsCollection())
                 {
-                    CreateAndPopulate(realmValue, (t) => _listHandle.SetCollection(index, t));
+                    CreateInternalCollectionAndPopulate(realmValue, () => _listHandle.SetCollection(index, realmValue.Type));
                     return;
                 }
 
@@ -97,7 +97,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateAndPopulate(realmValue, (t) => _listHandle.AddCollection(t));
+                CreateInternalCollectionAndPopulate(realmValue, () => _listHandle.AddCollection(realmValue.Type));
                 return;
             }
 
@@ -116,30 +116,6 @@ namespace Realms
             _listHandle.Add(realmValue);
         }
 
-        private void CreateAndPopulate(RealmValue realmValue, Func<RealmValueType, IntPtr> createPtrFunc)
-        {
-            var ptr = createPtrFunc(realmValue.Type);
-
-            switch (realmValue.Type)
-            {
-                case RealmValueType.List:
-                    var listHandle = new ListHandle(Realm.SharedRealmHandle, ptr);
-                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
-                    break;
-                case RealmValueType.Set:
-                    var setHandle = new SetHandle(Realm.SharedRealmHandle, ptr);
-                    CollectionHelpers.SetCreateAndPopulate(Realm, setHandle, realmValue);
-                    break;
-                case RealmValueType.Dictionary:
-                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, ptr);
-                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
-                    break;
-                default:
-                    Debug.Fail("Invalid collection type");
-                    break;
-            }
-        }
-
         public override int IndexOf([AllowNull] T value)
         {
             var realmValue = Operator.Convert<T?, RealmValue>(value);
@@ -149,7 +125,7 @@ namespace Realms
                 return -1;
             }
 
-            if (realmValue.Type == RealmValueType.List)
+            if (realmValue.Type.IsCollection())
             {
                 return -1;
             }
@@ -164,7 +140,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateAndPopulate(realmValue, (t) => _listHandle.InsertCollection(index, t));
+                CreateInternalCollectionAndPopulate(realmValue, () => _listHandle.InsertCollection(index, realmValue.Type));
                 return;
             }
 
@@ -223,6 +199,30 @@ namespace Realms
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
+
+        private void CreateInternalCollectionAndPopulate(RealmValue realmValue, Func<IntPtr> createCollectionFunc)
+        {
+            var collectionPtr = createCollectionFunc();
+
+            switch (realmValue.Type)
+            {
+                case RealmValueType.List:
+                    var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
+                    break;
+                case RealmValueType.Set:
+                    var setHandle = new SetHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.SetCreateAndPopulate(Realm, setHandle, realmValue);
+                    break;
+                case RealmValueType.Dictionary:
+                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
+                    break;
+                default:
+                    Debug.Fail("Invalid collection type");
+                    break;
+            }
+        }
 
         private static void ValidateIndex(int index, string name = "index")
         {
