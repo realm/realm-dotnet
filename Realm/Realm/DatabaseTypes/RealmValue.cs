@@ -1534,7 +1534,7 @@ namespace Realms
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.List => AsList().SequenceEqual(other.AsList()),
                 RealmValueType.Set => AsSet().SetEquals(other.AsSet()),
-                RealmValueType.Dictionary => AsDictionary().SequenceEqual(other.AsDictionary()),  //TODO Check if this is correct
+                RealmValueType.Dictionary => AsDictionary().SequenceEqual(other.AsDictionary()),
                 RealmValueType.Null => true,
                 _ => false,
             };

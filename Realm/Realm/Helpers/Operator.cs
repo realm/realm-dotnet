@@ -821,7 +821,7 @@ namespace Realms.Helpers
         private class IDictionaryRealmValueConverter : SpecializedConverterBase<IDictionary<string, RealmValue>, RealmValue>
         {
             public override RealmValue Convert(IDictionary<string, RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.Dictionary(value);
-        }        
+        }
         #endregion ToRealmValue Converters
 
         #region FromRealmValue Converters
