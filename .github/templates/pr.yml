@@ -38,7 +38,7 @@ jobs:
     needs:
     - build-wrappers
     with:
-      build-docs: true
+      build-docs: ${{ contains(github.head_ref, 'release') }}
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(testUnity('["Mono-Net4"]', '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'))
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))

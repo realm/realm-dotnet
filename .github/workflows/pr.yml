@@ -41,7 +41,7 @@ jobs:
     needs:
     - build-wrappers
     with:
-      build-docs: true
+      build-docs: ${{ contains(github.head_ref, 'release') }}
   build-unity:
     uses: ./.github/workflows/build-unity.yml
     name: Package
