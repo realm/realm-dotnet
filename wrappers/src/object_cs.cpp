@@ -100,19 +100,33 @@ extern "C" {
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
                 }
+
+                return;
             }
-            else {
-                auto val = object.get_obj().get_any(prop.column_key);
-                if (!val.is_null() && val.get_type() == type_TypedLink) {
-                    *value = to_capi(val.get<ObjLink>(), object.realm());
-                }
-                else if (!val.is_null() && val.get_type() == type_List)
-                {
-                    *value = to_capi(new List(object.realm(), object.get_obj(), prop.column_key));
-                }
-                else {
-                    *value = to_capi(std::move(val));
-                }
+
+            auto val = object.get_obj().get_any(prop.column_key);
+            if (val.is_null())
+            {
+                *value = to_capi(std::move(val));
+                return;
+            }
+            
+            switch (val.get_type()) {
+            case type_TypedLink:
+                *value = to_capi(val.get<ObjLink>(), object.realm());
+                break;
+            case type_List:
+                *value = to_capi(new List(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            case type_Set:
+                *value = to_capi(new object_store::Set(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            case type_Dictionary:
+                *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            default:
+                *value = to_capi(std::move(val));
+                break;
             }
         });
     }

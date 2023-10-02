@@ -617,7 +617,7 @@ static inline realm_value_t to_capi(const Mixed& value)
     return val;
 }
 
-inline realm_value_t to_capi(const object_store::Dictionary& dictionary, const Mixed& val)
+inline realm_value_t to_capi(const object_store::Dictionary& dictionary, const Mixed& val, const StringData key)
 {
     if (val.is_null()) {
         return to_capi(std::move(val));
@@ -628,10 +628,18 @@ inline realm_value_t to_capi(const object_store::Dictionary& dictionary, const M
         if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             return to_capi(ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>()), dictionary.get_realm());
         }
-
         REALM_UNREACHABLE();
     case type_TypedLink:
         return to_capi(val.get_link(), dictionary.get_realm());
+    case type_List:
+        return to_capi(new List(dictionary.get_list(key)));
+        break;
+    case type_Set:
+        return to_capi(new object_store::Set(dictionary.get_set(key)));
+        break;
+    case type_Dictionary:
+        return to_capi(new object_store::Dictionary(dictionary.get_dictionary(key)));
+        break;
     default:
         return to_capi(std::move(val));
     }

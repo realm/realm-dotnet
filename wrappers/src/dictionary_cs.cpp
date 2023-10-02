@@ -140,10 +140,11 @@ extern "C" {
     REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            auto mixed_value = dictionary.try_get_any(from_capi(key.string));
+            auto dict_key = from_capi(key.string);
+            auto mixed_value = dictionary.try_get_any(dict_key);
             if (mixed_value)
             {
-                *value = to_capi(dictionary, *mixed_value);
+                *value = to_capi(dictionary, *mixed_value, dict_key);
                 return true;
             }
 
@@ -160,7 +161,7 @@ extern "C" {
 
             auto pair = dictionary.get_pair(ndx);
             *key = to_capi(Mixed(pair.first));
-            *value = to_capi(dictionary, pair.second);
+            *value = to_capi(dictionary, pair.second, pair.first);
         });
     }
 
