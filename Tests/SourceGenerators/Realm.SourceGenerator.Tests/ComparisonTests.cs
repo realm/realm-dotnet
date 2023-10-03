@@ -41,19 +41,28 @@ namespace SourceGeneratorTests
             await RunComparisonTest(filename, classNames);
         }
 
-        [TestCase("ClassWithBaseType")]
-        [TestCase("MultiplePrimaryKeys")]
-        [TestCase("NoPartialClass")]
-        [TestCase("RealmintegerErrors")]
-        [TestCase("RealmObjectAndEmbeddedObjectClass")]
-        [TestCase("UnsupportedIndexableTypes")]
-        [TestCase("UnsupportedPrimaryKeyTypes")]
-        [TestCase("UnsupportedRequiredTypes")]
-        [TestCase("NestedClassWithoutPartialParent")]
-        [TestCase("NullableErrorClass")]
-        [TestCase("IgnoreObjectNullabilityClass")]
-        [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
-        public async Task ErrorComparisonTest(string filename, params string[] classNames)
+        public static object[][] ErrorTestCases = Directory.GetFiles(_errorClassesPath)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Select(f =>
+            {
+                var classNames = Array.Empty<string>();
+                if (f == "UnsupportedBacklink")
+                {
+                    classNames = new[]
+                    {
+                        "UnsupportedBacklink", "BacklinkObj"
+                    };
+                }
+
+                return new object[]
+                {
+                    f!, classNames
+                };
+            })
+            .ToArray();
+
+        [TestCaseSource(nameof(ErrorTestCases))]
+        public async Task ErrorComparisonTest(string filename, string[] classNames)
         {
             await RunErrorTest(filename, classNames);
         }

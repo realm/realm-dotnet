@@ -8,6 +8,7 @@
   realm.custom_ignore_attribute = [System.Text.Json.Serialization.JsonIgnore]
   ```
   (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
+* The Realm source generator will now error out in case a collection in the model classes is assigned to a non-null value either in a property initializer or in a constructor. Realm collections are initialized internally and assigning non-null values to the property is not supported, where the `null!` assignment is only useful to silence nullable reference type warnings, in reality the collection will never be null. (Issue [#3455](https://github.com/realm/realm-dotnet/issues/3455))
 
 ### Fixed
 * None

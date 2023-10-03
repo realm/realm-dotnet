@@ -25,12 +25,17 @@ namespace SourceGeneratorTests
 {
     internal abstract class SourceGenerationTest
     {
-        private string _testClassesPath;
-        private string _errorClassesPath;
-        private string _supportClassesPath;
-        private string _generatedFilesPath;
+        private static readonly string _buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location)!;
+        private static readonly string _testFolder = _buildFolder.Substring(0, _buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
+        private static readonly string _assemblyToProcessFolder = Path.Combine(_testFolder, "SourceGeneratorAssemblyToProcess");
 
-        private string[] _supportClasses = new[] {
+        private static readonly string _testClassesPath = Path.Combine(_assemblyToProcessFolder, "TestClasses");
+        protected static readonly string _errorClassesPath = Path.Combine(_assemblyToProcessFolder, "ErrorClasses");
+        private static readonly string _supportClassesPath = Path.Combine(_assemblyToProcessFolder, "SupportClasses");
+        private static readonly string _generatedFilesPath = Path.Combine(_assemblyToProcessFolder, "Generated",
+            "Realm.SourceGenerator", "Realms.SourceGenerator.RealmGenerator");
+
+        private readonly string[] _supportClasses = {
             "RealmObj",
             "EmbeddedObj",
         };
@@ -38,14 +43,6 @@ namespace SourceGeneratorTests
         [OneTimeSetUp]
         public void Setup()
         {
-            var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location)!;
-            var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
-            var assemblyToProcessFolder = Path.Combine(testFolder, "SourceGeneratorAssemblyToProcess");
-            _testClassesPath = Path.Combine(assemblyToProcessFolder, "TestClasses");
-            _errorClassesPath = Path.Combine(assemblyToProcessFolder, "ErrorClasses");
-            _supportClassesPath = Path.Combine(assemblyToProcessFolder, "SupportClasses");
-            _generatedFilesPath = Path.Combine(assemblyToProcessFolder, "Generated",
-                "Realm.SourceGenerator", "Realms.SourceGenerator.RealmGenerator");
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
