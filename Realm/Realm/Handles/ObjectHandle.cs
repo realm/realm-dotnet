@@ -46,14 +46,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_list_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_list_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_set_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_set_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_dictionary_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_dictionary_value(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection_value(ObjectHandle handle, IntPtr propertyIndex, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -229,33 +223,25 @@ namespace Realms
                         throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
-            else if (value.Type == RealmValueType.List)
+            else if (value.Type.IsCollection())
             {
-                var listPtr = NativeMethods.set_list_value(this, propertyIndex, out var listNativeException);
-                listNativeException.ThrowIfNecessary();
+                var collectionPtr = NativeMethods.set_collection_value(this, propertyIndex, value.Type, out var collNativeException);
+                collNativeException.ThrowIfNecessary();
 
-                var handle = new ListHandle(Root!, listPtr);
-                CollectionHelpers.ListCreateAndPopulate(realm, handle, value);
-
-                return;
-            }
-            else if (value.Type == RealmValueType.Set)
-            {
-                var setPtr = NativeMethods.set_set_value(this, propertyIndex, out var setNativeException);
-                setNativeException.ThrowIfNecessary();
-
-                var handle = new SetHandle(Root!, setPtr);
-                CollectionHelpers.SetCreateAndPopulate(realm, handle, value);
-
-                return;
-            }
-            else if (value.Type == RealmValueType.Dictionary)
-            {
-                var dictPtr = NativeMethods.set_dictionary_value(this, propertyIndex, out var dictNativeException);
-                dictNativeException.ThrowIfNecessary();
-
-                var handle = new DictionaryHandle(Root!, dictPtr);
-                CollectionHelpers.DictionaryCreatePopulate(realm, handle, value);
+                switch (value.Type)
+                {
+                    case RealmValueType.List:
+                        CollectionHelpers.ListCreateAndPopulate(realm, new ListHandle(Root!, collectionPtr), value);
+                        break;
+                    case RealmValueType.Set:
+                        CollectionHelpers.SetCreateAndPopulate(realm, new SetHandle(Root!, collectionPtr), value);
+                        break;
+                    case RealmValueType.Dictionary:
+                        CollectionHelpers.DictionaryCreatePopulate(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                        break;
+                    default:
+                        break;
+                }
 
                 return;
             }

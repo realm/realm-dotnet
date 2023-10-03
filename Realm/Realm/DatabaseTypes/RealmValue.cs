@@ -191,7 +191,7 @@ namespace Realms
         /// <param name="value"> The input list to copy. </param>
         /// <returns> A new RealmValue representing the input list. </returns>
         /// <remarks> Once created, this RealmValue will just wrap the input collection.
-        /// When the object containing this RealmValue gets managed, then this value will be a Realm list.</remarks>
+        /// After the object containing this RealmValue gets managed this value will be a Realm list.</remarks>
         public static RealmValue List(IList<RealmValue> value) => new(value);
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Realms
         /// <param name="value"> The input set to copy. </param>
         /// <returns> A new RealmValue representing the input set. </returns>
         /// <remarks> Once created, this RealmValue will just wrap the input collection.
-        /// When the object containing this RealmValue gets managed, then this value will be a Realm set.</remarks>
+        /// After the object containing this RealmValue gets managed this value will be a Realm set.</remarks>
         public static RealmValue Set(ISet<RealmValue> value) => new(value);
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace Realms
         /// <param name="value"> The input dictionary to copy. </param>
         /// <returns> A new RealmValue representing the input dictionary. </returns>
         /// <remarks> Once created, this RealmValue will just wrap the input collection.
-        /// When the object containing this RealmValue gets managed, then this value will be a Realm dictionary.</remarks>
+        /// After the object containing this RealmValue gets managed this value will be a Realm dictionary.</remarks>
         public static RealmValue Dictionary(IDictionary<string, RealmValue> value) => new(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
@@ -1534,7 +1534,7 @@ namespace Realms
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.List => AsList().SequenceEqual(other.AsList()),
                 RealmValueType.Set => AsSet().SetEquals(other.AsSet()),
-                RealmValueType.Dictionary => AsDictionary().SequenceEqual(other.AsDictionary()),
+                RealmValueType.Dictionary => AsDictionary().Count == other.AsDictionary().Count && !AsDictionary().Except(other.AsDictionary()).Any(),
                 RealmValueType.Null => true,
                 _ => false,
             };

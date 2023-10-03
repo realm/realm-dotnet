@@ -177,39 +177,27 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT List* object_set_list_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT void* object_set_collection_value(Object& object, size_t property_ndx, realm_value_type type, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
+        return handle_errors(ex, [&]()-> void* {
             verify_can_set(object);
 
             auto prop = get_property(object, property_ndx);
-            object.get_obj().set_collection(prop.column_key, CollectionType::List);
 
-            return new List(object.realm(), object.get_obj(), prop.column_key);
-        });
-    }
-
-    REALM_EXPORT object_store::Set* object_set_set_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            auto prop = get_property(object, property_ndx);
-            object.get_obj().set_collection(prop.column_key, CollectionType::Set);
-
-            return new object_store::Set(object.realm(), object.get_obj(), prop.column_key);
-        });
-    }
-
-    REALM_EXPORT object_store::Dictionary* object_set_dictionary_value(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            auto prop = get_property(object, property_ndx);
-            object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
-
-            return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+            switch (type)
+            {
+            case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                object.get_obj().set_collection(prop.column_key, CollectionType::List);
+                return new List(object.realm(), object.get_obj(), prop.column_key);
+            case realm::binding::realm_value_type::RLM_TYPE_SET:
+                object.get_obj().set_collection(prop.column_key, CollectionType::Set);
+                return new object_store::Set(object.realm(), object.get_obj(), prop.column_key);
+            case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
+                return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+            default:
+                REALM_TERMINATE("Invalid collection type");
+            }
         });
     }
 
