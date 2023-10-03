@@ -315,7 +315,7 @@ namespace Realms.Tests.Database
 
         [Test]
         public void Property_Primitive_Tests(
-            [ValueSource(nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
+            [ValueSource(typeof(TestHelpers), nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
             [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(BoolValues))] bool isNullable)
@@ -367,7 +367,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Property_PrimitiveCollection_Tests(
             [ValueSource(nameof(CollectionTypes))] PropertyType collectionType,
-            [ValueSource(nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
+            [ValueSource(typeof(TestHelpers), nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
             [ValueSource(nameof(BoolValues))] bool isNullable)
         {
             Property getProperty() => collectionType switch

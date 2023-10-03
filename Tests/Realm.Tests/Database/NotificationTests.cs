@@ -1581,7 +1581,7 @@ namespace Realms.Tests.Database
                 dict.Clear();
             });
 
-            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: false);
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
         }
 
         [Test]
@@ -1627,7 +1627,7 @@ namespace Realms.Tests.Database
                 dict.Clear();
             });
 
-            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: false);
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
         }
 
         private void VerifyNotifications(List<ChangeSet> notifications,
