@@ -27,6 +27,13 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     internal class RealmValueWithCollections : RealmInstanceTest
     {
+        public static Func<int, RealmValue>[] CollectionGenerators = new Func<int, RealmValue>[]
+        {
+            i => { return new List<RealmValue> { $"inner{i}", i }; },
+            i => { return new HashSet<RealmValue> { $"inner{i}", i }; },
+            i => { return new Dictionary<string, RealmValue> { { "s1", i }, { "s2", $"ah{i}" } }; },
+        };
+
         private RealmValueObject PersistAndFind(RealmValue rv)
         {
             _realm.Write(() =>
@@ -267,8 +274,8 @@ namespace Realms.Tests.Database
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
         }
 
-        [Test]
-        public void List_AddSetInsertMoveRemoveList_WorksAsIntended()
+        [TestCaseSource(nameof(CollectionGenerators))]
+        public void List_AddSetInsertMoveRemoveCollection_WorksAsIntended(Func<int, RealmValue> collectionGenerator)
         {
             var listVal = new List<RealmValue> { 1, "string", true };
 
@@ -277,35 +284,35 @@ namespace Realms.Tests.Database
                 return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
             });
 
-            var innerList1 = new List<RealmValue> { "inner", 23, false };
-
             // Indexer
+            var c1 = collectionGenerator(1);
+
             _realm.Write(() =>
             {
-                rvo.RealmValueProperty.AsList()[1] = innerList1;
-                listVal[1] = innerList1;
+                rvo.RealmValueProperty.AsList()[1] = c1;
+                listVal[1] = c1;
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
 
             // Insert
-            var innerList2 = new List<RealmValue> { "inner2", 23, false };
+            var c2 = collectionGenerator(2);
 
             _realm.Write(() =>
             {
-                rvo.RealmValueProperty.AsList().Insert(1, innerList2);
-                listVal.Insert(1, innerList2);
+                rvo.RealmValueProperty.AsList().Insert(1, c2);
+                listVal.Insert(1, c2);
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
 
             // Add
-            var innerList3 = new List<RealmValue> { "inner3", 23, false };
+            var c3 = collectionGenerator(3);
 
             _realm.Write(() =>
             {
-                rvo.RealmValueProperty.AsList().Add(innerList3);
-                listVal.Add(innerList3);
+                rvo.RealmValueProperty.AsList().Add(c3);
+                listVal.Add(c3);
             });
 
             Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
@@ -330,144 +337,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void List_AddSetInsertMoveRemoveSet_WorksAsIntended()
-        {
-            var listVal = new List<RealmValue> { 1, "string", true };
-
-            var rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
-            });
-
-            var innerSet1 = new HashSet<RealmValue> { "inner", 23, false };
-
-            // Indexer
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList()[1] = innerSet1;
-                listVal[1] = innerSet1;
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Insert
-            var innerSet2 = new HashSet<RealmValue> { "inner2", 23, false };
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Insert(1, innerSet2);
-                listVal.Insert(1, innerSet2);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Add
-            var innerSet3 = new HashSet<RealmValue> { "inner3", 23, false };
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Add(innerSet3);
-                listVal.Add(innerSet3);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Move
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Move(0, 1);
-                listVal.Move(0, 1);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Remove
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().RemoveAt(2);
-                listVal.RemoveAt(2);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-        }
-
-        [Test]
-        public void List_AddSetInsertMoveRemoveDictionary_WorksAsIntended()
-        {
-            var listVal = new List<RealmValue> { 1, "string", true };
-
-            var rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject { RealmValueProperty = listVal });
-            });
-
-            var innerDict1 = new Dictionary<string, RealmValue>
-            {
-                { "s1", 1 },
-                { "s2", "ah" },
-                { "s3", true },
-            };
-
-            // Indexer
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList()[1] = innerDict1;
-                listVal[1] = innerDict1;
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Insert
-            var innerDict2 = new Dictionary<string, RealmValue>
-            {
-                { "s1", 2 },
-                { "s2", "ah" },
-                { "s3", false },
-            };
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Insert(1, innerDict2);
-                listVal.Insert(1, innerDict2);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Add
-            var innerDict3 = new Dictionary<string, RealmValue>
-            {
-                { "s1", 3 },
-                { "s2", "ahs" },
-                { "s3", false },
-            };
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Add(innerDict3);
-                listVal.Add(innerDict3);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Move
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().Move(0, 1);
-                listVal.Move(0, 1);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-
-            // Remove
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsList().RemoveAt(2);
-                listVal.RemoveAt(2);
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsList(), Is.EqualTo(listVal));
-        }
-
         public void List_RemoveWithCollectionArgument_ReturnsFalse()
         {
             var innerList = new List<RealmValue> { "inner2", true, 2.0 };
@@ -988,6 +857,224 @@ namespace Realms.Tests.Database
             var retrievedDict = rv.AsDictionary();
 
             Assert.That(ReferenceEquals(originalDict, retrievedDict), Is.True);
+        }
+
+        [Test]
+        public void Dictionary_AfterCreation_CanBeAssigned([Values(true, false)] bool isManaged)
+        {
+            var stringVal = "Mario";
+            var rvo = new RealmValueObject { RealmValueProperty = stringVal };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            Assert.That(rvo.RealmValueProperty == stringVal);
+
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = dictVal;
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+
+            var newStringVal = "Luigi";
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = newStringVal;
+            });
+
+            Assert.That(rvo.RealmValueProperty == newStringVal);
+        }
+
+        [Test]
+        public void Dictionary_WhenManaged_CanBeModified()
+        {
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = dictVal });
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["s1"] = "Mario";
+                dictVal["s1"] = "Mario"; // To keep both list updated
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary().Remove("s2");
+                dictVal.Remove("s2");
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary().Add("s4", "newVal");
+                dictVal.Add("s4", "newVal");
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+        }
+
+        [TestCaseSource(nameof(CollectionGenerators))]
+        public void Dictionary_AddSetInsertMoveRemoveCollection_WorksAsIntended(Func<int, RealmValue> collectionGenerator)
+        {
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = dictVal });
+            });
+
+            // Indexer
+            var c1 = collectionGenerator(1);
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["s1"] = c1;
+                dictVal["s1"] = c1;
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+
+            // Add
+            var c3 = collectionGenerator(3);
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary().Add("s4", c3);
+                dictVal.Add("s4", c3);
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+
+            // Remove
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary().Remove("s4");
+                dictVal.Remove("s4");
+            });
+
+            Assert.That(rvo.RealmValueProperty.AsDictionary(), Is.EquivalentTo(dictVal));
+        }
+
+        [Test]
+        public void Dictionary_RemoveWithCollectionArgument_ReturnsFalse()
+        {
+            var innerList = new List<RealmValue> { "inner2", true, 2.0 };
+            var innerSet = new HashSet<RealmValue> { 1, "str", true };
+            var innerDict = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", innerList },
+                { "s2", innerSet },
+                { "s3", innerDict },
+            };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = dictVal });
+            });
+
+            _realm.Write(() =>
+            {
+                Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s1", innerList)), Is.False);
+                Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s2", innerSet)), Is.False);
+                Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s3", innerDict)), Is.False);
+            });
+        }
+
+        [Test]
+        public void Dictionary_WhenManaged_WorksWithDynamic()
+        {
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject());
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.DynamicApi.Set(nameof(RealmValueObject.RealmValueProperty), dictVal);
+            });
+
+            var rvp = rvo.DynamicApi.Get<RealmValue>(nameof(RealmValueObject.RealmValueProperty));
+
+            Assert.That(rvp.AsDictionary(), Is.EqualTo(dictVal));
+        }
+
+        [Test]
+        public void Dictionary_WhenManaged_WorksWithNotifications()
+        {
+            var dictVal = new Dictionary<string, RealmValue>
+            {
+                { "s1", 1 },
+                { "s2", "ah" },
+                { "s3", true },
+            };
+
+            var rvo = _realm.Write(() =>
+            {
+                return _realm.Add(new RealmValueObject { RealmValueProperty = dictVal });
+            });
+
+            var callbacks = new List<ChangeSet>();
+            using var token = rvo.RealmValueProperty.AsDictionary().SubscribeForNotifications((collection, changes) =>
+            {
+                if (changes != null)
+                {
+                    callbacks.Add(changes);
+                }
+            });
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["s2"] = "mario";
+            });
+
+            _realm.Refresh();
+
+            Assert.That(callbacks.Count, Is.EqualTo(1));
         }
 
         #endregion

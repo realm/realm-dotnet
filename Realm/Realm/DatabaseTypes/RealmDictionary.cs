@@ -175,6 +175,11 @@ namespace Realms
                 return false;
             }
 
+            if (realmValue.Type.IsCollection())
+            {
+                return false;
+            }
+
             return _dictionaryHandle.Remove(item.Key, realmValue);
         }
 
