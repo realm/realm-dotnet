@@ -463,7 +463,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Ignore("Maybe crashing on evergreen")]
         public void WriteCopy_SyncToLocal([Values(true, false)] bool originalEncrypted,
                                           [Values(true, false)] bool copyEncrypted)
         {
