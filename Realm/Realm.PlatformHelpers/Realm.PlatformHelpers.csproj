@@ -22,6 +22,7 @@
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
     <AndroidResgenNamespace>Realms.PlatformHelpers</AndroidResgenNamespace>
+    <!-- NETSDK1202 warns about deprecated workflows (i.e. net6.0-(mobile)) - we still target them to cover broader developer audience -->
     <NoWarn>NETSDK1202</NoWarn>
   </PropertyGroup>
 

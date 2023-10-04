@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Text.RegularExpressions;
 using Realms.SourceGenerator;
 using RealmGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmGenerator>;
 
@@ -24,47 +25,26 @@ namespace SourceGeneratorTests
     [TestFixture]
     internal class ComparisonTests : SourceGenerationTest
     {
-        [TestCase("AllTypesClass")]
-        [TestCase("ClassWithoutParameterlessConstructor")]
-        [TestCase("DifferentNamespaces", "NamespaceObj", "OtherNamespaceObj")]
-        [TestCase("NoNamespaceClass")]
-        [TestCase("PartialClass")]
-        [TestCase("AutomaticPropertiesClass")]
-        [TestCase("ConfusingNamespaceClass")]
-        [TestCase("InitializerNamespaceClass")]
-        [TestCase("NestedClass")]
-        [TestCase("NullableClass")]
-        [TestCase("PersonWithDog", "Person", "Dog")]
-        [TestCase("IndexedClass")]
-        public async Task ComparisonTest(string filename, params string[] classNames)
+        public record ComparisonTestInfo(string File, string[] ClassNames)
         {
-            await RunComparisonTest(filename, classNames);
+            public override string ToString() => File;
         }
 
-        public static object[][] ErrorTestCases = Directory.GetFiles(_errorClassesPath)
-            .Select(Path.GetFileNameWithoutExtension)
-            .Select(f =>
-            {
-                var classNames = Array.Empty<string>();
-                if (f == "UnsupportedBacklink")
-                {
-                    classNames = new[]
-                    {
-                        "UnsupportedBacklink", "BacklinkObj"
-                    };
-                }
+        private static readonly Regex _classNameRegex = new(@"class (?<ClassName>[^\s]*) :.*I(Realm|Embedded|Asymmetric)Object");
 
-                return new object[]
-                {
-                    f!, classNames
-                };
-            })
-            .ToArray();
+        public static ComparisonTestInfo[] SuccessTestCases => GetTestInfos(_testClassesPath);
+        public static ComparisonTestInfo[] ErrorTestCases => GetTestInfos(_errorClassesPath);
+
+        [TestCaseSource(nameof(SuccessTestCases))]
+        public async Task ComparisonTest(ComparisonTestInfo testCase)
+        {
+            await RunComparisonTest(testCase.File, testCase.ClassNames);
+        }
 
         [TestCaseSource(nameof(ErrorTestCases))]
-        public async Task ErrorComparisonTest(string filename, string[] classNames)
+        public async Task ErrorComparisonTest(ComparisonTestInfo testCase)
         {
-            await RunErrorTest(filename, classNames);
+            await RunErrorTest(testCase.File, testCase.ClassNames);
         }
 
         [Test]
@@ -88,5 +68,20 @@ namespace SourceGeneratorTests
 
             await test.RunAsync();
         }
+
+        private static ComparisonTestInfo[] GetTestInfos(string folder)
+            => Directory.GetFiles(folder)
+                .Select(f =>
+                {
+                    var filename = Path.GetFileNameWithoutExtension(f);
+                    var content = File.ReadAllText(f);
+                    var classNames = _classNameRegex.Matches(content)
+                        .Select(m => m.Groups["ClassName"].Value)
+                        .Distinct()
+                        .ToArray();
+
+                    return new ComparisonTestInfo(filename, classNames);
+                })
+                .ToArray();
     }
 }

@@ -29,7 +29,7 @@ namespace SourceGeneratorTests
         private static readonly string _testFolder = _buildFolder.Substring(0, _buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
         private static readonly string _assemblyToProcessFolder = Path.Combine(_testFolder, "SourceGeneratorAssemblyToProcess");
 
-        private static readonly string _testClassesPath = Path.Combine(_assemblyToProcessFolder, "TestClasses");
+        protected static readonly string _testClassesPath = Path.Combine(_assemblyToProcessFolder, "TestClasses");
         protected static readonly string _errorClassesPath = Path.Combine(_assemblyToProcessFolder, "ErrorClasses");
         private static readonly string _supportClassesPath = Path.Combine(_assemblyToProcessFolder, "SupportClasses");
         private static readonly string _generatedFilesPath = Path.Combine(_assemblyToProcessFolder, "Generated",
