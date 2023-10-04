@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,6 +28,9 @@ namespace Realms.SourceGenerator
 {
     internal class Parser
     {
+        private static readonly Regex _equalsNullRegex = new(@"\s*=\s*null!?");
+        private static readonly Regex _nullRegex = new(@"^null!?$");
+
         private readonly GeneratorExecutionContext _context;
         private readonly GeneratorConfig _generatorConfig;
 
@@ -111,6 +115,8 @@ namespace Realms.SourceGenerator
                     {
                         classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
+
+                    ValidateConstructorBody(classInfo, classDeclarations);
 
                     result.ClassInfo.Add(classInfo);
                 }
@@ -267,6 +273,11 @@ namespace Realms.SourceGenerator
                     {
                         classInfo.Diagnostics.Add(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
+                }
+
+                if (info.TypeInfo.IsCollection && !string.IsNullOrEmpty(info.Initializer) && !_equalsNullRegex.IsMatch(info.Initializer!))
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.InvalidCollectionInitializer(classInfo.Name, info.Name, propSyntax.GetLocation()));
                 }
 
                 yield return info;
@@ -461,10 +472,43 @@ namespace Realms.SourceGenerator
             return propInfo;
         }
 
-        private static bool HasParameterlessConstructor(List<ClassDeclarationSyntax> classDeclarations)
+        private static bool HasParameterlessConstructor(IEnumerable<ClassDeclarationSyntax> classDeclarations)
         {
             var constructors = classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>()).ToArray();
             return !constructors.Any() || constructors.Any(c => !c.ParameterList.Parameters.Any());
+        }
+
+        private static void ValidateConstructorBody(ClassInfo classInfo, IEnumerable<ClassDeclarationSyntax> classDeclarations)
+        {
+            // This finds all assignment expressions in the ctor body
+            var assignments = classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>())
+                .Where(c => c.Body != null)
+                .SelectMany(c => c.Body!.Statements)
+                .OfType<ExpressionStatementSyntax>()
+                .Select(e => e.Expression)
+                .OfType<AssignmentExpressionSyntax>();
+
+            foreach (var assignment in assignments)
+            {
+                if (assignment.Left is not IdentifierNameSyntax leftIdentifier)
+                {
+                    continue;
+                }
+
+                // If the assignment is to `null`, we ignore it
+                if (_nullRegex.IsMatch(assignment.Right.ToString()))
+                {
+                    continue;
+                }
+
+                // If the left operand of the assignment is a collection property, we should report an error as it's not valid to
+                // initialize a collection to something other than null.
+                var initializedProp = classInfo.Properties.FirstOrDefault(p => p.TypeInfo.IsCollection && p.Name == leftIdentifier.Identifier.ValueText);
+                if (initializedProp != null)
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.InvalidCollectionInitializerInCtor(classInfo.Name, initializedProp.Name, assignment.GetLocation()));
+                }
+            }
         }
 
         private static IList<EnclosingClassInfo> GetEnclosingClassList(ClassInfo classInfo, ITypeSymbol classSymbol, ClassDeclarationSyntax classDeclarationSyntax)
@@ -480,8 +524,8 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.Name, ts.Name, cs.GetIdentifierLocation()));
                 }
 
-                var enclosingClassinfo = new EnclosingClassInfo(ts.Name, ts.DeclaredAccessibility);
-                enclosingClassList.Add(enclosingClassinfo);
+                var enclosingClassInfo = new EnclosingClassInfo(ts.Name, ts.DeclaredAccessibility);
+                enclosingClassList.Add(enclosingClassInfo);
 
                 currentSymbol = ts;
                 currentClassDeclaration = cs;

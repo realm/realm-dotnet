@@ -18,9 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Realms;
 
 namespace SourceGeneratorPlayground
@@ -28,15 +25,37 @@ namespace SourceGeneratorPlayground
     public partial class CollectionErrors : IRealmObject
     {
         public IDictionary<int, string> UnsupportetDictionaryKeyProp { get; }
-        
+
         public ISet<EmbeddedObj> SetOfEmbeddedObj { get; }
-        
+
         public IList<int> CollectionWithSetter { get; set; }
 
         public IList<RealmInteger<int>> CollectionOfRealmInteger { get; }
 
         public IList<DateTime> CollectionOfUnsupportedType { get; }
-        
+
         public List<int> ListInsteadOfIList { get; }
+
+        public IList<int> CollectionWithInitializer { get; } = new List<int>
+        {
+            1,
+            2,
+            3
+        };
+
+        public IList<string> CollectionWithCtorInitializer { get; }
+
+        // This should not generate error as it's initialized to null
+        public IList<string> ValidCollectionInitializer { get; } = null!;
+
+        public IList<string> ValidCollectionInitializerInCtor { get; }
+
+        public CollectionErrors()
+        {
+            CollectionWithCtorInitializer = new List<string>();
+
+            // This should not generate error as it's initialized to null
+            ValidCollectionInitializerInCtor = null!;
+        }
     }
 }
