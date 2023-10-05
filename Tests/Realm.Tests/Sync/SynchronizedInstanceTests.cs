@@ -689,7 +689,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        [Test, Ignore("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
         public void CancelAsyncOperationsOnNonFatalErrors_WhenTrue_ShouldCancelAsyncOperationsOnTimeout()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -708,7 +708,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        [Test, Ignore("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
         public void CancelAsyncOperationsOnNonFatalErrors_WhenFalse_ShouldNotCancelAsyncOperationsOnTimeout()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

@@ -122,7 +122,7 @@ namespace Realms.Tests.Sync
             {
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var (config, _) = await GetConfigForApp(appType);
-                config.ClientResetHandler = new ManualRecoveryHandler((e) =>
+                config.ClientResetHandler = new ManualRecoveryHandler(e =>
                 {
                     errorTcs.TrySetResult(e);
                 });
@@ -151,17 +151,7 @@ namespace Realms.Tests.Sync
 
                 var (config, _) = await GetConfigForApp(appType);
 
-                void manualCb(ClientResetException err)
-                {
-                    errorTcs.TrySetResult(err);
-                }
-
-                void beforeCb(Realm _)
-                {
-                    throw new Exception("This fails!");
-                }
-
-                config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
+                config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: BeforeCb, manualCb: ManualCb);
 
                 using var realm = await GetRealmAsync(config, waitForSync: true, timeout: 20_000);
 
@@ -170,6 +160,16 @@ namespace Realms.Tests.Sync
                 var clientEx = await errorTcs.Task.Timeout(20_000, "Expected client reset");
 
                 await TryInitiateClientReset(realm, clientEx, ErrorCode.AutoClientResetFailed);
+
+                void ManualCb(ClientResetException err)
+                {
+                    errorTcs.TrySetResult(err);
+                }
+
+                void BeforeCb(Realm _)
+                {
+                    throw new Exception("This fails!");
+                }
             });
         }
 
@@ -754,25 +754,25 @@ namespace Realms.Tests.Sync
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void SessionIntegrationTest_ProgressObservable(ProgressMode mode)
         {
-            const int ObjectSize = 1_000_000;
-            const int ObjectsToRecord = 2;
+            const int objectSize = 1_000_000;
+            const int objectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
                 using var realm = GetRealm(config);
 
-                var completionTCS = new TaskCompletionSource<ulong>();
+                var completionTcs = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;
 
                 var session = GetSession(realm);
 
                 var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
 
-                for (var i = 0; i < ObjectsToRecord; i++)
+                for (var i = 0; i < objectsToRecord; i++)
                 {
                     realm.Write(() =>
                     {
-                        realm.Add(new HugeSyncObject(ObjectSize));
+                        realm.Add(new HugeSyncObject(objectSize));
                     });
                 }
 
@@ -790,42 +790,42 @@ namespace Realms.Tests.Sync
 
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
-                            if (p.TransferableBytes <= ObjectSize ||
-                                p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
+                            if (p.TransferableBytes <= objectSize ||
+                                p.TransferableBytes >= (objectsToRecord + 2) * objectSize)
                             {
-                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
+                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({objectSize}, {(objectsToRecord + 1) * objectSize}) range.");
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        completionTCS.TrySetException(e);
+                        completionTcs.TrySetException(e);
                     }
 
                     if (p.TransferredBytes >= p.TransferableBytes)
                     {
-                        completionTCS.TrySetResult(p.TransferredBytes);
+                        completionTcs.TrySetResult(p.TransferredBytes);
                     }
                 });
 
                 realm.Write(() =>
                 {
-                    realm.Add(new HugeSyncObject(ObjectSize));
+                    realm.Add(new HugeSyncObject(objectSize));
                 });
 
-                var totalTransferred = await completionTCS.Task;
+                var totalTransferred = await completionTcs.Task;
 
                 if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                 {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(objectSize));
 
                     // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
                     // so in the fixed mode, we should not get updates for it.
-                    Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 5) * ObjectSize));
+                    Assert.That(totalTransferred, Is.LessThan((objectsToRecord + 5) * objectSize));
                 }
                 else
                 {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((objectsToRecord + 1) * objectSize));
                 }
 
                 Assert.That(callbacksInvoked, Is.GreaterThan(1));
@@ -879,7 +879,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
                 var stateChanged = 0;
-                var completionTCS = new TaskCompletionSource();
+                var completionTcs = new TaskCompletionSource();
 
                 var session = realm.SyncSession;
                 session.Stop();
@@ -889,7 +889,7 @@ namespace Realms.Tests.Sync
                 session.Start();
                 await Task.Delay(1000);
                 session.Stop();
-                await completionTCS.Task.Timeout(10_000);
+                await completionTcs.Task.Timeout(10_000);
                 Assert.That(stateChanged, Is.EqualTo(3));
                 Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 session.PropertyChanged -= NotificationChanged;
@@ -903,23 +903,28 @@ namespace Realms.Tests.Sync
 
                         stateChanged++;
 
-                        if (stateChanged == 1)
+                        switch (stateChanged)
                         {
-                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                        }
-                        else if (stateChanged == 2)
-                        {
-                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                        }
-                        else if (stateChanged == 3)
-                        {
-                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                            completionTCS.TrySetResult();
+                            // Sometimes the connection will be established too quickly (particularly when testing against
+                            // a local BaaS).
+                            case 1 when session.ConnectionState == ConnectionState.Connected:
+                                stateChanged++;
+                                break;
+                            case 1:
+                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
+                                break;
+                            case 2:
+                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connected));
+                                break;
+                            case 3:
+                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+                                completionTcs.TrySetResult();
+                                break;
                         }
                     }
                     catch (Exception ex)
                     {
-                        completionTCS.TrySetException(ex);
+                        completionTcs.TrySetException(ex);
                     }
                 }
             });
@@ -970,8 +975,8 @@ namespace Realms.Tests.Sync
                 var session = realm.SyncSession;
                 var subscriberATriggered = false;
                 var subscriberBTriggered = false;
-                var completionTCSA = new TaskCompletionSource();
-                var completionTCSB = new TaskCompletionSource();
+                var completionTcsA = new TaskCompletionSource();
+                var completionTcsB = new TaskCompletionSource();
 
                 // wait for connecting and connected to be done
                 await Task.Delay(500);
@@ -981,8 +986,8 @@ namespace Realms.Tests.Sync
 
                 session.Stop();
 
-                await completionTCSA.Task;
-                await completionTCSB.Task;
+                await completionTcsA.Task;
+                await completionTcsB.Task;
                 Assert.That(subscriberATriggered, Is.True);
                 Assert.That(subscriberBTriggered, Is.True);
 
@@ -993,14 +998,14 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(subscriberATriggered, Is.False);
                     subscriberATriggered = true;
-                    completionTCSA.TrySetResult();
+                    completionTcsA.TrySetResult();
                 }
 
                 void NotificationChangedB(object? sender, PropertyChangedEventArgs? e)
                 {
                     Assert.That(subscriberBTriggered, Is.False);
                     subscriberBTriggered = true;
-                    completionTCSB.TrySetResult();
+                    completionTcsB.TrySetResult();
                 }
             });
         }
@@ -1057,15 +1062,10 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                WeakReference weakSessionRef = null!;
-
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
 
-                weakSessionRef = new Func<WeakReference>(() =>
-                {
-                    return new WeakReference(realm.SyncSession);
-                })();
+                var weakSessionRef = new Func<WeakReference>(() => new WeakReference(realm.SyncSession))();
 
                 Assert.That(weakSessionRef.IsAlive, Is.True);
 
@@ -1113,7 +1113,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ConnectionState_Propageted_Within_Multiple_Sessions()
+        public void Session_ConnectionState_Propagated_Within_Multiple_Sessions()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1121,7 +1121,7 @@ namespace Realms.Tests.Sync
                 using var realmA = GetRealm(config);
                 using var realmB = GetRealm(config);
                 var stateChanged = 0;
-                var completionTCS = new TaskCompletionSource();
+                var completionTcs = new TaskCompletionSource();
 
                 var sessionA = realmA.SyncSession;
                 var sessionB = realmB.SyncSession;
@@ -1131,7 +1131,7 @@ namespace Realms.Tests.Sync
                 sessionA.Start();
                 await Task.Delay(1000);
                 sessionA.Stop();
-                await completionTCS.Task;
+                await completionTcs.Task;
 
                 Assert.That(stateChanged, Is.EqualTo(3));
                 Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
@@ -1148,26 +1148,31 @@ namespace Realms.Tests.Sync
 
                         stateChanged++;
 
-                        if (stateChanged == 1)
+                        switch (stateChanged)
                         {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                        }
-                        else if (stateChanged == 2)
-                        {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                        }
-                        else if (stateChanged == 3)
-                        {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                            completionTCS.TrySetResult();
+                            // Sometimes the connection will be established too quickly (particularly when testing against
+                            // a local BaaS).
+                            case 1 when sessionA.ConnectionState == ConnectionState.Connected || sessionB.ConnectionState == ConnectionState.Connected:
+                                stateChanged++;
+                                break;
+                            case 1:
+                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
+                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
+                                break;
+                            case 2:
+                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connected));
+                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connected));
+                                break;
+                            case 3:
+                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+                                completionTcs.TrySetResult();
+                                break;
                         }
                     }
                     catch (Exception ex)
                     {
-                        completionTCS.TrySetException(ex);
+                        completionTcs.TrySetException(ex);
                     }
                 }
             });
@@ -1236,7 +1241,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_GetHashCode_WhenDifferentRealm_ReturnsDiffernetValue()
+        public void Session_GetHashCode_WhenDifferentRealm_ReturnsDifferentValue()
         {
             var realm1 = GetRealm(GetFakeConfig());
             var first = GetSession(realm1);
@@ -1264,7 +1269,7 @@ namespace Realms.Tests.Sync
                 var tcs = new TaskCompletionSource<object>();
                 var config = await GetIntegrationConfigAsync("read-only");
 
-                config.OnSessionError = (session, error) =>
+                config.OnSessionError = (_, error) =>
                 {
                     Assert.That(error.ErrorCode == ErrorCode.PermissionDenied);
                     Assert.That(error.InnerException == null);

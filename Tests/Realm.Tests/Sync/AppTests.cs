@@ -349,12 +349,13 @@ namespace Realms.Tests.Sync
         [Test]
         public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var handler = new TestHttpClientHandler();
 
                 var app = CreateApp(new AppConfiguration("abc")
                 {
+                    BaseUri = SyncTestHelpers.BaasUri!,
                     HttpClientHandler = handler
                 });
 
