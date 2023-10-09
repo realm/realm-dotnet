@@ -186,6 +186,7 @@ internal partial class SyncSocketProvider
             {
                 builder.Append('\t');
             }
+
             builder.AppendFormat("{0}: {1}", ex.GetType().FullName, ex.Message);
             builder.AppendLine();
             if (Logger.LogLevel >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
@@ -194,8 +195,10 @@ internal partial class SyncSocketProvider
                 {
                     builder.Append('\t');
                 }
+
                 builder.AppendLine(ex.StackTrace);
             }
+
             if (ex is AggregateException aggregateException)
             {
                 foreach (var inner in aggregateException.InnerExceptions)
@@ -207,7 +210,6 @@ internal partial class SyncSocketProvider
             {
                 FormatExceptionForLogging(inner, builder, nesting + 1);
             }
-
         }
     }
 
