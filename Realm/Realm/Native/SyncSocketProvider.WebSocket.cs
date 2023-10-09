@@ -66,14 +66,9 @@ internal partial class SyncSocketProvider
             }
             catch (Exception e)
             {
-                if (e.InnerException is not null)
-                {
-                    Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection: {e.InnerException.Message}");
-                    if (!string.IsNullOrEmpty(e.InnerException.StackTrace))
-                    {
-                        Logger.LogDefault(LogLevel.Trace, e.InnerException.StackTrace);
-                    }
-                }
+                var builder = new StringBuilder();
+                FormatExceptionForLogging(e, builder);
+                Logger.LogDefault(LogLevel.Error, "Error establishing WebSocket connection " + builder.ToString());
 
                 await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cancellationToken));
                 return;
@@ -108,11 +103,9 @@ internal partial class SyncSocketProvider
                 }
                 catch (Exception e)
                 {
-                    Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket: {e.Message}");
-                    if (!string.IsNullOrEmpty(e.StackTrace))
-                    {
-                        Logger.LogDefault(LogLevel.Trace, e.StackTrace);
-                    }
+                    var builder = new StringBuilder();
+                    FormatExceptionForLogging(e, builder);
+                    Logger.LogDefault(LogLevel.Error, "Error reading from WebSocket " + builder.ToString());
 
                     await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cancellationToken));
                     return;
@@ -137,11 +130,9 @@ internal partial class SyncSocketProvider
             }
             catch (Exception e)
             {
-                Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {e.GetType().FullName}: {e.Message}");
-                if (!string.IsNullOrEmpty(e.StackTrace))
-                {
-                    Logger.LogDefault(LogLevel.Trace, e.StackTrace);
-                }
+                var builder = new StringBuilder();
+                FormatExceptionForLogging(e, builder);
+                Logger.LogDefault(LogLevel.Error, "Error writing to WebSocket " + builder.ToString());
 
                 // in case of errors notify the websocket observer and just dispose the callback
                 await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cancellationToken));
@@ -187,6 +178,32 @@ internal partial class SyncSocketProvider
             catch(ChannelClosedException)
             {
             }
+        }
+
+        private static void FormatExceptionForLogging(Exception ex, StringBuilder builder, int nesting = 0)
+        {
+            for (int i = 0; i <= nesting; i++)
+            {
+                builder.Append('\t');
+            }
+            builder.AppendFormat("{0}: {1}", ex.GetType().FullName, ex.Message);
+            builder.AppendLine();
+            if (Logger.LogLevel >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
+            {
+                builder.AppendLine(ex.StackTrace);
+            }
+            if (ex is AggregateException aggregateException)
+            {
+                foreach (var inner in aggregateException.InnerExceptions)
+                {
+                    FormatExceptionForLogging(inner, builder, nesting + 1);
+                }
+            }
+            else if (ex.InnerException is Exception inner)
+            {
+                FormatExceptionForLogging(inner, builder, nesting + 1);
+            }
+
         }
     }
 
