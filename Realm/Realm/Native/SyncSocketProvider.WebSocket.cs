@@ -190,6 +190,10 @@ internal partial class SyncSocketProvider
             builder.AppendLine();
             if (Logger.LogLevel >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
             {
+                for (int i = 0; i <= nesting; i++)
+                {
+                    builder.Append('\t');
+                }
                 builder.AppendLine(ex.StackTrace);
             }
             if (ex is AggregateException aggregateException)
