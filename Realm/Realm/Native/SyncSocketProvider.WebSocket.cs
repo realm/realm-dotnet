@@ -182,21 +182,16 @@ internal partial class SyncSocketProvider
 
         private static void FormatExceptionForLogging(Exception ex, StringBuilder builder, int nesting = 0)
         {
-            for (int i = 0; i <= nesting; i++)
-            {
-                builder.Append('\t');
-            }
+            var indentation = new string('\t', nesting);
+            builder.Append(indentation);
 
             builder.AppendFormat("{0}: {1}", ex.GetType().FullName, ex.Message);
             builder.AppendLine();
             if (Logger.LogLevel >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
             {
-                for (int i = 0; i <= nesting; i++)
-                {
-                    builder.Append('\t');
-                }
-
-                builder.AppendLine(ex.StackTrace);
+                builder.Append(indentation);
+                var indentedTrace = ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indentation);
+                builder.AppendLine(indentedTrace);
             }
 
             if (ex is AggregateException aggregateException)
