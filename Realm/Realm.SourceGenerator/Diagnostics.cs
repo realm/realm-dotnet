@@ -51,9 +51,21 @@ namespace Realms.SourceGenerator
             RealmObjectWithoutAutomaticProperty = 25,
             ParentOfNestedClassIsNotPartial = 27,
             IndexedPrimaryKey = 28,
+            InvalidCollectionInitializer = 29,
+            InvalidCollectionInitializerInCtor = 30,
+            InvalidGeneratorConfiguration = 1000,
         }
 
         #region Errors
+
+        public static Diagnostic InvalidConfiguration(string field, string description)
+        {
+            return CreateDiagnosticError(
+                Id.InvalidGeneratorConfiguration,
+                "Invalid source generator configuration",
+                $"The generator configuration for {field} is invalid: {description}",
+                Location.None);
+        }
 
         public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
@@ -306,6 +318,26 @@ namespace Realms.SourceGenerator
                 "Containing class of nested Realm class is not declared as partial",
                 $"Class {parentClassName} contains nested Realm class {className} and needs to be declared as partial.",
                 location);
+        }
+
+        public static Diagnostic InvalidCollectionInitializer(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.InvalidCollectionInitializer,
+                "Invalid collection initializer",
+                $"{className}.{propertyName} is a collection with an initializer that is not supported. Realm collections are always initialized internally and initializing them to a non-null value is not supported.",
+                location,
+                description: $"Either remove the initializer or replace it with '= null!' to silence the 'Non-nullable field '{propertyName}' is uninitialized' error.");
+        }
+
+        public static Diagnostic InvalidCollectionInitializerInCtor(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.InvalidCollectionInitializerInCtor,
+                "Invalid collection initializer in constructor",
+                $"{className}.{propertyName} is a collection that is initialized in a constructor. Realm collections are always initialized internally and initializing them to a non-null value is not supported.",
+                location,
+                description: $"Either remove the initializer or replace it with '= null!' to silence the 'Non-nullable field '{propertyName}' is uninitialized' error.");
         }
 
         #endregion

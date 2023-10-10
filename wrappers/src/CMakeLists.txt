@@ -19,6 +19,7 @@ set(SOURCES
     sync_user_cs.cpp
     transport_cs.cpp
     guid_representation_migration.cpp
+    websocket_cs.cpp
 )
 
 set(HEADERS
@@ -34,6 +35,7 @@ set(HEADERS
     sync_session_cs.hpp
     transport_cs.hpp
     notifications_cs.hpp
+    websocket_cs.hpp
 )
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")

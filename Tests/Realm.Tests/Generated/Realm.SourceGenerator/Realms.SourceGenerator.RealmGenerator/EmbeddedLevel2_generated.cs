@@ -49,7 +49,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedLevel2Accessor Accessor => _accessor ??= new EmbeddedLevel2UnmanagedAccessor(typeof(EmbeddedLevel2));
+        private IEmbeddedLevel2Accessor Accessor => _accessor ??= new EmbeddedLevel2UnmanagedAccessor(typeof(EmbeddedLevel2));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal ICoordinatesEmbeddedObjectAccessor Accessor => _accessor ??= new CoordinatesEmbeddedObjectUnmanagedAccessor(typeof(CoordinatesEmbeddedObject));
+            private ICoordinatesEmbeddedObjectAccessor Accessor => _accessor ??= new CoordinatesEmbeddedObjectUnmanagedAccessor(typeof(CoordinatesEmbeddedObject));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]

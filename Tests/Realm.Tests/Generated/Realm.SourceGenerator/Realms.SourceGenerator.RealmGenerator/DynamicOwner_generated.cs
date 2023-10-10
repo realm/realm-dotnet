@@ -51,7 +51,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDynamicOwnerAccessor Accessor => _accessor ??= new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner));
+        private IDynamicOwnerAccessor Accessor => _accessor ??= new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

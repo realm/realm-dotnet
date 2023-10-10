@@ -135,17 +135,18 @@ namespace Baas
         private string _groupId = null!;
         private string? _refreshToken;
 
-        private string _shortDifferentiator
+        private string _shortSuffix
         {
             get
             {
-                if (Differentiator.Length < 8)
+                var completeSuffix = $"{Differentiator}-{_clusterName}";
+                if (completeSuffix.Length < 8)
                 {
-                    return Differentiator;
+                    return completeSuffix;
                 }
 
                 using var sha = SHA256.Create();
-                var inputBytes = Encoding.ASCII.GetBytes(Differentiator);
+                var inputBytes = Encoding.ASCII.GetBytes(completeSuffix);
                 var hashBytes = sha.ComputeHash(inputBytes);
 
                 var sb = new StringBuilder();
@@ -158,7 +159,7 @@ namespace Baas
             }
         }
 
-        private string _appSuffix => $"-{_shortDifferentiator}-{_clusterName}";
+        private string _appSuffix => $"-{_shortSuffix}";
 
         public string Differentiator { get; }
 
@@ -536,11 +537,6 @@ namespace Baas
                 .Select(doc =>
                 {
                     var name = doc["name"].AsString;
-
-                    if (!name.EndsWith(_appSuffix))
-                    {
-                        return null;
-                    }
 
                     var appName = name[..^_appSuffix.Length];
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);

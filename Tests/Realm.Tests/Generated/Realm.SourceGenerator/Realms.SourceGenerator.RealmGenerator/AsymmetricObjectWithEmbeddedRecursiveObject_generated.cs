@@ -51,7 +51,7 @@ namespace Realms.Tests.Sync
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor Accessor => _accessor ??= new AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedRecursiveObject));
+        private IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor Accessor => _accessor ??= new AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedRecursiveObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

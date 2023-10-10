@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,11 +29,6 @@ using System.Reflection;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
-#if TEST_WEAVER
-using TestRealmObject = Realms.RealmObject;
-#else
-using TestRealmObject = Realms.IRealmObject;
-#endif
 
 namespace Realms.Tests.Database
 {
@@ -313,7 +313,7 @@ namespace Realms.Tests.Database
             TestStableIteration(
                 i => container.Items.Add(new IntPropertyObject { Int = i }),
                 () => frozenList = container.Items.Freeze(),
-                item =>
+                _ =>
                 {
                     // Just remove last from container since item from
                     // frozen version is not equivalent.
@@ -376,7 +376,8 @@ namespace Realms.Tests.Database
             Assert.That(collection.IsValid);
 
             var counter = 0;
-            foreach (var value in collection)
+
+            foreach (var dummy in collection)
             {
                 counter++;
             }
@@ -388,7 +389,8 @@ namespace Realms.Tests.Database
             Assert.That(collection.IsValid, Is.False);
 
             counter = 0;
-            foreach (var value in collection)
+
+            foreach (var dummy in collection)
             {
                 counter++;
             }
@@ -409,7 +411,7 @@ namespace Realms.Tests.Database
             var oldDogs = joe.ListOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
-            var token = oldDogs.SubscribeForNotifications((sender, changes) =>
+            using var token = oldDogs.SubscribeForNotifications((_, changes) =>
             {
                 if (changes != null)
                 {
@@ -723,7 +725,7 @@ namespace Realms.Tests.Database
             var oldDogs = joe.SetOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
-            var token = oldDogs.SubscribeForNotifications((sender, changes) =>
+            using var token = oldDogs.SubscribeForNotifications((_, changes) =>
             {
                 if (changes != null)
                 {
@@ -955,7 +957,7 @@ namespace Realms.Tests.Database
             });
 
             var notifications = new List<ChangeSet>();
-            var token = container.Items.SubscribeForNotifications((sender, changes) =>
+            using var token = container.Items.SubscribeForNotifications((_, changes) =>
             {
                 if (changes != null)
                 {
@@ -963,17 +965,14 @@ namespace Realms.Tests.Database
                 }
             });
 
-            using (token)
+            for (var i = 0; i < 5; i++)
             {
-                for (var i = 0; i < 5; i++)
-                {
-                    _realm.Write(() => container.Items[i] = new IntPropertyObject { Int = i + 5 });
-                    _realm.Refresh();
+                _realm.Write(() => container.Items[i] = new IntPropertyObject { Int = i + 5 });
+                _realm.Refresh();
 
-                    Assert.That(notifications.Count, Is.EqualTo(i + 1));
-                    Assert.That(notifications[i].ModifiedIndices, Is.EquivalentTo(new[] { i }));
-                    Assert.That(container.Items[i].Int, Is.EqualTo(i + 5));
-                }
+                Assert.That(notifications.Count, Is.EqualTo(i + 1));
+                Assert.That(notifications[i].ModifiedIndices, Is.EquivalentTo(new[] { i }));
+                Assert.That(container.Items[i].Int, Is.EqualTo(i + 5));
             }
         }
 
@@ -994,12 +993,12 @@ namespace Realms.Tests.Database
             Assert.That(query.ToArray().All(i => i.Int >= 5));
         }
 
-        public struct StringQueryNumericData
+        public readonly struct StringQueryNumericData
         {
-            public string PropertyName;
-            public RealmValue ValueToAddToRealm;
-            public RealmValue ValueToQueryFor;
-            public bool ExpectedMatch;
+            public readonly string PropertyName;
+            public readonly bool ExpectedMatch;
+            public readonly RealmValue ValueToAddToRealm;
+            public readonly RealmValue ValueToQueryFor;
 
             public StringQueryNumericData(string propertyName, RealmValue valueToAddToDB, RealmValue valueToQueryFor, bool expectedMatch)
             {
@@ -1012,11 +1011,11 @@ namespace Realms.Tests.Database
             public override string ToString() => $"{PropertyName}: '{ValueToAddToRealm}' should{(ExpectedMatch ? string.Empty : " NOT")} match '{ValueToQueryFor}': {ExpectedMatch}";
         }
 
-        public struct StringQueryTestData
+        public readonly struct StringQueryTestData
         {
-            public string PropertyName;
-            public RealmValue MatchingValue;
-            public RealmValue NonMatchingValue;
+            public readonly string PropertyName;
+            public readonly RealmValue MatchingValue;
+            public readonly RealmValue NonMatchingValue;
 
             public StringQueryTestData(string propertyName, RealmValue matchingValue, RealmValue nonMatchingValue)
             {
@@ -1234,8 +1233,7 @@ namespace Realms.Tests.Database
                 _realm.Add(marioOwner);
                 _realm.Add(luigiOwner);
             });
-            IList<Dog> list = new List<Dog>();
-            list.Add(dog1);
+
             var matches = queryList ? _realm.All<Owner>().Filter("ANY ListOfDogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
             Assert.AreEqual(marioOwner, matches.Single());
         }
@@ -1562,13 +1560,10 @@ namespace Realms.Tests.Database
             {
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    var owner = _realm.Write(() =>
+                    var owner = _realm.Write(() => _realm.Add(new Owner
                     {
-                        return _realm.Add(new Owner
-                        {
-                            ListOfDogs = { new Dog { Name = "Lasse" } }
-                        });
-                    });
+                        ListOfDogs = { new Dog { Name = "Lasse" } }
+                    }));
 
                     var frozenList = owner.ListOfDogs.Freeze();
                     var frozenRealm = frozenList.AsRealmCollection().Realm;
@@ -1618,7 +1613,7 @@ namespace Realms.Tests.Database
                     });
 
                     var frozenQuery = _realm.All<Dog>().Freeze();
-                    return new[] { frozenQuery };
+                    return new object[] { frozenQuery };
                 });
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
@@ -1791,15 +1786,9 @@ namespace Realms.Tests.Database
             var item = new IntPropertyObject { Int = 5 };
             var embeddedItem = new EmbeddedIntPropertyObject { Int = 10 };
 
-            var obj1 = _realm.Write(() =>
-            {
-                return _realm.Add(new CollectionsObject());
-            });
+            var obj1 = _realm.Write(() => _realm.Add(new CollectionsObject()));
 
-            var obj2 = realm2.Write(() =>
-            {
-                return realm2.Add(new CollectionsObject());
-            });
+            var obj2 = realm2.Write(() => realm2.Add(new CollectionsObject()));
 
             _realm.Write(() =>
             {
@@ -1842,17 +1831,14 @@ namespace Realms.Tests.Database
         [Test]
         public void List_Filter_WithRemappedProperty()
         {
-            var obj = _realm.Write(() =>
+            var obj = _realm.Write(() => _realm.Add(new SyncCollectionsObject
             {
-                return _realm.Add(new SyncCollectionsObject
+                ObjectList =
                 {
-                    ObjectList =
-                    {
-                        new() { Int = 5 },
-                        new() { Int = 10 },
-                    }
-                });
-            });
+                    new() { Int = 5 },
+                    new() { Int = 10 },
+                }
+            }));
 
             var list = obj.ObjectList;
 
@@ -1869,17 +1855,14 @@ namespace Realms.Tests.Database
         [Test]
         public void Set_Filter_WithRemappedProperty()
         {
-            var obj = _realm.Write(() =>
+            var obj = _realm.Write(() => _realm.Add(new SyncCollectionsObject
             {
-                return _realm.Add(new SyncCollectionsObject
+                ObjectSet =
                 {
-                    ObjectSet =
-                    {
-                        new() { Int = 5 },
-                        new() { Int = 10 },
-                    }
-                });
-            });
+                    new() { Int = 5 },
+                    new() { Int = 10 },
+                }
+            }));
 
             var set = obj.ObjectSet;
 
@@ -1897,17 +1880,14 @@ namespace Realms.Tests.Database
         [Test]
         public void Dict_Filter_WithRemappedProperty()
         {
-            var obj = _realm.Write(() =>
+            var obj = _realm.Write(() => _realm.Add(new SyncCollectionsObject
             {
-                return _realm.Add(new SyncCollectionsObject
+                ObjectDict =
                 {
-                    ObjectDict =
-                    {
-                        ["a"] = new() { Int = 5 },
-                        ["b"] = new() { Int = 10 },
-                    }
-                });
-            });
+                    ["a"] = new() { Int = 5 },
+                    ["b"] = new() { Int = 10 },
+                }
+            }));
 
             var dict = obj.ObjectDict;
 
@@ -1921,10 +1901,10 @@ namespace Realms.Tests.Database
             }
         }
 
-        public struct FtsTestData
+        public readonly struct FtsTestData
         {
-            public string Query;
-            public string[] ExpectedResults;
+            public readonly string Query;
+            public readonly string[] ExpectedResults;
 
             public FtsTestData(string query, params string[] expectedResults)
             {
@@ -1932,10 +1912,10 @@ namespace Realms.Tests.Database
                 ExpectedResults = expectedResults;
             }
 
-            public override readonly string ToString() => Query;
+            public override string ToString() => Query;
         }
 
-        private static readonly object[] FtsTestCases = new object[]
+        private static readonly object[] FtsTestCases =
         {
             new object[] { new FtsTestData("lord of the", LordOfTheFlies, LordOfTheRings, WheelOfTime, Silmarillion) },
             new object[] { new FtsTestData("fantasy novel", LordOfTheRings, WheelOfTime) },
@@ -1953,7 +1933,7 @@ namespace Realms.Tests.Database
             Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
 
             var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.NullableSummary)} TEXT $0", testData.Query).ToArray().Select(o => o.Title);
-            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+            Assert.That(nullableSummaryMatches, Is.EquivalentTo(testData.ExpectedResults));
         }
 
         [TestCaseSource(nameof(FtsTestCases))]
@@ -1965,23 +1945,23 @@ namespace Realms.Tests.Database
             Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
 
             var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, testData.Query)).ToArray().Select(o => o.Title);
-            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+            Assert.That(nullableSummaryMatches, Is.EquivalentTo(testData.ExpectedResults));
         }
 
         [Test]
         public void Fts_Linq_WhenTermsIsNull_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, null!)).ToArray());
-            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _ = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _ = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, null!)).ToArray());
         }
 
         [Test]
         public void Fts_OnNonIndexedProperty_Throws()
         {
-            var ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Title, "value")).ToArray());
+            var ex = Assert.Throws<RealmException>(() => _ = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Title, "value")).ToArray());
             Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
 
-            ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.Title)} TEXT $0", "value").ToArray());
+            ex = Assert.Throws<RealmException>(() => _ = _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.Title)} TEXT $0", "value").ToArray());
             Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
         }
 

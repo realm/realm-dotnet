@@ -55,7 +55,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ICounterObjectAccessor Accessor => _accessor ??= new CounterObjectUnmanagedAccessor(typeof(CounterObject));
+        private ICounterObjectAccessor Accessor => _accessor ??= new CounterObjectUnmanagedAccessor(typeof(CounterObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

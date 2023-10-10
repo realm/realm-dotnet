@@ -108,7 +108,7 @@ namespace Realms.Tests
             Assert.That(references.All(r => !r.IsAlive), "Expected all references to be GC-ed within 10 seconds but they weren't");
         }
 
-        private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
+        public static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
         {
             IgnoreOnUnity("Waiting on GC seems to lock up on Unity on Linux.", OSPlatform.Linux);
 

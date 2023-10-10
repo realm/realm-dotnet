@@ -80,7 +80,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAllTypesObjectAccessor Accessor => _accessor ??= new AllTypesObjectUnmanagedAccessor(typeof(AllTypesObject));
+        private IAllTypesObjectAccessor Accessor => _accessor ??= new AllTypesObjectUnmanagedAccessor(typeof(AllTypesObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

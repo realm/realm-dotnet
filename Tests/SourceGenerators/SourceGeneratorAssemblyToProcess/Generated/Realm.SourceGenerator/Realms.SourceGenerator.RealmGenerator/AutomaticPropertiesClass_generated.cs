@@ -42,7 +42,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAutomaticPropertiesClassAccessor Accessor => _accessor ??= new AutomaticPropertiesClassUnmanagedAccessor(typeof(AutomaticPropertiesClass));
+        private IAutomaticPropertiesClassAccessor Accessor => _accessor ??= new AutomaticPropertiesClassUnmanagedAccessor(typeof(AutomaticPropertiesClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -42,7 +42,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IConfusingNamespaceClassAccessor Accessor => _accessor ??= new ConfusingNamespaceClassUnmanagedAccessor(typeof(ConfusingNamespaceClass));
+        private IConfusingNamespaceClassAccessor Accessor => _accessor ??= new ConfusingNamespaceClassUnmanagedAccessor(typeof(ConfusingNamespaceClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

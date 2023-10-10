@@ -93,7 +93,7 @@ namespace Realms.Sync
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern SessionNotificationToken register_property_changed_callback(IntPtr session, IntPtr managed_session_handle, out NativeException ex);
+            public static extern SessionNotificationToken register_property_changed_callback(SessionHandle session, IntPtr managed_session_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_property_changed_callback(IntPtr session, SessionNotificationToken token, out NativeException ex);
@@ -102,7 +102,7 @@ namespace Realms.Sync
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_error_for_testing(SessionHandle session, int error_code, SessionErrorCategory error_category, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal, int action);
+            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal, int action);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_stop", CallingConvention = CallingConvention.Cdecl)]
             public static extern void stop(SessionHandle session, out NativeException ex);
@@ -196,7 +196,7 @@ namespace Realms.Sync
 
             var managedSessionHandle = GCHandle.Alloc(session, GCHandleType.Weak);
             var sessionPointer = GCHandle.ToIntPtr(managedSessionHandle);
-            _notificationToken = NativeMethods.register_property_changed_callback(handle, sessionPointer, out var ex);
+            _notificationToken = NativeMethods.register_property_changed_callback(this, sessionPointer, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -204,6 +204,8 @@ namespace Realms.Sync
         {
             if (_notificationToken.HasValue)
             {
+                // This needs to use the handle directly because it's being called in Unbind. At this point the SafeHandle is closed, which means we'll
+                // get an error if we attempted to marshal it to native. The raw pointer is fine though and we can use it.
                 NativeMethods.unregister_property_changed_callback(handle, _notificationToken.Value, out var ex);
                 _notificationToken = null;
                 ex.ThrowIfNecessary();
@@ -246,9 +248,9 @@ namespace Realms.Sync
             return NativeMethods.get_raw_pointer(this);
         }
 
-        public void ReportErrorForTesting(int errorCode, SessionErrorCategory errorCategory, string errorMessage, bool isFatal, ServerRequestsAction action)
+        public void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal, ServerRequestsAction action)
         {
-            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, errorMessage, (IntPtr)errorMessage.Length, isFatal, (int)action);
+            NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal, (int)action);
         }
 
         public void Stop()

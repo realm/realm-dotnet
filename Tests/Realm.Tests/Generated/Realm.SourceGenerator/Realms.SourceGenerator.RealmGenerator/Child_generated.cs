@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal IChildAccessor Accessor => _accessor ??= new ChildUnmanagedAccessor(typeof(Child));
+            private IChildAccessor Accessor => _accessor ??= new ChildUnmanagedAccessor(typeof(Child));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]

@@ -42,7 +42,7 @@ namespace SourceGeneratorPlayground
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedObjAccessor Accessor => _accessor ??= new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj));
+        private IEmbeddedObjAccessor Accessor => _accessor ??= new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

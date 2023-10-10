@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IInitializedFieldObjectAccessor Accessor => _accessor ??= new InitializedFieldObjectUnmanagedAccessor(typeof(InitializedFieldObject));
+        private IInitializedFieldObjectAccessor Accessor => _accessor ??= new InitializedFieldObjectUnmanagedAccessor(typeof(InitializedFieldObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

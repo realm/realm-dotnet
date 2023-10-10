@@ -54,7 +54,7 @@ namespace Realms.Tests.Database
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal ICustomGeoPointAccessor Accessor => _accessor ??= new CustomGeoPointUnmanagedAccessor(typeof(CustomGeoPoint));
+            private ICustomGeoPointAccessor Accessor => _accessor ??= new CustomGeoPointUnmanagedAccessor(typeof(CustomGeoPoint));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]

@@ -11,7 +11,7 @@ jobs:
     name: Code Coverage
     timeout-minutes: 90
     steps:
-      - #@ template.replace(prepareTest(fetchWrappers=True))
+      - #@ template.replace(prepareTest("code-coverage", fetchWrappers=True))
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
@@ -19,7 +19,16 @@ jobs:
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net7.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
       - name: Run the tests
+        env:
+          DOTNET_DbgEnableMiniDump: 1
+          DOTNET_EnableCrashReport: 1
         run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs("code-coverage") + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
+      - name: Archive core dump
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: crash-report-net-core-code-coverage
+          path: /tmp/coredump*
       - name: Publish Coverage
         id: publish-coveralls
         uses: #@ actionCoveralls

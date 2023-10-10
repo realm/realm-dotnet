@@ -51,7 +51,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDogAccessor Accessor => _accessor ??= new DogUnmanagedAccessor(typeof(Dog));
+        private IDogAccessor Accessor => _accessor ??= new DogUnmanagedAccessor(typeof(Dog));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

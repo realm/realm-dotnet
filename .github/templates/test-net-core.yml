@@ -35,5 +35,14 @@ jobs:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
-        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
+        env:
+          DOTNET_DbgEnableMiniDump: 1
+          DOTNET_EnableCrashReport: 1
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After"
+      - name: Archive core dump
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: crash-report-net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+          path: /tmp/coredump*
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")

@@ -34,6 +34,10 @@ namespace Realms.Sync
     {
         private readonly SessionHandle _handle;
 
+        internal readonly Action<Session>? _onSubscribed;
+
+        internal readonly Action? _onUnsubscribed;
+
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler? _propertyChanged;
 
@@ -64,6 +68,7 @@ namespace Realms.Sync
                 if (_propertyChanged == null)
                 {
                     Handle.SubscribeNotifications(this);
+                    _onSubscribed?.Invoke(this);
                 }
 
                 _propertyChanged += value;
@@ -75,6 +80,7 @@ namespace Realms.Sync
 
                 if (_propertyChanged == null)
                 {
+                    _onUnsubscribed?.Invoke();
                     Handle.UnsubscribeNotifications();
                 }
             }
@@ -193,9 +199,11 @@ namespace Realms.Sync
         /// <inheritdoc/>
         public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
 
-        internal Session(SessionHandle handle)
+        internal Session(SessionHandle handle, Action<Session>? onSubscribed = null, Action? onUnsubscribed = null)
         {
             _handle = handle;
+            _onSubscribed = onSubscribed;
+            _onUnsubscribed = onUnsubscribed;
         }
 
         internal void CloseHandle(bool waitForShutdown = false)
@@ -209,11 +217,13 @@ namespace Realms.Sync
                 }
 
                 _propertyChanged = null;
+                _onUnsubscribed?.Invoke();
                 _handle.Close();
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal, ServerRequestsAction action) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal, action);
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal, ServerRequestsAction action)
+            => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal, action);
 
         internal void RaisePropertyChanged(string propertyName)
         {

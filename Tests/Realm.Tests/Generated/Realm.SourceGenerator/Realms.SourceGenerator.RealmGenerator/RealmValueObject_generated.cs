@@ -52,7 +52,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRealmValueObjectAccessor Accessor => _accessor ??= new RealmValueObjectUnmanagedAccessor(typeof(RealmValueObject));
+        private IRealmValueObjectAccessor Accessor => _accessor ??= new RealmValueObjectUnmanagedAccessor(typeof(RealmValueObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

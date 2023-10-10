@@ -77,7 +77,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IListsObjectAccessor Accessor => _accessor ??= new ListsObjectUnmanagedAccessor(typeof(ListsObject));
+        private IListsObjectAccessor Accessor => _accessor ??= new ListsObjectUnmanagedAccessor(typeof(ListsObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

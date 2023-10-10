@@ -62,7 +62,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IGuidTypeAccessor Accessor => _accessor ??= new GuidTypeUnmanagedAccessor(typeof(GuidType));
+        private IGuidTypeAccessor Accessor => _accessor ??= new GuidTypeUnmanagedAccessor(typeof(GuidType));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

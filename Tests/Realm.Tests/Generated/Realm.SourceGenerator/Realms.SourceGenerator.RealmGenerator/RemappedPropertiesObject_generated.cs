@@ -48,7 +48,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IRemappedPropertiesObjectAccessor Accessor => _accessor ??= new RemappedPropertiesObjectUnmanagedAccessor(typeof(RemappedPropertiesObject));
+        private IRemappedPropertiesObjectAccessor Accessor => _accessor ??= new RemappedPropertiesObjectUnmanagedAccessor(typeof(RemappedPropertiesObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

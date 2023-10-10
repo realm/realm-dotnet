@@ -52,7 +52,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IIndexesClassAccessor Accessor => _accessor ??= new IndexesClassUnmanagedAccessor(typeof(IndexesClass));
+        private IIndexesClassAccessor Accessor => _accessor ??= new IndexesClassUnmanagedAccessor(typeof(IndexesClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

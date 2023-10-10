@@ -51,7 +51,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IOnManagedTestClassAccessor Accessor => _accessor ??= new OnManagedTestClassUnmanagedAccessor(typeof(OnManagedTestClass));
+        private IOnManagedTestClassAccessor Accessor => _accessor ??= new OnManagedTestClassUnmanagedAccessor(typeof(OnManagedTestClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

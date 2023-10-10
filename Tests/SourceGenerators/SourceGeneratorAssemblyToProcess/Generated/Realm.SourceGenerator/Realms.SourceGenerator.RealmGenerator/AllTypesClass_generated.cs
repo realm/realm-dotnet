@@ -88,7 +88,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAllTypesClassAccessor Accessor => _accessor ??= new AllTypesClassUnmanagedAccessor(typeof(AllTypesClass));
+        private IAllTypesClassAccessor Accessor => _accessor ??= new AllTypesClassUnmanagedAccessor(typeof(AllTypesClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

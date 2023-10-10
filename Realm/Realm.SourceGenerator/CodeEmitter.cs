@@ -28,10 +28,12 @@ namespace Realms.SourceGenerator
     internal class CodeEmitter
     {
         private readonly GeneratorExecutionContext _context;
+        private readonly GeneratorConfig _generatorConfig;
 
-        public CodeEmitter(GeneratorExecutionContext context)
+        public CodeEmitter(GeneratorExecutionContext context, GeneratorConfig generatorConfig)
         {
             _context = context;
+            _generatorConfig = generatorConfig;
         }
 
         public void Emit(ParsingResults parsingResults)
@@ -45,7 +47,7 @@ namespace Realms.SourceGenerator
 
                 try
                 {
-                    var generatedSource = new ClassCodeBuilder(classInfo).GenerateSource();
+                    var generatedSource = new ClassCodeBuilder(classInfo, _generatorConfig).GenerateSource();
 
                     // Replace all occurrences of at least 3 newlines with only 2
                     var formattedSource = Regex.Replace(generatedSource, @$"[{Environment.NewLine}]{{3,}}", $"{Environment.NewLine}{Environment.NewLine}");
@@ -65,9 +67,6 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static bool ShouldEmit(ClassInfo classInfo)
-        {
-            return !classInfo.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error);
-        }
+        private static bool ShouldEmit(ClassInfo classInfo) => classInfo.Diagnostics.All(d => d.Severity != DiagnosticSeverity.Error);
     }
 }

@@ -51,7 +51,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IClassWithUnqueryableMembersAccessor Accessor => _accessor ??= new ClassWithUnqueryableMembersUnmanagedAccessor(typeof(ClassWithUnqueryableMembers));
+        private IClassWithUnqueryableMembersAccessor Accessor => _accessor ??= new ClassWithUnqueryableMembersUnmanagedAccessor(typeof(ClassWithUnqueryableMembers));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

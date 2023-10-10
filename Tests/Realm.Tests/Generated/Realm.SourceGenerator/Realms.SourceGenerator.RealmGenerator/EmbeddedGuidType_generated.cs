@@ -60,7 +60,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedGuidTypeAccessor Accessor => _accessor ??= new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType));
+        private IEmbeddedGuidTypeAccessor Accessor => _accessor ??= new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

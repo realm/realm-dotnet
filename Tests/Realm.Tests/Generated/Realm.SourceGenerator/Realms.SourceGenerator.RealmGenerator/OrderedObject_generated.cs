@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IOrderedObjectAccessor Accessor => _accessor ??= new OrderedObjectUnmanagedAccessor(typeof(OrderedObject));
+        private IOrderedObjectAccessor Accessor => _accessor ??= new OrderedObjectUnmanagedAccessor(typeof(OrderedObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

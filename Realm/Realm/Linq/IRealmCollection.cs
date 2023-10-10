@@ -30,12 +30,12 @@ namespace Realms
     /// </summary>
     /// <param name="sender">The <see cref="IRealmCollection{T}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>,
-    /// or <c>null</c> if an error has occurred.</param>
+    /// or <c>null</c> the first time the callback is invoked.</param>
     /// <typeparam name="T">Type of the values contained in the collection.</typeparam>
     public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet? changes);
 
     /// <summary>
-    /// A callback that will be invoked each time the contents of a <see cref="IDictionary{String, TValue}"/> have changed.
+    /// A callback that will be invoked each time the contents of a <see cref="IDictionary{String,TValue}"/> have changed.
     /// </summary>
     /// <param name="sender">The <see cref="IDictionary{String, TValue}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="DictionaryChangeSet"/> describing the changes to a <see cref="IDictionary{String, TValue}"/>,
@@ -133,8 +133,6 @@ namespace Realms
         /// </para>
         /// <para>
         /// If a write transaction did not modify any objects in this <see cref="IRealmCollection{T}" />, the callback is not invoked at all.
-        /// If an error occurs the callback will be invoked with <c>null</c> for the <c>sender</c> parameter and a non-<c>null</c> <c>error</c>.
-        /// Currently the only errors that can occur are when opening the <see cref="Realms.Realm" /> on the background worker thread.
         /// </para>
         /// <para>
         /// At the time when the block is called, the <see cref="IRealmCollection{T}" /> object will be fully evaluated

@@ -39,7 +39,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-    internal INoNamespaceClassAccessor Accessor => _accessor ??= new NoNamespaceClassUnmanagedAccessor(typeof(NoNamespaceClass));
+    private INoNamespaceClassAccessor Accessor => _accessor ??= new NoNamespaceClassUnmanagedAccessor(typeof(NoNamespaceClass));
 
     /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]

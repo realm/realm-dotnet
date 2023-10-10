@@ -29,6 +29,7 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
+#include "marshalling.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -36,6 +37,9 @@ using namespace app;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
+using UserChangedCallbackT = void(void* managed_user_handle);
+
+std::function<UserChangedCallbackT> s_user_changed_callback;
 
 namespace realm {
 namespace binding {
@@ -86,6 +90,13 @@ void to_json(nlohmann::json& j, const SyncUserIdentity& i)
 }
 
 extern "C" {
+    REALM_EXPORT void realm_syncuser_install_callbacks(UserChangedCallbackT* user_changed_callback)
+    {
+        s_user_changed_callback = wrap_managed_callback(user_changed_callback);
+
+        realm::binding::s_can_call_managed = true;
+    }
+
     REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {
@@ -157,6 +168,23 @@ extern "C" {
     {
         handle_errors(ex, [&] {
             user->refresh_custom_data(get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT Subscribable<realm::SyncUser>::Token* realm_syncuser_register_changed_callback(SharedSyncUser& user, void* managed_user_handle, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            auto token = user->subscribe([managed_user_handle](const SyncUser&) {
+                s_user_changed_callback(managed_user_handle);
+            });
+            return new Subscribable<realm::SyncUser>::Token(std::move(token));
+        });
+    }
+
+    REALM_EXPORT void realm_syncuser_unregister_property_changed_callback(SharedSyncUser& user, Subscribable<realm::SyncUser>::Token& token, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&] {
+            user->unsubscribe(token);
         });
     }
 

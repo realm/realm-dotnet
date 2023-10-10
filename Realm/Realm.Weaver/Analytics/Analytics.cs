@@ -470,14 +470,20 @@ namespace RealmWeaver
 
             jsonPayload.Append('{');
 
-            AppendKeyValues(_realmEnvMetrics);
-            jsonPayload.Append(',');
-            AppendKeyValues(_realmFeaturesToAnalyze, Metric.SdkFeatures);
+            jsonPayload.Append(GetJsonString(_realmEnvMetrics));
+
+            var featuresString = GetJsonString(_realmFeaturesToAnalyze, Metric.SdkFeatures);
+            if (!string.IsNullOrEmpty(featuresString))
+            {
+                jsonPayload.Append(',');
+                jsonPayload.Append(featuresString);
+            }
+
             jsonPayload.Append('}');
 
             return jsonPayload.ToString();
 
-            void AppendKeyValues<TValue>(IDictionary<string, TValue> dict, IDictionary<string, string>? keyMapping = null)
+            string GetJsonString<TValue>(IDictionary<string, TValue> dict, IDictionary<string, string>? keyMapping = null)
             {
                 var mapping = dict
                     .Select(kvp =>
@@ -495,7 +501,7 @@ namespace RealmWeaver
                     })
                     .Where(s => s != null);
 
-                jsonPayload.Append(string.Join(",", mapping));
+                return string.Join(",", mapping);
             }
         }
 

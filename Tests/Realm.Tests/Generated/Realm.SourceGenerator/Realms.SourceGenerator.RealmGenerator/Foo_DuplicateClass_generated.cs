@@ -47,7 +47,7 @@ namespace Foo
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDuplicateClassAccessor Accessor => _accessor ??= new DuplicateClassUnmanagedAccessor(typeof(DuplicateClass));
+        private IDuplicateClassAccessor Accessor => _accessor ??= new DuplicateClassUnmanagedAccessor(typeof(DuplicateClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

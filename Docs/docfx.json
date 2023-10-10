@@ -18,7 +18,8 @@
             "filter": "filterConfig.yml",
             "properties": {
                 "TargetFramework": "netstandard2.0"
-            }
+            },
+            "EnumSortOrder": "declaringOrder"
         }
     ],
     "build": {
@@ -82,7 +83,7 @@
             "_gitContribute": {
                 "repo": "https://github.com/realm/realm-dotnet.git",
                 "branch": "main",
-                "path": "Docs/apispec"
+                "apiSpecFolder": "Docs/apispec"
             }
         },
         "fileMetadataFiles": [],

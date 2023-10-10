@@ -48,7 +48,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectV2Accessor Accessor => _accessor ??= new ObjectV2UnmanagedAccessor(typeof(ObjectV2));
+        private IObjectV2Accessor Accessor => _accessor ??= new ObjectV2UnmanagedAccessor(typeof(ObjectV2));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

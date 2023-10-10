@@ -74,15 +74,6 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-      if: ${{ inputs.realmUrl }}
-      with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.realmUrl }}
-        atlasUrl: ${{ inputs.atlasUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterSize: M10
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
@@ -90,7 +81,16 @@ jobs:
       run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
+    - name: Archive core dump
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: crash-report-net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+        path: /tmp/coredump*
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

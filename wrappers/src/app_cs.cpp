@@ -25,6 +25,7 @@
 #include "transport_cs.hpp"
 #include "debug.hpp"
 #include "app_cs.hpp"
+#include "websocket_cs.hpp"
 
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/app_credentials.hpp>
@@ -77,6 +78,8 @@ namespace realm {
             bool metadata_mode_has_value;
 
             void* managed_http_client;
+
+            void* managed_websocket_provider;
 
             uint64_t sync_connect_timeout_ms;
 
@@ -151,6 +154,10 @@ extern "C" {
             sync_client_config.timeouts.fast_reconnect_limit = app_config.sync_fast_reconnect_limit;
             sync_client_config.timeouts.ping_keepalive_period = app_config.sync_ping_keep_alive_period_ms;
             sync_client_config.timeouts.pong_keepalive_timeout = app_config.sync_pong_keep_alive_timeout_ms;
+
+            if (app_config.managed_websocket_provider) {
+                sync_client_config.socket_provider = make_websocket_provider(app_config.managed_websocket_provider);
+            }
 
             if (app_config.metadata_mode_has_value) {
                 sync_client_config.metadata_mode = app_config.metadata_mode;

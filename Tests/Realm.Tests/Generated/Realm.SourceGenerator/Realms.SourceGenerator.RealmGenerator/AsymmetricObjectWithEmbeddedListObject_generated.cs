@@ -51,7 +51,7 @@ namespace Realms.Tests.Sync
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IAsymmetricObjectWithEmbeddedListObjectAccessor Accessor => _accessor ??= new AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedListObject));
+        private IAsymmetricObjectWithEmbeddedListObjectAccessor Accessor => _accessor ??= new AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedListObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

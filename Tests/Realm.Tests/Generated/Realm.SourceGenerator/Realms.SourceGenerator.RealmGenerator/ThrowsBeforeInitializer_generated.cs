@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IThrowsBeforeInitializerAccessor Accessor => _accessor ??= new ThrowsBeforeInitializerUnmanagedAccessor(typeof(ThrowsBeforeInitializer));
+        private IThrowsBeforeInitializerAccessor Accessor => _accessor ??= new ThrowsBeforeInitializerUnmanagedAccessor(typeof(ThrowsBeforeInitializer));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

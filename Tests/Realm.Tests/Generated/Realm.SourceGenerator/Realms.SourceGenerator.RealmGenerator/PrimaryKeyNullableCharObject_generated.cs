@@ -47,7 +47,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IPrimaryKeyNullableCharObjectAccessor Accessor => _accessor ??= new PrimaryKeyNullableCharObjectUnmanagedAccessor(typeof(PrimaryKeyNullableCharObject));
+        private IPrimaryKeyNullableCharObjectAccessor Accessor => _accessor ??= new PrimaryKeyNullableCharObjectUnmanagedAccessor(typeof(PrimaryKeyNullableCharObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

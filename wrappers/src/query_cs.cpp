@@ -543,7 +543,7 @@ REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t prope
             REALM_UNREACHABLE();
         }
 
-        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(geo_store.value()));
+        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(*geo_store));
     });
 }
 
@@ -552,7 +552,7 @@ REALM_EXPORT void validate_query_argument(query_argument geo_value, NativeExcept
     handle_errors(ex, [&]() {
         auto geo_store = to_geospatial(geo_value);
         if (geo_store) {
-            auto status = geo_store.value().is_valid();
+            auto status = geo_store->is_valid();
             if (!status.is_ok()) {
                 throw GeoSpatialShapeValidationException(status.reason());
             }

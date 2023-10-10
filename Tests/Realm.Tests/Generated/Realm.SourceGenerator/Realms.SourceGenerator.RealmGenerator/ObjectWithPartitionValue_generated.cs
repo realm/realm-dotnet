@@ -64,7 +64,7 @@ namespace Realms.Tests.Sync
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectWithPartitionValueAccessor Accessor => _accessor ??= new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue));
+        private IObjectWithPartitionValueAccessor Accessor => _accessor ??= new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

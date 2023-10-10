@@ -78,7 +78,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IDictionariesObjectAccessor Accessor => _accessor ??= new DictionariesObjectUnmanagedAccessor(typeof(DictionariesObject));
+        private IDictionariesObjectAccessor Accessor => _accessor ??= new DictionariesObjectUnmanagedAccessor(typeof(DictionariesObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

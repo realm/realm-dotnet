@@ -50,7 +50,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IWalkerAccessor Accessor => _accessor ??= new WalkerUnmanagedAccessor(typeof(Walker));
+        private IWalkerAccessor Accessor => _accessor ??= new WalkerUnmanagedAccessor(typeof(Walker));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

@@ -2211,6 +2211,8 @@ namespace Realms.Tests.Sync
                     writerRealm.Add(new SyncAllTypesObject { DoubleProperty = 3.5, GuidProperty = testGuid, });
                 });
 
+                await WaitForUploadAsync(writerRealm);
+
                 // Resubscribe to the same query with waitForSync.FirstTime. Since
                 // we already have this subscription, SubscribeAsync should return
                 // immediately without waiting for the download to happen.

@@ -42,7 +42,7 @@ namespace OtherNamespace
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IOtherNamespaceObjAccessor Accessor => _accessor ??= new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObj));
+        private IOtherNamespaceObjAccessor Accessor => _accessor ??= new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObj));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

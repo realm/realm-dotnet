@@ -53,7 +53,7 @@ namespace Realms.Tests.Database
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ISerializedObjectAccessor Accessor => _accessor ??= new SerializedObjectUnmanagedAccessor(typeof(SerializedObject));
+        private ISerializedObjectAccessor Accessor => _accessor ??= new SerializedObjectUnmanagedAccessor(typeof(SerializedObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
