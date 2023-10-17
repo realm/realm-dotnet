@@ -93,7 +93,7 @@ namespace Realms.Sync
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern SessionNotificationToken register_property_changed_callback(IntPtr session, IntPtr managed_session_handle, out NativeException ex);
+            public static extern SessionNotificationToken register_property_changed_callback(SessionHandle session, IntPtr managed_session_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_property_changed_callback(IntPtr session, SessionNotificationToken token, out NativeException ex);
@@ -196,7 +196,7 @@ namespace Realms.Sync
 
             var managedSessionHandle = GCHandle.Alloc(session, GCHandleType.Weak);
             var sessionPointer = GCHandle.ToIntPtr(managedSessionHandle);
-            _notificationToken = NativeMethods.register_property_changed_callback(handle, sessionPointer, out var ex);
+            _notificationToken = NativeMethods.register_property_changed_callback(this, sessionPointer, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -204,6 +204,8 @@ namespace Realms.Sync
         {
             if (_notificationToken.HasValue)
             {
+                // This needs to use the handle directly because it's being called in Unbind. At this point the SafeHandle is closed, which means we'll
+                // get an error if we attempted to marshal it to native. The raw pointer is fine though and we can use it.
                 NativeMethods.unregister_property_changed_callback(handle, _notificationToken.Value, out var ex);
                 _notificationToken = null;
                 ex.ThrowIfNecessary();

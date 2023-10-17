@@ -15,12 +15,15 @@
   ```
   (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 
+* Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 
   ```
   realm.custom_ignore_attribute = [System.Text.Json.Serialization.JsonIgnore]
   ```
   (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
+* The Realm source generator will now error out in case a collection in the model classes is assigned to a non-null value either in a property initializer or in a constructor. Realm collections are initialized internally and assigning non-null values to the property is not supported, where the `null!` assignment is only useful to silence nullable reference type warnings, in reality the collection will never be null. (Issue [#3455](https://github.com/realm/realm-dotnet/issues/3455))
+* Made WebSocket error logging more verbose when using `AppConfiguration.UseManagedWebSockets = true`. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
 * Fixed serveral smaller issues when logging into with a single user when using multiple auth providers. (Core 13.21.0)

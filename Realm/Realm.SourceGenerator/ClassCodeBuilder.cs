@@ -847,7 +847,7 @@ public {type} {name}
                 }
                 else
                 {
-                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+                    var forceNotNullable = type is "string" or "byte[]" ? "!" : string.Empty;
 
                     var getterString = $@"get => ({type})GetValue(""{stringName}""){forceNotNullable};";
 

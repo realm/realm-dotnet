@@ -21,8 +21,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Realms.Logging;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -31,6 +33,9 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void UserChangedCallback(IntPtr managed_user);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -109,11 +114,31 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string? partition, IntPtr partition_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_register_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr register_changed_callback(SyncUserHandle user, IntPtr managed_user_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unregister_changed_callback(IntPtr user, IntPtr token, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void install_syncuser_callbacks(UserChangedCallback changed_callback);
         }
+
+        private (IntPtr NotificationToken, GCHandle UserHandle)? _changeSubscriptionInfo;
 
         [Preserve]
         public SyncUserHandle(IntPtr handle) : base(handle)
         {
+        }
+
+        public static void Initialize()
+        {
+            NativeMethods.UserChangedCallback changed = HandleUserChanged;
+
+            GCHandle.Alloc(changed);
+
+            NativeMethods.install_syncuser_callbacks(changed);
         }
 
         public string GetUserId()
@@ -206,18 +231,14 @@ namespace Realms.Sync
 
         public string? GetProfileData(UserProfileField field)
         {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                return NativeMethods.get_profile_data(this, field, buffer, length, out isNull, out ex);
-            });
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex)
+                => NativeMethods.get_profile_data(this, field, buffer, length, out isNull, out ex));
         }
 
         public string? GetCustomData()
         {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                return NativeMethods.get_custom_data(this, buffer, length, out isNull, out ex);
-            });
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex)
+                => NativeMethods.get_custom_data(this, buffer, length, out isNull, out ex));
         }
 
         public async Task<string> CallFunctionAsync(AppHandle app, string name, string args, string? service)
@@ -389,6 +410,7 @@ namespace Realms.Sync
 
         protected override void Unbind()
         {
+            UnsubscribeNotifications();
             NativeMethods.destroy(handle);
         }
 
@@ -399,6 +421,60 @@ namespace Realms.Sync
                 isNull = false;
                 return NativeMethods.get_path_for_realm(this, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
             })!;
+        }
+
+        public void SubscribeNotifications(User user)
+        {
+            Debug.Assert(_changeSubscriptionInfo == null, $"{nameof(_changeSubscriptionInfo)} must be null before subscribing.");
+
+            var managedUserHandle = GCHandle.Alloc(user, GCHandleType.Weak);
+            var userPointer = GCHandle.ToIntPtr(managedUserHandle);
+            var token = NativeMethods.register_changed_callback(this, userPointer, out var ex);
+            ex.ThrowIfNecessary();
+
+            _changeSubscriptionInfo = (token, managedUserHandle);
+        }
+
+        public void UnsubscribeNotifications()
+        {
+            if (_changeSubscriptionInfo != null)
+            {
+                // This needs to use the handle directly because it's being called in Unbind. At this point the SafeHandle is closed, which means we'll
+                // get an error if we attempted to marshal it to native. The raw pointer is fine though and we can use it.
+                NativeMethods.unregister_changed_callback(handle, _changeSubscriptionInfo.Value.NotificationToken, out var ex);
+                ex.ThrowIfNecessary();
+
+                _changeSubscriptionInfo.Value.UserHandle.Free();
+                _changeSubscriptionInfo = null;
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.UserChangedCallback))]
+        private static void HandleUserChanged(IntPtr managedUserHandle)
+        {
+            try
+            {
+                if (managedUserHandle == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                var user = (User?)GCHandle.FromIntPtr(managedUserHandle).Target;
+                if (user is null)
+                {
+                    // We're taking a weak handle to the user, so it's possible that it's been collected
+                    return;
+                }
+
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    user.RaiseChanged();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while raising User.Changed event: {ex}");
+            }
         }
     }
 }
