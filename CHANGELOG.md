@@ -23,13 +23,16 @@
   (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
 
 ### Fixed
-* None
+* Fixed serveral smaller issues when logging into with a single user when using multiple auth providers. (Core 13.21.0)
+* Fixed an excepton when querying over a geospatial dataset that some objects with a type property set to something other than `Point` (case insensitive). Those objects are now just ignored. (Core 13.21.0)
+* Fixed an issue that would make the user in an inconstisten state if the user was logged out while an access toekn refresh was in progress. (Core 13.21.0)
+* Fixed an issue where Android.bp builds would fail with SSL certificat validation errors because the trusted CA roots bundle was not included. (Core 13.23.0)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.20.1.
+* Using Core 13.23.0
 
 ## 11.5.0 (2023-09-15)
 
