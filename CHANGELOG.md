@@ -1,6 +1,20 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added support for collections of `RealmValue` (`IList<RealmValue>`, `ISet<RealmValue>`, `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves, while sets cannot. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List`, `RealmValue.Set` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `HashSet` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList`, `AsSet` and `AsDictionary`. For example:
+
+  ```csharp
+  var list = new List<RealmValue> { 1, true, "stringVal" };
+
+  var rvo = realm.Write(() =>
+  {
+      return realm.Add(new RealmValueObject { RealmValueProperty = list});
+  });
+
+  var retrievedList = rvo.RealmValueProperty.AsList();
+  ```
+  (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
+
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 
   ```
