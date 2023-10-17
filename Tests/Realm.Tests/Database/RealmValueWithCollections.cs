@@ -735,14 +735,14 @@ namespace Realms.Tests.Database
             }
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Dictionary));
-            Assert.That(rv != RealmValue.Null);
+            Assert.That(rv != RealmValue.Null, "Different than null");
 
             Assert.That(rv.AsDictionary(), Is.EquivalentTo(originalDict));
             Assert.That(rv.AsAny(), Is.EquivalentTo(originalDict));
             Assert.That(rv.As<IDictionary<string, RealmValue>>(), Is.EquivalentTo(originalDict));
 
-            Assert.That(rv == originalDict);
-            Assert.That(rv.Equals(originalDict));
+            Assert.That(rv == originalDict, "Equal to than original dict");
+            Assert.That(rv.Equals(originalDict), "Equal to original dict with Equals");
         }
 
         [Test]
