@@ -37,7 +37,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-    internal IAsymmetricTestClassAccessor Accessor => _accessor ??= new AsymmetricTestClassUnmanagedAccessor(typeof(AsymmetricTestClass));
+    private IAsymmetricTestClassAccessor Accessor => _accessor ??= new AsymmetricTestClassUnmanagedAccessor(typeof(AsymmetricTestClass));
 
     /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]

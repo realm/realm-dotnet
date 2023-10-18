@@ -46,7 +46,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-    internal IRootRealmClassAccessor Accessor => _accessor ??= new RootRealmClassUnmanagedAccessor(typeof(RootRealmClass));
+    private IRootRealmClassAccessor Accessor => _accessor ??= new RootRealmClassUnmanagedAccessor(typeof(RootRealmClass));
 
     /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]

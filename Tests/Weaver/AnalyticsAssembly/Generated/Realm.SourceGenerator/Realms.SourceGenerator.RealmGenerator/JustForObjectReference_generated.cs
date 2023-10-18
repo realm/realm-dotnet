@@ -37,7 +37,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-    internal IJustForObjectReferenceAccessor Accessor => _accessor ??= new JustForObjectReferenceUnmanagedAccessor(typeof(JustForObjectReference));
+    private IJustForObjectReferenceAccessor Accessor => _accessor ??= new JustForObjectReferenceUnmanagedAccessor(typeof(JustForObjectReference));
 
     /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]

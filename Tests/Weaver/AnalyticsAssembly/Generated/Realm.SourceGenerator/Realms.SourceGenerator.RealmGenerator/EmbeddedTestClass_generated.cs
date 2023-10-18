@@ -37,7 +37,7 @@ public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-    internal IEmbeddedTestClassAccessor Accessor => _accessor ??= new EmbeddedTestClassUnmanagedAccessor(typeof(EmbeddedTestClass));
+    private IEmbeddedTestClassAccessor Accessor => _accessor ??= new EmbeddedTestClassUnmanagedAccessor(typeof(EmbeddedTestClass));
 
     /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
