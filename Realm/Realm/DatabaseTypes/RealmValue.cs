@@ -1534,23 +1534,10 @@ namespace Realms
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.List => AsList().SequenceEqual(other.AsList()),
                 RealmValueType.Set => AsSet().SetEquals(other.AsSet()),
-                RealmValueType.Dictionary => CompareDicts(this, other),
+                RealmValueType.Dictionary => AsDictionary().DictionaryEquals(other.AsDictionary()),
                 RealmValueType.Null => true,
                 _ => false,
             };
-        }
-
-        private bool CompareDicts(RealmValue first, RealmValue second)
-        {
-            var firstDict = first.AsDictionary();
-            var secondDict = second.AsDictionary();
-
-            if (firstDict.Count != secondDict.Count)
-            {
-                return false;
-            }
-
-            return firstDict.OrderBy(kvp => kvp.Key).SequenceEqual(secondDict.OrderBy(kvp => kvp.Key));
         }
 
         /// <summary>
