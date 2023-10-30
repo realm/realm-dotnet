@@ -68,6 +68,15 @@ namespace Realms.SourceGenerator
                 Location.None);
         }
 
+        public static Diagnostic OldCSharpVersion()
+        {
+            return CreateDiagnosticError(
+                Id.OldCSharpVersion,
+                "Unsupported version of C#",
+                $"It is not possible to use the Realm source generator with C# versions older than 8.0.",
+                Location.None);
+        }
+
         public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
             return CreateDiagnosticError(
@@ -76,15 +85,6 @@ namespace Realms.SourceGenerator
                 $"There was an unexpected error during source generation of class {className}",
                 Location.None,
                 description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}");
-        }
-
-        public static Diagnostic OldCSharpVersion()
-        {
-            return CreateDiagnosticError(
-                Id.OldCSharpVersion,
-                "Unsupported version of C#",
-                $"It is not possible to use the Realm source generator with C# versions older than 8.0.",
-                Location.None);
         }
 
         public static Diagnostic ClassUnclearDefinition(string className, Location location)
