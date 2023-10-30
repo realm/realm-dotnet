@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Realms.SourceGenerator;
 using RealmGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmGenerator>;
 
@@ -65,6 +67,22 @@ namespace SourceGeneratorTests
             test.TestState.Sources.Add(source);
             test.TestState.GeneratedSources.Add((typeof(RealmGenerator), generatedFileName, generated));
             test.TestState.AnalyzerConfigFiles.Add(("/.globalConfig", BuildGlobalOptions(options)));
+
+            await test.RunAsync();
+        }
+
+        [Test]
+        public async Task OldCSharpVersionTest()
+        {
+            var className = "AllTypesClass";
+            var source = GetSource(className, ClassFolder.Test);
+            var error = new DiagnosticResult("RLM100", DiagnosticSeverity.Error)
+        .WithMessage("It is not possible to use the Realm source generator with C# versions older than 8.0.");
+
+            var test = new RealmGeneratorVerifier.Test();
+            test.LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7;
+            test.TestState.Sources.Add(source);
+            test.TestState.ExpectedDiagnostics.Add(error);
 
             await test.RunAsync();
         }

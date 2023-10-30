@@ -51,6 +51,7 @@ namespace Realms.SourceGenerator
                 comp.LanguageVersion < LanguageVersion.CSharp8)
             {
                 result.GeneralDiagnostics.Add(Diagnostics.OldCSharpVersion());
+                return result;
             }
 
             foreach (var rc in realmClasses)
