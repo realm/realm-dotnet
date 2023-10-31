@@ -88,7 +88,7 @@ namespace Realms
         private readonly ObjectHandle? _objectHandle;
 
         [FieldOffset(48)]
-        private readonly RealmValueType type;
+        private readonly RealmValueType _type;
 
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
@@ -101,11 +101,11 @@ namespace Realms
         /// type of the integral value stored in a <see cref="RealmValue"/> field.
         /// </remarks>
         /// <value>The <see cref="RealmValueType"/> of the current value in the database.</value>
-        public RealmValueType Type => type;
+        public RealmValueType Type => _type;
 
         internal RealmValue(PrimitiveValue primitive, Realm? realm = null, ObjectHandle? handle = default, IntPtr propertyIndex = default) : this()
         {
-            type = primitive.Type;
+            _type = primitive.Type;
             _objectHandle = handle;
             _propertyIndex = propertyIndex;
 
@@ -141,37 +141,37 @@ namespace Realms
 
         private RealmValue(byte[] data) : this()
         {
-            type = RealmValueType.Data;
+            _type = RealmValueType.Data;
             _dataValue = data;
         }
 
         private RealmValue(string value) : this()
         {
-            type = RealmValueType.String;
+            _type = RealmValueType.String;
             _stringValue = value;
         }
 
         private RealmValue(IRealmObjectBase obj) : this()
         {
-            type = RealmValueType.Object;
+            _type = RealmValueType.Object;
             _objectValue = obj;
         }
 
         private RealmValue(IList<RealmValue> list) : this()
         {
-            type = RealmValueType.List;
+            _type = RealmValueType.List;
             _listValue = list;
         }
 
         private RealmValue(ISet<RealmValue> set) : this()
         {
-            type = RealmValueType.Set;
+            _type = RealmValueType.Set;
             _setValue = set;
         }
 
         private RealmValue(IDictionary<string, RealmValue> dict) : this()
         {
-            type = RealmValueType.Dictionary;
+            _type = RealmValueType.Dictionary;
             _dictionaryValue = dict;
         }
 
