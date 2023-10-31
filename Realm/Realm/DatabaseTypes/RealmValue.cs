@@ -57,19 +57,38 @@ namespace Realms
     /// </example>
     [Preserve(AllMembers = true)]
     [DebuggerDisplay("Type = {Type}, Value = {ToString(),nq}")]
+    [StructLayout(LayoutKind.Explicit)]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
+        [FieldOffset(0)]
+        private readonly RealmValueType type;
+
+        [FieldOffset(4)]
+        private readonly ObjectHandle? _objectHandle;
+
+        [FieldOffset(12)]
+        private readonly IntPtr _propertyIndex;
+
+        [FieldOffset(20)]
         private readonly PrimitiveValue _primitiveValue;
+
+        [FieldOffset(20)]
         private readonly string? _stringValue;
+
+        [FieldOffset(20)]
         private readonly byte[]? _dataValue;
+
+        [FieldOffset(20)]
         private readonly IRealmObjectBase? _objectValue;
 
+        [FieldOffset(20)]
         private readonly IList<RealmValue>? _listValue;
-        private readonly ISet<RealmValue>? _setValue;
-        private readonly IDictionary<string, RealmValue>? _dictionaryValue;
 
-        private readonly ObjectHandle? _objectHandle;
-        private readonly IntPtr _propertyIndex;
+        [FieldOffset(20)]
+        private readonly ISet<RealmValue>? _setValue;
+
+        [FieldOffset(20)]
+        private readonly IDictionary<string, RealmValue>? _dictionaryValue;
 
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
@@ -82,11 +101,11 @@ namespace Realms
         /// type of the integral value stored in a <see cref="RealmValue"/> field.
         /// </remarks>
         /// <value>The <see cref="RealmValueType"/> of the current value in the database.</value>
-        public RealmValueType Type { get; }
+        public RealmValueType Type => type;
 
         internal RealmValue(PrimitiveValue primitive, Realm? realm = null, ObjectHandle? handle = default, IntPtr propertyIndex = default) : this()
         {
-            Type = primitive.Type;
+            type = primitive.Type;
             _objectHandle = handle;
             _propertyIndex = propertyIndex;
 
@@ -122,37 +141,37 @@ namespace Realms
 
         private RealmValue(byte[] data) : this()
         {
-            Type = RealmValueType.Data;
+            type = RealmValueType.Data;
             _dataValue = data;
         }
 
         private RealmValue(string value) : this()
         {
-            Type = RealmValueType.String;
+            type = RealmValueType.String;
             _stringValue = value;
         }
 
         private RealmValue(IRealmObjectBase obj) : this()
         {
-            Type = RealmValueType.Object;
+            type = RealmValueType.Object;
             _objectValue = obj;
         }
 
         private RealmValue(IList<RealmValue> list) : this()
         {
-            Type = RealmValueType.List;
+            type = RealmValueType.List;
             _listValue = list;
         }
 
         private RealmValue(ISet<RealmValue> set) : this()
         {
-            Type = RealmValueType.Set;
+            type = RealmValueType.Set;
             _setValue = set;
         }
 
         private RealmValue(IDictionary<string, RealmValue> dict) : this()
         {
-            Type = RealmValueType.Dictionary;
+            type = RealmValueType.Dictionary;
             _dictionaryValue = dict;
         }
 
