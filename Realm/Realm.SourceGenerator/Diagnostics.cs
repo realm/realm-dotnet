@@ -53,6 +53,7 @@ namespace Realms.SourceGenerator
             IndexedPrimaryKey = 28,
             InvalidCollectionInitializer = 29,
             InvalidCollectionInitializerInCtor = 30,
+            OldCSharpVersion = 100,
             InvalidGeneratorConfiguration = 1000,
         }
 
@@ -64,6 +65,15 @@ namespace Realms.SourceGenerator
                 Id.InvalidGeneratorConfiguration,
                 "Invalid source generator configuration",
                 $"The generator configuration for {field} is invalid: {description}",
+                Location.None);
+        }
+
+        public static Diagnostic OldCSharpVersion()
+        {
+            return CreateDiagnosticError(
+                Id.OldCSharpVersion,
+                "Unsupported version of C#",
+                $"It is not possible to use the Realm source generator with C# versions older than 8.0.",
                 Location.None);
         }
 
@@ -82,7 +92,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.ClassUnclearDefinition,
                 "Realm classes cannot implement multiple class interfaces",
-                $"Class {className} is declared as implementing multiple class interfaces.A class can implement only one interface between IRealmObject, IEmbeddedObject, IAsymmetricObject.",
+                $"Class {className} is declared as implementing multiple class interfaces. A class can implement only one interface between IRealmObject, IEmbeddedObject, IAsymmetricObject.",
                 location);
         }
 
