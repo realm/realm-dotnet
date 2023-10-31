@@ -60,35 +60,35 @@ namespace Realms
     [StructLayout(LayoutKind.Explicit)]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
-        [FieldOffset(0)]
-        private readonly RealmValueType type;
-
-        [FieldOffset(4)]
-        private readonly ObjectHandle? _objectHandle;
-
-        [FieldOffset(12)]
-        private readonly IntPtr _propertyIndex;
-
-        [FieldOffset(20)]
-        private readonly PrimitiveValue _primitiveValue;
-
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly string? _stringValue;
 
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly byte[]? _dataValue;
 
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly IRealmObjectBase? _objectValue;
 
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly IList<RealmValue>? _listValue;
 
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly ISet<RealmValue>? _setValue;
 
-        [FieldOffset(20)]
+        [FieldOffset(24)]
         private readonly IDictionary<string, RealmValue>? _dictionaryValue;
+
+        [FieldOffset(0)]
+        private readonly PrimitiveValue _primitiveValue;
+
+        [FieldOffset(32)]
+        private readonly IntPtr _propertyIndex;
+
+        [FieldOffset(40)]
+        private readonly ObjectHandle? _objectHandle;
+
+        [FieldOffset(48)]
+        private readonly RealmValueType type;
 
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
