@@ -234,7 +234,7 @@ namespace SourceGeneratorAssemblyToProcess
                 return !IsValid;
             }
 
-            if (obj is not Realms.IRealmObjectBase iro)
+            if (!(obj is Realms.IRealmObjectBase iro))
             {
                 return false;
             }

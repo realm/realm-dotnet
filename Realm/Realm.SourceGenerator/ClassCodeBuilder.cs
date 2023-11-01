@@ -43,15 +43,28 @@ namespace Realms.SourceGenerator
         };
 
         private readonly ClassInfo _classInfo;
+        private readonly Lazy<string> _ignoreFieldAttribute;
 
         private readonly string _helperClassName;
         private readonly string _accessorInterfaceName;
         private readonly string _managedAccessorClassName;
         private readonly string _unmanagedAccessorClassName;
 
-        public ClassCodeBuilder(ClassInfo classInfo)
+        public ClassCodeBuilder(ClassInfo classInfo, GeneratorConfig generatorConfig)
         {
             _classInfo = classInfo;
+
+            _ignoreFieldAttribute = new(() =>
+            {
+                var result = "[IgnoreDataMember, XmlIgnore]";
+                var customAttribute = generatorConfig.CustomIgnoreAttribute;
+                if (!string.IsNullOrEmpty(customAttribute))
+                {
+                    result += customAttribute;
+                }
+
+                return result;
+            });
 
             var className = _classInfo.Name;
 
@@ -287,36 +300,36 @@ Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 private {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public bool IsManaged => Accessor.IsManaged;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public bool IsValid => Accessor.IsValid;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public bool IsFrozen => Accessor.IsFrozen;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public Realms.Realm? Realm => Accessor.Realm;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
 /// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+{_ignoreFieldAttribute.Value}
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
-@"/// <inheritdoc />
-[IgnoreDataMember, XmlIgnore]
+$@"/// <inheritdoc />
+{_ignoreFieldAttribute.Value}
 public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
 void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
@@ -463,7 +476,7 @@ public override bool Equals(object? obj)
         return !IsValid;
     }
 
-    if (obj is not Realms.IRealmObjectBase iro)
+    if (!(obj is Realms.IRealmObjectBase iro))
     {
         return false;
     }
@@ -834,7 +847,7 @@ public {type} {name}
                 }
                 else
                 {
-                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+                    var forceNotNullable = type is "string" or "byte[]" ? "!" : string.Empty;
 
                     var getterString = $@"get => ({type})GetValue(""{stringName}""){forceNotNullable};";
 

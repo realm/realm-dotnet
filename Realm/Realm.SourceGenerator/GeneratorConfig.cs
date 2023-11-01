@@ -20,18 +20,20 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Realms.SourceGenerator
 {
-    internal class GeneratorConfig
+    internal record GeneratorConfig(bool IgnoreObjectsNullability)
     {
-        public bool IgnoreObjectsNullability { get; private set; }
+        public string? CustomIgnoreAttribute { get; set; }
 
         public static GeneratorConfig ParseConfig(AnalyzerConfigOptions analyzerConfigOptions)
         {
             analyzerConfigOptions.TryGetValue("realm.ignore_objects_nullability", out var ignoreObjectsNullabilityString);
             var ignoreObjectsNullability = ignoreObjectsNullabilityString == "true";
 
-            return new GeneratorConfig
+            analyzerConfigOptions.TryGetValue("realm.custom_ignore_attribute", out var customIgnoreAttribute);
+
+            return new GeneratorConfig(ignoreObjectsNullability)
             {
-                IgnoreObjectsNullability = ignoreObjectsNullability
+                CustomIgnoreAttribute = customIgnoreAttribute
             };
         }
     }

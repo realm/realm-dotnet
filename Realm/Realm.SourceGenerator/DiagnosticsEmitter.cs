@@ -24,22 +24,30 @@ namespace Realms.SourceGenerator
 {
     internal class DiagnosticsEmitter
     {
-        private GeneratorExecutionContext _context;
+        private readonly GeneratorExecutionContext _context;
 
-        public DiagnosticsEmitter(GeneratorExecutionContext context)
+        public DiagnosticsEmitter(GeneratorExecutionContext context, GeneratorConfig generatorConfig)
         {
             _context = context;
+
+            var customIgnoreAttribute = generatorConfig.CustomIgnoreAttribute;
+            if (!string.IsNullOrEmpty(customIgnoreAttribute))
+            {
+                if (!customIgnoreAttribute!.StartsWith("[") || !customIgnoreAttribute.EndsWith("]"))
+                {
+                    _context.ReportDiagnostic(Diagnostics.InvalidConfiguration(
+                        field: "realm.custom_ignore_attribute",
+                        description: $"The attribute(s) string should start with '[' and end with ']'. Actual value: {customIgnoreAttribute}."));
+
+                    generatorConfig.CustomIgnoreAttribute = null;
+                }
+            }
         }
 
         public void Emit(ParsingResults parsingResults)
         {
-            foreach (var classInfo in parsingResults.ClassInfo)
+            foreach (var classInfo in parsingResults.ClassInfo.Where(classInfo => classInfo.Diagnostics.Any()))
             {
-                if (!classInfo.Diagnostics.Any())
-                {
-                    continue;
-                }
-
                 try
                 {
                     SerializeDiagnostics(_context, classInfo);
@@ -51,6 +59,8 @@ namespace Realms.SourceGenerator
                     throw;
                 }
             }
+
+            parsingResults.GeneralDiagnostics.ForEach(_context.ReportDiagnostic);
         }
 
         private static void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)

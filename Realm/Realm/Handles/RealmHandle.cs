@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Logging;
 
 // Replaces IntPtr as a handle to a c++ realm class
 // Using criticalHandle makes the binding more robust with regards to out-of-band exceptions and finalization
@@ -145,9 +146,10 @@ namespace Realms
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
-                Debug.Fail("Failed to close native handle");
+                Logger.Default.Log(LogLevel.Error, $"An error occurred while closing native handle. Please file an issue at https://github.com/realm/realm-dotnet/issues. Error: {ex}");
+                Debug.Fail($"Failed to close native handle: {ex}");
 
                 // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
                 return false;

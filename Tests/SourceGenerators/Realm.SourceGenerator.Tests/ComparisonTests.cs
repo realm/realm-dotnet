@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Realms.SourceGenerator;
 using RealmGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmGenerator>;
 
@@ -24,38 +27,26 @@ namespace SourceGeneratorTests
     [TestFixture]
     internal class ComparisonTests : SourceGenerationTest
     {
-        [TestCase("AllTypesClass")]
-        [TestCase("ClassWithoutParameterlessConstructor")]
-        [TestCase("DifferentNamespaces", "NamespaceObj", "OtherNamespaceObj")]
-        [TestCase("NoNamespaceClass")]
-        [TestCase("PartialClass")]
-        [TestCase("AutomaticPropertiesClass")]
-        [TestCase("ConfusingNamespaceClass")]
-        [TestCase("InitializerNamespaceClass")]
-        [TestCase("NestedClass")]
-        [TestCase("NullableClass")]
-        [TestCase("PersonWithDog", "Person", "Dog")]
-        [TestCase("IndexedClass")]
-        public async Task ComparisonTest(string filename, params string[] classNames)
+        public record ComparisonTestInfo(string File, string[] ClassNames)
         {
-            await RunComparisonTest(filename, classNames);
+            public override string ToString() => File;
         }
 
-        [TestCase("ClassWithBaseType")]
-        [TestCase("MultiplePrimaryKeys")]
-        [TestCase("NoPartialClass")]
-        [TestCase("RealmintegerErrors")]
-        [TestCase("RealmObjectAndEmbeddedObjectClass")]
-        [TestCase("UnsupportedIndexableTypes")]
-        [TestCase("UnsupportedPrimaryKeyTypes")]
-        [TestCase("UnsupportedRequiredTypes")]
-        [TestCase("NestedClassWithoutPartialParent")]
-        [TestCase("NullableErrorClass")]
-        [TestCase("IgnoreObjectNullabilityClass")]
-        [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
-        public async Task ErrorComparisonTest(string filename, params string[] classNames)
+        private static readonly Regex _classNameRegex = new(@"class (?<ClassName>[^\s]*) :.*I(Realm|Embedded|Asymmetric)Object");
+
+        public static ComparisonTestInfo[] SuccessTestCases => GetTestInfos(_testClassesPath);
+        public static ComparisonTestInfo[] ErrorTestCases => GetTestInfos(_errorClassesPath);
+
+        [TestCaseSource(nameof(SuccessTestCases))]
+        public async Task ComparisonTest(ComparisonTestInfo testCase)
         {
-            await RunErrorTest(filename, classNames);
+            await RunComparisonTest(testCase.File, testCase.ClassNames);
+        }
+
+        [TestCaseSource(nameof(ErrorTestCases))]
+        public async Task ErrorComparisonTest(ComparisonTestInfo testCase)
+        {
+            await RunErrorTest(testCase.File, testCase.ClassNames);
         }
 
         [Test]
@@ -79,5 +70,36 @@ namespace SourceGeneratorTests
 
             await test.RunAsync();
         }
+
+        [Test]
+        public async Task OldCSharpVersionTest()
+        {
+            var className = "AllTypesClass";
+            var source = GetSource(className, ClassFolder.Test);
+            var error = new DiagnosticResult("RLM100", DiagnosticSeverity.Error)
+        .WithMessage("It is not possible to use the Realm source generator with C# versions older than 8.0.");
+
+            var test = new RealmGeneratorVerifier.Test();
+            test.LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7;
+            test.TestState.Sources.Add(source);
+            test.TestState.ExpectedDiagnostics.Add(error);
+
+            await test.RunAsync();
+        }
+
+        private static ComparisonTestInfo[] GetTestInfos(string folder)
+            => Directory.GetFiles(folder)
+                .Select(f =>
+                {
+                    var filename = Path.GetFileNameWithoutExtension(f);
+                    var content = File.ReadAllText(f);
+                    var classNames = _classNameRegex.Matches(content)
+                        .Select(m => m.Groups["ClassName"].Value)
+                        .Distinct()
+                        .ToArray();
+
+                    return new ComparisonTestInfo(filename, classNames);
+                })
+                .ToArray();
     }
 }

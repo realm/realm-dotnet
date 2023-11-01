@@ -78,6 +78,9 @@ namespace Realms
         /// Gets the accessor that encapsulates the methods and properties used by the object for its functioning.
         /// </summary>
         [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         IRealmAccessor IRealmObjectBase.Accessor => _accessor;
 
         /// <summary>
@@ -85,14 +88,20 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsManaged => _accessor.IsManaged;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public DynamicObjectApi DynamicApi => _accessor.DynamicApi;
 
         /// <summary>
@@ -102,7 +111,10 @@ namespace Realms
         /// Unmanaged objects are always considered valid.
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsValid => _accessor.IsValid;
 
         /// <summary>
@@ -112,21 +124,30 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public bool IsFrozen => _accessor.IsFrozen;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public Realm? Realm => _accessor.Realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public ObjectSchema? ObjectSchema => _accessor.ObjectSchema;
 
         /// <summary>
@@ -136,7 +157,10 @@ namespace Realms
         /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
         /// </remarks>
         /// <value>The number of objects referring to this one.</value>
-        [IgnoreDataMember]
+        [IgnoreDataMember, XmlIgnore]
+#if NET6_0_OR_GREATER
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public int BacklinksCount => _accessor.BacklinksCount;
 
         internal RealmObjectBase()

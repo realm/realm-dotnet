@@ -1,17 +1,46 @@
 ## 11.5.0 (2023-09-15)
 
 ### Enhancements
-* Streamlined some of the error codes reported in `SessionException`. A few error codes have been combined and some have been deprecated since they are no longer reported by the server. (Issue [#3295](https://github.com/realm/realm-dotnet/issues/3295))
+* Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
+* Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
+
+  ```
+  realm.custom_ignore_attribute = [System.Text.Json.Serialization.JsonIgnore]
+  ```
+  (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
+* The Realm source generator will now error out in case a collection in the model classes is assigned to a non-null value either in a property initializer or in a constructor. Realm collections are initialized internally and assigning non-null values to the property is not supported, where the `null!` assignment is only useful to silence nullable reference type warnings, in reality the collection will never be null. (Issue [#3455](https://github.com/realm/realm-dotnet/issues/3455))
+* Made WebSocket error logging more verbose when using `AppConfiguration.UseManagedWebSockets = true`. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
-* Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))
-* Fixed a `Cannot marshal generic Windows Runtime types with a non Windows Runtime type as a generic type argument` build error when using .NET Native. (Issue [#3434](https://github.com/realm/realm-dotnet/issues/3434), since 11.4.0)
+* Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.20.1.
+
+## 11.5.0 (2023-09-15)
+
+### Enhancements
+* Streamlined some of the error codes reported in `SessionException`. A few error codes have been combined and some have been deprecated since they are no longer reported by the server. (Issue [#3295](https://github.com/realm/realm-dotnet/issues/3295))
+* Full text search supports searching for prefix only. Eg. "description TEXT 'alex*'". (Core 13.18.0)
+* Unknown protocol errors received from Atlas Device Sync will no longer cause the application to crash if a valid error action is also received. Unknown error actions will be treated as an ApplicationBug error action and will cause sync to fail with an error via the sync error handler. (Core 13.18.0)
+* Added support for server log messages that are enabled by sync protocol version 10. Appservices request id will be provided in a server log message in a future server release. (Core 13.19.0)
+
+### Fixed
+* Fixed the message of the `MissingMemberException` being thrown when attempting to access a non-existent property with the dynamic API. (PR [#3432](https://github.com/realm/realm-dotnet/pull/3432))
+* Fixed a `Cannot marshal generic Windows Runtime types with a non Windows Runtime type as a generic type argument` build error when using .NET Native. (Issue [#3434](https://github.com/realm/realm-dotnet/issues/3434), since 11.4.0)
+* Fix failed assertion for unknown app server errors. (Core 13.17.2)
+* Running a query on @keys in a Dictionary would throw an exception. (Core 13.17.2)
+* Fixed crash in slab allocator (`Assertion failed: ref + size <= next->first`). (Core 13.20.1)
+* Sending empty UPLOAD messages may lead to 'Bad server version' errors and client reset. (Core 13.20.1)
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.20.1.
 
 ## 11.4.0 (2023-08-16)
 
