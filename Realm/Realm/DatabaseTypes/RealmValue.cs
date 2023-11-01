@@ -18,7 +18,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -63,13 +62,18 @@ namespace Realms
         [FieldOffset(0)]
         private readonly PrimitiveValue _primitiveValue;
 
-        // This occupies the same memory space as PrimitiveValue.Type
+        // This is only used when PrimitiveValue.Type == Int. int_value in PrimitiveValue occupies the first 8 bytes
+        // so we can safely place this at the 9th byte.
+        [FieldOffset(8)]
+        private readonly IntPtr _propertyIndex;
+
+        // This occupies the same memory space as PrimitiveValue.Type.
         [FieldOffset(16)]
         private readonly RealmValueType _type;
 
         // Object fields cannot be at the same offset as non-object fields,
         // thus all the following values cannot overlap _primitiveValue
-        // even though some are mutually exclusive
+        // even though some are mutually exclusive.
         [FieldOffset(24)]
         private readonly string? _stringValue;
 
@@ -88,11 +92,9 @@ namespace Realms
         [FieldOffset(24)]
         private readonly IDictionary<string, RealmValue>? _dictionaryValue;
 
+        // This is only used when PrimitiveValue.Type == Int.
         [FieldOffset(24)]
         private readonly ObjectHandle? _objectHandle;
-
-        [FieldOffset(8)]
-        private readonly IntPtr _propertyIndex;
 
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
@@ -110,7 +112,6 @@ namespace Realms
         internal RealmValue(PrimitiveValue primitive, Realm? realm = null, ObjectHandle? handle = default, IntPtr propertyIndex = default) : this()
         {
             _type = primitive.Type;
-            _objectHandle = handle;
 
             switch (Type)
             {
@@ -136,16 +137,17 @@ namespace Realms
                     Argument.NotNull(realm, nameof(realm));
                     _dictionaryValue = primitive.AsDictionary(realm!);
                     break;
+                case RealmValueType.Int:
+                    _primitiveValue = primitive;
+
+                    // _propertyIndex and _objectHandler are used only when converting the RealmValue to a RealmInteger.
+                    // _propertyIndex needs to be set after _primitiveValue due to the RealmValue struct explicit layout.
+                    _propertyIndex = propertyIndex;
+                    _objectHandle = handle;
+                    break;
                 default:
                     _primitiveValue = primitive;
                     break;
-            }
-
-            // This cannot be moved before setting _primitiveValue, otherwise it will overwrite _propertyIndex, due to the fact
-            // that they share memory space.
-            if (_type == RealmValueType.Int)
-            {
-                _propertyIndex = propertyIndex;
             }
         }
 
