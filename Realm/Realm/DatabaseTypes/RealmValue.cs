@@ -84,10 +84,10 @@ namespace Realms
         [FieldOffset(24)]
         private readonly ObjectHandle? _objectHandle;
 
-        [FieldOffset(32)]
+        [FieldOffset(8)]
         private readonly IntPtr _propertyIndex;
 
-        [FieldOffset(40)]
+        [FieldOffset(16)]
         private readonly RealmValueType _type;
 
         /// <summary>
