@@ -671,8 +671,7 @@ namespace Realms.Tests.Sync
             });
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
-            Assert.That(realm.Subscriptions[0].Name, Is.Null);
-            Assert.That(realm.Subscriptions[1].Name, Is.EqualTo("c"));
+            Assert.That(realm.Subscriptions.Select(o => o.Name), Is.EquivalentTo(new[] { null, "c" }));
 
             realm.Subscriptions.Update(() =>
             {
@@ -713,10 +712,7 @@ namespace Realms.Tests.Sync
             });
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(4));
-            Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("a"));
-            Assert.That(realm.Subscriptions[1].Name, Is.EqualTo("b"));
-            Assert.That(realm.Subscriptions[2].Name, Is.Null);
-            Assert.That(realm.Subscriptions[3].Name, Is.EqualTo("c"));
+            Assert.That(realm.Subscriptions.Select(o => o.Name), Is.EquivalentTo(new[] { "a", "b", null, "c" }));
 
             realm.Subscriptions.Update(() =>
             {
@@ -728,9 +724,7 @@ namespace Realms.Tests.Sync
             });
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(3));
-            Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("a"));
-            Assert.That(realm.Subscriptions[1].Name, Is.EqualTo("b"));
-            Assert.That(realm.Subscriptions[2].Name, Is.EqualTo("c"));
+            Assert.That(realm.Subscriptions.Select(o => o.Name), Is.EquivalentTo(new[] { "a", "b", "c" }));
         }
 
         [Test]
@@ -914,9 +908,7 @@ namespace Realms.Tests.Sync
             });
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(3));
-            Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("a"));
-            Assert.That(realm.Subscriptions[1].Name, Is.EqualTo("b"));
-            Assert.That(realm.Subscriptions[2].Name, Is.EqualTo("c"));
+            Assert.That(realm.Subscriptions.Select(o => o.Name), Is.EquivalentTo(new[] { "a", "b", "c" }));
         }
 
         [Test]

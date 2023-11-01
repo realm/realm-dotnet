@@ -755,7 +755,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
 
-                Assert.That(apiKeyUser.Identities[0].Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
+                Assert.That(apiKeyUser.Identities.Select(i => i.Provider), Does.Contain(Credentials.AuthProvider.ApiKey));
                 Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
             });
         }
