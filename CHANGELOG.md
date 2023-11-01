@@ -30,6 +30,7 @@
 * Fixed an excepton when querying over a geospatial dataset that some objects with a type property set to something other than `Point` (case insensitive). Those objects are now just ignored. (Core 13.21.0)
 * Fixed an issue that would make the user in an inconstisten state if the user was logged out while an access toekn refresh was in progress. (Core 13.21.0)
 * Fixed an issue where Android.bp builds would fail with SSL certificat validation errors because the trusted CA roots bundle was not included. (Core 13.23.0)
+* Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

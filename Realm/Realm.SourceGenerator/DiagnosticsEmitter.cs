@@ -59,6 +59,8 @@ namespace Realms.SourceGenerator
                     throw;
                 }
             }
+
+            parsingResults.GeneralDiagnostics.ForEach(_context.ReportDiagnostic);
         }
 
         private static void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)

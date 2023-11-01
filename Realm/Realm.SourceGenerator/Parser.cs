@@ -46,6 +46,14 @@ namespace Realms.SourceGenerator
             var classNames = new HashSet<string>();
             var duplicateClassNames = new HashSet<string>();
 
+            if (realmClasses.Any() &&
+                _context.Compilation is CSharpCompilation comp &&
+                comp.LanguageVersion < LanguageVersion.CSharp8)
+            {
+                result.GeneralDiagnostics.Add(Diagnostics.OldCSharpVersion());
+                return result;
+            }
+
             foreach (var rc in realmClasses)
             {
                 var classSymbol = rc.ClassSymbol;
@@ -556,5 +564,7 @@ namespace Realms.SourceGenerator
     internal record ParsingResults
     {
         public List<ClassInfo> ClassInfo { get; } = new();
+
+        public List<Diagnostic> GeneralDiagnostics { get; } = new();
     }
 }
