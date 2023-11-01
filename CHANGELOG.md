@@ -15,6 +15,7 @@
   ```
   (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 
+* Reduced memory usage of `RealmValue`. (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 * Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 
