@@ -1917,7 +1917,6 @@ namespace Realms.Tests.Sync
                 }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty).ToArray();
-                Assert.That(query.Count(), Is.EqualTo(2));
                 Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
             }, timeout: 60_000);
         }
@@ -1955,7 +1954,6 @@ namespace Realms.Tests.Sync
                 }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty).ToArray();
-                Assert.That(query.Count(), Is.EqualTo(1));
                 Assert.That(query, Is.EquivalentTo(new[] { 2.5 }));
             });
         }
@@ -2200,7 +2198,15 @@ namespace Realms.Tests.Sync
 
                 writerRealm.Write(() =>
                 {
-                    writerRealm.Add(new SyncAllTypesObject { DoubleProperty = 3.5, GuidProperty = testGuid, });
+                    for (var i = 0; i < 10; i++)
+                    {
+                        writerRealm.Add(new SyncAllTypesObject
+                        {
+                            ByteArrayProperty = TestHelpers.GetBytes(100_000),
+                            DoubleProperty = 3.5,
+                            GuidProperty = testGuid
+                        });
+                    }
                 });
 
                 await WaitForUploadAsync(writerRealm);
@@ -2213,7 +2219,7 @@ namespace Realms.Tests.Sync
 
                 // If we manually wait for the download, we should see the second object show up.
                 await WaitForDownloadAsync(realm);
-                Assert.That(query.Count(), Is.EqualTo(2));
+                Assert.That(query.Count(), Is.EqualTo(11));
             });
         }
 
@@ -2235,15 +2241,25 @@ namespace Realms.Tests.Sync
 
                 writerRealm.Write(() =>
                 {
-                    writerRealm.Add(new SyncAllTypesObject { DoubleProperty = 3.5, GuidProperty = testGuid, });
+                    for (var i = 0; i < 10; i++)
+                    {
+                        writerRealm.Add(new SyncAllTypesObject
+                        {
+                            ByteArrayProperty = TestHelpers.GetBytes(100_000),
+                            DoubleProperty = 3.5,
+                            GuidProperty = testGuid
+                        });
+                    }
                 });
+
+                await WaitForUploadAsync(writerRealm);
 
                 // Resubscribe to a different query with same name with waitForSync.FirstTime. Even though
                 // we have a subscription with the same name, SubscribeAsync should wait for the new subscription.
                 await realm.All<SyncAllTypesObject>()
                     .Where(o => o.GuidProperty == testGuid && o.DoubleProperty > 2.0001)
                     .SubscribeAsync(new() { Name = "abc" });
-                Assert.That(query.Count(), Is.EqualTo(2));
+                Assert.That(query.Count(), Is.EqualTo(11));
             });
         }
 
@@ -2315,11 +2331,21 @@ namespace Realms.Tests.Sync
 
                 writerRealm.Write(() =>
                 {
-                    writerRealm.Add(new SyncAllTypesObject { DoubleProperty = 3.5, GuidProperty = testGuid, });
+                    for (var i = 0; i < 10; i++)
+                    {
+                        writerRealm.Add(new SyncAllTypesObject
+                        {
+                            ByteArrayProperty = TestHelpers.GetBytes(100_000),
+                            DoubleProperty = 3.5,
+                            GuidProperty = testGuid
+                        });
+                    }
                 });
 
+                await WaitForUploadAsync(writerRealm);
+
                 await query.SubscribeAsync(new() { Name = name }, WaitForSyncMode.Always);
-                Assert.That(query.Count(), Is.EqualTo(2));
+                Assert.That(query.Count(), Is.EqualTo(11));
             });
         }
 

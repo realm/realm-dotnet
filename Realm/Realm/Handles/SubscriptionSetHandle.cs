@@ -34,7 +34,7 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void StateWaitCallback(IntPtr task_completion_source, SubscriptionSetState new_state, PrimitiveValue message);
+            public delegate void StateWaitCallback(IntPtr task_completion_source, SubscriptionSetState new_state, StringValue message, ErrorCode error_code);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void GetSubscriptionCallback(IntPtr managed_callback, Native.Subscription subscription);
@@ -329,33 +329,21 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.StateWaitCallback))]
-        private static void HandleStateWaitCallback(IntPtr taskCompletionSource, SubscriptionSetState state, PrimitiveValue message)
+        private static void HandleStateWaitCallback(IntPtr taskCompletionSource, SubscriptionSetState state, StringValue message, ErrorCode error_code)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target!;
 
-            switch (message.Type)
+            switch (error_code)
             {
-                case RealmValueType.Null:
+                case 0: // No error
                     tcs.TrySetResult(state);
                     break;
-                case RealmValueType.Int when message.AsInt() == -1:
+                case (ErrorCode)1027: // OperationAborted
                     tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
                     break;
-                case RealmValueType.String:
-                    var messageString = message.AsString();
-                    if (messageString == "Active SubscriptionSet without a SubscriptionStore")
-                    {
-                        tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
-                    }
-                    else
-                    {
-                        tcs.TrySetException(new SubscriptionException(messageString));
-                    }
-
-                    break;
                 default:
-                    tcs.TrySetException(new SubscriptionException($"An unexpected error occurred and the wrong error type was supplied: {message.Type}. Please file a new issue at https://github.com/realm/realm-dotnet/issues"));
+                    tcs.TrySetException(new SessionException((string?)message ?? "Unknown error", error_code));
                     break;
             }
 
