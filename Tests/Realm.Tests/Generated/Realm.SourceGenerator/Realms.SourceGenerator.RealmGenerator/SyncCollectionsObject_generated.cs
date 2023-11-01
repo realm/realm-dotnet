@@ -1609,7 +1609,7 @@ namespace Realms.Tests
                         instance.ObjectList.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "EmbeddedObjectList":
-                        instance.EmbeddedObjectList.Add(LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>()!.DeserializeById(context)!);
+                        instance.EmbeddedObjectList.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
                         break;
                     case "RealmValueList":
                         instance.RealmValueList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
@@ -1715,7 +1715,7 @@ namespace Realms.Tests
                         instance.ObjectDict[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "EmbeddedObjectDict":
-                        instance.EmbeddedObjectDict[fieldName] = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.EmbeddedObjectDict[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
                     case "RealmValueDict":
                         instance.RealmValueDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);

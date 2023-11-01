@@ -927,7 +927,7 @@ namespace Realms.Tests
                         instance.ObjectProperty = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
                         break;
                     case "EmbeddedObjectProperty":
-                        instance.EmbeddedObjectProperty = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context);
+                        instance.EmbeddedObjectProperty = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
                 }
             }

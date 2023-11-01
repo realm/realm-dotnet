@@ -445,7 +445,7 @@ namespace Realms.Tests.Database
                             instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                             break;
                         case "Location":
-                            instance.Location = LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>()!.DeserializeById(context);
+                            instance.Location = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>().Deserialize(context);
                             break;
                     }
                 }
@@ -455,7 +455,7 @@ namespace Realms.Tests.Database
                     switch (name)
                     {
                         case "Offices":
-                            instance.Offices.Add(LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>()!.DeserializeById(context)!);
+                            instance.Offices.Add(BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>().Deserialize(context));
                             break;
                     }
                 }

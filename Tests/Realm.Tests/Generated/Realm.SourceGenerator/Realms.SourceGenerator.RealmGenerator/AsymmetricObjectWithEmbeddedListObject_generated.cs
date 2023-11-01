@@ -402,7 +402,7 @@ namespace Realms.Tests.Sync
                 switch (name)
                 {
                     case "EmbeddedListObject":
-                        instance.EmbeddedListObject.Add(LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>()!.DeserializeById(context)!);
+                        instance.EmbeddedListObject.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
                         break;
                 }
             }

@@ -497,7 +497,7 @@ namespace Realms.Tests.Database
                         instance.Summary = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "CompletionReport":
-                        instance.CompletionReport = LookupSerializer<Realms.Tests.Database.CompletionReport?>()!.DeserializeById(context);
+                        instance.CompletionReport = BsonSerializer.LookupSerializer<Realms.Tests.Database.CompletionReport?>().Deserialize(context);
                         break;
                 }
             }
@@ -507,10 +507,10 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "SubTasks":
-                        instance.SubTasks.Add(LookupSerializer<Realms.Tests.Database.DynamicSubTask>()!.DeserializeById(context)!);
+                        instance.SubTasks.Add(BsonSerializer.LookupSerializer<Realms.Tests.Database.DynamicSubTask>().Deserialize(context));
                         break;
                     case "SubSubTasks":
-                        instance.SubSubTasks.Add(LookupSerializer<Realms.Tests.Database.DynamicSubSubTask>()!.DeserializeById(context)!);
+                        instance.SubSubTasks.Add(BsonSerializer.LookupSerializer<Realms.Tests.Database.DynamicSubSubTask>().Deserialize(context));
                         break;
                 }
             }
@@ -520,7 +520,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "SubTasksDictionary":
-                        instance.SubTasksDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.DynamicSubTask?>()!.DeserializeById(context)!;
+                        instance.SubTasksDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.Database.DynamicSubTask?>().Deserialize(context);
                         break;
                 }
             }

@@ -410,10 +410,10 @@ namespace Realms.Tests.Database
                     switch (name)
                     {
                         case "CoordinatesEmbedded":
-                            instance.CoordinatesEmbedded = LookupSerializer<Realms.Tests.Database.GeospatialTests.CoordinatesEmbeddedObject?>()!.DeserializeById(context);
+                            instance.CoordinatesEmbedded = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CoordinatesEmbeddedObject?>().Deserialize(context);
                             break;
                         case "TypeEmbedded":
-                            instance.TypeEmbedded = LookupSerializer<Realms.Tests.Database.GeospatialTests.TypeEmbeddedObject?>()!.DeserializeById(context);
+                            instance.TypeEmbedded = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TypeEmbeddedObject?>().Deserialize(context);
                             break;
                         case "TopLevelGeoPoint":
                             instance.TopLevelGeoPoint = LookupSerializer<Realms.Tests.Database.GeospatialTests.TopLevelGeoPoint?>()!.DeserializeById(context);

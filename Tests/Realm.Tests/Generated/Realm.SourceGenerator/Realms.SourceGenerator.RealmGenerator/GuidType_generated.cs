@@ -735,7 +735,7 @@ namespace Realms.Tests.Database
                         instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     case "EmbeddedProperty":
-                        instance.EmbeddedProperty = LookupSerializer<Realms.Tests.Database.EmbeddedGuidType?>()!.DeserializeById(context);
+                        instance.EmbeddedProperty = BsonSerializer.LookupSerializer<Realms.Tests.Database.EmbeddedGuidType?>().Deserialize(context);
                         break;
                 }
             }

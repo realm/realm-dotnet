@@ -414,7 +414,7 @@ namespace Realms.Tests.Database
                         instance.Value = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "Link":
-                        instance.Link = LookupSerializer<Realms.Tests.Database.ObjectEmbedded?>()!.DeserializeById(context);
+                        instance.Link = BsonSerializer.LookupSerializer<Realms.Tests.Database.ObjectEmbedded?>().Deserialize(context);
                         break;
                 }
             }
@@ -424,7 +424,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "List":
-                        instance.List.Add(LookupSerializer<Realms.Tests.Database.ObjectEmbedded>()!.DeserializeById(context)!);
+                        instance.List.Add(BsonSerializer.LookupSerializer<Realms.Tests.Database.ObjectEmbedded>().Deserialize(context));
                         break;
                 }
             }

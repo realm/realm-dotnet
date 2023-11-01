@@ -391,7 +391,7 @@ namespace Realms.Tests.Sync
                         instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
                         break;
                     case "RecursiveObject":
-                        instance.RecursiveObject = LookupSerializer<Realms.Tests.EmbeddedLevel1?>()!.DeserializeById(context);
+                        instance.RecursiveObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel1?>().Deserialize(context);
                         break;
                 }
             }

@@ -56,7 +56,7 @@ namespace Realms.Tests
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal ILinksObjectAccessor Accessor => _accessor ??= new LinksObjectUnmanagedAccessor(typeof(LinksObject));
+        private ILinksObjectAccessor Accessor => _accessor ??= new LinksObjectUnmanagedAccessor(typeof(LinksObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]

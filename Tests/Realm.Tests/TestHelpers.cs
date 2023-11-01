@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Tests
@@ -407,6 +408,100 @@ namespace Realms.Tests
             Assert.That(regex.IsMatch(testString), $"Expected {testString} to match {regex}");
         }
 
+        public static void AssertMatchesBsonDocument(BsonDocument? actual, IRealmObjectBase? expected, string? message = null,
+            [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var locationString = $"in {memberName} - {sourceFilePath}:{sourceLineNumber}" + (message == null ? string.Empty : $" - {message}");
+
+            if (expected is null)
+            {
+                Assert.That(actual, Is.Null, $"Expected {actual} to be null {locationString}");
+                return;
+            }
+            else
+            {
+                Assert.That(actual, Is.Not.Null, $"Expected {actual} to not be null {locationString}");
+            }
+
+            Assert.That(expected.ObjectSchema, Is.Not.Null, $"This method should only be used with SG-generated classes, but the ObjectSchema was null {locationString}");
+
+            foreach (var prop in expected.ObjectSchema!)
+            {
+                // TODO: handle collections
+                if (prop.Type.IsCollection(out _))
+                {
+                    continue;
+                }
+
+                var value = actual![prop.Name];
+
+                switch (prop.Type)
+                {
+                    case PropertyType.Object:
+                        // TODO: handle objects
+                        break;
+                    case PropertyType.Int:
+                        AssertAreEqual(value.ToInt64(), expected.GetProperty<long>(prop));
+                        break;
+                    case PropertyType.Bool:
+                        AssertAreEqual(value.AsBoolean, expected.GetProperty<bool>(prop));
+                        break;
+                    case PropertyType.String:
+                        AssertAreEqual(value.AsString, expected.GetProperty<string?>(prop));
+                        break;
+                    case PropertyType.NullableString:
+                        AssertAreEqual(value.IsBsonNull ? null : value.AsString, expected.GetProperty<string?>(prop));
+                        break;
+                    case PropertyType.Data:
+                        AssertAreEqual(value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
+                        break;
+                    case PropertyType.NullableData:
+                        AssertAreEqual(value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
+                        break;
+                    case PropertyType.Date:
+                        AssertAreEqual(new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset>(prop));
+                        break;
+                    case PropertyType.Float:
+                    case PropertyType.Double:
+                        AssertAreEqual(value.AsDouble, expected.GetProperty<double>(prop));
+                        break;
+                    case PropertyType.RealmValue:
+                        break;
+                    case PropertyType.ObjectId:
+                        AssertAreEqual(value.AsObjectId, expected.GetProperty<ObjectId>(prop));
+                        break;
+                    case PropertyType.Decimal:
+                        AssertAreEqual(value.AsDecimal128, expected.GetProperty<Decimal128>(prop));
+                        break;
+                    case PropertyType.Guid:
+                        AssertAreEqual(value.AsGuid, expected.GetProperty<Guid>(prop));
+                        break;
+                    case PropertyType.NullableInt:
+                        AssertAreEqual(value.IsBsonNull ? null : value.ToInt64(), expected.GetProperty<long?>(prop));
+                        break;
+                    case PropertyType.NullableBool:
+                        AssertAreEqual(value.AsNullableBoolean, expected.GetProperty<bool?>(prop));
+                        break;
+                    case PropertyType.NullableDate:
+                        AssertAreEqual(value.IsBsonNull ? null : new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset?>(prop));
+                        break;
+                    case PropertyType.NullableFloat:
+                    case PropertyType.NullableDouble:
+                        AssertAreEqual(value.AsNullableDouble, expected.GetProperty<double?>(prop));
+                        break;
+                    case PropertyType.NullableObjectId:
+                        AssertAreEqual(value.AsNullableObjectId, expected.GetProperty<ObjectId?>(prop));
+                        break;
+                    case PropertyType.NullableDecimal:
+                        AssertAreEqual(value.AsNullableDecimal128, expected.GetProperty<Decimal128?>(prop));
+                        break;
+                    case PropertyType.NullableGuid:
+                        AssertAreEqual(value.AsNullableGuid, expected.GetProperty<Guid?>(prop));
+                        break;
+                }
+            }
+        }
+
         public static void AssertAreEqual(object? actual, object? expected, string? message = null,
             [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
@@ -418,7 +513,7 @@ namespace Realms.Tests
             }
             else
             {
-                Assert.That(actual, Is.Not.Null, $"Expected {actual} to equal {locationString}");
+                Assert.That(actual, Is.Not.Null, $"Expected {actual} to not be null {locationString}");
             }
 
             if (expected is IRealmObjectBase robjExpected)
@@ -427,7 +522,7 @@ namespace Realms.Tests
 
                 var robjActual = actual as IRealmObjectBase;
                 Assert.That(robjActual, Is.Not.Null, $"Expected {actual} to be a RealmObject {locationString}");
-                foreach (var prop in robjExpected.ObjectSchema!)
+                foreach (var prop in robjExpected.ObjectSchema!.Where(p => !p.Type.IsComputed()))
                 {
                     var expectedProp = robjExpected.GetProperty<object?>(prop);
                     var actualProp = robjActual!.GetProperty<object?>(prop);
@@ -539,8 +634,9 @@ namespace Realms.Tests
         public static T GetProperty<T>(this IRealmObjectBase o, Property property)
         {
             var pi = o.GetType().GetProperty(property.ManagedName, BindingFlags.Public | BindingFlags.Instance)!;
+
 #pragma warning disable CS8600, CS8603 // Caller needs to ensure T is nullable if property may be null
-            return (T)pi.GetValue(o);
+            return Operator.Convert<T>(pi.GetValue(o));
 #pragma warning restore CS8600, CS8603
         }
 

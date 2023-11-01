@@ -91,7 +91,7 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         }
     }
 
-    public T? DeserializeById(BsonDeserializationContext context)
+    public virtual T? DeserializeById(BsonDeserializationContext context)
     {
         if (context.Reader.CurrentBsonType == BsonType.Null)
         {

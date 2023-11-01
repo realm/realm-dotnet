@@ -900,7 +900,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
                     {
                         var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).InternalType;
 
-                        var deserialize = property.TypeInfo.InternalType!.ObjectType == ObjectType.None
+                        var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                             ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
                             : $"LookupSerializer<{type}>()!.DeserializeById(context)!";
 
@@ -912,7 +912,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
                     {
                         var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).InternalType;
 
-                        var deserialize = property.TypeInfo.InternalType!.ObjectType == ObjectType.None
+                        var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                             ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
                             : $"LookupSerializer<{type}>()!.DeserializeById(context)!";
 
@@ -926,7 +926,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
                     var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).CompleteType;
 
                     serializeValueLines.AppendLine($"WriteValue(context, args, \"{stringName}\", value.{name});");
-                    var deserialize = property.TypeInfo.ObjectType == ObjectType.None
+                    var deserialize = property.TypeInfo.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                         ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
                         : $"LookupSerializer<{type}>()!.DeserializeById(context)";
                     readValueLines.AppendLine($@"case ""{stringName}"":

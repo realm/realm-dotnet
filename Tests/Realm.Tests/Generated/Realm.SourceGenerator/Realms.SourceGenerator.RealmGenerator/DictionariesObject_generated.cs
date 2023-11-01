@@ -1162,7 +1162,7 @@ namespace Realms.Tests
                         instance.ObjectDictionary[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "EmbeddedObjectDictionary":
-                        instance.EmbeddedObjectDictionary[fieldName] = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.EmbeddedObjectDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
                     case "RealmValueDictionary":
                         instance.RealmValueDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);

@@ -418,7 +418,7 @@ namespace Realms.Tests
                         instance.String = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "Child":
-                        instance.Child = LookupSerializer<Realms.Tests.EmbeddedLevel3?>()!.DeserializeById(context);
+                        instance.Child = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel3?>().Deserialize(context);
                         break;
                 }
             }
@@ -428,7 +428,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "Children":
-                        instance.Children.Add(LookupSerializer<Realms.Tests.EmbeddedLevel3>()!.DeserializeById(context)!);
+                        instance.Children.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel3>().Deserialize(context));
                         break;
                 }
             }

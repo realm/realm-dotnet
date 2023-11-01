@@ -407,7 +407,7 @@ namespace Realms.Tests.Sync
                 switch (name)
                 {
                     case "EmbeddedDictionaryObject":
-                        instance.EmbeddedDictionaryObject[fieldName] = LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.EmbeddedDictionaryObject[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
                 }
             }

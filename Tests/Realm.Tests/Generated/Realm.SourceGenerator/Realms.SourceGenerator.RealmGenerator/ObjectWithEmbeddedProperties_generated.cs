@@ -470,10 +470,10 @@ namespace Realms.Tests
                         instance.PrimaryKey = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "AllTypesObject":
-                        instance.AllTypesObject = LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>()!.DeserializeById(context);
+                        instance.AllTypesObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>().Deserialize(context);
                         break;
                     case "RecursiveObject":
-                        instance.RecursiveObject = LookupSerializer<Realms.Tests.EmbeddedLevel1?>()!.DeserializeById(context);
+                        instance.RecursiveObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel1?>().Deserialize(context);
                         break;
                 }
             }
@@ -483,7 +483,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "ListOfAllTypesObjects":
-                        instance.ListOfAllTypesObjects.Add(LookupSerializer<Realms.Tests.EmbeddedAllTypesObject>()!.DeserializeById(context)!);
+                        instance.ListOfAllTypesObjects.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject>().Deserialize(context));
                         break;
                 }
             }
@@ -493,7 +493,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "DictionaryOfAllTypesObjects":
-                        instance.DictionaryOfAllTypesObjects[fieldName] = LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>()!.DeserializeById(context)!;
+                        instance.DictionaryOfAllTypesObjects[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>().Deserialize(context);
                         break;
                 }
             }

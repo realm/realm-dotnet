@@ -18,10 +18,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
@@ -51,7 +48,7 @@ namespace Realms.Tests.Serialization
             base.CustomSetUp();
         }
 
-        public static readonly object[] ATOTestCases = new[]
+        public static readonly object[] PrimitiveTestCases = new[]
         {
             new object[] { CreateTestCase("Empty object", new AllTypesObject()) },
             new object[]
@@ -190,16 +187,37 @@ namespace Realms.Tests.Serialization
             }
         };
 
-        [TestCaseSource(nameof(ATOTestCases))]
-        public void RealmObject_NoLinks_Serializes(TestCaseData<AllTypesObject> testCase)
+        public static readonly object[] EmbeddedTestCases =
         {
-            var ato = testCase.Value;
-            AddIfNecessary(ato);
+            new object[]
+            {
+                CreateTestCase("Single embedded", new ObjectWithEmbeddedProperties
+                {
+                    PrimaryKey = 5,
+                    AllTypesObject = new()
+                    {
+                        BooleanProperty = true,
+                        ByteArrayProperty = new byte[] { 1, 2, 3 },
+                        DoubleProperty = 3.14,
+                        Int32Property = 4,
+                        StringProperty = "bla bla"
+                    }
+                })
+            }
+        };
 
-            var json = SerializationHelper.ToNativeJson(ato);
-            var deserialized = BsonSerializer.Deserialize<AllTypesObject>(json);
+        [TestCaseSource(nameof(PrimitiveTestCases))]
+        public void RealmObject_Primitive_Serializes(TestCaseData<AllTypesObject> testCase)
+        {
+            var original = testCase.Value;
+            AddIfNecessary(original);
 
-            AssertAreEqual(deserialized, ato);
+            var json = SerializationHelper.ToNativeJson(original);
+            var actual = BsonSerializer.Deserialize<AllTypesObject>(json);
+            var actualDocument = BsonSerializer.Deserialize<BsonDocument>(json);
+
+            AssertAreEqual(actual, original);
+            AssertMatchesBsonDocument(actualDocument, original);
         }
 
         [TestCaseSource(nameof(LinksTestCases))]
@@ -286,6 +304,24 @@ namespace Realms.Tests.Serialization
             var expected = obj.GetProperty<IEnumerable>(prop);
 
             AssertAreEqual(actual, expected, $"property: {prop.Name}");
+        }
+
+        [TestCaseSource(nameof(EmbeddedTestCases))]
+        public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
+        {
+            var obj = testCase.Value;
+            AddIfNecessary(obj);
+
+            var json = SerializationHelper.ToNativeJson(obj);
+
+            var deserialized = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
+
+            Assert.That(obj.PrimaryKey, Is.EqualTo(deserialized.PrimaryKey));
+
+            if (obj.AllTypesObject is not null)
+            {
+                AssertAreEqual(deserialized.AllTypesObject, obj.AllTypesObject);
+            }
         }
 
         private void AddIfNecessary(IRealmObject obj)

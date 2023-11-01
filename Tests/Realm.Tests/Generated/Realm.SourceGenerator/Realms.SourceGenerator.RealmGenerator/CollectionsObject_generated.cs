@@ -2607,7 +2607,7 @@ namespace Realms.Tests
                         instance.ObjectList.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "EmbeddedObjectList":
-                        instance.EmbeddedObjectList.Add(LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>()!.DeserializeById(context)!);
+                        instance.EmbeddedObjectList.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
                         break;
                     case "RealmValueList":
                         instance.RealmValueList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
