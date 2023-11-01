@@ -60,6 +60,9 @@ namespace Realms
     [StructLayout(LayoutKind.Explicit)]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
+        [FieldOffset(0)]
+        private readonly PrimitiveValue _primitiveValue;
+
         [FieldOffset(24)]
         private readonly string? _stringValue;
 
@@ -78,16 +81,13 @@ namespace Realms
         [FieldOffset(24)]
         private readonly IDictionary<string, RealmValue>? _dictionaryValue;
 
-        [FieldOffset(0)]
-        private readonly PrimitiveValue _primitiveValue;
+        [FieldOffset(24)]
+        private readonly ObjectHandle? _objectHandle;
 
         [FieldOffset(32)]
         private readonly IntPtr _propertyIndex;
 
         [FieldOffset(40)]
-        private readonly ObjectHandle? _objectHandle;
-
-        [FieldOffset(48)]
         private readonly RealmValueType _type;
 
         /// <summary>
