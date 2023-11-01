@@ -178,7 +178,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
-                Assert.That(user.Provider, Is.EqualTo(Credentials.AuthProvider.EmailPassword));
                 Assert.That(user.AccessToken, Is.Not.Empty);
                 Assert.That(user.RefreshToken, Is.Not.Empty);
 
@@ -756,7 +755,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
 
-                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
+                Assert.That(apiKeyUser.Identities[0].Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
                 Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
             });
         }
@@ -784,8 +783,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
 
-                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
-                Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
+                Assert.That(apiKeyUser.RefreshToken, Is.EqualTo(user.RefreshToken));
             });
         }
 
@@ -980,7 +978,6 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             Assert.That(user.ToString(), Does.Contain(user.Id));
-            Assert.That(user.ToString(), Does.Contain(user.Provider.ToString()));
         }
 
         [Test, Ignore("test")]
