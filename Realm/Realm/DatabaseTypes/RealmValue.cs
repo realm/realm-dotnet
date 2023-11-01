@@ -63,6 +63,13 @@ namespace Realms
         [FieldOffset(0)]
         private readonly PrimitiveValue _primitiveValue;
 
+        // This occupies the same memory space as PrimitiveValue.Type
+        [FieldOffset(16)]
+        private readonly RealmValueType _type;
+
+        // Object fields cannot be at the same offset as non-object fields,
+        // thus all the following values cannot overlap _primitiveValue
+        // even though some are mutually exclusive
         [FieldOffset(24)]
         private readonly string? _stringValue;
 
@@ -87,9 +94,6 @@ namespace Realms
         [FieldOffset(8)]
         private readonly IntPtr _propertyIndex;
 
-        [FieldOffset(16)]
-        private readonly RealmValueType _type;
-
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
         /// </summary>
@@ -107,7 +111,6 @@ namespace Realms
         {
             _type = primitive.Type;
             _objectHandle = handle;
-            _propertyIndex = propertyIndex;
 
             switch (Type)
             {
@@ -136,6 +139,13 @@ namespace Realms
                 default:
                     _primitiveValue = primitive;
                     break;
+            }
+
+            // This cannot be moved before setting _primitiveValue, otherwise it will overwrite _propertyIndex, due to the fact
+            // that they share memory space.
+            if (_type == RealmValueType.Int)
+            {
+                _propertyIndex = propertyIndex;
             }
         }
 
