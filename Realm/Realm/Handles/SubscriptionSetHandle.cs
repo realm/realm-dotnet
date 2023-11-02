@@ -342,6 +342,10 @@ namespace Realms.Sync
                 case (ErrorCode)1027: // OperationAborted
                     tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
                     break;
+                case ErrorCode.BadQuery:
+                case ErrorCode.SubscriptionFailed:
+                    tcs.TrySetException(new SubscriptionException(message!));
+                    break;
                 default:
                     tcs.TrySetException(new SessionException((string?)message ?? "Unknown error", error_code));
                     break;

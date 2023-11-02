@@ -49,6 +49,11 @@ public enum ErrorCode
     BadChangeset = 1015,
 
     /// <summary>
+    /// The client attempted to create a subscription which the server rejected.
+    /// </summary>
+    SubscriptionFailed = 1016,
+
+    /// <summary>
     /// The client attempted to create a subscription for a query is invalid/malformed.
     /// </summary>
     BadQuery = 1031,
