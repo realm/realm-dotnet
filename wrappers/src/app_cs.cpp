@@ -246,8 +246,7 @@ extern "C" {
                     id,
                     refresh_token,
                     access_token,
-                    "testing",
-                    "my-device-id"));
+                    "testing"));
         });
     }
 

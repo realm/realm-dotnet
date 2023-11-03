@@ -18,7 +18,6 @@
 
 using System;
 using Realms.Sync.ErrorHandling;
-using static System.Net.WebRequestMethods;
 
 namespace Realms.Sync.Exceptions;
 
@@ -48,6 +47,11 @@ public enum ErrorCode
     /// The changeset is invalid.
     /// </summary>
     BadChangeset = 1015,
+
+    /// <summary>
+    /// The client attempted to create a subscription which the server rejected.
+    /// </summary>
+    SubscriptionFailed = 1016,
 
     /// <summary>
     /// The client attempted to create a subscription for a query is invalid/malformed.
@@ -106,6 +110,13 @@ public enum ErrorCode
     /// to an app configured to use partition sync.
     /// </summary>
     WrongSyncType = 1043,
+
+    /// <summary>
+    /// Client attempted a write that is disallowed by permissions, or modifies an
+    /// object outside the current query, and the server undid the modification.
+    /// </summary>
+    /// <seealso cref="CompensatingWriteException"/>
+    CompensatingWrite = 1033,
 
     /// <summary>
     /// Unrecognized error code. It usually indicates incompatibility between the App Services server and client SDK versions.
@@ -196,13 +207,6 @@ public enum ErrorCode
     /// </summary>
     [Obsolete("This error code is no longer reported")]
     InitialSyncNotCompleted = -4,
-
-    /// <summary>
-    /// Client attempted a write that is disallowed by permissions, or modifies an
-    /// object outside the current query, and the server undid the modification.
-    /// </summary>
-    /// <seealso cref="CompensatingWriteException"/>
-    CompensatingWrite = 1033,
 
     /// <summary>
     /// An error sent by the server when its data structures used to track client progress

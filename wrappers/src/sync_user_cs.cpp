@@ -143,13 +143,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT AuthProvider realm_syncuser_get_auth_provider(SharedSyncUser& user, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&] {
-            return to_auth_provider(user->provider_type());
-        });
-    }
-
     REALM_EXPORT size_t realm_syncuser_get_custom_data(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
