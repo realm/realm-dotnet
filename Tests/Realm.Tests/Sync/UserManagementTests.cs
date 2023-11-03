@@ -440,7 +440,6 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                // Standard case
                 var unconfirmedMail = SyncTestHelpers.GetUnconfirmedUsername();
                 var credentials = Credentials.EmailPassword(unconfirmedMail, SyncTestHelpers.DefaultPassword);
 
@@ -487,7 +486,6 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                // Standard case
                 var user = await GetUserAsync();
                 var email = user.Profile.Email!;
 
