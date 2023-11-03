@@ -412,7 +412,7 @@ namespace Realms.Sync
             /// Rerun the custom confirmation function for the given mail.
             /// </summary>
             /// <param name="email">The email of the user.</param>
-            /// <returns> //TODO Finish the docs
+            /// <returns>
             /// An awaitable <see cref="Task"/> representing the asynchronous request to the server that the custom confirmation function is run again. Successful
             /// completion indicates that the user has been confirmed on the server.
             /// </returns>
@@ -420,7 +420,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
 
-                return _app.Handle.EmailPassword.ResendConfirmationEmailAsync(email);
+                return _app.Handle.EmailPassword.RetryCustomConfirmationAsync(email);
             }
 
             /// <summary>

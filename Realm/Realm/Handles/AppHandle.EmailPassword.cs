@@ -137,7 +137,7 @@ namespace Realms.Sync
 
                 try
                 {
-                    EmailNativeMethods.resend_confirmation_email(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    EmailNativeMethods.retry_custom_comfirmation(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
                     ex.ThrowIfNecessary();
                     await tcs.Task;
                 }

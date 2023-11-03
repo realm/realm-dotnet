@@ -88,12 +88,34 @@ namespace Baas
         }
 
         private const string ConfirmFuncSource =
-            @"exports = ({ token, tokenId, username }) => {
+            @"exports = async function ({ token, tokenId, username }) {
                   // process the confirm token, tokenId and username
                   if (username.includes(""realm_tests_do_autoverify"")) {
-                    return { status: 'success' }
+                    return { status: 'success' };
                   }
-                  // do not confirm the user
+
+                  if (username.includes(""realm_tests_do_not_confirm"")) {
+                    const mongodb = context.services.get('BackingDB');
+                    let collection = mongodb.db('test_db').collection('not_confirmed');
+                    let result = await collection.findOne({'email': username});
+
+                    if(result === null)
+                    {
+                        let newVal = {
+                            'email': username,
+                            'token': token,
+                            'tokenId': tokenId,
+                        }
+
+                        await collection.insertOne(newVal);
+
+                        return { status: 'pending' };
+                    }
+
+                    return { status: 'success' };
+                  }
+
+                  // fail the user confirmation
                   return { status: 'fail' };
                 };";
 

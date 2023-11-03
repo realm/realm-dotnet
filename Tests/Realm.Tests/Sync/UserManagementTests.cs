@@ -401,6 +401,42 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void User_RetryCustomConfirmationAsync_WorksInAllScenarios()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                // Standard case
+                var unconfirmedMail = SyncTestHelpers.GetUnconfirmedUsername();
+                var credentials = Credentials.EmailPassword(unconfirmedMail, SyncTestHelpers.DefaultPassword);
+
+                // The first time the confirmation function is called we return "pending", so the user needs to be confirmed.
+                // At the same time we save the user email in a collection.
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
+
+                var ex3 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex3.Message, Does.Contain("confirmation required"));
+
+                // The second time we call the confirmation function we find the email we saved in the collection and return "success", so the user
+                // gets confirmed and can log in.
+                await DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(unconfirmedMail);
+                var user = await DefaultApp.LogInAsync(credentials);
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+
+                // Logged in user case
+                var loggedInUser = await GetUserAsync();
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(loggedInUser.Profile.Email!));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(ex.Message, Does.Contain("already confirmed"));
+
+                // Unknown user case
+                var invalidEmail = "test@gmail.com";
+                var ex2 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(invalidEmail));
+                Assert.That(ex2.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(ex2.Message, Does.Contain("user not found"));
+            });
+        }
+
+        [Test]
         public void User_JWT_LogsInAndReadsDataFromToken()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
