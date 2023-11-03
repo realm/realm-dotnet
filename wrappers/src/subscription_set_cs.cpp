@@ -57,7 +57,7 @@ enum class CSharpState : uint8_t {
     Superseded
 };
 
-using StateWaitCallbackT = void(void* task_completion_source, CSharpState state, realm_value_t message);
+using StateWaitCallbackT = void(void* task_completion_source, CSharpState state, realm_string_t message, ErrorCodes::Error error_code);
 using SubscriptionCallbackT = void(void* managed_callback, CSharpSubscription sub);
 
 namespace realm {
@@ -336,19 +336,19 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SharedSubscriptionSet& su
                     if (auto subs = weak_subs.lock()) {
                         subs->refresh();
                         if (status.is_ok()) {
-                            s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
+                            s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_string_t{}, ErrorCodes::Error::OK);
                         }
                         else {
-                            s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
+                            s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(status.get_status().reason()), status.get_status().code());
                         }
                     }
                     else {
-                        s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(-1));
+                        s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(std::string("operation aborted")), ErrorCodes::Error::OperationAborted);
                     }
                 }
                 catch (...) {
                     auto inner_ex = convert_exception();
-                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(inner_ex.to_string()));
+                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(inner_ex.to_string()), ErrorCodes::Error::RuntimeError);
                 }
             });
     });
