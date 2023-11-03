@@ -108,7 +108,6 @@ namespace Baas
                         }
 
                         await collection.insertOne(newVal);
-
                         return { status: 'pending' };
                     }
 
