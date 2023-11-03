@@ -51,9 +51,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern UserState get_state(SyncUserHandle user, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_auth_provider", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Credentials.AuthProvider get_auth_provider(SyncUserHandle user, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_profile_data", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_profile_data(SyncUserHandle user, UserProfileField field,
                 IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull,
@@ -180,13 +177,6 @@ namespace Realms.Sync
         public UserState GetState()
         {
             var result = NativeMethods.get_state(this, out var ex);
-            ex.ThrowIfNecessary();
-            return result;
-        }
-
-        public Credentials.AuthProvider GetProvider()
-        {
-            var result = NativeMethods.get_auth_provider(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }

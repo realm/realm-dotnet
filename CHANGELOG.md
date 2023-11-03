@@ -13,6 +13,18 @@
 
 ### Fixed
 * Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
+* Logging into a single user using multiple auth providers created a separate SyncUser per auth provider. This mostly worked, but had some quirks:
+  - Sync sessions would not necessarily be associated with the specific SyncUser used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
+  - Existing local synchronized Realm files created using version of Realm from August - November 2020 would sometimes not be opened correctly and would instead be redownloaded.
+  - Removing one of the SyncUsers would delete all local Realm files for all SyncUsers for that user.
+  - Deleting the server-side user via one of the SyncUsers left the other SyncUsers in an invalid state.
+  - A SyncUser which was originally created via anonymous login and then linked to an identity would still be treated as an anonymous users and removed entirely on logout.
+  (Core 13.21.0)
+* If a user was logged out while an access token refresh was in progress, the refresh completing would mark the user as logged in again and the user would be in an inconsistent state (Core 13.21.0).
+* If querying over a geospatial dataset that had some objects with a type property set to something other than 'Point' (case insensitive) an exception would have been thrown. Instead of disrupting the query, those objects are now just ignored. (Core 13.21.0)
+* Receiving a write_not_allowed error from the server would have led to a crash. (Core 13.22.0)
+* Updating subscriptions did not trigger Realm autorefreshes, sometimes resulting in async refresh hanging until another write was performed by something else. (Core 13.23.1)
+* Fix interprocess locking for concurrent realm file access resulting in a interprocess deadlock on FAT32/exFAT filesystems. (Core 13.23.1)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
