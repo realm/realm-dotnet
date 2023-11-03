@@ -90,7 +90,7 @@ namespace Realms.Tests.Sync
             Task.Delay(1000).Wait();
         }
 
-        public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
+        public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}@g.it";
 
         public static string GetUnconfirmedUsername() => $"realm_tests_do_not_confirm-{Guid.NewGuid()}@g.it";
 
