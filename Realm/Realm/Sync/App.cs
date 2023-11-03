@@ -409,6 +409,21 @@ namespace Realms.Sync
             }
 
             /// <summary>
+            /// Rerun the custom confirmation function for the given mail.
+            /// </summary>
+            /// <param name="email">The email of the user.</param>
+            /// <returns>
+            /// An awaitable <see cref="Task"/> representing the asynchronous request to the server that the custom confirmation function is run again. Successful
+            /// completion indicates that the user has been confirmed on the server.
+            /// </returns>
+            public Task RetryCustomConfirmationAsync(string email)
+            {
+                Argument.NotNullOrEmpty(email, nameof(email));
+
+                return _app.Handle.EmailPassword.RetryCustomConfirmationAsync(email);
+            }
+
+            /// <summary>
             /// Sends a password reset email to the specified address.
             /// </summary>
             /// <param name="email">the email of the user.</param>
