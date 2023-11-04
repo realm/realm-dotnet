@@ -1,6 +1,21 @@
 ## 11.5.0 (2023-09-15)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 11.6.0 (2023-11-03)
+
+### Enhancements
+* Added the `App.EmailPasswordAuth.RetryCustomConfirmationAsync` method to be able to run again the confirmation function on the server for a given email. (Issue [#3463](https://github.com/realm/realm-dotnet/issues/3463))
 * Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 

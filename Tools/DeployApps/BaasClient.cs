@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -88,12 +89,33 @@ namespace Baas
         }
 
         private const string ConfirmFuncSource =
-            @"exports = ({ token, tokenId, username }) => {
+            @"exports = async function ({ token, tokenId, username }) {
                   // process the confirm token, tokenId and username
                   if (username.includes(""realm_tests_do_autoverify"")) {
-                    return { status: 'success' }
+                    return { status: 'success' };
                   }
-                  // do not confirm the user
+
+                  if (username.includes(""realm_tests_do_not_confirm"")) {
+                    const mongodb = context.services.get('BackingDB');
+                    let collection = mongodb.db('test_db').collection('not_confirmed');
+                    let result = await collection.findOne({'email': username});
+
+                    if(result === null)
+                    {
+                        let newVal = {
+                            'email': username,
+                            'token': token,
+                            'tokenId': tokenId,
+                        }
+
+                        await collection.insertOne(newVal);
+                        return { status: 'pending' };
+                    }
+
+                    return { status: 'success' };
+                  }
+
+                  // fail the user confirmation
                   return { status: 'fail' };
                 };";
 
@@ -397,27 +419,34 @@ namespace Baas
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
-            var (app, _) = await CreateAppCore(name, new
+            var (app, mongoServiceId) = await CreateAppCore(name, new
             {
                 flexible_sync = new
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
                     queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
-                    permissions = new
+                }
+            });
+
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/default_rule", new
+            {
+                roles = new[]
+                {
+                    new
                     {
-                        rules = new { },
-                        defaultRoles = new[]
+                        name = "all",
+                        apply_when = new { },
+                        read = true,
+                        write = true,
+                        insert = true,
+                        delete = true,
+                        document_filters = new
                         {
-                            new
-                            {
-                                name = "all",
-                                applyWhen = new { },
-                                read = true,
-                                write = true,
-                            }
+                            read = true,
+                            write = true,
                         }
-                    },
+                    }
                 }
             });
 

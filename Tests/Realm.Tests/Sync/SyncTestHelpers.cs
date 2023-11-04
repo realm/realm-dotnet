@@ -92,6 +92,8 @@ namespace Realms.Tests.Sync
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
+        public static string GetUnconfirmedUsername() => $"realm_tests_do_not_confirm-{Guid.NewGuid()}@g.it";
+
         public static async Task TriggerClientResetOnServer(SyncConfigurationBase config)
         {
             var userId = config.User.Id;
