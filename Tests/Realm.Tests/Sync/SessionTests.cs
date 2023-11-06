@@ -56,14 +56,14 @@ namespace Realms.Tests.Sync
         [Preserve]
         static SessionTests()
         {
-            var preserveRecoverHandler = new RecoverUnsyncedChangesHandler
+            _ = new RecoverUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
 
-            var preserveRecoverOrDiscardHandler = new RecoverOrDiscardUnsyncedChangesHandler
+            _ = new RecoverOrDiscardUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterRecovery = (beforeFrozen, after) => { },
@@ -71,7 +71,7 @@ namespace Realms.Tests.Sync
                 ManualResetFallback = (clientResetException) => { },
             };
 
-            var preserveDiscardHandler = new DiscardUnsyncedChangesHandler
+            _ = new DiscardUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterReset = (beforeFrozen, after) => { },
@@ -884,14 +884,24 @@ namespace Realms.Tests.Sync
                 var session = realm.SyncSession;
                 session.Stop();
 
+                var expectedState = ConnectionState.Connected;
+                var notificationTcs = new TaskCompletionSource<ConnectionState>();
+
                 session.PropertyChanged += NotificationChanged;
 
                 session.Start();
-                await Task.Delay(1000);
+
+                var actualState = await notificationTcs.Task.Timeout(10_000, detail: "Expected to transition to Connected");
+                Assert.That(actualState, Is.EqualTo(ConnectionState.Connected));
+
+                expectedState = ConnectionState.Disconnected;
+                notificationTcs = new TaskCompletionSource<ConnectionState>();
+
                 session.Stop();
-                await completionTcs.Task.Timeout(10_000);
-                Assert.That(stateChanged, Is.EqualTo(3));
-                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+
+                actualState = await notificationTcs.Task.Timeout(10_000, detail: "Expected to transition to Disconnected");
+                Assert.That(actualState, Is.EqualTo(ConnectionState.Disconnected));
+
                 session.PropertyChanged -= NotificationChanged;
 
                 void NotificationChanged(object? sender, PropertyChangedEventArgs? e)
@@ -901,30 +911,14 @@ namespace Realms.Tests.Sync
                         Assert.That(sender is Session, Is.True);
                         Assert.That(e!.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
-                        stateChanged++;
-
-                        switch (stateChanged)
+                        if (session.ConnectionState == expectedState)
                         {
-                            // Sometimes the connection will be established too quickly (particularly when testing against
-                            // a local BaaS).
-                            case 1 when session.ConnectionState == ConnectionState.Connected:
-                                stateChanged++;
-                                break;
-                            case 1:
-                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                                break;
-                            case 2:
-                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                                break;
-                            case 3:
-                                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                                completionTcs.TrySetResult();
-                                break;
+                            notificationTcs.TrySetResult(session.ConnectionState);
                         }
                     }
                     catch (Exception ex)
                     {
-                        completionTcs.TrySetException(ex);
+                        notificationTcs.TrySetException(ex);
                     }
                 }
             });
@@ -1121,19 +1115,29 @@ namespace Realms.Tests.Sync
                 using var realmA = GetRealm(config);
                 using var realmB = GetRealm(config);
                 var stateChanged = 0;
-                var completionTcs = new TaskCompletionSource();
 
                 var sessionA = realmA.SyncSession;
                 var sessionB = realmB.SyncSession;
                 sessionA.Stop();
+
+                var expectedState = ConnectionState.Connected;
+                var notificationTcs = new TaskCompletionSource<ConnectionState>();
+
                 sessionB.PropertyChanged += NotificationChanged;
 
                 sessionA.Start();
-                await Task.Delay(1000);
-                sessionA.Stop();
-                await completionTcs.Task;
 
-                Assert.That(stateChanged, Is.EqualTo(3));
+                var sessionBState = await notificationTcs.Task.Timeout(10_000, detail: "Expected to transition to connected");
+                Assert.That(sessionBState, Is.EqualTo(ConnectionState.Connected));
+
+                expectedState = ConnectionState.Disconnected;
+                notificationTcs = new TaskCompletionSource<ConnectionState>();
+
+                sessionA.Stop();
+
+                sessionBState = await notificationTcs.Task.Timeout(10_000, detail: "Expected to transition to disconnected");
+                Assert.That(sessionBState, Is.EqualTo(ConnectionState.Disconnected));
+
                 Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
 
@@ -1146,33 +1150,14 @@ namespace Realms.Tests.Sync
                         Assert.That(sender is Session, Is.True);
                         Assert.That(e!.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
-                        stateChanged++;
-
-                        switch (stateChanged)
+                        if (sessionB.ConnectionState == expectedState)
                         {
-                            // Sometimes the connection will be established too quickly (particularly when testing against
-                            // a local BaaS).
-                            case 1 when sessionA.ConnectionState == ConnectionState.Connected || sessionB.ConnectionState == ConnectionState.Connected:
-                                stateChanged++;
-                                break;
-                            case 1:
-                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
-                                break;
-                            case 2:
-                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connected));
-                                break;
-                            case 3:
-                                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
-                                completionTcs.TrySetResult();
-                                break;
+                            notificationTcs.TrySetResult(sessionB.ConnectionState);
                         }
                     }
                     catch (Exception ex)
                     {
-                        completionTcs.TrySetException(ex);
+                        notificationTcs.TrySetException(ex);
                     }
                 }
             });
