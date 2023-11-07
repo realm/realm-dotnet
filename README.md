@@ -61,6 +61,8 @@ Some minimal examples of Realm use can be found in the `examples` folder:
 * [QuickJournal](examples/QuickJournal): a quick journaling [MAUI](https://github.com/dotnet/maui) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
 * [SimpleToDo](examples/SimpleToDoAvalonia): a simple to-do list [Avalonia](https://github.com/AvaloniaUI/Avalonia) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
 
+It is possible to find additional (and more complex) examples that use [`Atlas Device Sync`](https://www.mongodb.com/docs/atlas/app-services/sync/) in the [`realm-dotnet-samples`](https://github.com/realm/realm-dotnet-samples) repo.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
