@@ -400,7 +400,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void User_RetryCustomConfirmationAsync_WorksInAllScenarios()
+        public void User_RetryCustomConfirmationAsync_RerunsConfirmation()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -432,6 +432,84 @@ namespace Realms.Tests.Sync
                 var ex2 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(invalidEmail));
                 Assert.That(ex2.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(ex2.Message, Does.Contain("user not found"));
+            });
+        }
+
+        [Test]
+        public void User_ConfirmUserAsync_ConfirmsUser()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var unconfirmedMail = SyncTestHelpers.GetUnconfirmedUsername();
+                var credentials = Credentials.EmailPassword(unconfirmedMail, SyncTestHelpers.DefaultPassword);
+
+                // The first time the confirmation function is called we return "pending", so the user needs to be confirmed.
+                // At the same time we save the user email, token and tokenId in a collection.
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex.Message, Does.Contain("confirmation required"));
+
+                // This retrieves the token and tokenId we saved in the confirmation function
+                var functionUser = await GetUserAsync();
+                var result = await functionUser.Functions.CallAsync("confirmationInfo", unconfirmedMail);
+                var token = result["token"].AsString;
+                var tokenId = result["tokenId"].AsString;
+
+                await DefaultApp.EmailPasswordAuth.ConfirmUserAsync(token, tokenId);
+                var user = await DefaultApp.LogInAsync(credentials);
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+            });
+        }
+
+        [Test]
+        public void User_CallResetPasswordFunctionAsync_ResetsUserPassword()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var email = user.Profile.Email!;
+
+                await user.LogOutAsync();
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
+
+                var newPassword = "realm_tests_do_reset-testPassword";
+                await DefaultApp.EmailPasswordAuth.CallResetPasswordFunctionAsync(email, newPassword);
+
+                user = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword));
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+            });
+        }
+
+        [Test]
+        public void User_ResetPasswordAsync_ConfirmsResetPassword()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var email = user.Profile.Email!;
+
+                await user.LogOutAsync();
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
+
+                // This returns "pending" the first time, so the password change is not valid yet. We save the token and tokenId
+                // passed to the reset function, to confirm the password change later.
+                var newPassword = "realm_tests_do_not_reset-testPassword";
+                await DefaultApp.EmailPasswordAuth.CallResetPasswordFunctionAsync(email, newPassword);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword)));
+                Assert.That(ex.Message, Does.Contain("invalid username/password"));
+
+                // This retrieves the token and tokenId we saved in the password reset function.
+                var functionUser = await GetUserAsync();
+                var result = await functionUser.Functions.CallAsync("resetInfo", email);
+                var token = result["token"].AsString;
+                var tokenId = result["tokenId"].AsString;
+
+                await DefaultApp.EmailPasswordAuth.ResetPasswordAsync(newPassword, token, tokenId);
+
+                user = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword));
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
             });
         }
 
