@@ -610,6 +610,45 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void WriteCopy_ThrowsWhenConvertingFromLocalToFLX()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var localRealm = GetRealm();
+                var flexConfig = await GetFLXIntegrationConfigAsync();
+
+                var ex = Assert.Throws<NotSupportedException>(() => localRealm.WriteCopy(flexConfig))!;
+                Assert.That(ex.Message, Does.Contain("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled"));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_ThrowsWhenConvertingFromPBSToFLX()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var pbsRealm = await GetIntegrationRealmAsync();
+                var flexConfig = await GetFLXIntegrationConfigAsync();
+
+                var ex = Assert.Throws<NotSupportedException>(() => pbsRealm.WriteCopy(flexConfig))!;
+                Assert.That(ex.Message, Does.Contain("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled"));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_ThrowsWhenConvertingFromFLXToPBS()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var flxRealm = await GetFLXIntegrationRealmAsync();
+                var pbsConfig = await GetIntegrationConfigAsync();
+
+                var ex = Assert.Throws<NotSupportedException>(() => flxRealm.WriteCopy(pbsConfig))!;
+                Assert.That(ex.Message, Does.Contain("Changing from flexible sync sync to partition based sync is not supported when writing a Realm copy"));
+            });
+        }
+
+        [Test]
         public void DeleteRealmWorksIfCalledMultipleTimes()
         {
             var config = GetFakeConfig();
