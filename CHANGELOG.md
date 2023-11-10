@@ -1,4 +1,18 @@
-## vNext (TBD)
+## 11.5.0 (2023-09-15)
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 11.6.0 (2023-11-03)
 
 ### Enhancements
 * Added the `App.EmailPasswordAuth.RetryCustomConfirmationAsync` method to be able to run again the confirmation function on the server for a given email. (Issue [#3463](https://github.com/realm/realm-dotnet/issues/3463))
