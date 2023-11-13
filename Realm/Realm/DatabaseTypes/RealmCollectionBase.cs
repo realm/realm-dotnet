@@ -262,6 +262,24 @@ namespace Realms
             _notificationCallbacks.Value.Remove(callback, shallow);
         }
 
+        protected void CreateInternalCollectionAndPopulate(RealmValue realmValue, IntPtr collectionPtr)
+        {
+            switch (realmValue.Type)
+            {
+                case RealmValueType.List:
+                    var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
+                    break;
+                case RealmValueType.Dictionary:
+                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
+                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
+                    break;
+                default:
+                    Debug.Fail("Invalid collection type");
+                    break;
+            }
+        }
+
         #region INotifyCollectionChanged
 
         private void OnChange(IRealmCollection<T> sender, ChangeSet? change)

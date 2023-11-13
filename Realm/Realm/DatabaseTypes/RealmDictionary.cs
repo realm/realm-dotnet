@@ -67,7 +67,7 @@ namespace Realms
 
                 if (realmValue.Type.IsCollection())
                 {
-                    CreateInternalCollectionAndPopulate(realmValue, () => _dictionaryHandle.SetCollection(key, realmValue.Type));
+                    CreateInternalCollectionAndPopulate(realmValue, _dictionaryHandle.SetCollection(key, realmValue.Type));
                     return;
                 }
 
@@ -132,7 +132,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateInternalCollectionAndPopulate(realmValue, () => _dictionaryHandle.AddCollection(key, realmValue.Type));
+                CreateInternalCollectionAndPopulate(realmValue, _dictionaryHandle.AddCollection(key, realmValue.Type));
                 return;
             }
 
@@ -240,26 +240,6 @@ namespace Realms
             _keyNotificationToken?.Dispose();
             _keyNotificationToken = null;
             _deliveredInitialKeyNotification = false;
-        }
-
-        private void CreateInternalCollectionAndPopulate(RealmValue realmValue, Func<IntPtr> createCollectionFunc)
-        {
-            var collectionPtr = createCollectionFunc();
-
-            switch (realmValue.Type)
-            {
-                case RealmValueType.List:
-                    var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
-                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
-                    break;
-                case RealmValueType.Dictionary:
-                    var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
-                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
-                    break;
-                default:
-                    Debug.Fail("Invalid collection type");
-                    break;
-            }
         }
 
         private static void ValidateKey(string key)
