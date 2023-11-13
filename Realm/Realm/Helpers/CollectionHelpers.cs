@@ -32,18 +32,6 @@ internal static class CollectionHelpers
         return newList;
     }
 
-    internal static RealmSet<RealmValue> SetCreateAndPopulate(Realm realm, SetHandle handle, RealmValue content)
-    {
-        var newSet = new RealmSet<RealmValue>(realm, handle, null);
-
-        foreach (var item in content.AsSet())
-        {
-            newSet.Add(item);
-        }
-
-        return newSet;
-    }
-
     internal static RealmDictionary<RealmValue> DictionaryCreatePopulate(Realm realm, DictionaryHandle handle, RealmValue content)
     {
         var newDict = new RealmDictionary<RealmValue>(realm, handle, null);

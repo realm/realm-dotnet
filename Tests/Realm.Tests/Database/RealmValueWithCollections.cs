@@ -28,13 +28,11 @@ namespace Realms.Tests.Database
     internal class RealmValueWithCollections : RealmInstanceTest
     {
         public static Func<int, List<RealmValue>> ListGenerator = i => { return new List<RealmValue> { $"inner{i}", i }; };
-        public static Func<int, HashSet<RealmValue>> SetGenerator = i => { return new HashSet<RealmValue> { $"inner{i}", i }; };
         public static Func<int, Dictionary<string, RealmValue>> DictGenerator = i => { return new Dictionary<string, RealmValue> { { "s1", i }, { "s2", $"ah{i}" } }; };
 
         public static Func<int, RealmValue>[] CollectionGenerators = new Func<int, RealmValue>[]
         {
             i => (RealmValue)ListGenerator(i),
-            i => (RealmValue)SetGenerator(i),
             i => (RealmValue)DictGenerator(i),
         };
 
@@ -54,7 +52,6 @@ namespace Realms.Tests.Database
         public void List_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
         {
             var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
             var innerDict = DictGenerator(1);
 
             var originalList = new List<RealmValue>
@@ -72,7 +69,6 @@ namespace Realms.Tests.Database
                 Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
                 new InternalObject { IntProperty = 10, StringProperty = "brown" },
                 innerList,
-                innerSet,
                 innerDict,
             };
 
@@ -98,13 +94,11 @@ namespace Realms.Tests.Database
         public void List_WhenUsingIndexAccessWithCollections_WorkAsExpected([Values(true, false)] bool isManaged)
         {
             var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
             var innerDict = DictGenerator(1);
 
             var originalList = new List<RealmValue>
             {
                 innerList,
-                innerSet,
                 innerDict,
             };
 
@@ -116,11 +110,9 @@ namespace Realms.Tests.Database
             }
 
             var retrievedList = rv.AsList()[0];
-            var retrivedSet = rv.AsList()[1];
-            var retrievedDict = rv.AsList()[2];
+            var retrievedDict = rv.AsList()[1];
 
             Assert.That(retrievedList.AsList(), Is.EqualTo(innerList));
-            Assert.That(retrivedSet.AsSet(), Is.EquivalentTo(innerSet));
             Assert.That(retrievedDict.AsDictionary(), Is.EquivalentTo(innerDict));
         }
 
@@ -334,7 +326,6 @@ namespace Realms.Tests.Database
         public void List_RemoveWithCollectionArgument_ReturnsFalse()
         {
             var innerList = new List<RealmValue> { "inner2", true, 2.0 };
-            var innerSet = new HashSet<RealmValue> { 1, "str", true };
             var innerDict = new Dictionary<string, RealmValue>
             {
                 { "s1", 1 },
@@ -342,7 +333,7 @@ namespace Realms.Tests.Database
                 { "s3", true },
             };
 
-            var listVal = new List<RealmValue> { innerList, innerSet, innerDict };
+            var listVal = new List<RealmValue> { innerList, innerDict };
 
             var rvo = _realm.Write(() =>
             {
@@ -352,7 +343,6 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 Assert.That(rvo.RealmValueProperty.AsList().Remove(innerList), Is.False);
-                Assert.That(rvo.RealmValueProperty.AsList().Remove(innerSet), Is.False);
                 Assert.That(rvo.RealmValueProperty.AsList().Remove(innerDict), Is.False);
             });
         }
@@ -430,282 +420,12 @@ namespace Realms.Tests.Database
 
         #endregion
 
-        #region Set
-
-        [Test]
-        public void Set_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
-        {
-            var originalSet = new HashSet<RealmValue>
-            {
-                RealmValue.Null,
-                1,
-                true,
-                "string",
-                new byte[] { 0, 1, 2 },
-                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
-                1.5f,
-                2d,
-                3m,
-                new ObjectId("5f63e882536de46d71877979"),
-                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
-                new InternalObject { IntProperty = 10, StringProperty = "brown" },
-            };
-
-            RealmValue rv = originalSet;
-
-            if (isManaged)
-            {
-                rv = PersistAndFind(rv).RealmValueProperty;
-            }
-
-            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Set));
-            Assert.That(rv != RealmValue.Null);
-
-            Assert.That(rv.AsSet(), Is.EquivalentTo(originalSet));
-            Assert.That(rv.AsAny(), Is.EquivalentTo(originalSet));
-            Assert.That(rv.As<ISet<RealmValue>>(), Is.EquivalentTo(originalSet));
-
-            Assert.That(rv == originalSet);
-            Assert.That(rv.Equals(originalSet));
-        }
-
-        [Test]
-        public void Set_CanBeCopiedFromManagedSet([Values(true, false)] bool isManaged)
-        {
-            var originalSet = SetGenerator(1);
-
-            RealmValue rv = originalSet;
-
-            if (isManaged)
-            {
-                rv = PersistAndFind(rv).RealmValueProperty;
-            }
-
-            var newObj = new RealmValueObject { RealmValueProperty = rv };
-
-            RealmValue rv2;
-
-            if (isManaged)
-            {
-                rv2 = PersistAndFind(rv).RealmValueProperty;
-            }
-            else
-            {
-                rv2 = newObj.RealmValueProperty;
-            }
-
-            Assert.That(rv.AsSet(), Is.EquivalentTo(rv2.AsSet()));
-            Assert.That(rv.AsSet(), Is.EquivalentTo(originalSet));
-            Assert.That(rv2.AsSet(), Is.EquivalentTo(originalSet));
-        }
-
-        [Test]
-        public void Set_WhenBeingAddedToRealmWithInternalCollections_Throws()
-        {
-            var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
-            var innerDict = DictGenerator(1);
-
-            var errorMessage = "Set cannot contain other collections";
-
-            RealmValue rv = new HashSet<RealmValue>() { 1, "string", true, innerList };
-            Assert.That(() => _realm.Write(() => _realm.Add(new RealmValueObject { RealmValueProperty = rv })),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-
-            rv = new HashSet<RealmValue>() { 1, "string", true, innerSet };
-            Assert.That(() => _realm.Write(() => _realm.Add(new RealmValueObject { RealmValueProperty = rv })),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-
-            rv = new HashSet<RealmValue>() { 1, "string", true, innerDict };
-            Assert.That(() => _realm.Write(() => _realm.Add(new RealmValueObject { RealmValueProperty = rv })),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-        }
-
-        [Test]
-        public void Set_WhenAddingCollections_Throws()
-        {
-            var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
-            var innerDict = DictGenerator(1);
-
-            var errorMessage = "Set cannot contain other collections";
-
-            var originalSet = new HashSet<RealmValue>() { 1, "string", true };
-
-            var rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject { RealmValueProperty = originalSet });
-            });
-
-            Assert.That(() => _realm.Write(() => rvo.RealmValueProperty.AsSet().Add(innerList)),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-
-            Assert.That(() => _realm.Write(() => rvo.RealmValueProperty.AsSet().Add(innerSet)),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-
-            Assert.That(() => _realm.Write(() => rvo.RealmValueProperty.AsSet().Add(innerDict)),
-                Throws.TypeOf<InvalidOperationException>().And.Message.Contains(errorMessage));
-        }
-
-        [Test]
-        public void Set_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
-        {
-            var originalSet = SetGenerator(1);
-
-            RealmValue rvOperator = originalSet;
-            RealmValue rvConstructor = RealmValue.Set(originalSet);
-            RealmValue rvCreate = RealmValue.Create(originalSet, RealmValueType.Set);
-
-            if (isManaged)
-            {
-                rvOperator = PersistAndFind(rvOperator).RealmValueProperty;
-                rvConstructor = PersistAndFind(rvConstructor).RealmValueProperty;
-                rvCreate = PersistAndFind(rvCreate).RealmValueProperty;
-            }
-
-            Assert.That(rvOperator.AsSet(), Is.EquivalentTo(originalSet));
-            Assert.That(rvConstructor.AsSet(), Is.EquivalentTo(originalSet));
-            Assert.That(rvCreate.AsSet(), Is.EquivalentTo(originalSet));
-        }
-
-        [Test]
-        public void Set_WhenManaged_IsNotSameReferenceAsOriginalList()
-        {
-            var originalSet = SetGenerator(1);
-
-            RealmValue rv = originalSet;
-            rv = PersistAndFind(rv).RealmValueProperty;
-            var retrievedSet = rv.AsSet();
-
-            Assert.That(ReferenceEquals(originalSet, retrievedSet), Is.False);
-        }
-
-        [Test]
-        public void Set_WhenUnmanaged_IsSameReferenceAsOriginalList()
-        {
-            var originalSet = SetGenerator(1);
-
-            RealmValue rv = originalSet;
-            var retrievedSet = rv.AsSet();
-
-            Assert.That(ReferenceEquals(originalSet, retrievedSet), Is.True);
-        }
-
-        [Test]
-        public void Set_AfterCreation_CanBeAssigned([Values(true, false)] bool isManaged)
-        {
-            var stringVal = "Mario";
-            var rvo = new RealmValueObject { RealmValueProperty = stringVal };
-
-            if (isManaged)
-            {
-                _realm.Write(() =>
-                {
-                    _realm.Add(rvo);
-                });
-            }
-
-            Assert.That(rvo.RealmValueProperty == stringVal);
-
-            var setVal = SetGenerator(1);
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty = setVal;
-            });
-
-            Assert.That(rvo.RealmValueProperty.AsSet(), Is.EquivalentTo(setVal));
-
-            var newStringVal = "Luigi";
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty = newStringVal;
-            });
-
-            Assert.That(rvo.RealmValueProperty == newStringVal);
-        }
-
-        [Test]
-        public void Set_WhenManaged_WorksWithDynamicLikeApi()
-        {
-            var originalSet = SetGenerator(1);
-
-            var rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject());
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.DynamicApi.Set(nameof(RealmValueObject.RealmValueProperty), originalSet);
-            });
-
-            var rvp = rvo.DynamicApi.Get<RealmValue>(nameof(RealmValueObject.RealmValueProperty));
-
-            Assert.That(rvp.AsSet(), Is.EquivalentTo(originalSet));
-        }
-
-#if !UNITY
-        [Test]
-#endif
-        public void Set_WhenManaged_WorksWithDynamic()
-        {
-            var originalSet = SetGenerator(1);
-
-            dynamic rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject());
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty = originalSet;
-            });
-
-            var rvp = rvo.RealmValueProperty;
-
-            Assert.That(rvp.AsSet(), Is.EquivalentTo(originalSet));
-        }
-
-        [Test]
-        public void Set_WhenManaged_WorksWithNotifications()
-        {
-            var originalSet = SetGenerator(1);
-
-            var rvo = _realm.Write(() =>
-            {
-                return _realm.Add(new RealmValueObject { RealmValueProperty = originalSet });
-            });
-
-            var callbacks = new List<ChangeSet>();
-            using var token = rvo.RealmValueProperty.AsSet().SubscribeForNotifications((collection, changes) =>
-            {
-                if (changes != null)
-                {
-                    callbacks.Add(changes);
-                }
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueProperty.AsSet().Add("mario");
-            });
-
-            _realm.Refresh();
-
-            Assert.That(callbacks.Count, Is.EqualTo(1));
-        }
-
-        #endregion
-
         #region Dictionary
 
         [Test]
         public void Dictionary_WhenRetrieved_WorksWithAllTypes([Values(true, false)] bool isManaged)
         {
             var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
             var innerDict = DictGenerator(1);
 
             var originalDict = new Dictionary<string, RealmValue>
@@ -724,7 +444,6 @@ namespace Realms.Tests.Database
                 { "c", new InternalObject { IntProperty = 10, StringProperty = "brown" } },
                 { "d", innerList },
                 { "e", innerDict },
-                { "f", innerSet },
             };
 
             RealmValue rv = originalDict;
@@ -749,14 +468,12 @@ namespace Realms.Tests.Database
         public void Dictionary_WhenUsingIndexAccessWithCollections_WorkAsExpected([Values(true, false)] bool isManaged)
         {
             var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
             var innerDict = DictGenerator(1);
 
             var originalDict = new Dictionary<string, RealmValue>
             {
                 { "0", innerList },
-                { "1", innerSet },
-                { "2", innerDict },
+                { "1", innerDict },
             };
 
             RealmValue rv = originalDict;
@@ -767,19 +484,15 @@ namespace Realms.Tests.Database
             }
 
             var retrievedList = rv.AsDictionary().ElementAt(0).Value;
-            var retrivedSet = rv.AsDictionary().ElementAt(1).Value;
-            var retrievedDict = rv.AsDictionary().ElementAt(2).Value;
+            var retrievedDict = rv.AsDictionary().ElementAt(1).Value;
 
             Assert.That(retrievedList.AsList(), Is.EqualTo(innerList));
-            Assert.That(retrivedSet.AsSet(), Is.EquivalentTo(innerSet));
             Assert.That(retrievedDict.AsDictionary(), Is.EquivalentTo(innerDict));
 
             var retrievedList2 = rv.AsDictionary()["0"];
-            var retrivedSet2 = rv.AsDictionary()["1"];
-            var retrievedDict2 = rv.AsDictionary()["2"];
+            var retrievedDict2 = rv.AsDictionary()["1"];
 
             Assert.That(retrievedList2.AsList(), Is.EqualTo(innerList));
-            Assert.That(retrivedSet2.AsSet(), Is.EquivalentTo(innerSet));
             Assert.That(retrievedDict2.AsDictionary(), Is.EquivalentTo(innerDict));
         }
 
@@ -812,6 +525,8 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsDictionary(), Is.EqualTo(originalDict));
             Assert.That(rv2.AsDictionary(), Is.EqualTo(originalDict));
         }
+
+        //TODO Add test to verify sets can't be in RealmValue
 
         [Test]
         public void Dictionary_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
@@ -973,13 +688,11 @@ namespace Realms.Tests.Database
         public void Dictionary_RemoveWithCollectionArgument_ReturnsFalse()
         {
             var innerList = ListGenerator(1);
-            var innerSet = SetGenerator(1);
             var innerDict = DictGenerator(1);
 
             var dictVal = new Dictionary<string, RealmValue>
             {
                 { "s1", innerList },
-                { "s2", innerSet },
                 { "s3", innerDict },
             };
 
@@ -991,7 +704,6 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s1", innerList)), Is.False);
-                Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s2", innerSet)), Is.False);
                 Assert.That(rvo.RealmValueProperty.AsDictionary().Remove(new KeyValuePair<string, RealmValue>("s3", innerDict)), Is.False);
             });
         }

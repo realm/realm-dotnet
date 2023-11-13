@@ -233,9 +233,6 @@ namespace Realms
                     case RealmValueType.List:
                         CollectionHelpers.ListCreateAndPopulate(realm, new ListHandle(Root!, collectionPtr), value);
                         break;
-                    case RealmValueType.Set:
-                        CollectionHelpers.SetCreateAndPopulate(realm, new SetHandle(Root!, collectionPtr), value);
-                        break;
                     case RealmValueType.Dictionary:
                         CollectionHelpers.DictionaryCreatePopulate(realm, new DictionaryHandle(Root!, collectionPtr), value);
                         break;

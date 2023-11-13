@@ -364,8 +364,6 @@ namespace Realms.Helpers
             [(typeof(IRealmObjectBase), typeof(RealmValue))] = new IRealmObjectBaseRealmValueConverter(),
             [(typeof(IList<RealmValue>), typeof(RealmValue))] = new IListRealmValueConverter(),
             [(typeof(RealmValue), typeof(IList<RealmValue>))] = new RealmValueIListConverter(),
-            [(typeof(ISet<RealmValue>), typeof(RealmValue))] = new ISetRealmValueConverter(),
-            [(typeof(RealmValue), typeof(ISet<RealmValue>))] = new RealmValueISetConverter(),
             [(typeof(IDictionary<string, RealmValue>), typeof(RealmValue))] = new IDictionaryRealmValueConverter(),
             [(typeof(RealmValue), typeof(IDictionary<string, RealmValue>))] = new RealmValueIDictionaryConverter(),
         };
@@ -813,11 +811,6 @@ namespace Realms.Helpers
             public override RealmValue Convert(IList<RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.List(value);
         }
 
-        private class ISetRealmValueConverter : SpecializedConverterBase<ISet<RealmValue>, RealmValue>
-        {
-            public override RealmValue Convert(ISet<RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.Set(value);
-        }
-
         private class IDictionaryRealmValueConverter : SpecializedConverterBase<IDictionary<string, RealmValue>, RealmValue>
         {
             public override RealmValue Convert(IDictionary<string, RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.Dictionary(value);
@@ -1019,11 +1012,6 @@ namespace Realms.Helpers
         private class RealmValueIListConverter : SpecializedConverterBase<RealmValue, IList<RealmValue>>
         {
             public override IList<RealmValue> Convert(RealmValue value) => value.AsList();
-        }
-
-        private class RealmValueISetConverter : SpecializedConverterBase<RealmValue, ISet<RealmValue>>
-        {
-            public override ISet<RealmValue> Convert(RealmValue value) => value.AsSet();
         }
 
         private class RealmValueIDictionaryConverter : SpecializedConverterBase<RealmValue, IDictionary<string, RealmValue>>

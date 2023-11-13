@@ -252,10 +252,6 @@ namespace Realms
                     var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
                     CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
                     break;
-                case RealmValueType.Set:
-                    var setHandle = new SetHandle(Realm.SharedRealmHandle, collectionPtr);
-                    CollectionHelpers.SetCreateAndPopulate(Realm, setHandle, realmValue);
-                    break;
                 case RealmValueType.Dictionary:
                     var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
                     CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
