@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added support for collections of `RealmValue` (`IList<RealmValue>`, `ISet<RealmValue>`, `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves, while sets cannot. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List`, `RealmValue.Set` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `HashSet` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList`, `AsSet` and `AsDictionary`. For example:
+* Added support for list and dictionaries of `RealmValue` (`IList<RealmValue>` and `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `RealmValue[]` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList` and `AsDictionary`. For example:
 
   ```csharp
   var list = new List<RealmValue> { 1, true, "stringVal" };
