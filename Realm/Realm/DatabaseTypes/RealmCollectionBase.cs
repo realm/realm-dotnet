@@ -268,11 +268,11 @@ namespace Realms
             {
                 case RealmValueType.List:
                     var listHandle = new ListHandle(Realm.SharedRealmHandle, collectionPtr);
-                    CollectionHelpers.ListCreateAndPopulate(Realm, listHandle, realmValue);
+                    CollectionHelpers.PopulateList(Realm, listHandle, realmValue);
                     break;
                 case RealmValueType.Dictionary:
                     var dictionaryHandle = new DictionaryHandle(Realm.SharedRealmHandle, collectionPtr);
-                    CollectionHelpers.DictionaryCreatePopulate(Realm, dictionaryHandle, realmValue);
+                    CollectionHelpers.PopulateDictionary(Realm, dictionaryHandle, realmValue);
                     break;
                 default:
                     Debug.Fail("Invalid collection type");

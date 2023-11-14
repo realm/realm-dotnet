@@ -20,7 +20,7 @@ namespace Realms.Helpers;
 
 internal static class CollectionHelpers
 {
-    internal static RealmList<RealmValue> ListCreateAndPopulate(Realm realm, ListHandle handle, RealmValue content)
+    internal static void PopulateList(Realm realm, ListHandle handle, RealmValue content)
     {
         var newList = new RealmList<RealmValue>(realm, handle, metadata: null);
 
@@ -28,11 +28,9 @@ internal static class CollectionHelpers
         {
             newList.Add(item);
         }
-
-        return newList;
     }
 
-    internal static RealmDictionary<RealmValue> DictionaryCreatePopulate(Realm realm, DictionaryHandle handle, RealmValue content)
+    internal static void PopulateDictionary(Realm realm, DictionaryHandle handle, RealmValue content)
     {
         var newDict = new RealmDictionary<RealmValue>(realm, handle, metadata: null);
 
@@ -40,7 +38,5 @@ internal static class CollectionHelpers
         {
             newDict.Add(item);
         }
-
-        return newDict;
     }
 }

@@ -231,10 +231,10 @@ namespace Realms
                 switch (value.Type)
                 {
                     case RealmValueType.List:
-                        CollectionHelpers.ListCreateAndPopulate(realm, new ListHandle(Root!, collectionPtr), value);
+                        CollectionHelpers.PopulateList(realm, new ListHandle(Root!, collectionPtr), value);
                         break;
                     case RealmValueType.Dictionary:
-                        CollectionHelpers.DictionaryCreatePopulate(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                        CollectionHelpers.PopulateDictionary(realm, new DictionaryHandle(Root!, collectionPtr), value);
                         break;
                     default:
                         break;
