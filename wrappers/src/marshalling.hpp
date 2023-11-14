@@ -167,8 +167,7 @@ typedef struct realm_value {
         realm_uuid_t uuid;
 
         realm_link_t link;
-        realm_list_t list;
-        realm_dict_t dictionary;
+        void* collection;
 
         char data[16];
     };
@@ -521,7 +520,7 @@ static inline realm_value_t to_capi(List* list)
 {
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_LIST;
-    val.list.list_ptr = list;
+    val.collection = list;
     return val;
 }
 
@@ -529,7 +528,7 @@ static inline realm_value_t to_capi(object_store::Dictionary* dictionary)
 {
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_DICTIONARY;
-    val.dictionary.dictionary_ptr = dictionary;
+    val.collection = dictionary;
     return val;
 }
 

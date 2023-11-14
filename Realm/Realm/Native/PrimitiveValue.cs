@@ -69,10 +69,7 @@ namespace Realms.Native
         private LinkValue link_value;
 
         [FieldOffset(0)]
-        private ListValue list_value;
-
-        [FieldOffset(0)]
-        private DictionaryValue dictionary_value;
+        private IntPtr collection_ptr;
 
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
@@ -272,13 +269,13 @@ namespace Realms.Native
 
         public readonly RealmList<RealmValue> AsList(Realm realm)
         {
-            var handle = new ListHandle(realm.SharedRealmHandle, list_value.list_ptr);
+            var handle = new ListHandle(realm.SharedRealmHandle, collection_ptr);
             return new RealmList<RealmValue>(realm, handle, null);
         }
 
         public readonly RealmDictionary<RealmValue> AsDictionary(Realm realm)
         {
-            var handle = new DictionaryHandle(realm.SharedRealmHandle, dictionary_value.dict_ptr);
+            var handle = new DictionaryHandle(realm.SharedRealmHandle, collection_ptr);
             return new RealmDictionary<RealmValue>(realm, handle, null);
         }
 
@@ -301,18 +298,6 @@ namespace Realms.Native
 
             [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1214:Readonly fields should appear before non-readonly fields", Justification = "The order of the struct matters.")]
             public readonly TableKey table_key;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct ListValue
-        {
-            public IntPtr list_ptr;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct DictionaryValue
-        {
-            public IntPtr dict_ptr;
         }
 
         [StructLayout(LayoutKind.Sequential)]
