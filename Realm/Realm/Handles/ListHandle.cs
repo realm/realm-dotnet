@@ -149,13 +149,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public IntPtr AddCollection(RealmValueType collectionType)
+        public CollectionHandleBase AddCollection(RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.add_collection(this, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return collectionPtr;
+            return GetCollectionHandle(collectionPtr, collectionType);
         }
 
         public void Set(int targetIndex, in RealmValue value)
@@ -177,13 +177,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public IntPtr SetCollection(int targetIndex, RealmValueType collectionType)
+        public CollectionHandleBase SetCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.set_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return collectionPtr;
+            return GetCollectionHandle(collectionPtr, collectionType);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -205,13 +205,13 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public IntPtr InsertCollection(int targetIndex, RealmValueType collectionType)
+        public CollectionHandleBase InsertCollection(int targetIndex, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             var collectionPtr = NativeMethods.insert_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return collectionPtr;
+            return GetCollectionHandle(collectionPtr, collectionType);
         }
 
         public int Find(in RealmValue value)

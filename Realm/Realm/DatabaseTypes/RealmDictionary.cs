@@ -67,7 +67,7 @@ namespace Realms
 
                 if (realmValue.Type.IsCollection())
                 {
-                    CreateInternalCollectionAndPopulate(realmValue, _dictionaryHandle.SetCollection(key, realmValue.Type));
+                    CollectionHelpers.PopulateCollection(Realm, _dictionaryHandle.SetCollection(key, realmValue.Type), realmValue);
                     return;
                 }
 
@@ -132,7 +132,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateInternalCollectionAndPopulate(realmValue, _dictionaryHandle.AddCollection(key, realmValue.Type));
+                CollectionHelpers.PopulateCollection(Realm, _dictionaryHandle.AddCollection(key, realmValue.Type), realmValue);
                 return;
             }
 

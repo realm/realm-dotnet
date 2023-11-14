@@ -16,27 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Diagnostics;
+
 namespace Realms.Helpers;
 
 internal static class CollectionHelpers
 {
-    internal static void PopulateList(Realm realm, ListHandle handle, RealmValue content)
+    internal static void PopulateCollection(Realm realm, CollectionHandleBase handle, RealmValue content)
     {
-        var newList = new RealmList<RealmValue>(realm, handle, metadata: null);
-
-        foreach (var item in content.AsList())
+        if (handle is ListHandle listHandle)
         {
-            newList.Add(item);
+            var newList = new RealmList<RealmValue>(realm, listHandle, metadata: null);
+
+            foreach (var item in content.AsList())
+            {
+                newList.Add(item);
+            }
         }
-    }
-
-    internal static void PopulateDictionary(Realm realm, DictionaryHandle handle, RealmValue content)
-    {
-        var newDict = new RealmDictionary<RealmValue>(realm, handle, metadata: null);
-
-        foreach (var item in content.AsDictionary())
+        else if (handle is DictionaryHandle dictHandle)
         {
-            newDict.Add(item);
+            var newDict = new RealmDictionary<RealmValue>(realm, dictHandle, metadata: null);
+
+            foreach (var item in content.AsDictionary())
+            {
+                newDict.Add(item);
+            }
+        }
+        else
+        {
+            Debug.Fail("Invalid collection type");
         }
     }
 }

@@ -54,6 +54,19 @@ namespace Realms
             return new ResultsHandle(Root!, ptr);
         }
 
+        protected CollectionHandleBase GetCollectionHandle(IntPtr collectionPtr, RealmValueType collectionType)
+        {
+            switch (collectionType)
+            {
+                case RealmValueType.List:
+                    return new ListHandle(Root!, collectionPtr);
+                case RealmValueType.Dictionary:
+                    return new DictionaryHandle(Root!, collectionPtr);
+                default:
+                    throw new InvalidOperationException("Invalid collection type");
+            }
+        }
+
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();

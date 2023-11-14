@@ -247,7 +247,7 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public IntPtr SetCollection(string key, RealmValueType collectionType)
+        public CollectionHandleBase SetCollection(string key, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
@@ -258,7 +258,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return GetCollectionHandle(result, collectionType);
         }
 
         public void Add(string key, in RealmValue value)
@@ -290,7 +290,7 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public IntPtr AddCollection(string key, RealmValueType collectionType)
+        public CollectionHandleBase AddCollection(string key, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
@@ -301,7 +301,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return GetCollectionHandle(result, collectionType);
         }
 
         public bool ContainsKey(string key)

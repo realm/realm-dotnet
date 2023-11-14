@@ -69,7 +69,7 @@ namespace Realms
 
                 if (realmValue.Type.IsCollection())
                 {
-                    CreateInternalCollectionAndPopulate(realmValue, _listHandle.SetCollection(index, realmValue.Type));
+                    CollectionHelpers.PopulateCollection(Realm, _listHandle.SetCollection(index, realmValue.Type), realmValue);
                     return;
                 }
 
@@ -97,7 +97,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateInternalCollectionAndPopulate(realmValue, _listHandle.AddCollection(realmValue.Type));
+                CollectionHelpers.PopulateCollection(Realm, _listHandle.AddCollection(realmValue.Type), realmValue);
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace Realms
 
             if (realmValue.Type.IsCollection())
             {
-                CreateInternalCollectionAndPopulate(realmValue, _listHandle.InsertCollection(index, realmValue.Type));
+                CollectionHelpers.PopulateCollection(Realm, _listHandle.InsertCollection(index, realmValue.Type), realmValue);
                 return;
             }
 
