@@ -514,6 +514,9 @@ static inline realm_value_t to_capi(ObjLink obj_link, SharedRealm realm)
     return to_capi(realm->read_group().get_object(obj_link), realm);
 }
 
+// Collections need to have their own overload of to_capi, as at the moment there's no API to retrieve a collection value
+// from Mixed (like val.get<int64>), so we need first to retrieve the collection itself with the specific methods like
+// list.get_list, list.get_dictionary and so on
 static inline realm_value_t to_capi(List* list)
 {
     realm_value_t val{};
@@ -619,9 +622,6 @@ inline realm_value_t to_capi(const object_store::Dictionary& dictionary, const M
         return to_capi(val.get_link(), dictionary.get_realm());
     case type_List:
         return to_capi(new List(dictionary.get_list(key)));
-        break;
-    case type_Set:
-        return to_capi(new object_store::Set(dictionary.get_set(key)));
         break;
     case type_Dictionary:
         return to_capi(new object_store::Dictionary(dictionary.get_dictionary(key)));
