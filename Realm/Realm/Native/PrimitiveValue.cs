@@ -72,9 +72,6 @@ namespace Realms.Native
         private ListValue list_value;
 
         [FieldOffset(0)]
-        private SetValue set_value;
-
-        [FieldOffset(0)]
         private DictionaryValue dictionary_value;
 
         [FieldOffset(16)]
@@ -279,12 +276,6 @@ namespace Realms.Native
             return new RealmList<RealmValue>(realm, handle, null);
         }
 
-        public readonly RealmSet<RealmValue> AsSet(Realm realm)
-        {
-            var handle = new SetHandle(realm.SharedRealmHandle, set_value.set_ptr);
-            return new RealmSet<RealmValue>(realm, handle, null);
-        }
-
         public readonly RealmDictionary<RealmValue> AsDictionary(Realm realm)
         {
             var handle = new DictionaryHandle(realm.SharedRealmHandle, dictionary_value.dict_ptr);
@@ -316,12 +307,6 @@ namespace Realms.Native
         private struct ListValue
         {
             public IntPtr list_ptr;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct SetValue
-        {
-            public IntPtr set_ptr;
         }
 
         [StructLayout(LayoutKind.Sequential)]

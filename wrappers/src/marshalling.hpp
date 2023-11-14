@@ -102,6 +102,7 @@ enum class realm_value_type : uint8_t {
     RLM_TYPE_LINK,
     RLM_TYPE_UUID,
     RLM_TYPE_LIST,
+    RLM_TYPE_SET,
     RLM_TYPE_DICTIONARY,
 };
 

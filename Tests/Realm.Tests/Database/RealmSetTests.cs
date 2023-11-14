@@ -1092,15 +1092,15 @@ namespace Realms.Tests.Database
             var rv10 = RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid);
             var rv11 = GetRealmValueObject();
 
-            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 }, new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
+            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 } as IEnumerable<RealmValue>, new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
 
             rv11 = GetRealmValueObject();
 
-            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5 }, new[] { rv6, rv7, rv8, rv9, rv10, rv11 });
+            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5 } as IEnumerable<RealmValue>, new[] { rv6, rv7, rv8, rv9, rv10, rv11 });
 
             rv11 = GetRealmValueObject();
 
-            yield return new TestCaseData<RealmValue>(Array.Empty<RealmValue>(), new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
+            yield return new TestCaseData<RealmValue>(Array.Empty<RealmValue>() as IEnumerable<RealmValue>, new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
 
             static RealmValue GetRealmValueObject() => RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object);
 
@@ -1110,21 +1110,21 @@ namespace Realms.Tests.Database
             var i4 = RealmValue.Create(true, RealmValueType.Bool);
             var i5 = RealmValue.Create(1m, RealmValueType.Decimal128);
 
-            yield return new TestCaseData<RealmValue>(new[] { i1, i2, i3, i4, i5 }, new[] { i1, i2, i3, i4, i5 });
+            yield return new TestCaseData<RealmValue>(new[] { i1, i2, i3, i4, i5 } as IEnumerable<RealmValue>, new[] { i1, i2, i3, i4, i5 });
 
             var s1 = RealmValue.Create(string.Empty, RealmValueType.String);
             var s2 = RealmValue.Create(0, RealmValueType.Int);
             var s3 = RealmValue.Create(Guid.Empty, RealmValueType.Guid);
             var s4 = RealmValue.Null;
 
-            yield return new TestCaseData<RealmValue>(new[] { s1, s2, s3, s4 }, new[] { s1, s2, s3, s4 });
+            yield return new TestCaseData<RealmValue>(new[] { s1, s2, s3, s4 } as IEnumerable<RealmValue>, new[] { s1, s2, s3, s4 });
 
             var d1 = RealmValue.Create(1m, RealmValueType.Decimal128);
             var d2 = RealmValue.Create(1f, RealmValueType.Decimal128);
             var d3 = RealmValue.Create(1d, RealmValueType.Decimal128);
             var d4 = RealmValue.Create(1, RealmValueType.Decimal128);
 
-            yield return new TestCaseData<RealmValue>(new[] { d1, d2, d3, d4 }, new[] { d1, d2, d3, d4 });
+            yield return new TestCaseData<RealmValue>(new[] { d1, d2, d3, d4 } as IEnumerable<RealmValue>, new[] { d1, d2, d3, d4 });
         }
 
         [TestCaseSource(nameof(RealmTestValues))]

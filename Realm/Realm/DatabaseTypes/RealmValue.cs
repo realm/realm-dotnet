@@ -1449,6 +1449,13 @@ namespace Realms
         public static implicit operator RealmValue(List<RealmValue>? val) => val == null ? Null : List(val);
 
         /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmValue">RealmValue[]?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator RealmValue(RealmValue[]? val) => val == null ? Null : List(val);
+
+        /// <summary>
         /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.Dictionary{TKey, TValue}">Dictionary&lt;string, RealmValue&gt;</see>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
