@@ -88,6 +88,7 @@ namespace Realms.Tests.Database
 
             Assert.That(rv == originalList);
             Assert.That(rv.Equals(originalList));
+            Assert.That(rv.AsList().SequenceEqual(originalList));
         }
 
         [Test]
@@ -463,7 +464,7 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsAny(), Is.EquivalentTo(originalDict));
             Assert.That(rv.As<IDictionary<string, RealmValue>>(), Is.EquivalentTo(originalDict));
 
-            Assert.That(rv == originalDict, "Equal to than original dict");
+            Assert.That(rv == originalDict, "Equal to original dict");
             Assert.That(rv.Equals(originalDict), "Equal to original dict with Equals");
         }
 
@@ -528,8 +529,6 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsDictionary(), Is.EqualTo(originalDict));
             Assert.That(rv2.AsDictionary(), Is.EqualTo(originalDict));
         }
-
-        //TODO Add test to verify sets can't be in RealmValue
 
         [Test]
         public void Dictionary_BuiltWithConstructorMethodOrOperatorOrCreate_WorksTheSame([Values(true, false)] bool isManaged)
