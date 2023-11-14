@@ -22,7 +22,7 @@ internal static class CollectionHelpers
 {
     internal static RealmList<RealmValue> ListCreateAndPopulate(Realm realm, ListHandle handle, RealmValue content)
     {
-        var newList = new RealmList<RealmValue>(realm, handle, null);
+        var newList = new RealmList<RealmValue>(realm, handle, metadata: null);
 
         foreach (var item in content.AsList())
         {
@@ -34,7 +34,7 @@ internal static class CollectionHelpers
 
     internal static RealmDictionary<RealmValue> DictionaryCreatePopulate(Realm realm, DictionaryHandle handle, RealmValue content)
     {
-        var newDict = new RealmDictionary<RealmValue>(realm, handle, null);
+        var newDict = new RealmDictionary<RealmValue>(realm, handle, metadata: null);
 
         foreach (var item in content.AsDictionary())
         {

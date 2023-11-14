@@ -96,9 +96,6 @@ REALM_EXPORT void* list_set_collection(List& list, size_t list_ndx, realm_value_
         case realm::binding::realm_value_type::RLM_TYPE_LIST:
             list.set_collection(list_ndx, CollectionType::List);
             return new List(list.get_list(list_ndx));
-        case realm::binding::realm_value_type::RLM_TYPE_SET:
-            list.set_collection(list_ndx, CollectionType::Set);
-            return new object_store::Set(list.get_set(list_ndx));
         case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
             list.set_collection(list_ndx, CollectionType::Dictionary);
             return new object_store::Dictionary(list.get_dictionary(list_ndx));
@@ -157,9 +154,6 @@ REALM_EXPORT void* list_insert_collection(List& list, size_t list_ndx, realm_val
         case realm::binding::realm_value_type::RLM_TYPE_LIST:
             list.insert_collection(list_ndx, CollectionType::List);
             return new List(list.get_list(list_ndx));
-        case realm::binding::realm_value_type::RLM_TYPE_SET:
-            list.insert_collection(list_ndx, CollectionType::Set);
-            return new object_store::Set(list.get_set(list_ndx));
         case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
             list.insert_collection(list_ndx, CollectionType::Dictionary);
             return new object_store::Dictionary(list.get_dictionary(list_ndx));
@@ -211,9 +205,6 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
             break;
         case type_List:
             *value = to_capi(new List(list.get_list(ndx)));
-            break;
-        case type_Set:
-            *value = to_capi(new object_store::Set(list.get_set(ndx)));
             break;
         case type_Dictionary:
             *value = to_capi(new object_store::Dictionary(list.get_dictionary(ndx)));

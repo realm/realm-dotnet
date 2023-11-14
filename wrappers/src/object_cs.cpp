@@ -118,9 +118,6 @@ extern "C" {
             case type_List:
                 *value = to_capi(new List(object.realm(), object.get_obj(), prop.column_key));
                 break;
-            case type_Set:
-                *value = to_capi(new object_store::Set(object.realm(), object.get_obj(), prop.column_key));
-                break;
             case type_Dictionary:
                 *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key));
                 break;
