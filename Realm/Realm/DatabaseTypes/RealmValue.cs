@@ -62,8 +62,12 @@ namespace Realms
         [FieldOffset(0)]
         private readonly PrimitiveValue _primitiveValue;
 
-        // This is only used when PrimitiveValue.Type == Int. int_value in PrimitiveValue occupies the first 8 bytes
-        // so we can safely place this at the 9th byte.
+        // _intValue has been extracted here to be more memory efficient, as it needs also _propertyIndex
+        // and _objectHandle when working with RealmInteger.
+        [FieldOffset(0)]
+        private readonly long _intValue;
+
+        // This is only used when PrimitiveValue.Type == Int.
         [FieldOffset(8)]
         private readonly IntPtr _propertyIndex;
 
@@ -131,10 +135,7 @@ namespace Realms
                     _dictionaryValue = primitive.AsDictionary(realm!);
                     break;
                 case RealmValueType.Int:
-                    _primitiveValue = primitive;
-
-                    // _propertyIndex and _objectHandler are used only when converting the RealmValue to a RealmInteger.
-                    // _propertyIndex needs to be set after _primitiveValue due to the RealmValue struct explicit layout.
+                    _intValue = primitive.AsInt();
                     _propertyIndex = propertyIndex;
                     _objectHandle = handle;
                     break;
@@ -142,6 +143,12 @@ namespace Realms
                     _primitiveValue = primitive;
                     break;
             }
+        }
+
+        private RealmValue(long intValue) : this()
+        {
+            _type = RealmValueType.Int;
+            _intValue = intValue;
         }
 
         private RealmValue(byte[] data) : this()
@@ -182,8 +189,6 @@ namespace Realms
 
         private static RealmValue Bool(bool value) => new(PrimitiveValue.Bool(value));
 
-        private static RealmValue Int(long value) => new(PrimitiveValue.Int(value));
-
         private static RealmValue Float(float value) => new(PrimitiveValue.Float(value));
 
         private static RealmValue Double(double value) => new(PrimitiveValue.Double(value));
@@ -195,6 +200,8 @@ namespace Realms
         private static RealmValue ObjectId(ObjectId value) => new(PrimitiveValue.ObjectId(value));
 
         private static RealmValue Guid(Guid value) => new(PrimitiveValue.Guid(value));
+
+        private static RealmValue Int(long value) => new(value);
 
         private static RealmValue Data(byte[] value) => new(value);
 
@@ -338,7 +345,7 @@ namespace Realms
         public long AsInt64()
         {
             EnsureType("long", RealmValueType.Int);
-            return _primitiveValue.AsInt();
+            return _intValue;
         }
 
         /// <summary>
