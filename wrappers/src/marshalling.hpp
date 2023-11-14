@@ -137,14 +137,6 @@ typedef struct realm_link {
     TableKey table_key;
 } realm_link_t;
 
-typedef struct realm_list {
-    List* list_ptr;
-} realm_list_t;
-
-typedef struct realm_dict {
-    object_store::Dictionary* dictionary_ptr;
-} realm_dict_t;
-
 typedef struct realm_object_id {
     uint8_t bytes[12];
 } realm_object_id_t;
@@ -167,7 +159,7 @@ typedef struct realm_value {
         realm_uuid_t uuid;
 
         realm_link_t link;
-        void* collection;
+        object_store::Collection* collection;
 
         char data[16];
     };
