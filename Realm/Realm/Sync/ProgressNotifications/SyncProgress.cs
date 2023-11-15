@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Sync
 {
     /// <summary>
@@ -27,6 +29,7 @@ namespace Realms.Sync
         /// Gets the number of bytes that have been transferred since subscribing for progress notifications.
         /// </summary>
         /// <value>The number of transferred bytes.</value>
+        [Obsolete("Use ProgressEstimate instead.")]
         public ulong TransferredBytes { get; }
 
         /// <summary>
@@ -36,14 +39,22 @@ namespace Realms.Sync
         /// successfully transferred.
         /// </summary>
         /// <value>The number of transferable bytes.</value>
+        [Obsolete("Use ProgressEstimate instead.")]
         public ulong TransferableBytes { get; }
 
-        internal SyncProgress(ulong transferred, ulong transferable)
+        /// <summary>
+        /// Gets the percentage estimate of the current progress, expressed as a float between 0.0 and 1.0.
+        /// </summary>
+        /// <value>A percentage estimate of the progress.</value>
+        public double ProgressEstimate { get; }
+
+        internal SyncProgress(ulong transferred, ulong transferable, double progressEstimate)
         {
             TransferredBytes = transferred;
             TransferableBytes = transferable;
+            ProgressEstimate = progressEstimate;
         }
 
-        internal bool IsComplete => TransferableBytes == TransferredBytes;
+        internal readonly bool IsComplete => ProgressEstimate >= 1.0;
     }
 }
