@@ -46,11 +46,23 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
+        public static readonly string[] AppTypes = new[]
+        {
+            AppConfigType.Default,
+            AppConfigType.FlexibleSync
+        };
+
         public static readonly object[] AllClientResetHandlers = new object[]
         {
             typeof(DiscardUnsyncedChangesHandler),
             typeof(RecoverUnsyncedChangesHandler),
             typeof(RecoverOrDiscardUnsyncedChangesHandler),
+        };
+
+        public static readonly ProgressMode[] ProgressModeTypes = new ProgressMode[]
+        {
+            ProgressMode.ForCurrentlyOutstandingWork,
+            ProgressMode.ReportIndefinitely,
         };
 
         [Preserve]
@@ -78,12 +90,6 @@ namespace Realms.Tests.Sync
                 ManualResetFallback = (clientResetException) => { },
             };
         }
-
-        public static readonly string[] AppTypes = new[]
-        {
-            AppConfigType.Default,
-            AppConfigType.FlexibleSync
-        };
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
@@ -750,16 +756,33 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
-        [TestCase(ProgressMode.ReportIndefinitely)]
-        public void SessionIntegrationTest_ProgressObservable(ProgressMode mode)
+#pragma warning disable CS0618 // Type or member is obsolete
+        [Test]
+        public void SessionIntegrationTest_ProgressObservable(
+            [ValueSource(nameof(AppTypes))] string appType,
+            [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
         {
             const int objectSize = 1_000_000;
             const int objectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = GetRealm(config);
+                Realm realm;
+                if (appType == AppConfigType.Default)
+                {
+                    var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                    realm = GetRealm(config);
+                }
+                else
+                {
+                    var config = await GetFLXIntegrationConfigAsync();
+                    config.PopulateInitialSubscriptions = (r) =>
+                    {
+                        var query = r.All<HugeSyncObject>();
+
+                        r.Subscriptions.Add(r.All<HugeSyncObject>());
+                    };
+                    realm = await GetRealmAsync(config);
+                }
 
                 var completionTcs = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;
@@ -796,6 +819,16 @@ namespace Realms.Tests.Sync
                                 throw new Exception($"Expected: {p.TransferableBytes} to be in the ({objectSize}, {(objectsToRecord + 1) * objectSize}) range.");
                             }
                         }
+
+                        if (p.TransferredBytes == 0 && p.ProgressEstimate != 0.0)
+                        {
+                            throw new Exception($"Expected progress estimate to be 0.0 when TransferredBytes == 0, but was {p.ProgressEstimate}");
+                        }
+
+                        if (p.TransferredBytes > 0 && (p.ProgressEstimate <= 0.0 || p.ProgressEstimate > 1.0))
+                        {
+                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0 TransferredBytes >= 0, but was {p.ProgressEstimate}");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -804,6 +837,16 @@ namespace Realms.Tests.Sync
 
                     if (p.TransferredBytes >= p.TransferableBytes)
                     {
+                        if (p.ProgressEstimate != 1.0)
+                        {
+                            throw new Exception($"Expected progress estimate to be 1.0 when TransferredBytes >= TransferableBytes, but was {p.ProgressEstimate}");
+                        }
+
+                        if (p.IsComplete is false)
+                        {
+                            throw new Exception($"Expected IsComplete to be true when TransferredBytes >= TransferableBytes, but was false");
+                        }
+
                         completionTcs.TrySetResult(p.TransferredBytes);
                     }
                 });
@@ -831,6 +874,7 @@ namespace Realms.Tests.Sync
                 Assert.That(callbacksInvoked, Is.GreaterThan(1));
             }, timeout: 120_000);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [Test]
         public void Session_Stop_StopsSession()
