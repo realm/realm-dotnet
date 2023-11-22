@@ -9,15 +9,15 @@
 
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <!-- Mono MSBuild (16.0) on macOS cannot target .NET 6 so we can only add the .NET 6 tfms for dotnet build/Windows MSBuild -->
-    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows')) OR (!$([MSBuild]::IsOsPlatform('Linux')) AND '$(MSBuildVersion)' &gt;= '17.0')">
+    <TargetFrameworks Condition="($([System.OperatingSystem]::IsWindows()) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([System.OperatingSystem]::IsMacOS()) AND '$(MSBuildVersion)' &gt;= '17.0')">
       $(TargetFrameworks);net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-tvos
     </TargetFrameworks>
     <!-- dotnet build on macOS cannot target Xamarin.XYZ -->
     <!-- Additionally, the Xamarin targets are not available on Arm64 Windows -->
-    <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR (!$([MSBuild]::IsOsPlatform('Linux')) AND '$(MSBuildVersion)' &lt; '17.0')">
+    <TargetFrameworks Condition="($([System.OperatingSystem]::IsWindows()) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([System.OperatingSystem]::IsMacOS()) AND '$(MSBuildVersion)' &lt; '17.0')">
       $(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20
     </TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
+    <TargetFrameworks Condition="$([System.OperatingSystem]::IsWindows())">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
