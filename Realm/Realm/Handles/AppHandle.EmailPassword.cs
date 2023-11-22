@@ -43,6 +43,11 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_retry_custom_confirmation", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void retry_custom_comfirmation(AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
+                IntPtr tcs_ptr, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_send_reset_password_email", CallingConvention = CallingConvention.Cdecl)]
             public static extern void send_reset_password_email(AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
@@ -116,6 +121,23 @@ namespace Realms.Sync
                 try
                 {
                     EmailNativeMethods.resend_confirmation_email(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
+            }
+
+            public async Task RetryCustomConfirmationAsync(string email)
+            {
+                var tcs = new TaskCompletionSource();
+                var tcsHandle = GCHandle.Alloc(tcs);
+
+                try
+                {
+                    EmailNativeMethods.retry_custom_comfirmation(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
                     ex.ThrowIfNecessary();
                     await tcs.Task;
                 }

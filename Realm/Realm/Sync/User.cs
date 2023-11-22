@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -108,7 +109,8 @@ namespace Realms.Sync
         /// Gets a value indicating which <see cref="Credentials.AuthProvider"/> this user logged in with.
         /// </summary>
         /// <value>The <see cref="Credentials.AuthProvider"/> used to login the user.</value>
-        public Credentials.AuthProvider Provider => Handle.GetProvider();
+        [Obsolete("User.Provider wasn't working consistently and will be removed in a future version. You can get the provider of the user identity instead.")]
+        public Credentials.AuthProvider Provider => Identities.FirstOrDefault()?.Provider ?? Credentials.AuthProvider.Unknown;
 
         /// <summary>
         /// Gets the app with which this user is associated.
@@ -325,7 +327,7 @@ namespace Realms.Sync
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return $"User {Id}, State: {State}, Provider: {Provider}";
+            return $"User {Id}, State: {State}";
         }
 
         internal void RaiseChanged()

@@ -1308,11 +1308,24 @@ namespace Realms
         /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
         ///    This is to be sure that the file can be used as a starting point for a newly installed application.
         ///    The function will throw if there are pending uploads.
+        /// 4. Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled.
+        /// 5  Changing from flexible sync sync to partition based sync is not supported.
+        /// 6. Changing the partition to synchronize on is not supported.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
+
+            if (config is FlexibleSyncConfiguration && Config is not FlexibleSyncConfiguration)
+            {
+                throw new NotSupportedException("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled");
+            }
+
+            if (config is PartitionSyncConfiguration && Config is FlexibleSyncConfiguration)
+            {
+                throw new NotSupportedException("Changing from flexible sync sync to partition based sync is not supported when writing a Realm copy.");
+            }
 
             if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
             {

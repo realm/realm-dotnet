@@ -39,7 +39,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = new(string.Empty, DummyAppId, AppConfigType.Default),
         };
 
-        private static Uri? _baseUri;
+        public static Uri? BaasUri;
         private static BaasClient? _baasClient;
 
         static SyncTestHelpers()
@@ -50,7 +50,7 @@ namespace Realms.Tests.Sync
                 var uri = ConfigHelpers.GetSetting("BaasUrl");
                 if (uri != null)
                 {
-                    _baseUri = new Uri(uri);
+                    BaasUri = new Uri(uri);
                 }
             }
             catch
@@ -63,7 +63,7 @@ namespace Realms.Tests.Sync
 
         public static AppConfiguration GetAppConfig(string type = AppConfigType.Default) => new(_apps[type].ClientAppId)
         {
-            BaseUri = _baseUri ?? new Uri("http://localhost:12345"),
+            BaseUri = BaasUri ?? new Uri("http://localhost:12345"),
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
 #pragma warning disable CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
             BaseFilePath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"rt-sync-{System.Diagnostics.Process.GetCurrentProcess().Id}-{_appCounter++}")).FullName
@@ -76,7 +76,7 @@ namespace Realms.Tests.Sync
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
-            if (_baseUri == null)
+            if (BaasUri == null)
             {
                 Assert.Ignore("Atlas App Services are not setup.");
             }
@@ -92,7 +92,9 @@ namespace Realms.Tests.Sync
             Task.Delay(1000).Wait();
         }
 
-        public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
+        public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}@g.it";
+
+        public static string GetUnconfirmedUsername() => $"realm_tests_do_not_confirm-{Guid.NewGuid()}@g.it";
 
         public static async Task TriggerClientResetOnServer(SyncConfigurationBase config)
         {
@@ -118,7 +120,7 @@ namespace Realms.Tests.Sync
         public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             string[] remainingArgs;
-            (_baasClient, _baseUri, remainingArgs) = await BaasClient.CreateClientFromArgs(args, TestHelpers.Output);
+            (_baasClient, BaasUri, remainingArgs) = await BaasClient.CreateClientFromArgs(args, TestHelpers.Output);
 
             if (_baasClient != null)
             {
@@ -165,7 +167,7 @@ namespace Realms.Tests.Sync
 
         private static async Task CreateBaasAppsAsync()
         {
-            if (_apps[AppConfigType.Default].AppId != string.Empty || _baseUri == null)
+            if (_apps[AppConfigType.Default].AppId != string.Empty || BaasUri == null)
             {
                 return;
             }
@@ -179,14 +181,14 @@ namespace Realms.Tests.Sync
                 var groupId = ConfigHelpers.GetSetting("GroupId")!;
                 var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
 
-                _baasClient ??= await BaasClient.Atlas(_baseUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient ??= await BaasClient.Atlas(BaasUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {
             }
 #endif
 
-            _baasClient ??= await BaasClient.Docker(_baseUri, "local", TestHelpers.Output);
+            _baasClient ??= await BaasClient.Docker(BaasUri, "local", TestHelpers.Output);
 
             _apps = await _baasClient.GetOrCreateApps();
         }

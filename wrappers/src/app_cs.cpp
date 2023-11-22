@@ -246,8 +246,7 @@ extern "C" {
                     id,
                     refresh_token,
                     access_token,
-                    "testing",
-                    "my-device-id"));
+                    "testing"));
         });
     }
 
@@ -365,6 +364,14 @@ extern "C" {
         handle_errors(ex, [&]() {
             Utf16StringAccessor email(email_buf, email_len);
             app->provider_client<App::UsernamePasswordProviderClient>().resend_confirmation_email(email, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_retry_custom_confirmation(SharedApp& app, uint16_t* email_buf, size_t email_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor email(email_buf, email_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().retry_custom_confirmation(email, get_callback_handler(tcs_ptr));
         });
     }
 

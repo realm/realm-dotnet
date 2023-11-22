@@ -1,6 +1,36 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 11.6.1 (2023-11-17)
+
+### Fixed
+* Fixed FLX subscriptions not being sent to the server if the session was interrupted during bootstrapping. (Core 13.23.3)
+* Fixed FLX subscriptions not being sent to the server if an upload message was sent immediately after a subscription was committed but before the sync client checks for new subscriptions. (Core 13.23.3)
+* Fixed application crash with 'KeyNotFound' exception when subscriptions are marked complete after a client reset. (Core 13.23.3)
+* A crash at a very specific time during a DiscardLocal client reset on a FLX Realm could leave subscriptions in an invalid state. (Core 13.23.4)
+* Fixed an error "Invalid schema change (UPLOAD): cannot process AddColumn instruction for non-existent table" when using automatic client reset with recovery in dev mode to recover schema changes made locally while offline. (Core 13.23.4)
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.23.4.
+
+## 11.6.0 (2023-11-03)
+
+### Enhancements
+* Added the `App.EmailPasswordAuth.RetryCustomConfirmationAsync` method to be able to run again the confirmation function on the server for a given email. (Issue [#3463](https://github.com/realm/realm-dotnet/issues/3463))
 * Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 
@@ -12,13 +42,25 @@
 * Made WebSocket error logging more verbose when using `AppConfiguration.UseManagedWebSockets = true`. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
-* None
+* Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
+* Logging into a single user using multiple auth providers created a separate SyncUser per auth provider. This mostly worked, but had some quirks:
+  - Sync sessions would not necessarily be associated with the specific SyncUser used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
+  - Existing local synchronized Realm files created using version of Realm from August - November 2020 would sometimes not be opened correctly and would instead be redownloaded.
+  - Removing one of the SyncUsers would delete all local Realm files for all SyncUsers for that user.
+  - Deleting the server-side user via one of the SyncUsers left the other SyncUsers in an invalid state.
+  - A SyncUser which was originally created via anonymous login and then linked to an identity would still be treated as an anonymous users and removed entirely on logout.
+  (Core 13.21.0)
+* If a user was logged out while an access token refresh was in progress, the refresh completing would mark the user as logged in again and the user would be in an inconsistent state (Core 13.21.0).
+* If querying over a geospatial dataset that had some objects with a type property set to something other than 'Point' (case insensitive) an exception would have been thrown. Instead of disrupting the query, those objects are now just ignored. (Core 13.21.0)
+* Receiving a write_not_allowed error from the server would have led to a crash. (Core 13.22.0)
+* Updating subscriptions did not trigger Realm autorefreshes, sometimes resulting in async refresh hanging until another write was performed by something else. (Core 13.23.1)
+* Fix interprocess locking for concurrent realm file access resulting in a interprocess deadlock on FAT32/exFAT filesystems. (Core 13.23.1)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.20.1.
+* Using Core 13.23.1.
 
 ## 11.5.0 (2023-09-15)
 
