@@ -46,7 +46,7 @@ jobs:
     - name: Install SDK platform 21
       run: sdkmanager --install "platforms;android-21"
     - name: Setup workloads
-      run: dotnet workload install tvos ios maccatalyst android
+      run: dotnet workload install tvos ios maccatalyst android wasm-tools-net6
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Realm.PlatformHelpers

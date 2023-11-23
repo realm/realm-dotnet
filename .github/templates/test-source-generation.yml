@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ setupWorkloads('tvos ios maccatalyst android')
+      - #@ setupWorkloads('tvos ios maccatalyst android wasm-tools-net6')
       - #@ template.replace(dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
