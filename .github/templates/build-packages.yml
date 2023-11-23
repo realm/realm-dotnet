@@ -87,7 +87,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupAndroid())
-      - #@ setupWorkloads('tvos ios maccatalyst android')
+      - #@ setupWorkloads('tvos ios maccatalyst android wasm-tools-net6')
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
