@@ -38,7 +38,7 @@ jobs:
       with:
         dotnet-version: 6.0.417
     - name: Setup workloads
-      run: dotnet workload install tvos ios maccatalyst android wasm-tools-net6
+      run: dotnet workload install tvos ios maccatalyst android
     - name: Set version suffix
       id: set-version-suffix
       run: |

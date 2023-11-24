@@ -21,7 +21,7 @@
 
 #@ def buildPackages():
   - #@ template.replace(setupAndroid())
-  - #@ setupWorkloads('tvos ios maccatalyst android wasm-tools-net6')
+  - #@ setupWorkloads('tvos ios maccatalyst android')
   - name: Add msbuild to PATH
     uses: #@ actionSetupMSBuild
 #@ for pkgName in nugetPackages:
