@@ -106,6 +106,7 @@ jobs:
           }
           echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
       - #@ template.replace(fetchWrapperBinaries())
+      - _: #@ template.replace(setupDotnet("6.0.402"))
       - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
       - #@ template.replace(readVersionFromPackage())
       - #@ template.replace(uploadPackageArtifacts())
