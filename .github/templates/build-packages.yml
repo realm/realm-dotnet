@@ -87,7 +87,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupAndroid())
-      - _: #@ template.replace(setupDotnet("6.0.402"))
+      - _: #@ template.replace(setupDotnet("6.0.417"))
       - #@ setupWorkloads('tvos ios maccatalyst android wasm-tools-net6')
       - name: Set version suffix
         id: set-version-suffix
