@@ -17,6 +17,7 @@
 #@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@fa20eb972b9f018654fdb4e2c7afb52b0532f907"
 #@ actionSetupXcode = "maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98"
 #@ actionSetupAndroid = "android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc"
+#@ actionSetupJDK = "actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
@@ -230,8 +231,9 @@ with:
 #@ end
 ---
 #@ def setupWorkloads(workloads = 'maui'):
-name: Setup workloads
-run: #@ "dotnet workload install " + workloads
+  - _: #@ template.replace(setupDotnet("6.0.417"))
+  - name: Setup workloads
+    run: #@ "dotnet workload install " + workloads
 #@ end
 ---
 #@ def restoreWorkloads(workingDirectory = 'Realm/Realm.PlatformHelpers'):
@@ -245,4 +247,9 @@ working-directory: #@ "${{ github.workspace }}/" + workingDirectory
     uses: #@ actionSetupAndroid
   - name: Install SDK platform 21
     run: sdkmanager --install "platforms;android-21"
+  - name: Setup JDK
+    uses: #@ actionSetupJDK
+    with:
+      distribution: microsoft
+      java-version: 11
 #@ end

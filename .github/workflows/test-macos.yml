@@ -102,6 +102,10 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.417
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Build the tests

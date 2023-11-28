@@ -112,6 +112,10 @@ jobs:
       run: |
         sudo xcode-select -s "/Applications/Xcode_14.3.app"
         echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.417
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Build the tests
