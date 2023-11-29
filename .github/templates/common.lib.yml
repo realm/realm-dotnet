@@ -231,7 +231,7 @@ with:
 #@ end
 ---
 #@ def setupWorkloads(workloads = 'maui'):
-  - _: #@ template.replace(setupDotnet("7.0.404"))
+  - _: #@ template.replace(setupDotnet("7.0.x"))
   - name: Setup workloads
     run: #@ "dotnet workload install " + workloads
 #@ end
@@ -247,9 +247,13 @@ working-directory: #@ "${{ github.workspace }}/" + workingDirectory
     uses: #@ actionSetupAndroid
   - name: Install SDK platform 21
     run: sdkmanager --install "platforms;android-21"
-  - name: Setup JDK
-    uses: #@ actionSetupJDK
-    with:
-      distribution: microsoft
-      java-version: 11
+  - #@ setupJDK()
+#@ end
+---
+#@ def setupJDK():
+name: Setup JDK
+uses: #@ actionSetupJDK
+with:
+  distribution: microsoft
+  java-version: 11
 #@ end
