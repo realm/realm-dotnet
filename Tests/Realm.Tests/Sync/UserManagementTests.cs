@@ -1152,8 +1152,6 @@ namespace Realms.Tests.Sync
 
                 var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
 
-                var customDataId = ObjectId.GenerateNewId();
-
                 var customDataDoc = new BsonDocument
                 {
                     ["_id"] = ObjectId.GenerateNewId(),
