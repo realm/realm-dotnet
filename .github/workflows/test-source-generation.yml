@@ -19,7 +19,7 @@ jobs:
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
-        dotnet-version: 6.0.417
+        dotnet-version: 7.0.311
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
