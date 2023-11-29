@@ -1094,7 +1094,7 @@ namespace Realms.Tests.Sync
             Assert.That(user.ToString(), Does.Contain(user.Id));
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserLogOut_RaisesChanged()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1124,7 +1124,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserChanged_DoesntKeepObjectAlive()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1141,7 +1141,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserCustomDataChange_RaisesChanged()
         {
             var tcs = new TaskCompletionSource();
