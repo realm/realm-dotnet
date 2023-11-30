@@ -650,7 +650,11 @@ namespace Realms
                 });
             }
         }
-
+        /*
+         * Keypath now needs to be a list of strings, can't be an enum only. We probably need to keep the keypath for empty and full though
+         * 
+         * 
+         */
         public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
