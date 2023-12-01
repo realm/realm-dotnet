@@ -1120,7 +1120,7 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.That(user.State, Is.EqualTo(UserState.LoggedOut));
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
             });
         }
 
