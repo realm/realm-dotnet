@@ -29,6 +29,15 @@ namespace Realms.Serialization;
 
 #pragma warning disable SA1600 // Elements should be documented
 
+/* TODO: 
+ * - This class doesn't need to derive from IBsonSerializer
+ * - This can only be a static class with the static method to register and lookup serializer
+ * - We could move the lookup and register to a "SerializerRegistry", like they do in the driver, but maybe it's an overkill
+ * - 
+ * - What about backlinks...?
+ * 
+ * 
+ */
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class RealmObjectSerializer : IBsonSerializer
 {
@@ -91,31 +100,6 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         }
     }
 
-    public virtual T? DeserializeById(BsonDeserializationContext context)
-    {
-        if (context.Reader.CurrentBsonType == BsonType.Null)
-        {
-            context.Reader.ReadNull();
-            return null;
-        }
-
-        var result = CreateInstance()!;
-
-        var pk = RealmObjectSerializer<T>.GetPKProperty(result);
-        var pkValue = pk.Type.UnderlyingType() switch
-        {
-            PropertyType.Int => (RealmValue)context.Reader.ReadInt64(),
-            PropertyType.String => (RealmValue)context.Reader.ReadString(),
-            PropertyType.Guid => (RealmValue)(Guid)BsonSerializer.LookupSerializer(typeof(Guid)).Deserialize(context),
-            PropertyType.ObjectId => (RealmValue)context.Reader.ReadObjectId(),
-            _ => throw new NotSupportedException($"Unexpected primary key type: {pk.Type}"),
-        };
-
-        result.Accessor.SetValueUnique(pk.Name, pkValue);
-
-        return result;
-    }
-
     public override object? Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
     {
         var reader = context.Reader;
@@ -153,6 +137,8 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
                     reader.ReadEndArray();
 
                     break;
+
+                // Either an object or a dictionary
                 case BsonType.Document:
                     if (result!.ObjectSchema!.TryFindProperty(name, out var property) && !property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object))
                     {
@@ -192,6 +178,8 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         return result;
     }
 
+    // The methods "SerializeId" and "DeserializeById" are used when serialising/deserialising links, as
+    // this values are represented just by the primary key value in the JSON
     public override void SerializeId(BsonSerializationContext context, BsonSerializationArgs args, object? value)
     {
         if (value is null)
@@ -226,12 +214,41 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         }
     }
 
+    public virtual T? DeserializeById(BsonDeserializationContext context)
+    {
+        if (context.Reader.CurrentBsonType == BsonType.Null)
+        {
+            context.Reader.ReadNull();
+            return null;
+        }
+
+        var result = CreateInstance()!;
+
+        var pk = RealmObjectSerializer<T>.GetPKProperty(result);
+        var pkValue = pk.Type.UnderlyingType() switch
+        {
+            PropertyType.Int => (RealmValue)context.Reader.ReadInt64(),
+            PropertyType.String => (RealmValue)context.Reader.ReadString(),
+            PropertyType.Guid => (RealmValue)(Guid)BsonSerializer.LookupSerializer(typeof(Guid)).Deserialize(context),
+            PropertyType.ObjectId => (RealmValue)context.Reader.ReadObjectId(),
+            _ => throw new NotSupportedException($"Unexpected primary key type: {pk.Type}"),
+        };
+
+        result.Accessor.SetValueUnique(pk.Name, pkValue);
+
+        return result;
+    }
+
     protected abstract T CreateInstance();
 
+    // Read scalar values (including objects/links)
     protected abstract void ReadValue(T instance, string name, BsonDeserializationContext context);
 
+    // Read list or set element
     protected abstract void ReadArrayElement(T instance, string name, BsonDeserializationContext context);
 
+    // TODO If it's only for dictionary, maybe we could rename it?
+    // Read dictionary element
     protected abstract void ReadDocumentField(T instance, string name, string fieldName, BsonDeserializationContext context);
 
     protected abstract void SerializeValue(BsonSerializationContext context, BsonSerializationArgs args, T value);

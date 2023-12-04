@@ -91,12 +91,13 @@ namespace Realms.Tests.Serialization
                     StringProperty = "foo bar"
                 })
             },
+            // TODO Do we need to check for object in RealmValue/All values too?
             new object[] { CreateTestCase("Bool RealmValue", new AllTypesObject { RealmValueProperty = true }) },
             new object[] { CreateTestCase("Int RealmValue", new AllTypesObject { RealmValueProperty = 123 }) },
             new object[] { CreateTestCase("Long RealmValue", new AllTypesObject { RealmValueProperty = 9999999999 }) },
             new object[] { CreateTestCase("Null RealmValue", new AllTypesObject { RealmValueProperty = RealmValue.Null }) },
             new object[] { CreateTestCase("String RealmValue", new AllTypesObject { RealmValueProperty = "abc" }) },
-            new object[] { CreateTestCase("Data RealmValue", new AllTypesObject { RealmValueProperty = TestHelpers.GetBytes(10) }) },
+            new object[] { CreateTestCase("Data RealmValue", new AllTypesObject { RealmValueProperty = GetBytes(10) }) },
             new object[] { CreateTestCase("Float RealmValue", new AllTypesObject { RealmValueProperty = 15.2f }) },
             new object[] { CreateTestCase("Double RealmValue", new AllTypesObject { RealmValueProperty = -123.45678909876 }) },
             new object[] { CreateTestCase("Decimal RealmValue", new AllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
@@ -213,11 +214,11 @@ namespace Realms.Tests.Serialization
             AddIfNecessary(original);
 
             var json = SerializationHelper.ToNativeJson(original);
-            var actual = BsonSerializer.Deserialize<AllTypesObject>(json);
-            var actualDocument = BsonSerializer.Deserialize<BsonDocument>(json);
+            var deserializedObj = BsonSerializer.Deserialize<AllTypesObject>(json);
+            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
-            AssertAreEqual(actual, original);
-            AssertMatchesBsonDocument(actualDocument, original);
+            AssertAreEqual(deserializedObj, original);
+            AssertMatchesBsonDocument(deserializedBson, original);
         }
 
         [TestCaseSource(nameof(LinksTestCases))]
@@ -291,37 +292,33 @@ namespace Realms.Tests.Serialization
         public void CollectionsObject_Serializes(TestCaseData<Property> testCase)
         {
             var prop = testCase.Value;
-            var obj = new CollectionsObject();
+            var original = new CollectionsObject();
 
-            DataGenerator.FillCollection(obj.GetProperty<IEnumerable>(prop), 5);
+            DataGenerator.FillCollection(original.GetProperty<IEnumerable>(prop), 5);
 
-            AddIfNecessary(obj);
+            AddIfNecessary(original);
 
-            var json = SerializationHelper.ToNativeJson(obj);
-            var deserialized = BsonSerializer.Deserialize<CollectionsObject>(json);
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserializedObj = BsonSerializer.Deserialize<CollectionsObject>(json);
+            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
-            var actual = deserialized.GetProperty<IEnumerable>(prop);
-            var expected = obj.GetProperty<IEnumerable>(prop);
-
-            AssertAreEqual(actual, expected, $"property: {prop.Name}");
+            AssertAreEqual(deserializedObj, original);
+            AssertMatchesBsonDocument(deserializedBson, original);
         }
 
         [TestCaseSource(nameof(EmbeddedTestCases))]
         public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
         {
-            var obj = testCase.Value;
-            AddIfNecessary(obj);
+            var original = testCase.Value;
+            AddIfNecessary(original);
 
-            var json = SerializationHelper.ToNativeJson(obj);
+            var json = SerializationHelper.ToNativeJson(original);
 
-            var deserialized = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
+            var deserializedObj = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
+            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
-            Assert.That(obj.PrimaryKey, Is.EqualTo(deserialized.PrimaryKey));
-
-            if (obj.AllTypesObject is not null)
-            {
-                AssertAreEqual(deserialized.AllTypesObject, obj.AllTypesObject);
-            }
+            AssertAreEqual(deserializedObj, original);
+            AssertMatchesBsonDocument(deserializedBson, original);
         }
 
         private void AddIfNecessary(IRealmObject obj)

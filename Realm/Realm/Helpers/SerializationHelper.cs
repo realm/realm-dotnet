@@ -178,8 +178,10 @@ namespace Realms.Helpers
         {
             public Type ValueType => typeof(RealmInteger<T>);
 
-            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-                => Deserialize(context, args);
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmInteger<T> value)
+            {
+                BsonSerializer.LookupSerializer<T>().Serialize(context, args, value);
+            }
 
             void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
             {
@@ -193,19 +195,33 @@ namespace Realms.Helpers
                 BsonSerializer.LookupSerializer<T>().Serialize(context, args, intValue);
             }
 
-            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmInteger<T> value)
-            {
-                BsonSerializer.LookupSerializer<T>().Serialize(context, args, value);
-            }
-
             public RealmInteger<T> Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
                 => BsonSerializer.LookupSerializer<T>().Deserialize(context, args);
+
+            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                => Deserialize(context, args);
         }
 
         [Preserve(AllMembers = true)]
         private class RealmValueSerializer : IBsonSerializer<RealmValue>
         {
             public Type ValueType => typeof(RealmValue);
+
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
+            {
+                if (value.Type == RealmValueType.Null)
+                {
+                    context.Writer.WriteNull();
+                }
+                else
+                {
+                    var boxed = value.AsAny()!;
+                    BsonSerializer.LookupSerializer(boxed.GetType()).Serialize(context, args, boxed);
+                }
+            }
+
+            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+                => Serialize(context, args, (RealmValue)value);
 
             public RealmValue Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
             {
@@ -226,7 +242,7 @@ namespace Realms.Helpers
 
                         return value;
                     case BsonType.Document:
-                        throw new NotImplementedException("TODO");
+                        throw new NotImplementedException("TODO");  //TODO
                     case BsonType.Binary:
                         var binary = reader.ReadBinaryData();
                         if (binary.SubType == BsonBinarySubType.UuidStandard)
@@ -251,22 +267,6 @@ namespace Realms.Helpers
                         throw new NotSupportedException($"Can't deserialize RealmValue from json type: {reader.CurrentBsonType}.");
                 }
             }
-
-            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
-            {
-                if (value.Type == RealmValueType.Null)
-                {
-                    context.Writer.WriteNull();
-                }
-                else
-                {
-                    var boxed = value.AsAny()!;
-                    BsonSerializer.LookupSerializer(boxed.GetType()).Serialize(context, args, boxed);
-                }
-            }
-
-            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-                => Serialize(context, args, (RealmValue)value);
 
             object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
                 => Deserialize(context, args);
