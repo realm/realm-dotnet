@@ -433,7 +433,7 @@ namespace Realms.Tests
                 {
                     if (prop.Type == (PropertyType.LinkingObjects | PropertyType.Array))
                     {
-                        // Backlinks. Should we ignore them completely...?
+                        // Backlinks
                         continue;
                     }
 
@@ -448,49 +448,24 @@ namespace Realms.Tests
                         var asArray = value.AsBsonArray;
                         var asExpected = expected.GetProperty<IEnumerable>(prop);
 
-                        switch (prop.Type.UnderlyingType())
-                        {
-                            case PropertyType.Object:
-                                //TODO
-                                break;
-                            case PropertyType.Int:
-                                AssertAreEqual(asArray.Select(a => a.ToInt64()), asExpected);
-                                break;
-                            case PropertyType.Bool:
-                                AssertAreEqual(asArray.Select(a => a.AsBoolean), asExpected);
-                                break;
-                            case PropertyType.String:
-                                AssertAreEqual(asArray.Select(a => a.AsString), asExpected);
-                                break;
-                            case PropertyType.Data:
-                                AssertAreEqual(asArray.Select(a => a.AsByteArray), asExpected);
-                                break;
-                            case PropertyType.Date:
-                                AssertAreEqual(asArray.Select(a => new DateTimeOffset(a.ToUniversalTime())), asExpected);
-                                break;
-                            case PropertyType.Float:
-                            case PropertyType.Double:
-                                AssertAreEqual(asArray.Select(a => a.AsDouble), asExpected);
-                                break;
-                            case PropertyType.RealmValue:
-                                // TODO Handle realmValue
-                                break;
-                            case PropertyType.ObjectId:
-                                AssertAreEqual(asArray.Select(a => a.AsObjectId), asExpected);
-                                break;
-                            case PropertyType.Decimal:
-                                AssertAreEqual(asArray.Select(a => a.AsDecimal128), asExpected);
-                                break;
-                            case PropertyType.Guid:
-                                AssertAreEqual(asArray.Select(a => a.AsGuid), asExpected);
-                                break;
-                            default:
-                                throw new ArgumentException("Invalid type");
-                        }
+                        AssertAreEqual(asArray.Select(a => ConvertBsonVal(a, prop.Type.UnderlyingType())), asExpected);
                     }
                     else if (collectionType == PropertyType.Dictionary)
                     {
-                        AssertAreEqual(value.AsBsonDocument, expected.GetProperty<IEnumerable>(prop));
+                        var asDictionary = value.AsBsonDocument;
+                        var asExpected = expected.GetProperty<IDictionary>(prop);
+
+                        foreach (var key in asExpected.Keys)
+                        {
+                            var stringKey = (string)key;
+
+                            Assert.That(asDictionary.Contains(stringKey), Is.True);
+
+                            var actualValue = asDictionary[stringKey];
+                            var expectedValue = asExpected[stringKey];
+
+                            AssertAreEqual(ConvertBsonVal(actualValue, prop.Type.UnderlyingType()), expectedValue);
+                        }
                     }
                     else
                     {
@@ -516,71 +491,33 @@ namespace Realms.Tests
                     continue;
                 }
 
-                switch (prop.Type)
-                {
-                    case PropertyType.Int:
-                        AssertAreEqual(value.ToInt64(), expected.GetProperty<long>(prop));
-                        break;
-                    case PropertyType.Bool:
-                        AssertAreEqual(value.AsBoolean, expected.GetProperty<bool>(prop));
-                        break;
-                    case PropertyType.String:
-                        AssertAreEqual(value.AsString, expected.GetProperty<string?>(prop));
-                        break;
-                    case PropertyType.NullableString:
-                        AssertAreEqual(value.IsBsonNull ? null : value.AsString, expected.GetProperty<string?>(prop));
-                        break;
-                    case PropertyType.Data:
-                        AssertAreEqual(value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
-                        break;
-                    case PropertyType.NullableData:
-                        AssertAreEqual(value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
-                        break;
-                    case PropertyType.Date:
-                        AssertAreEqual(new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset>(prop));
-                        break;
-                    case PropertyType.Float:
-                    case PropertyType.Double:
-                        AssertAreEqual(value.AsDouble, expected.GetProperty<double>(prop));
-                        break;
-                    case PropertyType.RealmValue:
-                        // TODO Handle realmValue
-                        break;
-                    case PropertyType.ObjectId:
-                        AssertAreEqual(value.AsObjectId, expected.GetProperty<ObjectId>(prop));
-                        break;
-                    case PropertyType.Decimal:
-                        AssertAreEqual(value.AsDecimal128, expected.GetProperty<Decimal128>(prop));
-                        break;
-                    case PropertyType.Guid:
-                        AssertAreEqual(value.AsGuid, expected.GetProperty<Guid>(prop));
-                        break;
-                    case PropertyType.NullableInt:
-                        AssertAreEqual(value.IsBsonNull ? null : value.ToInt64(), expected.GetProperty<long?>(prop));
-                        break;
-                    case PropertyType.NullableBool:
-                        AssertAreEqual(value.AsNullableBoolean, expected.GetProperty<bool?>(prop));
-                        break;
-                    case PropertyType.NullableDate:
-                        AssertAreEqual(value.IsBsonNull ? null : new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset?>(prop));
-                        break;
-                    case PropertyType.NullableFloat:
-                    case PropertyType.NullableDouble:
-                        AssertAreEqual(value.AsNullableDouble, expected.GetProperty<double?>(prop));
-                        break;
-                    case PropertyType.NullableObjectId:
-                        AssertAreEqual(value.AsNullableObjectId, expected.GetProperty<ObjectId?>(prop));
-                        break;
-                    case PropertyType.NullableDecimal:
-                        AssertAreEqual(value.AsNullableDecimal128, expected.GetProperty<Decimal128?>(prop));
-                        break;
-                    case PropertyType.NullableGuid:
-                        AssertAreEqual(value.AsNullableGuid, expected.GetProperty<Guid?>(prop));
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid type");
-                }
+                AssertAreEqual(ConvertBsonVal(value, prop.Type.UnderlyingType()), expected.GetProperty<object?>(prop));
             }
+        }
+
+        private static object? ConvertBsonVal(BsonValue value, PropertyType type)
+        {
+            return type switch
+            {
+                PropertyType.Int => value.ToInt64(),
+                PropertyType.Bool => value.AsBoolean,
+                PropertyType.String => value.AsString,
+                PropertyType.Data => value.AsBsonBinaryData.Bytes,
+                PropertyType.Date => new DateTimeOffset(value.ToUniversalTime()),
+                PropertyType.Float or PropertyType.Double => value.AsDouble,
+                PropertyType.ObjectId => value.AsObjectId,
+                PropertyType.Decimal => value.AsDecimal128,
+                PropertyType.Guid => value.AsGuid,
+                PropertyType.NullableBool => value.AsNullableBoolean,
+                PropertyType.NullableString => value.IsBsonNull ? null : value.AsString,
+                PropertyType.NullableData => value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes,
+                PropertyType.NullableFloat or PropertyType.NullableDouble => value.AsNullableDouble,
+                PropertyType.NullableDate => value.IsBsonNull ? null : new DateTimeOffset(value.ToUniversalTime()),
+                PropertyType.NullableObjectId => value.AsNullableObjectId,
+                PropertyType.NullableDecimal => value.AsNullableDecimal128,
+                PropertyType.NullableGuid => value.AsNullableGuid,
+                _ => throw new NotImplementedException(),
+            };
         }
 
         public static void AssertAreEqual(object? actual, object? expected, string? message = null,

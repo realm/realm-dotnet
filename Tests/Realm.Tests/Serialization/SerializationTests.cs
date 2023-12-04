@@ -313,7 +313,6 @@ namespace Realms.Tests.Serialization
             AddIfNecessary(original);
 
             var json = SerializationHelper.ToNativeJson(original);
-
             var deserializedObj = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
             var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
