@@ -191,7 +191,7 @@ namespace Realms.Tests.Serialization
         {
             new object[]
             {
-                CreateTestCase("Single embedded", new ObjectWithEmbeddedProperties
+                CreateTestCase("Single", new ObjectWithEmbeddedProperties
                 {
                     PrimaryKey = 5,
                     AllTypesObject = new()
@@ -202,6 +202,111 @@ namespace Realms.Tests.Serialization
                         Int32Property = 4,
                         StringProperty = "bla bla"
                     }
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("List", new ObjectWithEmbeddedProperties
+                {
+                    PrimaryKey = 5,
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new ObjectWithEmbeddedProperties
+                {
+                    PrimaryKey = 5,
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new ObjectWithEmbeddedProperties
+                {
+                    PrimaryKey = 5,
+                    AllTypesObject = new()
+                    {
+                        BooleanProperty = true,
+                        ByteArrayProperty = new byte[] { 1, 2, 3 },
+                        DoubleProperty = 3.14,
+                        Int32Property = 4,
+                        StringProperty = "bla bla"
+                    },
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 5, 1, 2, 3 },
+                            DoubleProperty = 6.78,
+                            Int32Property = 2,
+                            StringProperty = "blas blas"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 6, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "hej hej"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 6, 3 },
+                            DoubleProperty = 16.14,
+                            Int32Property = 62,
+                            StringProperty = "oha oha"
+                        }
+                    },
                 })
             }
         };
