@@ -465,9 +465,6 @@ namespace Realms.Tests
                             case PropertyType.Data:
                                 AssertAreEqual(asArray.Select(a => a.AsByteArray), asExpected);
                                 break;
-                            case PropertyType.NullableData:
-                                AssertAreEqual(asArray.Select(a => a.AsByteArray), asExpected);
-                                break;
                             case PropertyType.Date:
                                 AssertAreEqual(asArray.Select(a => new DateTimeOffset(a.ToUniversalTime())), asExpected);
                                 break;
@@ -486,28 +483,6 @@ namespace Realms.Tests
                                 break;
                             case PropertyType.Guid:
                                 AssertAreEqual(asArray.Select(a => a.AsGuid), asExpected);
-                                break;
-                            case PropertyType.NullableInt:
-                                AssertAreEqual(asArray.Select(a => a.AsNullableInt64), asExpected);
-                                break;
-                            case PropertyType.NullableBool:
-                                AssertAreEqual(value.AsNullableBoolean, expected.GetProperty<bool?>(prop));
-                                break;
-                            case PropertyType.NullableDate:
-                                AssertAreEqual(asArray.Select(a => new DateTimeOffset(a.ToUniversalTime())), asExpected);
-                                break;
-                            case PropertyType.NullableFloat:
-                            case PropertyType.NullableDouble:
-                                AssertAreEqual(asArray.Select(a => a.AsNullableDouble), asExpected);
-                                break;
-                            case PropertyType.NullableObjectId:
-                                AssertAreEqual(asArray.Select(a => a.AsNullableObjectId), asExpected);
-                                break;
-                            case PropertyType.NullableDecimal:
-                                AssertAreEqual(asArray.Select(a => a.AsNullableDecimal128), asExpected);
-                                break;
-                            case PropertyType.NullableGuid:
-                                AssertAreEqual(asArray.Select(a => a.AsNullableGuid), asExpected);
                                 break;
                             default:
                                 throw new ArgumentException("Invalid type");
