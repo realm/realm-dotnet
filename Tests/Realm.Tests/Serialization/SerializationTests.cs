@@ -91,7 +91,6 @@ namespace Realms.Tests.Serialization
                     StringProperty = "foo bar"
                 })
             },
-            // TODO Do we need to check for object in RealmValue/All values too?
             new object[] { CreateTestCase("Bool RealmValue", new AllTypesObject { RealmValueProperty = true }) },
             new object[] { CreateTestCase("Int RealmValue", new AllTypesObject { RealmValueProperty = 123 }) },
             new object[] { CreateTestCase("Long RealmValue", new AllTypesObject { RealmValueProperty = 9999999999 }) },

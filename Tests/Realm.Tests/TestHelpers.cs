@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -30,6 +31,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
@@ -453,16 +455,17 @@ namespace Realms.Tests
                     else if (collectionType == PropertyType.Dictionary)
                     {
                         var asDictionary = value.AsBsonDocument;
-                        var asExpected = expected.GetProperty<IDictionary>(prop);
+                        var asExpected = expected.GetProperty<IEnumerable>(prop);
 
-                        foreach (var key in asExpected.Keys)
+                        foreach (var item in asExpected)
                         {
-                            var stringKey = (string)key;
+                            var type = item.GetType();
+                            var stringKey = (string)type.GetProperty("Key")!.GetValue(item)!;
+                            var expectedValue = type.GetProperty("Value")!.GetValue(item)!;
 
                             Assert.That(asDictionary.Contains(stringKey), Is.True);
 
                             var actualValue = asDictionary[stringKey];
-                            var expectedValue = asExpected[stringKey];
 
                             AssertAreEqual(ConvertBsonVal(actualValue, prop.Type.UnderlyingType()), expectedValue);
                         }
@@ -491,7 +494,7 @@ namespace Realms.Tests
                     continue;
                 }
 
-                AssertAreEqual(ConvertBsonVal(value, prop.Type.UnderlyingType()), expected.GetProperty<object?>(prop));
+                AssertAreEqual(ConvertBsonVal(value, prop.Type), expected.GetProperty<object?>(prop));
             }
         }
 
@@ -508,6 +511,7 @@ namespace Realms.Tests
                 PropertyType.ObjectId => value.AsObjectId,
                 PropertyType.Decimal => value.AsDecimal128,
                 PropertyType.Guid => value.AsGuid,
+                PropertyType.NullableInt => value.IsBsonNull ? null : value.ToInt64(),
                 PropertyType.NullableBool => value.AsNullableBoolean,
                 PropertyType.NullableString => value.IsBsonNull ? null : value.AsString,
                 PropertyType.NullableData => value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes,
@@ -516,8 +520,50 @@ namespace Realms.Tests
                 PropertyType.NullableObjectId => value.AsNullableObjectId,
                 PropertyType.NullableDecimal => value.AsNullableDecimal128,
                 PropertyType.NullableGuid => value.AsNullableGuid,
+                PropertyType.RealmValue or PropertyType.RealmValue | PropertyType.Nullable => (object?)ConvertBsonValToRealmValue(value),  // Cast to object is necessary, otherwise the compiler gets confused
                 _ => throw new NotImplementedException(),
             };
+        }
+
+        private static RealmValue ConvertBsonValToRealmValue(BsonValue value)
+        {
+            switch (value.BsonType)
+            {
+                case BsonType.Double:
+                    return value.AsDouble;
+                case BsonType.String:
+                    var stringVal = value.AsString;
+                    if (DateTimeOffset.TryParseExact(stringVal, "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", 
+                        DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date))
+                    {
+                        return date;
+                    }
+
+                    return stringVal;
+                case BsonType.Binary:
+                    var binary = value.AsBsonBinaryData;
+                    if (binary.SubType == BsonBinarySubType.UuidStandard)
+                    {
+                        return GuidConverter.FromBytes(binary.Bytes, GuidRepresentation.Standard);
+                    }
+
+                    return binary.Bytes;
+                case BsonType.ObjectId:
+                    return value.AsObjectId;
+                case BsonType.Boolean:
+                    return value.AsBoolean;
+                case BsonType.DateTime:
+                    return DateTimeOffset.FromUnixTimeMilliseconds(value.AsBsonDateTime.MillisecondsSinceEpoch);
+                case BsonType.Null:
+                    return RealmValue.Null;
+                case BsonType.Int32:
+                case BsonType.Int64:
+                    return value.AsInt64;
+                case BsonType.Decimal128:
+                    return value.AsDecimal128;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public static void AssertAreEqual(object? actual, object? expected, string? message = null,
@@ -616,6 +662,11 @@ namespace Realms.Tests
             if (expected is float || expected is double)
             {
                 return Operator.Convert<double>(actual).Equals(Operator.Convert<double>(expected));
+            }
+
+            if (expected is RealmInteger<int> || expected is RealmInteger<short> || expected is RealmInteger<long> || expected is RealmInteger<byte>)
+            {
+                return Operator.Convert<long>(actual).Equals(Operator.Convert<long>(expected));
             }
 
             return actual.Equals(expected);
