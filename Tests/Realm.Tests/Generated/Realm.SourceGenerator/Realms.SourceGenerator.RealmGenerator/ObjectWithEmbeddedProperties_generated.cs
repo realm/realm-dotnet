@@ -40,8 +40,8 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "PrimaryKey"),
             Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
-            Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
             Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
+            Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
             Realms.Schema.Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
 
@@ -100,8 +100,8 @@ namespace Realms.Tests
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
                 newAccessor.AllTypesObject = oldAccessor.AllTypesObject;
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
                 newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryOfAllTypesObjects, newAccessor.DictionaryOfAllTypesObjects, update, skipDefaults);
             }
 
@@ -279,9 +279,9 @@ namespace Realms.Tests
 
             Realms.Tests.EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
-            System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
-
             Realms.Tests.EmbeddedLevel1? RecursiveObject { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; }
         }
@@ -301,6 +301,12 @@ namespace Realms.Tests
                 set => SetValue("AllTypesObject", value);
             }
 
+            public Realms.Tests.EmbeddedLevel1? RecursiveObject
+            {
+                get => (Realms.Tests.EmbeddedLevel1?)GetValue("RecursiveObject");
+                set => SetValue("RecursiveObject", value);
+            }
+
             private System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> _listOfAllTypesObjects = null!;
             public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects
             {
@@ -313,12 +319,6 @@ namespace Realms.Tests
 
                     return _listOfAllTypesObjects;
                 }
-            }
-
-            public Realms.Tests.EmbeddedLevel1? RecursiveObject
-            {
-                get => (Realms.Tests.EmbeddedLevel1?)GetValue("RecursiveObject");
-                set => SetValue("RecursiveObject", value);
             }
 
             private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> _dictionaryOfAllTypesObjects = null!;
@@ -363,8 +363,6 @@ namespace Realms.Tests
                 }
             }
 
-            public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<Realms.Tests.EmbeddedAllTypesObject>();
-
             private Realms.Tests.EmbeddedLevel1? _recursiveObject;
             public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
@@ -375,6 +373,8 @@ namespace Realms.Tests
                     RaisePropertyChanged("RecursiveObject");
                 }
             }
+
+            public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<Realms.Tests.EmbeddedAllTypesObject>();
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; } = new Dictionary<string, Realms.Tests.EmbeddedAllTypesObject?>();
 
@@ -453,8 +453,8 @@ namespace Realms.Tests
 
                 WriteValue(context, args, "PrimaryKey", value.PrimaryKey);
                 WriteValue(context, args, "AllTypesObject", value.AllTypesObject);
-                WriteList(context, args, "ListOfAllTypesObjects", value.ListOfAllTypesObjects);
                 WriteValue(context, args, "RecursiveObject", value.RecursiveObject);
+                WriteList(context, args, "ListOfAllTypesObjects", value.ListOfAllTypesObjects);
                 WriteDictionary(context, args, "DictionaryOfAllTypesObjects", value.DictionaryOfAllTypesObjects);
 
                 context.Writer.WriteEndDocument();

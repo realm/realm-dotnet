@@ -206,6 +206,26 @@ namespace Realms.Tests.Serialization
             },
             new object[]
             {
+                CreateTestCase("Recursive", new ObjectWithEmbeddedProperties
+                {
+                    PrimaryKey = 5,
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    }
+                })
+            },
+
+            new object[]
+            {
                 CreateTestCase("List", new ObjectWithEmbeddedProperties
                 {
                     PrimaryKey = 5,
@@ -269,6 +289,18 @@ namespace Realms.Tests.Serialization
                         Int32Property = 4,
                         StringProperty = "bla bla"
                     },
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    },
                     ListOfAllTypesObjects =
                     {
                         new()
@@ -325,6 +357,11 @@ namespace Realms.Tests.Serialization
             AssertMatchesBsonDocument(deserializedBson, original);
         }
 
+        /*
+         * In this method we're not using AssertMatchesBsonDocument or directly AssertAreEqual, as it would be too cumbersome
+         * to make those two methods generic enough to work in all cases and it's easier to check the properties one by one.
+         * Nevertheless, the correctness of the serialization and deserialization is proven in the tests in MongoClientTests.cs
+         */
         [TestCaseSource(nameof(LinksTestCases))]
         public void RealmObject_Links_Serializes(TestCaseData<LinksObject> testCase)
         {
@@ -392,6 +429,39 @@ namespace Realms.Tests.Serialization
             }
         }
 
+        /*
+         * In this method we're not using AssertMatchesBsonDocument or directly AssertAreEqual, as it would be too cumbersome
+         * to make those two methods generic enough to work in all cases and it's easier to check the properties one by one.
+         * Nevertheless, the correctness of the serialization and deserialization is proven in the tests in MongoClientTests.cs
+         */
+        [TestCaseSource(nameof(EmbeddedTestCases))]
+        public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
+        {
+            var original = testCase.Value;
+            AddIfNecessary(original);
+
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserialized = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
+
+            Assert.That(original.PrimaryKey, Is.EqualTo(deserialized.PrimaryKey));
+
+            AssertAreEqual(deserialized.AllTypesObject, original.AllTypesObject);
+            AssertAreEqual(deserialized.RecursiveObject, original.RecursiveObject);
+
+            Assert.That(original.ListOfAllTypesObjects.Count, Is.EqualTo(deserialized.ListOfAllTypesObjects.Count));
+            for (int i = 0; i < original.ListOfAllTypesObjects.Count; i++)
+            {
+                AssertAreEqual(original.ListOfAllTypesObjects[i], deserialized.ListOfAllTypesObjects[i]);
+            }
+
+            Assert.That(original.DictionaryOfAllTypesObjects.Count, Is.EqualTo(deserialized.DictionaryOfAllTypesObjects.Count));
+            foreach (var key in original.DictionaryOfAllTypesObjects.Keys)
+            {
+                Assert.That(deserialized.DictionaryOfAllTypesObjects.ContainsKey(key), Is.True);
+                AssertAreEqual(original.DictionaryOfAllTypesObjects[key], deserialized.DictionaryOfAllTypesObjects[key]);
+            }
+        }
+
         [TestCaseSource(nameof(CollectionTestCases))]
         public void CollectionsObject_Serializes(TestCaseData<Property> testCase)
         {
@@ -404,20 +474,6 @@ namespace Realms.Tests.Serialization
 
             var json = SerializationHelper.ToNativeJson(original);
             var deserializedObj = BsonSerializer.Deserialize<CollectionsObject>(json);
-            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
-
-            AssertAreEqual(deserializedObj, original);
-            AssertMatchesBsonDocument(deserializedBson, original);
-        }
-
-        [TestCaseSource(nameof(EmbeddedTestCases))]
-        public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
-        {
-            var original = testCase.Value;
-            AddIfNecessary(original);
-
-            var json = SerializationHelper.ToNativeJson(original);
-            var deserializedObj = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
             var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
             AssertAreEqual(deserializedObj, original);

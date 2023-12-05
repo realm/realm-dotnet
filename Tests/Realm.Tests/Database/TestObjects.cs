@@ -985,9 +985,9 @@ namespace Realms.Tests
 
         public EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
-        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = null!;
-
         public EmbeddedLevel1? RecursiveObject { get; set; }
+
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = null!;
 
         public IDictionary<string, EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; } = null!;
     }
