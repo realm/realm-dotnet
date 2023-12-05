@@ -485,10 +485,13 @@ namespace Realms.Tests
                     {
                         Assert.That(expectedProp, Is.Null);
                     }
+                    else if (expectedProp is IEmbeddedObject)
+                    {
+                        AssertMatchesBsonDocument(value.AsBsonDocument, expected.GetProperty<IRealmObjectBase>(prop));
+                    }
                     else
                     {
-                        //TODO Should make a difference between embedded and not..?
-                        AssertMatchesBsonDocument(value.AsBsonDocument, expected.GetProperty<IRealmObjectBase>(prop));
+                        throw new NotImplementedException("This method works only with embedded objects.");
                     }
 
                     continue;
