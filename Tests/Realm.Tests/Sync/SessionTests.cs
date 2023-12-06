@@ -878,8 +878,6 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
-                var stateChanged = 0;
-                var completionTcs = new TaskCompletionSource();
 
                 var session = realm.SyncSession;
                 session.Stop();
@@ -1114,7 +1112,6 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 using var realmA = GetRealm(config);
                 using var realmB = GetRealm(config);
-                var stateChanged = 0;
 
                 var sessionA = realmA.SyncSession;
                 var sessionB = realmB.SyncSession;

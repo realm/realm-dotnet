@@ -7,7 +7,7 @@ name: test-uwp-managed
 _: #@ template.replace(testDefinition(["Base64_Encoded_Pfx", "Pfx_Password"]))
 jobs:
   run-tests:
-    runs-on: windows-2019
+    runs-on: windows-latest
     name: UWP
     timeout-minutes: 45
     steps:

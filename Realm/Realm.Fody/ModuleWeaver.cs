@@ -83,17 +83,17 @@ public class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var framework = AnalyticsUtils.GetFrameworkAndVersion(ModuleDefinition);
 
-        return new()
+        return new(
+            targetOSName: AnalyticsUtils.GetTargetOsName(netFramework),
+            netFrameworkTarget: netFramework.Identifier,
+            netFrameworkTargetVersion: netFramework.Version.ToString(),
+            installationMethod: "Nuget",
+            frameworkName: framework.Name,
+            frameworkVersion: framework.Version,
+            compiler: "msbuild")
         {
             AnalyticsCollection = analyticsCollection,
             AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
-            InstallationMethod = "Nuget",
-            NetFrameworkTarget = netFramework.Identifier,
-            NetFrameworkTargetVersion = netFramework.Version.ToString(),
-            TargetOSName = AnalyticsUtils.GetTargetOsName(netFramework),
-            FrameworkName = framework.Name,
-            FrameworkVersion = framework.Version,
-            Compiler = "msbuild",
         };
     }
 

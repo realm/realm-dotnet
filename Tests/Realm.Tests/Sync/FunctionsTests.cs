@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
@@ -382,7 +383,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
-            if (arg == decimal.MinValue || arg == decimal.MaxValue)
+            if (arg is decimal.MinValue or decimal.MaxValue)
             {
                 // MongoDB.Bson serializes MinValue/MaxValue as Decimal128.MinValue/MaxValue:
                 // https://github.com/mongodb/mongo-csharp-driver/blob/b2668fb80c8d45be58a8009e336006c9545c1581/src/MongoDB.Bson/Serialization/Options/RepresentationConverter.cs#L153-L160
@@ -438,6 +439,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
                 var user = await GetUserAsync();
 
                 var result = await user.Functions.CallAsync("mirror", val);

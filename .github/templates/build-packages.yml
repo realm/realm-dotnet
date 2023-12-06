@@ -87,7 +87,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupAndroid())
-      - #@ setupWorkloads('tvos ios maccatalyst android')
+      - #@ template.replace(setupWorkloads('tvos ios maccatalyst android'))
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.

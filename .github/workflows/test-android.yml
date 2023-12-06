@@ -38,6 +38,11 @@ jobs:
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
+    - name: Setup JDK
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: microsoft
+        java-version: 11
     - name: Checkout code
       uses: actions/checkout@v3
       with:
@@ -123,8 +128,17 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 7.0.x
     - name: Setup workloads
       run: dotnet workload install maui
+    - name: Setup JDK
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: microsoft
+        java-version: 11
     - name: Build the tests
       run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials

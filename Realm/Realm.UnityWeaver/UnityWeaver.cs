@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Mono.Cecil.Cil;
 using UnityEditor;
@@ -31,10 +32,7 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static RealmWeaver.Analytics;
-using CpuArchitecture = RealmWeaver.Metric.CpuArchitecture;
-using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
-
-using BindingFlags = System.Reflection.BindingFlags;
+using Assembly = UnityEditor.Compilation.Assembly;
 
 // ReSharper disable once CheckNamespace
 namespace RealmWeaver
@@ -425,9 +423,9 @@ namespace RealmWeaver
             {
                 return Application.platform switch
                 {
-                    RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
-                    RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
-                    RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
+                    RuntimePlatform.WindowsEditor => Metric.OperatingSystem.Windows,
+                    RuntimePlatform.OSXEditor => Metric.OperatingSystem.MacOS,
+                    RuntimePlatform.LinuxEditor => Metric.OperatingSystem.Linux,
                     _ => Metric.Unknown(Application.platform.ToString()),
                 };
             }
@@ -435,13 +433,13 @@ namespace RealmWeaver
             // These have to match Analytics.GetConfig(FrameworkName)
             return target switch
             {
-                BuildTarget.StandaloneOSX => OperatingSystem.MacOS,
-                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.WSAPlayer => OperatingSystem.Windows,
-                BuildTarget.iOS => OperatingSystem.Ios,
-                BuildTarget.Android => OperatingSystem.Android,
-                BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
-                BuildTarget.tvOS => OperatingSystem.TvOs,
-                BuildTarget.XboxOne => OperatingSystem.XboxOne,
+                BuildTarget.StandaloneOSX => Metric.OperatingSystem.MacOS,
+                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.WSAPlayer => Metric.OperatingSystem.Windows,
+                BuildTarget.iOS => Metric.OperatingSystem.Ios,
+                BuildTarget.Android => Metric.OperatingSystem.Android,
+                BuildTarget.StandaloneLinux64 => Metric.OperatingSystem.Linux,
+                BuildTarget.tvOS => Metric.OperatingSystem.TvOs,
+                BuildTarget.XboxOne => Metric.OperatingSystem.XboxOne,
                 _ => Metric.Unknown(target.ToString()),
             };
         }
@@ -513,16 +511,15 @@ namespace RealmWeaver
                         Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                         Environment.GetEnvironmentVariable("CI") == null;
 
-            return new Config
+            return new(targetOSName: GetTargetOSName(target),
+                compiler: compiler,
+                netFrameworkTarget: netFrameworkInfo.Name,
+                netFrameworkTargetVersion: netFrameworkInfo.Version,
+                installationMethod: _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                frameworkName: target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
+                frameworkVersion: Application.unityVersion)
             {
-                TargetOSName = GetTargetOSName(target),
-                Compiler = compiler,
-                NetFrameworkTarget = netFrameworkInfo.Name,
-                NetFrameworkTargetVersion = netFrameworkInfo.Version,
                 AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
-                FrameworkName = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
-                FrameworkVersion = Application.unityVersion,
                 TargetArchitecture = GetCpuArchitecture(target),
                 TargetOsVersion = GetTargetOsVersion(target),
                 TargetOsMinimumVersion = GetMinimumOsVersion(target),
@@ -578,35 +575,35 @@ namespace RealmWeaver
             {
                 if (SystemInfo.processorType.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    return Environment.Is64BitProcess ? CpuArchitecture.Arm64 : CpuArchitecture.Arm;
+                    return Environment.Is64BitProcess ? Metric.CpuArchitecture.Arm64 : Metric.CpuArchitecture.Arm;
                 }
 
                 // Must be in the x86 family.
-                return Environment.Is64BitProcess ? CpuArchitecture.X64 : CpuArchitecture.X86;
+                return Environment.Is64BitProcess ? Metric.CpuArchitecture.X64 : Metric.CpuArchitecture.X86;
             }
 
             return buildTarget switch
             {
-                BuildTarget.iOS or BuildTarget.tvOS => CpuArchitecture.Arm64,
+                BuildTarget.iOS or BuildTarget.tvOS => Metric.CpuArchitecture.Arm64,
                 BuildTarget.StandaloneOSX => EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(buildTarget.Value), "Architecture") switch
                 {
-                    "ARM64" => CpuArchitecture.Arm64,
-                    "x64" => CpuArchitecture.X64,
-                    _ => CpuArchitecture.Universal,
+                    "ARM64" => Metric.CpuArchitecture.Arm64,
+                    "x64" => Metric.CpuArchitecture.X64,
+                    _ => Metric.CpuArchitecture.Universal,
                 },
-                BuildTarget.StandaloneWindows => CpuArchitecture.X86,
+                BuildTarget.StandaloneWindows => Metric.CpuArchitecture.X86,
                 BuildTarget.Android => PlayerSettings.Android.targetArchitectures switch
                 {
-                    AndroidArchitecture.ARMv7 => CpuArchitecture.Arm,
-                    AndroidArchitecture.ARM64 => CpuArchitecture.Arm64,
+                    AndroidArchitecture.ARMv7 => Metric.CpuArchitecture.Arm,
+                    AndroidArchitecture.ARM64 => Metric.CpuArchitecture.Arm64,
 
                     // These two don't have enum values in our Unity reference dll, but exist in newer versions
                     // See https://github.com/Unity-Technologies/UnityCsReference/blob/70abf502c521c169ee8a302aa48c5600fc7c39fc/Editor/Mono/PlayerSettingsAndroid.bindings.cs#L14
-                    (AndroidArchitecture)(1 << 2) => CpuArchitecture.X86,
-                    (AndroidArchitecture)(1 << 3) => CpuArchitecture.X64,
-                    _ => CpuArchitecture.Universal,
+                    (AndroidArchitecture)(1 << 2) => Metric.CpuArchitecture.X86,
+                    (AndroidArchitecture)(1 << 3) => Metric.CpuArchitecture.X64,
+                    _ => Metric.CpuArchitecture.Universal,
                 },
-                BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => CpuArchitecture.X64,
+                BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => Metric.CpuArchitecture.X64,
                 _ => Metric.Unknown(),
             };
         }
