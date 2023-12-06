@@ -294,33 +294,61 @@ namespace Realms.Helpers
 
             private RealmValue DeseriealizeDBRef(BsonDeserializationContext context, BsonDeserializationArgs args)
             {
-                string schemaName = null!;
-                IRealmObjectBase obj = null!;
-
                 var reader = context.Reader;
                 reader.ReadStartDocument();
+
+                string schemaName = null!;
+                IRealmObjectBase obj = null!;
+                BsonReaderBookmark idBookmark = null!;
+
                 if (reader.State == BsonReaderState.Type)
                 {
                     reader.ReadBsonType();
                 }
 
+                // We need to get the object schema first, in order to find the correct serializer
                 while (reader.State != BsonReaderState.EndOfDocument)
                 {
-                    var fieldName = reader.ReadName();
-
-                    if (fieldName == "$ref")
+                    var elementName = reader.ReadName();
+                    if (elementName == "$ref")
                     {
                         schemaName = reader.ReadString();
                     }
-                    else if (fieldName == "$id")
+                    else if (elementName == "$id")
                     {
-                        obj = RealmObjectSerializer.LookupSerializer(schemaName)!.DeserializeById(context, args)!;
+                        if (!string.IsNullOrEmpty(schemaName))
+                        {
+                            obj = RealmObjectSerializer.LookupSerializer(schemaName)!.DeserializeById(context, args)!;
+                        }
+                        else
+                        {
+                            idBookmark = reader.GetBookmark();
+                            reader.SkipValue();
+                        }
+                    }
+                    else
+                    {
+                        // This could be the optional $db field
+                        reader.SkipName();
+                        reader.SkipValue();
                     }
 
                     if (reader.State == BsonReaderState.Type)
                     {
                         reader.ReadBsonType();
                     }
+                }
+
+                // If we didn't find the schema before the object, we go back and deserialize the object now that
+                // we have the schema, and then move back to the end of the dictionary.
+                if (obj is null)
+                {
+                    var endBookmark = reader.GetBookmark()!;
+
+                    reader.ReturnToBookmark(idBookmark);
+                    obj = RealmObjectSerializer.LookupSerializer(schemaName)!.DeserializeById(context, args)!;
+
+                    reader.ReturnToBookmark(endBookmark);
                 }
 
                 reader.ReadEndDocument();
