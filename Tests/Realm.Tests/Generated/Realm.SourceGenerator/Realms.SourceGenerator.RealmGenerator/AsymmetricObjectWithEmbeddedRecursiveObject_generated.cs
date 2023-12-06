@@ -371,6 +371,8 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AsymmetricObjectWithEmbeddedRecursiveObjectSerializer : Realms.Serialization.RealmObjectSerializer<AsymmetricObjectWithEmbeddedRecursiveObject>
         {
+            public override string SchemaName => "AsymmetricObjectWithEmbeddedRecursiveObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AsymmetricObjectWithEmbeddedRecursiveObject value)
             {
                 context.Writer.WriteStartDocument();

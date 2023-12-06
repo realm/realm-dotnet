@@ -392,6 +392,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class ObjectWithInvalidGeoPointsSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithInvalidGeoPoints>
             {
+                public override string SchemaName => "ObjectWithInvalidGeoPoints";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithInvalidGeoPoints value)
                 {
                     context.Writer.WriteStartDocument();

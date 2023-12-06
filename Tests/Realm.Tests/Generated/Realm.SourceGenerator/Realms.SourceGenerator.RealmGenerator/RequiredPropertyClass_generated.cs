@@ -334,6 +334,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RequiredPropertyClassSerializer : Realms.Serialization.RealmObjectSerializer<RequiredPropertyClass>
         {
+            public override string SchemaName => "RequiredPropertyClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RequiredPropertyClass value)
             {
                 context.Writer.WriteStartDocument();

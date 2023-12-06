@@ -371,6 +371,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class PrimaryKeyObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyObject>
             {
+                public override string SchemaName => "PrimaryKeyObject";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyObject value)
                 {
                     context.Writer.WriteStartDocument();

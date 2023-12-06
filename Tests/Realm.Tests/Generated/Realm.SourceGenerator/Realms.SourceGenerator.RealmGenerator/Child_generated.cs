@@ -400,6 +400,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class ChildSerializer : Realms.Serialization.RealmObjectSerializer<Child>
             {
+                public override string SchemaName => "Child";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Child value)
                 {
                     context.Writer.WriteStartDocument();

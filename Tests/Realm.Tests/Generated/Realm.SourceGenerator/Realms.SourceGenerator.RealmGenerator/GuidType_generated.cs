@@ -690,6 +690,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class GuidTypeSerializer : Realms.Serialization.RealmObjectSerializer<GuidType>
         {
+            public override string SchemaName => "GuidType";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, GuidType value)
             {
                 context.Writer.WriteStartDocument();

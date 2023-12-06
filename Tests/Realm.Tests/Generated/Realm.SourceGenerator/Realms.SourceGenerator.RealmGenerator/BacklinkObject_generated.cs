@@ -385,6 +385,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class BacklinkObjectSerializer : Realms.Serialization.RealmObjectSerializer<BacklinkObject>
         {
+            public override string SchemaName => "BacklinkObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, BacklinkObject value)
             {
                 context.Writer.WriteStartDocument();

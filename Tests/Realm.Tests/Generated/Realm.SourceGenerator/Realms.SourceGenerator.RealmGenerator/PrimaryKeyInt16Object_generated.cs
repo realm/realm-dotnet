@@ -343,6 +343,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PrimaryKeyInt16ObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyInt16Object>
         {
+            public override string SchemaName => "PrimaryKeyInt16Object";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyInt16Object value)
             {
                 context.Writer.WriteStartDocument();

@@ -447,6 +447,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OwnerSerializer : Realms.Serialization.RealmObjectSerializer<Owner>
         {
+            public override string SchemaName => "Owner";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Owner value)
             {
                 context.Writer.WriteStartDocument();

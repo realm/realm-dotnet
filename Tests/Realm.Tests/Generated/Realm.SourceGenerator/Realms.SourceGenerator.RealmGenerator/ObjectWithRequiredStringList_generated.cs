@@ -333,6 +333,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithRequiredStringList>
         {
+            public override string SchemaName => "ObjectWithRequiredStringList";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithRequiredStringList value)
             {
                 context.Writer.WriteStartDocument();

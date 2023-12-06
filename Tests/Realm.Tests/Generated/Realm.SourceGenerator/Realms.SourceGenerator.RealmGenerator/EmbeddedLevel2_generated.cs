@@ -397,6 +397,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedLevel2Serializer : Realms.Serialization.RealmObjectSerializer<EmbeddedLevel2>
         {
+            public override string SchemaName => "EmbeddedLevel2";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedLevel2 value)
             {
                 context.Writer.WriteStartDocument();

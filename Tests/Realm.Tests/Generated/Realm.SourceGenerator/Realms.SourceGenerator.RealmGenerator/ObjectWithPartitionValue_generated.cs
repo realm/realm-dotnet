@@ -441,6 +441,8 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithPartitionValue>
         {
+            public override string SchemaName => "ObjectWithPartitionValue";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithPartitionValue value)
             {
                 context.Writer.WriteStartDocument();

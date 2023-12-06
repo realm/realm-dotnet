@@ -365,6 +365,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OrderedObjectSerializer : Realms.Serialization.RealmObjectSerializer<OrderedObject>
         {
+            public override string SchemaName => "OrderedObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OrderedObject value)
             {
                 context.Writer.WriteStartDocument();

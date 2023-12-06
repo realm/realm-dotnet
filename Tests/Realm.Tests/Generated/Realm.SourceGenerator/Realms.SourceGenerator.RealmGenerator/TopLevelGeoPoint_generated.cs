@@ -367,6 +367,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class TopLevelGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<TopLevelGeoPoint>
             {
+                public override string SchemaName => "TopLevelGeoPoint";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, TopLevelGeoPoint value)
                 {
                     context.Writer.WriteStartDocument();

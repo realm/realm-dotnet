@@ -445,6 +445,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ClassWithUnqueryableMembersSerializer : Realms.Serialization.RealmObjectSerializer<ClassWithUnqueryableMembers>
         {
+            public override string SchemaName => "ClassWithUnqueryableMembers";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ClassWithUnqueryableMembers value)
             {
                 context.Writer.WriteStartDocument();

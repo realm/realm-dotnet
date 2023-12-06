@@ -348,7 +348,7 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
     }
 
     public override IRealmObjectBase? DeserializeById(BsonDeserializationContext context, BsonDeserializationArgs args)
-        => DeserializeById(context, args);
+        => DeserializeById(context);
 
     private static Property GetPKProperty(T instance)
     {

@@ -421,6 +421,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ReportSerializer : Realms.Serialization.RealmObjectSerializer<Report>
         {
+            public override string SchemaName => "Report";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Report value)
             {
                 context.Writer.WriteStartDocument();

@@ -416,6 +416,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializer<IntPropertyObject>
         {
+            public override string SchemaName => "IntPropertyObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPropertyObject value)
             {
                 context.Writer.WriteStartDocument();

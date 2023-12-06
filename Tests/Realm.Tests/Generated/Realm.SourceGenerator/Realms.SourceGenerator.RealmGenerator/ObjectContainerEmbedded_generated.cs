@@ -393,6 +393,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectContainerEmbeddedSerializer : Realms.Serialization.RealmObjectSerializer<ObjectContainerEmbedded>
         {
+            public override string SchemaName => "ObjectContainer";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectContainerEmbedded value)
             {
                 context.Writer.WriteStartDocument();

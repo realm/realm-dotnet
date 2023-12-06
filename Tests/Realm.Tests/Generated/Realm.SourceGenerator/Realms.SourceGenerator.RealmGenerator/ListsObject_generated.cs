@@ -993,6 +993,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializer<ListsObject>
         {
+            public override string SchemaName => "ListsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ListsObject value)
             {
                 context.Writer.WriteStartDocument();

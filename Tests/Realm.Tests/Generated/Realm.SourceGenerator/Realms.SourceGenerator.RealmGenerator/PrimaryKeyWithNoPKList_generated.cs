@@ -400,6 +400,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class PrimaryKeyWithNoPKListSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyWithNoPKList>
             {
+                public override string SchemaName => "PrimaryKeyWithNoPKList";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyWithNoPKList value)
                 {
                     context.Writer.WriteStartDocument();

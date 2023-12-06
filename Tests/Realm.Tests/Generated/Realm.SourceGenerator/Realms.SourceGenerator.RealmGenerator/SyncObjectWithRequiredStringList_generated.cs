@@ -382,6 +382,8 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<SyncObjectWithRequiredStringList>
         {
+            public override string SchemaName => "SyncObjectWithRequiredStringList";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SyncObjectWithRequiredStringList value)
             {
                 context.Writer.WriteStartDocument();

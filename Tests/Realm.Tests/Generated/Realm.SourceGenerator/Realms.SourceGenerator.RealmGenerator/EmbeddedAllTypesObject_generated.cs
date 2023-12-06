@@ -1281,6 +1281,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedAllTypesObject>
         {
+            public override string SchemaName => "EmbeddedAllTypesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedAllTypesObject value)
             {
                 context.Writer.WriteStartDocument();

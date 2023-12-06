@@ -337,6 +337,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializer<ExplicitClass>
         {
+            public override string SchemaName => "ExplicitClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ExplicitClass value)
             {
                 context.Writer.WriteStartDocument();

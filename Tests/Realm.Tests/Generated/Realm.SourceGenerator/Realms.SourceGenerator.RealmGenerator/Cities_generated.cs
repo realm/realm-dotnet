@@ -337,6 +337,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CitiesSerializer : Realms.Serialization.RealmObjectSerializer<Cities>
         {
+            public override string SchemaName => "Cities";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Cities value)
             {
                 context.Writer.WriteStartDocument();

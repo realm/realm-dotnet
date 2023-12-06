@@ -371,6 +371,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class HugeSyncObjectSerializer : Realms.Serialization.RealmObjectSerializer<HugeSyncObject>
         {
+            public override string SchemaName => "HugeSyncObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, HugeSyncObject value)
             {
                 context.Writer.WriteStartDocument();

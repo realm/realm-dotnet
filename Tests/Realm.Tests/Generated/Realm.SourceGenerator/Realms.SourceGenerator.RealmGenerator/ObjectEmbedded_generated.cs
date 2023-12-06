@@ -343,6 +343,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectEmbeddedSerializer : Realms.Serialization.RealmObjectSerializer<ObjectEmbedded>
         {
+            public override string SchemaName => "Object";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectEmbedded value)
             {
                 context.Writer.WriteStartDocument();

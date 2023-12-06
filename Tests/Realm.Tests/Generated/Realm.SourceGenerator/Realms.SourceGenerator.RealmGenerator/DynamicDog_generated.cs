@@ -412,6 +412,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicDogSerializer : Realms.Serialization.RealmObjectSerializer<DynamicDog>
         {
+            public override string SchemaName => "DynamicDog";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicDog value)
             {
                 context.Writer.WriteStartDocument();

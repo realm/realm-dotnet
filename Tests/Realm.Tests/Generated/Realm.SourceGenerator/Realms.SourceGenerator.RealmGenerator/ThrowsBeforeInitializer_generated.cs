@@ -345,6 +345,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ThrowsBeforeInitializerSerializer : Realms.Serialization.RealmObjectSerializer<ThrowsBeforeInitializer>
         {
+            public override string SchemaName => "ThrowsBeforeInitializer";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ThrowsBeforeInitializer value)
             {
                 context.Writer.WriteStartDocument();

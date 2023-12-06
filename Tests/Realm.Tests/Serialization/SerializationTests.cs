@@ -343,6 +343,20 @@ namespace Realms.Tests.Serialization
             }
         };
 
+        public static readonly object[] RealmValueObjectTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Object RealmValue", new AllTypesObject
+                {
+                    RealmValueProperty = new LinksObject("primaryKeyVal")
+                    {
+                         Value = 23,
+                    }
+                })
+            }
+        };
+
         [TestCaseSource(nameof(PrimitiveTestCases))]
         public void RealmObject_Primitive_Serializes(TestCaseData<AllTypesObject> testCase)
         {
@@ -355,6 +369,23 @@ namespace Realms.Tests.Serialization
 
             AssertAreEqual(deserializedObj, original);
             AssertMatchesBsonDocument(deserializedBson, original);
+        }
+
+        [TestCaseSource(nameof(RealmValueObjectTestCases))]
+        public void RealmObject_RealmValue_Serializes(TestCaseData<AllTypesObject> testCase)
+        {
+            var original = testCase.Value;
+            var originalLink = original.RealmValueProperty.AsRealmObject<LinksObject>();
+
+            AddIfNecessary(original);
+
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserializedObj = BsonSerializer.Deserialize<AllTypesObject>(json);
+
+            var deserializedLink = deserializedObj.RealmValueProperty.AsRealmObject<LinksObject>();
+
+            Assert.That(originalLink.Id, Is.EqualTo(deserializedLink.Id));
+            Assert.That(originalLink.Value, Is.Not.EqualTo(deserializedLink.Value));
         }
 
         /*

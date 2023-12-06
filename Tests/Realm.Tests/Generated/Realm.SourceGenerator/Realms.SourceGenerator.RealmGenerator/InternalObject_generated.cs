@@ -336,6 +336,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class InternalObjectSerializer : Realms.Serialization.RealmObjectSerializer<InternalObject>
         {
+            public override string SchemaName => "InternalObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InternalObject value)
             {
                 context.Writer.WriteStartDocument();

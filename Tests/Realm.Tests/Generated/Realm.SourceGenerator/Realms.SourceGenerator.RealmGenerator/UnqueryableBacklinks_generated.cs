@@ -340,6 +340,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class UnqueryableBacklinksSerializer : Realms.Serialization.RealmObjectSerializer<UnqueryableBacklinks>
         {
+            public override string SchemaName => "UnqueryableBacklinks";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, UnqueryableBacklinks value)
             {
                 context.Writer.WriteStartDocument();

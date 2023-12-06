@@ -422,6 +422,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class WalkerSerializer : Realms.Serialization.RealmObjectSerializer<Walker>
         {
+            public override string SchemaName => "Walker";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Walker value)
             {
                 context.Writer.WriteStartDocument();

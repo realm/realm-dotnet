@@ -374,6 +374,8 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class BasicAsymmetricObjectSerializer : Realms.Serialization.RealmObjectSerializer<BasicAsymmetricObject>
         {
+            public override string SchemaName => "BasicAsymmetricObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, BasicAsymmetricObject value)
             {
                 context.Writer.WriteStartDocument();

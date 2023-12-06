@@ -375,6 +375,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<CustomGeoPoint>
             {
+                public override string SchemaName => "CustomGeoPoint";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CustomGeoPoint value)
                 {
                     context.Writer.WriteStartDocument();

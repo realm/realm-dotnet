@@ -520,6 +520,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RemappedTypeObjectSerializer : Realms.Serialization.RealmObjectSerializer<RemappedTypeObject>
         {
+            public override string SchemaName => "__RemappedTypeObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RemappedTypeObject value)
             {
                 context.Writer.WriteStartDocument();

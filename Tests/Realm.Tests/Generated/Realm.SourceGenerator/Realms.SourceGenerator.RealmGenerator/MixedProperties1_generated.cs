@@ -415,6 +415,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class MixedProperties1Serializer : Realms.Serialization.RealmObjectSerializer<MixedProperties1>
         {
+            public override string SchemaName => "MixedProperties1";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, MixedProperties1 value)
             {
                 context.Writer.WriteStartDocument();

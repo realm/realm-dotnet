@@ -2319,6 +2319,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializer<CollectionsObject>
         {
+            public override string SchemaName => "CollectionsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CollectionsObject value)
             {
                 context.Writer.WriteStartDocument();

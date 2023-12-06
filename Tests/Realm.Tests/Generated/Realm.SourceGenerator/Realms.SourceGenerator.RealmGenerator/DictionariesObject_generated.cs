@@ -1015,6 +1015,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializer<DictionariesObject>
         {
+            public override string SchemaName => "DictionariesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DictionariesObject value)
             {
                 context.Writer.WriteStartDocument();

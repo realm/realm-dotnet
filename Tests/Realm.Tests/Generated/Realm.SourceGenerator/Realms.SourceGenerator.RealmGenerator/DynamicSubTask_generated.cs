@@ -395,6 +395,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicSubTaskSerializer : Realms.Serialization.RealmObjectSerializer<DynamicSubTask>
         {
+            public override string SchemaName => "DynamicSubTask";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicSubTask value)
             {
                 context.Writer.WriteStartDocument();

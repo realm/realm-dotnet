@@ -336,6 +336,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OneNonListPropertySerializer : Realms.Serialization.RealmObjectSerializer<OneNonListProperty>
         {
+            public override string SchemaName => "OneNonListProperty";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OneNonListProperty value)
             {
                 context.Writer.WriteStartDocument();

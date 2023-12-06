@@ -343,6 +343,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PrimaryKeyNullableCharObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyNullableCharObject>
         {
+            public override string SchemaName => "PrimaryKeyNullableCharObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyNullableCharObject value)
             {
                 context.Writer.WriteStartDocument();

@@ -470,6 +470,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicTaskSerializer : Realms.Serialization.RealmObjectSerializer<DynamicTask>
         {
+            public override string SchemaName => "DynamicTask";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicTask value)
             {
                 context.Writer.WriteStartDocument();

@@ -403,6 +403,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OnManagedTestClassSerializer : Realms.Serialization.RealmObjectSerializer<OnManagedTestClass>
         {
+            public override string SchemaName => "OnManagedTestClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OnManagedTestClass value)
             {
                 context.Writer.WriteStartDocument();

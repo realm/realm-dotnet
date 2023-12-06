@@ -388,6 +388,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RecursiveBacklinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<RecursiveBacklinksObject>
         {
+            public override string SchemaName => "RecursiveBacklinksObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RecursiveBacklinksObject value)
             {
                 context.Writer.WriteStartDocument();

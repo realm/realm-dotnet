@@ -343,6 +343,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PrimaryKeyGuidObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyGuidObject>
         {
+            public override string SchemaName => "PrimaryKeyGuidObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyGuidObject value)
             {
                 context.Writer.WriteStartDocument();

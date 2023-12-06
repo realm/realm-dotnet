@@ -510,6 +510,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicOwnerSerializer : Realms.Serialization.RealmObjectSerializer<DynamicOwner>
         {
+            public override string SchemaName => "DynamicOwner";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicOwner value)
             {
                 context.Writer.WriteStartDocument();

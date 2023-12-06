@@ -343,6 +343,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class LoneClassSerializer : Realms.Serialization.RealmObjectSerializer<LoneClass>
         {
+            public override string SchemaName => "LoneClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LoneClass value)
             {
                 context.Writer.WriteStartDocument();

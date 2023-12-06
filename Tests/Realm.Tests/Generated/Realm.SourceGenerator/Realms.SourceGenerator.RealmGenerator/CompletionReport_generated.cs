@@ -366,6 +366,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CompletionReportSerializer : Realms.Serialization.RealmObjectSerializer<CompletionReport>
         {
+            public override string SchemaName => "CompletionReport";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CompletionReport value)
             {
                 context.Writer.WriteStartDocument();

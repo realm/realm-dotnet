@@ -420,6 +420,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class CompanySerializer : Realms.Serialization.RealmObjectSerializer<Company>
             {
+                public override string SchemaName => "Company";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Company value)
                 {
                     context.Writer.WriteStartDocument();

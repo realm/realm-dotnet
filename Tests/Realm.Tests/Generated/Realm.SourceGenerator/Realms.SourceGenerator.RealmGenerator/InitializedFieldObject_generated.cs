@@ -334,6 +334,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class InitializedFieldObjectSerializer : Realms.Serialization.RealmObjectSerializer<InitializedFieldObject>
         {
+            public override string SchemaName => "InitializedFieldObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InitializedFieldObject value)
             {
                 context.Writer.WriteStartDocument();

@@ -443,6 +443,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DogSerializer : Realms.Serialization.RealmObjectSerializer<Dog>
         {
+            public override string SchemaName => "Dog";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Dog value)
             {
                 context.Writer.WriteStartDocument();

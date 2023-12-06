@@ -397,6 +397,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithFtsIndex>
         {
+            public override string SchemaName => "ObjectWithFtsIndex";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithFtsIndex value)
             {
                 context.Writer.WriteStartDocument();

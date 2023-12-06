@@ -558,6 +558,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class TestNotificationObjectSerializer : Realms.Serialization.RealmObjectSerializer<TestNotificationObject>
         {
+            public override string SchemaName => "TestNotificationObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, TestNotificationObject value)
             {
                 context.Writer.WriteStartDocument();

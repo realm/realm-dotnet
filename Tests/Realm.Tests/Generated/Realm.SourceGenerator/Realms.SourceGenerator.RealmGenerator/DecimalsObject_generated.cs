@@ -367,6 +367,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializer<DecimalsObject>
         {
+            public override string SchemaName => "DecimalsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DecimalsObject value)
             {
                 context.Writer.WriteStartDocument();

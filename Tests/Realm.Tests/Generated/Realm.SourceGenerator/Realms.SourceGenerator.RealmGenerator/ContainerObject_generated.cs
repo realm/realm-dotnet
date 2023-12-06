@@ -333,6 +333,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ContainerObjectSerializer : Realms.Serialization.RealmObjectSerializer<ContainerObject>
         {
+            public override string SchemaName => "ContainerObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ContainerObject value)
             {
                 context.Writer.WriteStartDocument();

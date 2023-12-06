@@ -938,6 +938,8 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
             return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 private class {_serializerClassName} : Realms.Serialization.RealmObjectSerializer<{_classInfo.Name}>
 {{
+    public override string SchemaName => ""{_classInfo.MapTo ?? _classInfo.Name}"";
+
     protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, {_classInfo.Name} value)
     {{
         context.Writer.WriteStartDocument();

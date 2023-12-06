@@ -339,6 +339,8 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class NonPrimaryKeyObjectSerializer : Realms.Serialization.RealmObjectSerializer<NonPrimaryKeyObject>
             {
+                public override string SchemaName => "NonPrimaryKeyObject";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NonPrimaryKeyObject value)
                 {
                     context.Writer.WriteStartDocument();

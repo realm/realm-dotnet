@@ -480,6 +480,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<LinksObject>
         {
+            public override string SchemaName => "LinksObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LinksObject value)
             {
                 context.Writer.WriteStartDocument();

@@ -537,6 +537,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IndexesClassSerializer : Realms.Serialization.RealmObjectSerializer<IndexesClass>
         {
+            public override string SchemaName => "IndexesClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexesClass value)
             {
                 context.Writer.WriteStartDocument();

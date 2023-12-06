@@ -564,6 +564,8 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializer<CounterObject>
         {
+            public override string SchemaName => "CounterObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CounterObject value)
             {
                 context.Writer.WriteStartDocument();

@@ -352,6 +352,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OnlyListPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<OnlyListProperties>
         {
+            public override string SchemaName => "OnlyListProperties";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OnlyListProperties value)
             {
                 context.Writer.WriteStartDocument();

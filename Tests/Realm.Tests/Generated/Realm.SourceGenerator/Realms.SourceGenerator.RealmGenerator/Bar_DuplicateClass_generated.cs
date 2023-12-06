@@ -339,6 +339,8 @@ namespace Bar
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DuplicateClassSerializer : Realms.Serialization.RealmObjectSerializer<DuplicateClass>
         {
+            public override string SchemaName => "DuplicateClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DuplicateClass value)
             {
                 context.Writer.WriteStartDocument();

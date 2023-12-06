@@ -371,6 +371,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectV2Serializer : Realms.Serialization.RealmObjectSerializer<ObjectV2>
         {
+            public override string SchemaName => "Object";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectV2 value)
             {
                 context.Writer.WriteStartDocument();

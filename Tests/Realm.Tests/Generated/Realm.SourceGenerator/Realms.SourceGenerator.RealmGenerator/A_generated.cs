@@ -368,6 +368,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ASerializer : Realms.Serialization.RealmObjectSerializer<A>
         {
+            public override string SchemaName => "A";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, A value)
             {
                 context.Writer.WriteStartDocument();
