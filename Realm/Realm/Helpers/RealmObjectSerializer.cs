@@ -34,23 +34,24 @@ namespace Realms.Serialization;
  * - This can only be a static class with the static method to register and lookup serializer
  * - We could move the lookup and register to a "SerializerRegistry", like they do in the driver, but maybe it's an overkill
  * - 
- * - What about backlinks...?
  * 
  * 
  */
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class RealmObjectSerializer : IBsonSerializer
 {
-    private static readonly ConcurrentDictionary<Type, RealmObjectSerializer> Serializers = new();
+    private static readonly ConcurrentDictionary<Type, RealmObjectSerializer> SerializersByType = new();
+    private static readonly ConcurrentDictionary<string, RealmObjectSerializer> SerializersByName = new();
 
     public static void Register(RealmObjectSerializer serializer)
     {
-        Serializers.TryAdd(serializer.ValueType, serializer);
+        SerializersByType.TryAdd(serializer.ValueType, serializer);
+        SerializersByName.TryAdd(serializer.SchemaName, serializer);
     }
 
     public static RealmObjectSerializer? LookupSerializer(Type type)
     {
-        if (Serializers.TryGetValue(type, out var serializer))
+        if (SerializersByType.TryGetValue(type, out var serializer))
         {
             return serializer;
         }
@@ -61,7 +62,7 @@ public abstract class RealmObjectSerializer : IBsonSerializer
     public static RealmObjectSerializer<T>? LookupSerializer<T>()
         where T : class?, IRealmObjectBase?
     {
-        if (Serializers.TryGetValue(typeof(T), out var serializer))
+        if (SerializersByType.TryGetValue(typeof(T), out var serializer))
         {
             return (RealmObjectSerializer<T>)serializer;
         }
@@ -69,13 +70,27 @@ public abstract class RealmObjectSerializer : IBsonSerializer
         return null;
     }
 
+    public static RealmObjectSerializer? LookupSerializer(string schemaName)
+    {
+        if (SerializersByName.TryGetValue(schemaName, out var serializer))
+        {
+            return serializer;
+        }
+
+        return null;
+    }
+
     public abstract Type ValueType { get; }
 
-    public abstract object? Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args);
+    public abstract string SchemaName { get; }
 
     public abstract void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object? value);
 
     public abstract void SerializeId(BsonSerializationContext context, BsonSerializationArgs args, object? value);
+
+    public abstract object? Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args);
+
+    public abstract IRealmObjectBase? DeserializeById(BsonDeserializationContext context, BsonDeserializationArgs args);
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -138,10 +153,13 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
 
                     break;
 
-                // Either an object or a dictionary
+                // Either an object, dictionary or DBRef (in a RealmValue)
                 case BsonType.Document:
-                    if (result!.ObjectSchema!.TryFindProperty(name, out var property) && !property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object))
+
+                    result!.ObjectSchema!.TryFindProperty(name, out var property);
+                    if (property.Type.IsRealmValue() || (!property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object)))
                     {
+                        // RealmValue(as DBRef) or Object
                         ReadValue(result, name, context);
                     }
                     else
@@ -328,6 +346,9 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
     {
         Serialize(context, args, value);
     }
+
+    public override IRealmObjectBase? DeserializeById(BsonDeserializationContext context, BsonDeserializationArgs args)
+        => DeserializeById(context, args);
 
     private static Property GetPKProperty(T instance)
     {
