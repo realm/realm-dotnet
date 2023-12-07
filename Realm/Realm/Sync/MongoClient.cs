@@ -36,6 +36,10 @@ namespace Realms.Sync
     /// </summary>
     public class MongoClient
     {
+        private static readonly char[] _invalidChars = new[] { '\0', '.' };
+
+        private static readonly ConcurrentDictionary<Type, ObjectSchema> _schemas = new();
+
         private User User { get; }
 
         /// <summary>
@@ -43,6 +47,19 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The name of the remote MongoDB service.</value>
         public string ServiceName { get; }
+
+        //TODO Add documentation
+        //TODO Can we avoid reflection here?
+        public Collection<TDocument> GetCollection<TDocument>()
+            where TDocument : class, IRealmObject
+        {
+            var schema = _schemas.GetOrAdd(typeof(TDocument),
+                type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
+                    ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
+
+            //TODO I think schema.Name isn't correct, because we don't know the eventual mapped name, need to check
+            return new Collection<TDocument>(this, schema.Name);
+        }
 
         internal MongoClient(User user, string serviceName)
         {
@@ -69,7 +86,7 @@ namespace Realms.Sync
                 return false;
             }
 
-            var index = name.IndexOfAny(new[] { '\0', '.' });
+            var index = name.IndexOfAny(_invalidChars);
             return index == -1;
         }
 
@@ -128,16 +145,6 @@ namespace Realms.Sync
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
                 return new Collection<TDocument>(this, name);
-            }
-
-            public Collection<TDocument> GetCollection<TDocument>()
-                where TDocument : class, IRealmObject
-            {
-                var schema = _schemas.GetOrAdd(typeof(TDocument),
-                    type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
-                        ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
-
-                return new Collection<TDocument>(this, schema.Name);
             }
         }
 
