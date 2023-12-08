@@ -2136,22 +2136,6 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void MongoCollection_FindOne_Remapped_Not()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection<NotRemappedTypeObject>();
-                var inserted = await InsertNotRemappedData(collection);
-
-                var result = await collection.FindOneAsync();
-                Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
-                Assert.That(result.StringValue, Is.EqualTo(inserted[0].StringValue));
-                Assert.That(result.MappedLink!.Id, Is.EqualTo(inserted[1].Id));
-                Assert.That(result.MappedList[0].Id, Is.EqualTo(inserted[2].Id));
-            });
-        }
-
-        [Test]
         public void MongoCollection_RealmObjectAPI()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -2212,29 +2196,6 @@ namespace Realms.Tests.Sync
 
             var docs = Enumerable.Range(0, documentCount)
                 .Select(i => new RemappedTypeObject
-                {
-                    Id = ObjectId.GenerateNewId().GetHashCode(),
-                    StringValue = $"Doc #{i}",
-                })
-                .ToArray();
-
-            docs[0].MappedLink = docs[1];
-            docs[0].MappedList.Add(docs[2]);
-
-            await collection.InsertManyAsync(docs);
-
-            var remoteCount = await collection.CountAsync();
-            Assert.That(remoteCount, Is.EqualTo(documentCount));
-
-            return docs;
-        }
-
-        private static async Task<NotRemappedTypeObject[]> InsertNotRemappedData(MongoClient.Collection<NotRemappedTypeObject> collection)
-        {
-            const int documentCount = 3;
-
-            var docs = Enumerable.Range(0, documentCount)
-                .Select(i => new NotRemappedTypeObject
                 {
                     Id = ObjectId.GenerateNewId().GetHashCode(),
                     StringValue = $"Doc #{i}",

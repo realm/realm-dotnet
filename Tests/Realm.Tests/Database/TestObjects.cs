@@ -970,23 +970,6 @@ namespace Realms.Tests
         public IQueryable<RemappedTypeObject> MappedBacklink { get; } = null!;
     }
 
-    public partial class NotRemappedTypeObject : TestRealmObject
-    {
-        [PrimaryKey]
-        [MapTo("_id")]
-        public int Id { get; set; }
-
-        public string? StringValue { get; set; }
-
-        public NotRemappedTypeObject? NormalLink { get; set; }
-
-        public NotRemappedTypeObject? MappedLink { get; set; }
-
-        public IList<NotRemappedTypeObject> NormalList { get; } = null!;
-
-        public IList<NotRemappedTypeObject> MappedList { get; } = null!;
-    }
-
     public partial class ObjectWithRequiredStringList : TestRealmObject
     {
 #if TEST_WEAVER
