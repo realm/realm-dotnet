@@ -49,16 +49,16 @@ namespace Realms.Sync
         public string ServiceName { get; }
 
         //TODO Add documentation
-        //TODO Should we have the same method on Database? 
-        public RealmCollection<TDocument> GetCollection<TDocument>()
+        //TODO Can we avoid reflection here?
+        public Collection<TDocument> GetCollection<TDocument>()
             where TDocument : class, IRealmObject
         {
             var schema = _schemas.GetOrAdd(typeof(TDocument),
                 type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
                     ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
 
-            //TODO Need to check if the name is correct (to account for "MapTo")
-            return new RealmCollection<TDocument>(this, schema.Name);
+            //TODO I think schema.Name isn't correct, because we don't know the eventual mapped name, need to check
+            return new Collection<TDocument>(this, schema.Name);
         }
 
         internal MongoClient(User user, string serviceName)
@@ -152,7 +152,7 @@ namespace Realms.Sync
         /// An object representing a remote MongoDB collection.
         /// </summary>
         /// <typeparam name="TDocument">The managed type that matches the shape of the documents in the collection.</typeparam>
-        public class Collection<TDocument> : BaseCollection<TDocument>
+        public class Collection<TDocument>
             where TDocument : class
         {
             /// <summary>
@@ -167,45 +167,10 @@ namespace Realms.Sync
             /// <value>The collection name.</value>
             public string Name { get; }
 
-            protected override string[] BaseArguments { get; }
-
             internal Collection(Database database, string name)
-                : base(database.Client)
             {
                 Database = database;
                 Name = name;
-                BaseArguments = new string[] { "database", Database.Name, "collection", Name };
-            }
-        }
-
-        //TODO Add docs
-        public class RealmCollection<TDocument> : BaseCollection<TDocument>
-            where TDocument : IRealmObjectBase
-        {
-            //TODO Docs
-            public MongoClient Client { get; }
-
-            //TODO Docs
-            public string SchemaName { get; }
-
-            protected override string[] BaseArguments { get; }
-
-            internal RealmCollection(MongoClient client, string schemaName)
-                :base(client)
-            {
-                Client = client;
-                SchemaName = schemaName;
-                BaseArguments = new string[] { "schema_name", schemaName };
-            }
-        }
-
-        public abstract class BaseCollection<TDocument>
-        {
-            private MongoClient _client;
-
-            internal BaseCollection(MongoClient client)
-            {
-                _client = client;
             }
 
             /// <summary>
@@ -500,27 +465,22 @@ namespace Realms.Sync
             private async Task<T> InvokeOperationAsync<T>(string functionName, params object?[] args)
             {
                 var jsonBuilder = new StringBuilder();
+                jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
 
-                jsonBuilder.Append("[{");
+                Debug.Assert(args.Length % 2 == 0, "args should be provided as key-value pairs");
 
-                var allArgs = BaseArguments.Concat(args).ToArray();
-
-                Debug.Assert(allArgs.Length % 2 == 0, "arguments should be provided as key-value pairs");
-
-                for (var i = 0; i < allArgs.Length; i += 2)
+                for (var i = 0; i < args.Length; i += 2)
                 {
-                    if (allArgs[i + 1] != null)
+                    if (args[i + 1] != null)
                     {
-                        jsonBuilder.Append($",\"{allArgs[i]}\":{allArgs[i + 1].ToNativeJson()}");
+                        jsonBuilder.Append($",\"{args[i]}\":{args[i + 1].ToNativeJson()}");
                     }
                 }
 
                 jsonBuilder.Append("}]");
 
-                return await _client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), _client.ServiceName);
+                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), Database.Client.ServiceName);
             }
-
-            protected abstract string[] BaseArguments { get; }
         }
 
         /// <summary>
