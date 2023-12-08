@@ -2125,7 +2125,23 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var collection = await GetCollection<RemappedTypeObject>();
-                var inserted = await InsertRemappedData(collection, 3);
+                var inserted = await InsertRemappedData(collection);
+
+                var result = await collection.FindOneAsync();
+                Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
+                Assert.That(result.StringValue, Is.EqualTo(inserted[0].StringValue));
+                Assert.That(result.MappedLink!.Id, Is.EqualTo(inserted[1].Id));
+                Assert.That(result.MappedList[0].Id, Is.EqualTo(inserted[2].Id));
+            });
+        }
+
+        [Test]
+        public void MongoCollection_FindOne_Remapped_Not()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<NotRemappedTypeObject>();
+                var inserted = await InsertNotRemappedData(collection);
 
                 var result = await collection.FindOneAsync();
                 Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
@@ -2190,10 +2206,35 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection, int documentCount)
+        private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection)
         {
+            const int documentCount = 3;
+
             var docs = Enumerable.Range(0, documentCount)
                 .Select(i => new RemappedTypeObject
+                {
+                    Id = ObjectId.GenerateNewId().GetHashCode(),
+                    StringValue = $"Doc #{i}",
+                })
+                .ToArray();
+
+            docs[0].MappedLink = docs[1];
+            docs[0].MappedList.Add(docs[2]);
+
+            await collection.InsertManyAsync(docs);
+
+            var remoteCount = await collection.CountAsync();
+            Assert.That(remoteCount, Is.EqualTo(documentCount));
+
+            return docs;
+        }
+
+        private static async Task<NotRemappedTypeObject[]> InsertNotRemappedData(MongoClient.Collection<NotRemappedTypeObject> collection)
+        {
+            const int documentCount = 3;
+
+            var docs = Enumerable.Range(0, documentCount)
+                .Select(i => new NotRemappedTypeObject
                 {
                     Id = ObjectId.GenerateNewId().GetHashCode(),
                     StringValue = $"Doc #{i}",
@@ -2261,6 +2302,7 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
+        // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
         private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
             where T : class, IRealmObject
         {
@@ -2275,9 +2317,8 @@ namespace Realms.Tests.Sync
             using var realm = await GetRealmAsync(config);
             await WaitForUploadAsync(realm);
 
-            var client = user.GetMongoClient(ServiceName); // TODO: this should be provided by Sync
-            var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(appConfigType)); // TODO: this should be provided by Sync
-            var collection = db.GetCollection<T>();
+            var client = user.GetMongoClient(ServiceName);
+            var collection = client.GetCollection<T>();
 
             await collection.DeleteManyAsync(new object());
 

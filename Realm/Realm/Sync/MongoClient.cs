@@ -49,15 +49,14 @@ namespace Realms.Sync
         public string ServiceName { get; }
 
         //TODO Add documentation
-        //TODO Can we avoid reflection here?
+        //TODO Can we avoid reflection here? Maybe we can add the info here in the same way we do for the serializers
         public Collection<TDocument> GetCollection<TDocument>()
-            where TDocument : class, IRealmObject
+            where TDocument : class, IRealmObject  //TODO Should we have a separate class to imrpove this?
         {
             var schema = _schemas.GetOrAdd(typeof(TDocument),
                 type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
                     ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
 
-            //TODO I think schema.Name isn't correct, because we don't know the eventual mapped name, need to check
             return new Collection<TDocument>(this, schema.Name);
         }
 
@@ -155,11 +154,13 @@ namespace Realms.Sync
         public class Collection<TDocument>
             where TDocument : class
         {
+            private MongoClient _client;
+
             /// <summary>
             /// Gets the <see cref="Database"/> this collection belongs to.
             /// </summary>
             /// <value>The collection's <see cref="Database"/>.</value>
-            public Database Database { get; }
+            public Database? Database { get; }
 
             /// <summary>
             /// Gets the name of the collection.
@@ -169,7 +170,14 @@ namespace Realms.Sync
 
             internal Collection(Database database, string name)
             {
+                _client = database.Client;
                 Database = database;
+                Name = name;
+            }
+
+            internal Collection(MongoClient client, string name)
+            {
+                _client = client;
                 Name = name;
             }
 
@@ -465,7 +473,18 @@ namespace Realms.Sync
             private async Task<T> InvokeOperationAsync<T>(string functionName, params object?[] args)
             {
                 var jsonBuilder = new StringBuilder();
-                jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
+
+                jsonBuilder.Append("[{");
+
+                if (Database is not null)
+                {
+                    jsonBuilder.Append($"\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
+                }
+                else
+                {
+                    // Database and Collection names are automatically inferred by server based on schema name
+                    jsonBuilder.Append($"\"schema_name\":\"{Name}\"");
+                }
 
                 Debug.Assert(args.Length % 2 == 0, "args should be provided as key-value pairs");
 
@@ -479,7 +498,7 @@ namespace Realms.Sync
 
                 jsonBuilder.Append("}]");
 
-                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), Database.Client.ServiceName);
+                return await _client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), _client.ServiceName);
             }
         }
 
