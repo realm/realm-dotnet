@@ -341,7 +341,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyNullableObjectIdObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyNullableObjectIdObject>
+        private class PrimaryKeyNullableObjectIdObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyNullableObjectIdObject>
         {
             public override string SchemaName => "PrimaryKeyNullableObjectIdObject";
 

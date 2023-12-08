@@ -337,7 +337,7 @@ namespace Bar
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DuplicateClassSerializer : Realms.Serialization.RealmObjectSerializer<DuplicateClass>
+        private class DuplicateClassSerializer : Realms.Serialization.RealmObjectSerializerBase<DuplicateClass>
         {
             public override string SchemaName => "DuplicateClass";
 

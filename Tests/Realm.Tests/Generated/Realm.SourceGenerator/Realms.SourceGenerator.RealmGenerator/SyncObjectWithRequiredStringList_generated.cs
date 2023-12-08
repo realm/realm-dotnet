@@ -380,7 +380,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<SyncObjectWithRequiredStringList>
+        private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializerBase<SyncObjectWithRequiredStringList>
         {
             public override string SchemaName => "SyncObjectWithRequiredStringList";
 

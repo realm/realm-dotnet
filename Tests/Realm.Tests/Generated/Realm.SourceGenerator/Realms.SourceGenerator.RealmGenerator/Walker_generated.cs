@@ -420,7 +420,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class WalkerSerializer : Realms.Serialization.RealmObjectSerializer<Walker>
+        private class WalkerSerializer : Realms.Serialization.RealmObjectSerializerBase<Walker>
         {
             public override string SchemaName => "Walker";
 
@@ -446,7 +446,7 @@ namespace Realms.Tests
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "TopDog":
-                        instance.TopDog = LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
+                        instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -456,10 +456,10 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "ListOfDogs":
-                        instance.ListOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        instance.ListOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
                         break;
                     case "SetOfDogs":
-                        instance.SetOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        instance.SetOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
                         break;
                 }
             }

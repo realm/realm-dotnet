@@ -1249,7 +1249,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<AllTypesObject>
+        private class AllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<AllTypesObject>
         {
             public override string SchemaName => "AllTypesObject";
 

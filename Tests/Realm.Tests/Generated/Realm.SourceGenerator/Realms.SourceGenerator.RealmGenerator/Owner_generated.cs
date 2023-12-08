@@ -445,7 +445,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OwnerSerializer : Realms.Serialization.RealmObjectSerializer<Owner>
+        private class OwnerSerializer : Realms.Serialization.RealmObjectSerializerBase<Owner>
         {
             public override string SchemaName => "Owner";
 
@@ -472,7 +472,7 @@ namespace Realms.Tests
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "TopDog":
-                        instance.TopDog = LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
+                        instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -482,10 +482,10 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "ListOfDogs":
-                        instance.ListOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        instance.ListOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
                         break;
                     case "SetOfDogs":
-                        instance.SetOfDogs.Add(LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        instance.SetOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -495,7 +495,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "DictOfDogs":
-                        instance.DictOfDogs[fieldName] = LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context)!;
+                        instance.DictOfDogs[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context)!;
                         break;
                 }
             }

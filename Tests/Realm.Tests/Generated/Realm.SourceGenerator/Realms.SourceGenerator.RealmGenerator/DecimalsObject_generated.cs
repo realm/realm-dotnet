@@ -365,7 +365,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializer<DecimalsObject>
+        private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DecimalsObject>
         {
             public override string SchemaName => "DecimalsObject";
 

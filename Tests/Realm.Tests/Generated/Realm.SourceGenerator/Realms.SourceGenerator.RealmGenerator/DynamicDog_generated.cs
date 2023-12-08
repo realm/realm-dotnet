@@ -410,7 +410,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicDogSerializer : Realms.Serialization.RealmObjectSerializer<DynamicDog>
+        private class DynamicDogSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicDog>
         {
             public override string SchemaName => "DynamicDog";
 

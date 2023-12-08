@@ -518,7 +518,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RemappedTypeObjectSerializer : Realms.Serialization.RealmObjectSerializer<RemappedTypeObject>
+        private class RemappedTypeObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RemappedTypeObject>
         {
             public override string SchemaName => "__RemappedTypeObject";
 
@@ -549,10 +549,10 @@ namespace Realms.Tests
                         instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "NormalLink":
-                        instance.NormalLink = LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
+                        instance.NormalLink = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
                         break;
                     case "__mappedLink":
-                        instance.MappedLink = LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
+                        instance.MappedLink = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -562,10 +562,10 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "NormalList":
-                        instance.NormalList.Add(LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        instance.NormalList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
                         break;
                     case "__mappedList":
-                        instance.MappedList.Add(LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        instance.MappedList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
                         break;
                 }
             }

@@ -478,7 +478,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<LinksObject>
+        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<LinksObject>
         {
             public override string SchemaName => "LinksObject";
 
@@ -509,7 +509,7 @@ namespace Realms.Tests
                         instance.Value = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "Link":
-                        instance.Link = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
+                        instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -519,10 +519,10 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "List":
-                        instance.List.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
+                        instance.List.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                     case "Set":
-                        instance.Set.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
+                        instance.Set.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -532,7 +532,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "Dictionary":
-                        instance.Dictionary[fieldName] = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
+                        instance.Dictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }

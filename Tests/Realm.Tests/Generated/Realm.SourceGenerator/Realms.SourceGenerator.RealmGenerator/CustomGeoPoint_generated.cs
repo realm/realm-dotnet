@@ -373,7 +373,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<CustomGeoPoint>
+            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializerBase<CustomGeoPoint>
             {
                 public override string SchemaName => "CustomGeoPoint";
 

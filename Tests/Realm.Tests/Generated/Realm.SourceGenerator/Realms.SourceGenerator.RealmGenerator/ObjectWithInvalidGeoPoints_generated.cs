@@ -390,7 +390,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class ObjectWithInvalidGeoPointsSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithInvalidGeoPoints>
+            private class ObjectWithInvalidGeoPointsSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithInvalidGeoPoints>
             {
                 public override string SchemaName => "ObjectWithInvalidGeoPoints";
 
@@ -418,7 +418,7 @@ namespace Realms.Tests.Database
                             instance.TypeEmbedded = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TypeEmbeddedObject?>().Deserialize(context);
                             break;
                         case "TopLevelGeoPoint":
-                            instance.TopLevelGeoPoint = LookupSerializer<Realms.Tests.Database.GeospatialTests.TopLevelGeoPoint?>()!.DeserializeById(context);
+                            instance.TopLevelGeoPoint = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TopLevelGeoPoint?>()!.DeserializeById(context);
                             break;
                     }
                 }

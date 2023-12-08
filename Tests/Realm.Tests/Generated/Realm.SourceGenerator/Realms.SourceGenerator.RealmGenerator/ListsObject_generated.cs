@@ -991,7 +991,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializer<ListsObject>
+        private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<ListsObject>
         {
             public override string SchemaName => "ListsObject";
 

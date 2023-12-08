@@ -341,7 +341,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyInt32ObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyInt32Object>
+        private class PrimaryKeyInt32ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyInt32Object>
         {
             public override string SchemaName => "PrimaryKeyInt32Object";
 

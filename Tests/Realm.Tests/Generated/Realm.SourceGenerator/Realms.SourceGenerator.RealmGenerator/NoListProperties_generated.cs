@@ -362,7 +362,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class NoListPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<NoListProperties>
+        private class NoListPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<NoListProperties>
         {
             public override string SchemaName => "NoListProperties";
 

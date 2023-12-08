@@ -379,7 +379,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicSubSubTaskSerializer : Realms.Serialization.RealmObjectSerializer<DynamicSubSubTask>
+        private class DynamicSubSubTaskSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicSubSubTask>
         {
             public override string SchemaName => "DynamicSubSubTask";
 

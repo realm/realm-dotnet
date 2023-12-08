@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AgedObjectSerializer : Realms.Serialization.RealmObjectSerializer<AgedObject>
+        private class AgedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<AgedObject>
         {
             public override string SchemaName => "AgedObject";
 

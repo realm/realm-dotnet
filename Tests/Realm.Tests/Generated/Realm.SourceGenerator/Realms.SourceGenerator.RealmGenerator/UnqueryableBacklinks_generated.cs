@@ -338,7 +338,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class UnqueryableBacklinksSerializer : Realms.Serialization.RealmObjectSerializer<UnqueryableBacklinks>
+        private class UnqueryableBacklinksSerializer : Realms.Serialization.RealmObjectSerializerBase<UnqueryableBacklinks>
         {
             public override string SchemaName => "UnqueryableBacklinks";
 
@@ -358,7 +358,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "Parent":
-                        instance.Parent = LookupSerializer<Realms.Tests.ClassWithUnqueryableMembers?>()!.DeserializeById(context);
+                        instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.ClassWithUnqueryableMembers?>()!.DeserializeById(context);
                         break;
                 }
             }

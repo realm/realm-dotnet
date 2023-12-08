@@ -363,7 +363,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OrderedObjectSerializer : Realms.Serialization.RealmObjectSerializer<OrderedObject>
+        private class OrderedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<OrderedObject>
         {
             public override string SchemaName => "OrderedObject";
 

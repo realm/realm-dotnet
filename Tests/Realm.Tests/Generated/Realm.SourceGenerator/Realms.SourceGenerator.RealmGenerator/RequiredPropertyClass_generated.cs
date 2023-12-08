@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RequiredPropertyClassSerializer : Realms.Serialization.RealmObjectSerializer<RequiredPropertyClass>
+        private class RequiredPropertyClassSerializer : Realms.Serialization.RealmObjectSerializerBase<RequiredPropertyClass>
         {
             public override string SchemaName => "RequiredPropertyClass";
 

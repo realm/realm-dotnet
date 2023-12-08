@@ -343,7 +343,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ThrowsBeforeInitializerSerializer : Realms.Serialization.RealmObjectSerializer<ThrowsBeforeInitializer>
+        private class ThrowsBeforeInitializerSerializer : Realms.Serialization.RealmObjectSerializerBase<ThrowsBeforeInitializer>
         {
             public override string SchemaName => "ThrowsBeforeInitializer";
 

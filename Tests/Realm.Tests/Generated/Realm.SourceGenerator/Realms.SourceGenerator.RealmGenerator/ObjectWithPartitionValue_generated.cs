@@ -439,7 +439,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithPartitionValue>
+        private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithPartitionValue>
         {
             public override string SchemaName => "ObjectWithPartitionValue";
 

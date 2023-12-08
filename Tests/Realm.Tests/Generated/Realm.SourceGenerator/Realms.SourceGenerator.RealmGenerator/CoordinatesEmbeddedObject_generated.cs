@@ -337,7 +337,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CoordinatesEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializer<CoordinatesEmbeddedObject>
+            private class CoordinatesEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CoordinatesEmbeddedObject>
             {
                 public override string SchemaName => "CoordinatesEmbeddedObject";
 

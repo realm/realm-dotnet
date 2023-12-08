@@ -395,7 +395,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedLevel1Serializer : Realms.Serialization.RealmObjectSerializer<EmbeddedLevel1>
+        private class EmbeddedLevel1Serializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedLevel1>
         {
             public override string SchemaName => "EmbeddedLevel1";
 

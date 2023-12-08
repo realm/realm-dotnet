@@ -467,7 +467,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectSerializer : Realms.Serialization.RealmObjectSerializer<RealmValueObject>
+        private class RealmValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RealmValueObject>
         {
             public override string SchemaName => "RealmValueObject";
 

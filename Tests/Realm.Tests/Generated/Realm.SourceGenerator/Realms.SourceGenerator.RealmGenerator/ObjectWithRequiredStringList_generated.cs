@@ -331,7 +331,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithRequiredStringList>
+        private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithRequiredStringList>
         {
             public override string SchemaName => "ObjectWithRequiredStringList";
 

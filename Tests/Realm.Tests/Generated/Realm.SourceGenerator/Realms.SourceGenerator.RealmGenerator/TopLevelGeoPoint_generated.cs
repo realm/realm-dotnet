@@ -365,7 +365,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class TopLevelGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<TopLevelGeoPoint>
+            private class TopLevelGeoPointSerializer : Realms.Serialization.RealmObjectSerializerBase<TopLevelGeoPoint>
             {
                 public override string SchemaName => "TopLevelGeoPoint";
 

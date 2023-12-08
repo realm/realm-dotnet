@@ -369,7 +369,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class HugeSyncObjectSerializer : Realms.Serialization.RealmObjectSerializer<HugeSyncObject>
+        private class HugeSyncObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<HugeSyncObject>
         {
             public override string SchemaName => "HugeSyncObject";
 

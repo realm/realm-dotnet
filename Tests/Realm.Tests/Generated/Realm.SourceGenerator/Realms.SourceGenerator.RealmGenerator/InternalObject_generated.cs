@@ -334,7 +334,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class InternalObjectSerializer : Realms.Serialization.RealmObjectSerializer<InternalObject>
+        private class InternalObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<InternalObject>
         {
             public override string SchemaName => "InternalObject";
 

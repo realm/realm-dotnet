@@ -468,7 +468,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicTaskSerializer : Realms.Serialization.RealmObjectSerializer<DynamicTask>
+        private class DynamicTaskSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicTask>
         {
             public override string SchemaName => "DynamicTask";
 

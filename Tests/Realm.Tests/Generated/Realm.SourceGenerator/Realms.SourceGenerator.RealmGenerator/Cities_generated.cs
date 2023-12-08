@@ -335,7 +335,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CitiesSerializer : Realms.Serialization.RealmObjectSerializer<Cities>
+        private class CitiesSerializer : Realms.Serialization.RealmObjectSerializerBase<Cities>
         {
             public override string SchemaName => "Cities";
 

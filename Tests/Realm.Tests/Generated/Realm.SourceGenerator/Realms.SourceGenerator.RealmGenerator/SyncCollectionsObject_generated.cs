@@ -1482,7 +1482,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SyncCollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializer<SyncCollectionsObject>
+        private class SyncCollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<SyncCollectionsObject>
         {
             public override string SchemaName => "SyncCollectionsObject";
 
@@ -1608,7 +1608,7 @@ namespace Realms.Tests
                         instance.DateTimeOffsetList.Add(BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context));
                         break;
                     case "ObjectList":
-                        instance.ObjectList.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "EmbeddedObjectList":
                         instance.EmbeddedObjectList.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
@@ -1659,7 +1659,7 @@ namespace Realms.Tests
                         instance.DateTimeOffsetSet.Add(BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context));
                         break;
                     case "ObjectSet":
-                        instance.ObjectSet.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectSet.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "RealmValueSet":
                         instance.RealmValueSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
@@ -1714,7 +1714,7 @@ namespace Realms.Tests
                         instance.DateTimeOffsetDict[fieldName] = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
                         break;
                     case "ObjectDict":
-                        instance.ObjectDict[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.ObjectDict[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "EmbeddedObjectDict":
                         instance.EmbeddedObjectDict[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);

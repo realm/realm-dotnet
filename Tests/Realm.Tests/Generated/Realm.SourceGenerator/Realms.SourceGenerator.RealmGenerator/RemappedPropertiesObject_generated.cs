@@ -369,7 +369,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RemappedPropertiesObjectSerializer : Realms.Serialization.RealmObjectSerializer<RemappedPropertiesObject>
+        private class RemappedPropertiesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RemappedPropertiesObject>
         {
             public override string SchemaName => "RemappedPropertiesObject";
 

@@ -337,7 +337,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class NonPrimaryKeyObjectSerializer : Realms.Serialization.RealmObjectSerializer<NonPrimaryKeyObject>
+            private class NonPrimaryKeyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<NonPrimaryKeyObject>
             {
                 public override string SchemaName => "NonPrimaryKeyObject";
 

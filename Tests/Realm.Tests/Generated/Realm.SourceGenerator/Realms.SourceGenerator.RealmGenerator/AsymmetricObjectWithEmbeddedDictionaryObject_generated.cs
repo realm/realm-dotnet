@@ -373,7 +373,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AsymmetricObjectWithEmbeddedDictionaryObjectSerializer : Realms.Serialization.RealmObjectSerializer<AsymmetricObjectWithEmbeddedDictionaryObject>
+        private class AsymmetricObjectWithEmbeddedDictionaryObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<AsymmetricObjectWithEmbeddedDictionaryObject>
         {
             public override string SchemaName => "AsymmetricObjectWithEmbeddedDictionaryObject";
 

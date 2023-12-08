@@ -333,7 +333,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexedDateTimeOffsetObjectSerializer : Realms.Serialization.RealmObjectSerializer<IndexedDateTimeOffsetObject>
+        private class IndexedDateTimeOffsetObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexedDateTimeOffsetObject>
         {
             public override string SchemaName => "IndexedDateTimeOffsetObject";
 

@@ -418,7 +418,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CompanySerializer : Realms.Serialization.RealmObjectSerializer<Company>
+            private class CompanySerializer : Realms.Serialization.RealmObjectSerializerBase<Company>
             {
                 public override string SchemaName => "Company";
 

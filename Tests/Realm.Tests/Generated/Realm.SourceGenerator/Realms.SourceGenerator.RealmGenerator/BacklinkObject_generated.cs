@@ -383,7 +383,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class BacklinkObjectSerializer : Realms.Serialization.RealmObjectSerializer<BacklinkObject>
+        private class BacklinkObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<BacklinkObject>
         {
             public override string SchemaName => "BacklinkObject";
 

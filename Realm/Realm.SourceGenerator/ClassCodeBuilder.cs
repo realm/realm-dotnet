@@ -902,7 +902,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
 
                         var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                             ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                            : $"LookupSerializer<{type}>()!.DeserializeById(context)!";
+                            : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)!";
 
                         readDocumentFieldLines.AppendLine($@"case ""{stringName}"":
     instance.{name}[fieldName] = {deserialize};
@@ -914,7 +914,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
 
                         var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                             ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                            : $"LookupSerializer<{type}>()!.DeserializeById(context)!";
+                            : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)!";
 
                         readArrayElementLines.AppendLine($@"case ""{stringName}"":
     instance.{name}.Add({deserialize});
@@ -928,7 +928,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
                     serializeValueLines.AppendLine($"WriteValue(context, args, \"{stringName}\", value.{name});");
                     var deserialize = property.TypeInfo.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
                         ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                        : $"LookupSerializer<{type}>()!.DeserializeById(context)";
+                        : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)";
                     readValueLines.AppendLine($@"case ""{stringName}"":
     instance.{name} = {deserialize};
     break;");
@@ -936,7 +936,7 @@ private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorIn
             }
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-private class {_serializerClassName} : Realms.Serialization.RealmObjectSerializer<{_classInfo.Name}>
+private class {_serializerClassName} : Realms.Serialization.RealmObjectSerializerBase<{_classInfo.Name}>
 {{
     public override string SchemaName => ""{_classInfo.MapTo ?? _classInfo.Name}"";
 

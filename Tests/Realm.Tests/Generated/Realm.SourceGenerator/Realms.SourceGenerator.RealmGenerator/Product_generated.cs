@@ -419,7 +419,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ProductSerializer : Realms.Serialization.RealmObjectSerializer<Product>
+        private class ProductSerializer : Realms.Serialization.RealmObjectSerializerBase<Product>
         {
             public override string SchemaName => "Product";
 
@@ -458,7 +458,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Reports":
-                        instance.Reports.Add(LookupSerializer<Realms.Tests.Database.Report>()!.DeserializeById(context)!);
+                        instance.Reports.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Report>()!.DeserializeById(context)!);
                         break;
                 }
             }

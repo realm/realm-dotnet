@@ -369,7 +369,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectV2Serializer : Realms.Serialization.RealmObjectSerializer<ObjectV2>
+        private class ObjectV2Serializer : Realms.Serialization.RealmObjectSerializerBase<ObjectV2>
         {
             public override string SchemaName => "Object";
 

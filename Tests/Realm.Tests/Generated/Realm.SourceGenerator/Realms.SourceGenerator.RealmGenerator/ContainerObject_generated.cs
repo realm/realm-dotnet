@@ -331,7 +331,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ContainerObjectSerializer : Realms.Serialization.RealmObjectSerializer<ContainerObject>
+        private class ContainerObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<ContainerObject>
         {
             public override string SchemaName => "ContainerObject";
 
@@ -356,7 +356,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "Items":
-                        instance.Items.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.Items.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                 }
             }

@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class InitializedFieldObjectSerializer : Realms.Serialization.RealmObjectSerializer<InitializedFieldObject>
+        private class InitializedFieldObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<InitializedFieldObject>
         {
             public override string SchemaName => "InitializedFieldObject";
 

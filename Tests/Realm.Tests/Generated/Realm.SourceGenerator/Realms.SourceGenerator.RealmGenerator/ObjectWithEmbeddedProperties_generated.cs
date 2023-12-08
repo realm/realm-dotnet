@@ -445,7 +445,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithEmbeddedPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithEmbeddedProperties>
+        private class ObjectWithEmbeddedPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithEmbeddedProperties>
         {
             public override string SchemaName => "ObjectWithEmbeddedProperties";
 

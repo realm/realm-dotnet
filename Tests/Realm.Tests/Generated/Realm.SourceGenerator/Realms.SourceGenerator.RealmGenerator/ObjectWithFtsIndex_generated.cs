@@ -395,7 +395,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithFtsIndex>
+        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithFtsIndex>
         {
             public override string SchemaName => "ObjectWithFtsIndex";
 

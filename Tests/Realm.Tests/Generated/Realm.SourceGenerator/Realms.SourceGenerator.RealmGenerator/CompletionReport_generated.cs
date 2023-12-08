@@ -364,7 +364,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CompletionReportSerializer : Realms.Serialization.RealmObjectSerializer<CompletionReport>
+        private class CompletionReportSerializer : Realms.Serialization.RealmObjectSerializerBase<CompletionReport>
         {
             public override string SchemaName => "CompletionReport";
 

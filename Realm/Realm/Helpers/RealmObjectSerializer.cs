@@ -28,28 +28,19 @@ using Realms.Schema;
 namespace Realms.Serialization;
 
 #pragma warning disable SA1600 // Elements should be documented
-
-/* TODO: 
- * - This class doesn't need to derive from IBsonSerializer
- * - This can only be a static class with the static method to register and lookup serializer
- * - We could move the lookup and register to a "SerializerRegistry", like they do in the driver, but maybe it's an overkill
- * - 
- * 
- * 
- */
 [EditorBrowsable(EditorBrowsableState.Never)]
-public abstract class RealmObjectSerializer : IBsonSerializer
+public static class RealmObjectSerializer
 {
-    private static readonly ConcurrentDictionary<Type, RealmObjectSerializer> SerializersByType = new();
-    private static readonly ConcurrentDictionary<string, RealmObjectSerializer> SerializersByName = new();
+    private static readonly ConcurrentDictionary<Type, RealmObjectSerializerBase> SerializersByType = new();
+    private static readonly ConcurrentDictionary<string, RealmObjectSerializerBase> SerializersByName = new();
 
-    public static void Register(RealmObjectSerializer serializer)
+    public static void Register(RealmObjectSerializerBase serializer)
     {
         SerializersByType.TryAdd(serializer.ValueType, serializer);
         SerializersByName.TryAdd(serializer.SchemaName, serializer);
     }
 
-    public static RealmObjectSerializer? LookupSerializer(Type type)
+    public static RealmObjectSerializerBase? LookupSerializer(Type type)
     {
         if (SerializersByType.TryGetValue(type, out var serializer))
         {
@@ -59,18 +50,18 @@ public abstract class RealmObjectSerializer : IBsonSerializer
         return null;
     }
 
-    public static RealmObjectSerializer<T>? LookupSerializer<T>()
+    public static RealmObjectSerializerBase<T>? LookupSerializer<T>()
         where T : class?, IRealmObjectBase?
     {
         if (SerializersByType.TryGetValue(typeof(T), out var serializer))
         {
-            return (RealmObjectSerializer<T>)serializer;
+            return (RealmObjectSerializerBase<T>)serializer;
         }
 
         return null;
     }
 
-    public static RealmObjectSerializer? LookupSerializer(string schemaName)
+    public static RealmObjectSerializerBase? LookupSerializer(string schemaName)
     {
         if (SerializersByName.TryGetValue(schemaName, out var serializer))
         {
@@ -79,7 +70,11 @@ public abstract class RealmObjectSerializer : IBsonSerializer
 
         return null;
     }
+}
 
+[EditorBrowsable(EditorBrowsableState.Never)]
+public abstract class RealmObjectSerializerBase : IBsonSerializer
+{
     public abstract Type ValueType { get; }
 
     public abstract string SchemaName { get; }
@@ -94,7 +89,7 @@ public abstract class RealmObjectSerializer : IBsonSerializer
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSerializer<T>
+public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, IBsonSerializer<T>
     where T : class?, IRealmObjectBase?
 {
     public override Type ValueType => typeof(T);
@@ -206,7 +201,7 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         }
         else if (value is T tValue)
         {
-            var pkValue = tValue.Accessor.GetValue(RealmObjectSerializer<T>.GetPKProperty(tValue).Name);
+            var pkValue = tValue.Accessor.GetValue(RealmObjectSerializerBase<T>.GetPKProperty(tValue).Name);
             switch (pkValue.Type)
             {
                 case RealmValueType.Null:
@@ -242,7 +237,7 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
 
         var result = CreateInstance()!;
 
-        var pk = RealmObjectSerializer<T>.GetPKProperty(result);
+        var pk = RealmObjectSerializerBase<T>.GetPKProperty(result);
         var pkValue = pk.Type.UnderlyingType() switch
         {
             PropertyType.Int => (RealmValue)context.Reader.ReadInt64(),
@@ -280,7 +275,7 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         }
         else if (value is IRealmObject)
         {
-            LookupSerializer(typeof(TValue))!.SerializeId(context, args, value);
+            RealmObjectSerializer.LookupSerializer(typeof(TValue))!.SerializeId(context, args, value);
         }
         else
         {
@@ -302,8 +297,8 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         var type = typeof(TValue);
         Action<BsonSerializationContext, BsonSerializationArgs, object?> serialize = type switch
         {
-            _ when type.IsRealmObject() || type.IsAsymmetricObject() => LookupSerializer(type)!.SerializeId,
-            _ when type.IsEmbeddedObject() => LookupSerializer(type)!.Serialize,
+            _ when type.IsRealmObject() || type.IsAsymmetricObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
+            _ when type.IsEmbeddedObject() => RealmObjectSerializer.LookupSerializer(type)!.Serialize,
             _ => BsonSerializer.LookupSerializer<TValue>().Serialize
         };
 
@@ -323,8 +318,8 @@ public abstract class RealmObjectSerializer<T> : RealmObjectSerializer, IBsonSer
         var type = typeof(TValue);
         Action<BsonSerializationContext, BsonSerializationArgs, object?> serialize = type switch
         {
-            _ when type.IsRealmObject() || type.IsAsymmetricObject() => LookupSerializer(type)!.SerializeId,
-            _ when type.IsEmbeddedObject() => LookupSerializer(type)!.Serialize,
+            _ when type.IsRealmObject() || type.IsAsymmetricObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
+            _ when type.IsEmbeddedObject() => RealmObjectSerializer.LookupSerializer(type)!.Serialize,
             _ => BsonSerializer.LookupSerializer<TValue>().Serialize
         };
 

@@ -2317,7 +2317,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializer<CollectionsObject>
+        private class CollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CollectionsObject>
         {
             public override string SchemaName => "CollectionsObject";
 
@@ -2516,7 +2516,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdSet.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context));
                         break;
                     case "ObjectSet":
-                        instance.ObjectSet.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectSet.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "RealmValueSet":
                         instance.RealmValueSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
@@ -2606,7 +2606,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdList.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context));
                         break;
                     case "ObjectList":
-                        instance.ObjectList.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "EmbeddedObjectList":
                         instance.EmbeddedObjectList.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
@@ -2706,7 +2706,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdDict[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context);
                         break;
                     case "ObjectDict":
-                        instance.ObjectDict[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.ObjectDict[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "RealmValueDict":
                         instance.RealmValueDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);

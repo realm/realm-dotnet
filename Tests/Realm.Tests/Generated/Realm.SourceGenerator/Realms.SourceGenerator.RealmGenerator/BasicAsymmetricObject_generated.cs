@@ -372,7 +372,7 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class BasicAsymmetricObjectSerializer : Realms.Serialization.RealmObjectSerializer<BasicAsymmetricObject>
+        private class BasicAsymmetricObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<BasicAsymmetricObject>
         {
             public override string SchemaName => "BasicAsymmetricObject";
 

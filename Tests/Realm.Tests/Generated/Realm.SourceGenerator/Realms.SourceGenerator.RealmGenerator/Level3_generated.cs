@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class Level3Serializer : Realms.Serialization.RealmObjectSerializer<Level3>
+        private class Level3Serializer : Realms.Serialization.RealmObjectSerializerBase<Level3>
         {
             public override string SchemaName => "Level3";
 

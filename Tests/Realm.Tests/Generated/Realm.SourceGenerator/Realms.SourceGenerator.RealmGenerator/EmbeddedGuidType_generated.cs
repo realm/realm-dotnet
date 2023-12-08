@@ -635,7 +635,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedGuidTypeSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedGuidType>
+        private class EmbeddedGuidTypeSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedGuidType>
         {
             public override string SchemaName => "EmbeddedGuidType";
 
@@ -673,7 +673,7 @@ namespace Realms.Tests.Database
                         instance.OptionalProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
                         break;
                     case "LinkProperty":
-                        instance.LinkProperty = LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
+                        instance.LinkProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
                         break;
                     case "MixedProperty":
                         instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);

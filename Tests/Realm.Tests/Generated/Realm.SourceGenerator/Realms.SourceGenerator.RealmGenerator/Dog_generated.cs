@@ -441,7 +441,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DogSerializer : Realms.Serialization.RealmObjectSerializer<Dog>
+        private class DogSerializer : Realms.Serialization.RealmObjectSerializerBase<Dog>
         {
             public override string SchemaName => "Dog";
 

@@ -535,7 +535,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexesClassSerializer : Realms.Serialization.RealmObjectSerializer<IndexesClass>
+        private class IndexesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexesClass>
         {
             public override string SchemaName => "IndexesClass";
 

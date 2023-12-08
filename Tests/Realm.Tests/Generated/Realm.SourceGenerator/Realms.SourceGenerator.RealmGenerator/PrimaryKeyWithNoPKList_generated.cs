@@ -398,7 +398,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class PrimaryKeyWithNoPKListSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyWithNoPKList>
+            private class PrimaryKeyWithNoPKListSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyWithNoPKList>
             {
                 public override string SchemaName => "PrimaryKeyWithNoPKList";
 
@@ -433,7 +433,7 @@ namespace Realms.Tests.Database
                     switch (name)
                     {
                         case "ListValue":
-                            instance.ListValue.Add(LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject>()!.DeserializeById(context)!);
+                            instance.ListValue.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject>()!.DeserializeById(context)!);
                             break;
                     }
                 }

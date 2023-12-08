@@ -350,7 +350,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OnlyListPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<OnlyListProperties>
+        private class OnlyListPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<OnlyListProperties>
         {
             public override string SchemaName => "OnlyListProperties";
 
@@ -376,10 +376,10 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Friends":
-                        instance.Friends.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.Friends.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                     case "Enemies":
-                        instance.Enemies.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.Enemies.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                 }
             }

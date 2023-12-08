@@ -357,7 +357,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OrderedContainerSerializer : Realms.Serialization.RealmObjectSerializer<OrderedContainer>
+        private class OrderedContainerSerializer : Realms.Serialization.RealmObjectSerializerBase<OrderedContainer>
         {
             public override string SchemaName => "OrderedContainer";
 
@@ -383,7 +383,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Items":
-                        instance.Items.Add(LookupSerializer<Realms.Tests.Database.OrderedObject>()!.DeserializeById(context)!);
+                        instance.Items.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OrderedObject>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -393,7 +393,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "ItemsDictionary":
-                        instance.ItemsDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.OrderedObject?>()!.DeserializeById(context)!;
+                        instance.ItemsDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OrderedObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }

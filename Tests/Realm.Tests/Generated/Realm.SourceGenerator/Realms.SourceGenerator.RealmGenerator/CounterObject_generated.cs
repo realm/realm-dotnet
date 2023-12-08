@@ -562,7 +562,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializer<CounterObject>
+        private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CounterObject>
         {
             public override string SchemaName => "CounterObject";
 

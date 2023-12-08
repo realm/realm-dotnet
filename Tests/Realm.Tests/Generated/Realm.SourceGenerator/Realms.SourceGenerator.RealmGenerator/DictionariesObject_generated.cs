@@ -1013,7 +1013,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializer<DictionariesObject>
+        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DictionariesObject>
         {
             public override string SchemaName => "DictionariesObject";
 
@@ -1161,7 +1161,7 @@ namespace Realms.Tests
                         instance.BinaryDictionary[fieldName] = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
                         break;
                     case "ObjectDictionary":
-                        instance.ObjectDictionary[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.ObjectDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "EmbeddedObjectDictionary":
                         instance.EmbeddedObjectDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);

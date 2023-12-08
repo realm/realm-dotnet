@@ -366,7 +366,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RequiredPrimaryKeyStringObjectSerializer : Realms.Serialization.RealmObjectSerializer<RequiredPrimaryKeyStringObject>
+        private class RequiredPrimaryKeyStringObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RequiredPrimaryKeyStringObject>
         {
             public override string SchemaName => "RequiredPrimaryKeyStringObject";
 

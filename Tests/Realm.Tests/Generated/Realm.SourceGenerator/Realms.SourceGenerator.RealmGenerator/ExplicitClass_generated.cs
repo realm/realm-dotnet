@@ -335,7 +335,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializer<ExplicitClass>
+        private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializerBase<ExplicitClass>
         {
             public override string SchemaName => "ExplicitClass";
 

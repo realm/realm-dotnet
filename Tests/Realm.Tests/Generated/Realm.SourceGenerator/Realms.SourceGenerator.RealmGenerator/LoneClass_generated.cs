@@ -341,7 +341,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class LoneClassSerializer : Realms.Serialization.RealmObjectSerializer<LoneClass>
+        private class LoneClassSerializer : Realms.Serialization.RealmObjectSerializerBase<LoneClass>
         {
             public override string SchemaName => "LoneClass";
 

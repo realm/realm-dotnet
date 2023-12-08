@@ -334,7 +334,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OneNonListPropertySerializer : Realms.Serialization.RealmObjectSerializer<OneNonListProperty>
+        private class OneNonListPropertySerializer : Realms.Serialization.RealmObjectSerializerBase<OneNonListProperty>
         {
             public override string SchemaName => "OneNonListProperty";
 

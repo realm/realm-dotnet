@@ -508,7 +508,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicOwnerSerializer : Realms.Serialization.RealmObjectSerializer<DynamicOwner>
+        private class DynamicOwnerSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicOwner>
         {
             public override string SchemaName => "DynamicOwner";
 
@@ -538,7 +538,7 @@ namespace Realms.Tests.Database
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "TopDog":
-                        instance.TopDog = LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context);
+                        instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context);
                         break;
                 }
             }
@@ -548,13 +548,13 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Dogs":
-                        instance.Dogs.Add(LookupSerializer<Realms.Tests.Database.DynamicDog>()!.DeserializeById(context)!);
+                        instance.Dogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.DynamicDog>()!.DeserializeById(context)!);
                         break;
                     case "Tags":
                         instance.Tags.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
                         break;
                     case "DogsSet":
-                        instance.DogsSet.Add(LookupSerializer<Realms.Tests.Database.DynamicDog>()!.DeserializeById(context)!);
+                        instance.DogsSet.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.DynamicDog>()!.DeserializeById(context)!);
                         break;
                     case "TagsSet":
                         instance.TagsSet.Add(BsonSerializer.LookupSerializer<string?>().Deserialize(context));
@@ -567,7 +567,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "DogsDictionary":
-                        instance.DogsDictionary[fieldName] = LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context)!;
+                        instance.DogsDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context)!;
                         break;
                     case "TagsDictionary":
                         instance.TagsDictionary[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);

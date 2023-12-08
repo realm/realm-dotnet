@@ -398,7 +398,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class PrimaryKeyWithNonPKRelationSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyWithNonPKRelation>
+            private class PrimaryKeyWithNonPKRelationSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyWithNonPKRelation>
             {
                 public override string SchemaName => "PrimaryKeyWithNonPKRelation";
 
@@ -426,7 +426,7 @@ namespace Realms.Tests.Database
                             instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                             break;
                         case "OtherObject":
-                            instance.OtherObject = LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject?>()!.DeserializeById(context);
+                            instance.OtherObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject?>()!.DeserializeById(context);
                             break;
                     }
                 }

@@ -336,7 +336,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SomeClassSerializer : Realms.Serialization.RealmObjectSerializer<SomeClass>
+        private class SomeClassSerializer : Realms.Serialization.RealmObjectSerializerBase<SomeClass>
         {
             public override string SchemaName => "SomeClass";
 
@@ -356,7 +356,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "BacklinkObject":
-                        instance.BacklinkObject = LookupSerializer<Realms.Tests.Database.BacklinkObject?>()!.DeserializeById(context);
+                        instance.BacklinkObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.BacklinkObject?>()!.DeserializeById(context);
                         break;
                 }
             }

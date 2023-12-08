@@ -340,7 +340,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class TypeEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializer<TypeEmbeddedObject>
+            private class TypeEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<TypeEmbeddedObject>
             {
                 public override string SchemaName => "TypeEmbeddedObject";
 
