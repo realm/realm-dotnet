@@ -70,8 +70,8 @@ namespace Realms.Tests.Sync
             var collection = db.GetCollection("foos");
 
             Assert.That(collection.Name, Is.EqualTo("foos"));
-            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
-            Assert.That(collection.Database.Client.ServiceName, Is.EqualTo("foo-bar"));
+            Assert.That(collection.Database?.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
+            Assert.That(collection.Database?.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
         [Test]
@@ -2135,8 +2135,19 @@ namespace Realms.Tests.Sync
             });
         }
 
+        #region StaticQueries
+
+        /**TODO This test makes sense, we need to add:
+         * - Same, but for scalar values
+         * - Test for counters
+         * - Tests for objects
+         * - Tests for realmValue
+         * - Tests for objects in realm value
+         * - Tests for objects in collections
+         * 
+         */
         [Test]
-        public void MongoCollection_RealmObjectAPI()
+        public void RealmObjectAPI_Collections()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -2189,6 +2200,117 @@ namespace Realms.Tests.Sync
                 }
             }, timeout: 120000);
         }
+
+        public static readonly object[] PrimitiveTestCases = new[]
+        {
+            new object[] { CreateTestCase("Empty object", new SyncAllTypesObject()) },
+            new object[]
+            {
+                CreateTestCase("All values", new SyncAllTypesObject
+                {
+                    BooleanProperty = true,
+                    ByteArrayProperty = TestHelpers.GetBytes(5),
+                    ByteProperty = 255,
+                    CharProperty = 'C',
+                    DateTimeOffsetProperty = new DateTimeOffset(348984933, TimeSpan.Zero),
+                    Decimal128Property = 4932.539258328M,
+                    DecimalProperty = 4884884883.99999999999M,
+                    DoubleProperty = 34934.123456,
+                    GuidProperty = Guid.NewGuid(),
+                    Int16Property = 999,
+                    Int32Property = 49394939,
+                    Int64Property = 889898965342443,
+                    ObjectIdProperty = ObjectId.GenerateNewId(),
+                    RealmValueProperty = "this is a string",
+                    StringProperty = "foo bar"
+                })
+            },
+            new object[] { CreateTestCase("Bool RealmValue", new SyncAllTypesObject { RealmValueProperty = true }) },
+            new object[] { CreateTestCase("Int RealmValue", new SyncAllTypesObject { RealmValueProperty = 123 }) },
+            new object[] { CreateTestCase("Long RealmValue", new SyncAllTypesObject { RealmValueProperty = 9999999999 }) },
+            new object[] { CreateTestCase("Null RealmValue", new SyncAllTypesObject { RealmValueProperty = RealmValue.Null }) },
+            new object[] { CreateTestCase("String RealmValue", new SyncAllTypesObject { RealmValueProperty = "abc" }) },
+            new object[] { CreateTestCase("Data RealmValue", new SyncAllTypesObject { RealmValueProperty = GetBytes(10) }) },
+            new object[] { CreateTestCase("Float RealmValue", new SyncAllTypesObject { RealmValueProperty = 15.2f }) },
+            new object[] { CreateTestCase("Double RealmValue", new SyncAllTypesObject { RealmValueProperty = -123.45678909876 }) },
+            new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
+            new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
+            new object[] { CreateTestCase("Decimal128 RealmValue", new SyncAllTypesObject { RealmValueProperty = new Decimal128(2.1111111111111111111M) }) },
+            new object[] { CreateTestCase("ObjectId RealmValue", new SyncAllTypesObject { RealmValueProperty = ObjectId.GenerateNewId() }) },
+            new object[] { CreateTestCase("Guid RealmValue", new SyncAllTypesObject { RealmValueProperty = Guid.NewGuid() }) },
+        };
+
+        [TestCaseSource(nameof(PrimitiveTestCases))]
+        public void RealmObjectAPI_Primitive(TestCaseData<SyncAllTypesObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var props = SyncAllTypesObject.RealmSchema
+                    .Where(p => !p.Type.HasFlag(PropertyType.Object))
+                    .ToArray();
+
+                var collection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+
+                await collection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncObjects = await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncObjects.Single();
+
+                AssertProps(obj, syncObj);
+
+                void AssertProps(SyncAllTypesObject expected, SyncAllTypesObject actual)
+                {
+                    foreach (var prop in props)
+                    {
+                        var expectedProp = expected.GetProperty<object>(prop);
+                        var actualProp = actual.GetProperty<object>(prop);
+
+                        AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
+                    }
+                }
+            }, timeout: 120000);
+        }
+
+        [TestCaseSource(nameof(PrimitiveTestCases))]
+        public void RealmObjectAPI_Primitive_Inverted(TestCaseData<SyncAllTypesObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var props = SyncAllTypesObject.RealmSchema
+                    .Where(p => !p.Type.HasFlag(PropertyType.Object))
+                    .ToArray();
+
+                var collection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var filter = new { _id = obj.Id };
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+
+                AssertProps(obj, syncObj);
+
+                void AssertProps(SyncAllTypesObject expected, SyncAllTypesObject actual)
+                {
+                    foreach (var prop in props)
+                    {
+                        var expectedProp = expected.GetProperty<object>(prop);
+                        var actualProp = actual.GetProperty<object>(prop);
+
+                        AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
+                    }
+                }
+            }, timeout: 120000);
+        }
+
+        #endregion
 
         private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection)
         {
@@ -2273,12 +2395,13 @@ namespace Realms.Tests.Sync
             // Use sync to create the schema/rules
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray();
+            //config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray(); //TODO Why did we need this?
 
             using var realm = await GetRealmAsync(config);
             await WaitForUploadAsync(realm);
 
             var client = user.GetMongoClient(ServiceName);
+
             var collection = client.GetCollection<T>();
 
             await collection.DeleteManyAsync(new object());
