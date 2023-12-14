@@ -38,7 +38,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("LinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
             Realms.Schema.Property.Object("Link", "LinksObject", managedName: "Link"),
             Realms.Schema.Property.ObjectList("List", "LinksObject", managedName: "List"),
@@ -304,8 +304,8 @@ namespace Realms.Tests
         {
             public string Id
             {
-                get => (string)GetValue("Id")!;
-                set => SetValueUnique("Id", value);
+                get => (string)GetValue("_id")!;
+                set => SetValueUnique("_id", value);
             }
 
             public int Value
@@ -415,7 +415,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
+                    "_id" => _id,
                     "Value" => _value,
                     "Link" => _link,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
@@ -426,7 +426,7 @@ namespace Realms.Tests
             {
                 switch (propertyName)
                 {
-                    case "Id":
+                    case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
                         Value = (int)val;
@@ -441,7 +441,7 @@ namespace Realms.Tests
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                if (propertyName != "Id")
+                if (propertyName != "_id")
                 {
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
@@ -486,7 +486,7 @@ namespace Realms.Tests
             {
                 context.Writer.WriteStartDocument();
 
-                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "_id", value.Id);
                 WriteValue(context, args, "Value", value.Value);
                 WriteValue(context, args, "Link", value.Link);
                 WriteList(context, args, "List", value.List);
@@ -502,7 +502,7 @@ namespace Realms.Tests
             {
                 switch (name)
                 {
-                    case "Id":
+                    case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                         break;
                     case "Value":

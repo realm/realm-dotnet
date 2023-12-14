@@ -51,7 +51,7 @@ namespace Realms.Sync
         //TODO Add documentation
         //TODO Can we avoid reflection here? Maybe we can add the info here in the same way we do for the serializers
         public Collection<TDocument> GetCollection<TDocument>()
-            where TDocument : class, IRealmObject  //TODO Should we have a separate class to imrpove this?
+            where TDocument : class, IRealmObjectBase
         {
             var schema = _schemas.GetOrAdd(typeof(TDocument),
                 type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)

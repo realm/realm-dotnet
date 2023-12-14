@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -2124,7 +2125,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var collection = await GetCollection<RemappedTypeObject>();
+                var collection = await GetCollection<RemappedTypeObject>(getSchema: true);
                 var inserted = await InsertRemappedData(collection);
 
                 var result = await collection.FindOneAsync();
@@ -2135,17 +2136,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        #region StaticQueries
+        #region Static queries
 
-        /**TODO This test makes sense, we need to add:
-         * - Same, but for scalar values
-         * - Test for counters
-         * - Tests for objects
-         * - Tests for realmValue
-         * - Tests for objects in realm value
-         * - Tests for objects in collections
-         * 
-         */
         [Test]
         public void RealmObjectAPI_Collections()
         {
@@ -2209,10 +2201,10 @@ namespace Realms.Tests.Sync
                 CreateTestCase("All values", new SyncAllTypesObject
                 {
                     BooleanProperty = true,
-                    ByteArrayProperty = TestHelpers.GetBytes(5),
+                    ByteArrayProperty = GetBytes(5),
                     ByteProperty = 255,
                     CharProperty = 'C',
-                    DateTimeOffsetProperty = new DateTimeOffset(348984933, TimeSpan.Zero),
+                    DateTimeOffsetProperty = new DateTimeOffset(638380790696454240, TimeSpan.Zero),
                     Decimal128Property = 4932.539258328M,
                     DecimalProperty = 4884884883.99999999999M,
                     DoubleProperty = 34934.123456,
@@ -2241,7 +2233,7 @@ namespace Realms.Tests.Sync
         };
 
         [TestCaseSource(nameof(PrimitiveTestCases))]
-        public void RealmObjectAPI_Primitive(TestCaseData<SyncAllTypesObject> testCase)
+        public void RealmObjectAPI_Primitive_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -2260,23 +2252,12 @@ namespace Realms.Tests.Sync
 
                 var syncObj = syncObjects.Single();
 
-                AssertProps(obj, syncObj);
-
-                void AssertProps(SyncAllTypesObject expected, SyncAllTypesObject actual)
-                {
-                    foreach (var prop in props)
-                    {
-                        var expectedProp = expected.GetProperty<object>(prop);
-                        var actualProp = actual.GetProperty<object>(prop);
-
-                        AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
-                    }
-                }
+                AssertProps(props, obj, syncObj);
             }, timeout: 120000);
         }
 
         [TestCaseSource(nameof(PrimitiveTestCases))]
-        public void RealmObjectAPI_Primitive_Inverted(TestCaseData<SyncAllTypesObject> testCase)
+        public void RealmObjectAPI_Primitive_RealmToAtlas(TestCaseData<SyncAllTypesObject> testCase)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -2295,19 +2276,314 @@ namespace Realms.Tests.Sync
 
                 var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
 
-                AssertProps(obj, syncObj);
+                AssertProps(props, obj, syncObj);
+            }, timeout: 120000);
+        }
 
-                void AssertProps(SyncAllTypesObject expected, SyncAllTypesObject actual)
+        public static readonly object[] CounterTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("All values", new CounterObject
                 {
-                    foreach (var prop in props)
-                    {
-                        var expectedProp = expected.GetProperty<object>(prop);
-                        var actualProp = actual.GetProperty<object>(prop);
+                    Id = 1,
+                    ByteProperty = 255,
+                    Int16Property = 999,
+                    Int32Property = 49394939,
+                    Int64Property = 889898965342443,
+                    NullableByteProperty = 255,
+                    NullableInt16Property = 999,
+                    NullableInt32Property = 49394939,
+                    NullableInt64Property = 889898965342443
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Nullable values", new CounterObject
+                {
+                    Id = 2,
+                    ByteProperty = 255,
+                    Int16Property = 999,
+                    Int32Property = 49394939,
+                    Int64Property = 889898965342443,
+                    NullableByteProperty = null,
+                    NullableInt16Property = null,
+                    NullableInt32Property = null,
+                    NullableInt64Property = null,
+                })
+            },
+        };
 
-                        AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
+        [TestCaseSource(nameof(CounterTestCases))]
+        public void RealmObjectAPI_Counter_AtlasToRealm(TestCaseData<CounterObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var props = CounterObject.RealmSchema.ToArray();
+
+                var collection = await GetCollection<CounterObject>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+
+                await collection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncObjects = await realm.All<CounterObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncObjects.Single();
+
+                AssertProps(props, obj, syncObj);
+            }, timeout: 120000);
+        }
+
+        [TestCaseSource(nameof(CounterTestCases))]
+        public void RealmObjectAPI_Counter_RealmToAtlas(TestCaseData<CounterObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var props = CounterObject.RealmSchema.ToArray();
+
+                var collection = await GetCollection<CounterObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<CounterObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var filter = new { _id = obj.Id };
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+
+                AssertProps(props, obj, syncObj);
+            }, timeout: 120000);
+        }
+
+        public static readonly object[] AsymmetricTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Base", new BasicAsymmetricObject { PartitionLike = "testString" })
+            },
+        };
+
+        [TestCaseSource(nameof(AsymmetricTestCases))]
+        public void RealmObjectAPI_Asymmetric_RealmToAtlas(TestCaseData<BasicAsymmetricObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<BasicAsymmetricObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var obj = testCase.Value;
+                var stringProperty = obj.PartitionLike;
+
+                var filter = new { _id = obj.Id };
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+
+                Assert.That(stringProperty, Is.EqualTo(syncObj.PartitionLike));
+            }, timeout: 120000);
+        }
+
+        public static readonly object[] ObjectTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("All values", new SyncAllTypesObject
+                {
+                    ObjectProperty = new IntPropertyObject { Int = 23 },
+                    EmbeddedObjectProperty = new EmbeddedIntPropertyObject { Int = 10 }
+                })
+            },
+        };
+
+        [TestCaseSource(nameof(ObjectTestCases))]
+        public void RealmObjectAPI_Object_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var syncAllTypesCollection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var intPropertyCollection = await GetCollection<IntPropertyObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+
+                await syncAllTypesCollection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncAllTypesObjects = await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                var intPropertyObjects = await realm.All<IntPropertyObject>().Where(o => o.Id == obj.ObjectProperty!.Id).SubscribeAsync();
+
+                await syncAllTypesObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncAllTypesObjects.Single();
+
+                // The object property is null, because we didn't add the object yet to Atlas
+                Assert.That(syncObj.ObjectProperty, Is.Null);
+
+                await intPropertyCollection.InsertOneAsync(obj.ObjectProperty!);
+                await intPropertyObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                Assert.That(syncObj.ObjectProperty!.Id, Is.EqualTo(obj.ObjectProperty!.Id));
+                Assert.That(syncObj.ObjectProperty!.Int, Is.EqualTo(obj.ObjectProperty!.Int));
+
+                //TODO Move embedded to his own tests
+                Assert.That(syncObj.EmbeddedObjectProperty!.Int, Is.EqualTo(obj.EmbeddedObjectProperty!.Int));
+            }, timeout: 120000);
+        }
+
+        [TestCaseSource(nameof(ObjectTestCases))]
+        public void RealmObjectAPI_Object_RealmToAtlas(TestCaseData<SyncAllTypesObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var syncAllTypesCollection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var intPropertyCollection = await GetCollection<IntPropertyObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                await realm.All<IntPropertyObject>().Where(o => o.Id == obj.ObjectProperty!.Id).SubscribeAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var syncAllTypeObj = await WaitForConditionAsync(() => syncAllTypesCollection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
+                var intPropertyObj = await WaitForConditionAsync(() => intPropertyCollection.FindOneAsync(new { _id = obj.ObjectProperty!.Id }), item => Task.FromResult(item != null));
+
+                Assert.That(syncAllTypeObj.ObjectProperty!.Id, Is.EqualTo(obj.ObjectProperty!.Id));
+                Assert.That(syncAllTypeObj.ObjectProperty!.Int, Is.Not.EqualTo(obj.ObjectProperty!.Int));
+
+                Assert.That(intPropertyObj.Id, Is.EqualTo(obj.ObjectProperty.Id));
+                Assert.That(intPropertyObj.Int, Is.EqualTo(obj.ObjectProperty.Int));
+            }, timeout: 120000);
+        }
+
+        public static readonly object[] LinksTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Single link", new LinksObject("first")
+                {
+                    Link = new("second") { Value = 2 },
+                    Value = 1,
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("List", new LinksObject("first")
+                {
+                    List =
+                    {
+                        new("list.1") { Value = 100 },
+                        new("list.2") { Value = 200 },
+                    },
+                    Value = 987
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new LinksObject("first")
+                {
+                    Dictionary =
+                    {
+                        ["key_1"] = new("dict.1") { Value = 100 },
+                        ["key_null"] = null,
+                        ["key_2"] = new("dict.2") { Value = 200 },
+                    },
+                    Value = 999
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Set", new LinksObject("first")
+                {
+                    Set =
+                    {
+                        new("list.1") { Value = 100 },
+                        new("list.2") { Value = 200 },
+                    },
+                    Value = 123
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new LinksObject("parent")
+                {
+                    Value = 1,
+                    Link = new("link") { Value = 2 },
+                    List =
+                    {
+                        new("list.1") { Value = 3 },
+                        new("list.2") { Value = 4 },
+                    },
+                    Set =
+                    {
+                        new("set.1") { Value = 5 },
+                        new("set.2") { Value = 6 },
+                    },
+                    Dictionary =
+                    {
+                        ["dict_1"] = new("dict.1") { Value = 7 },
+                        ["dict_2"] = new("dict.2") { Value = 8 },
+                        ["dict_null"] = null
+                    }
+                }),
+            }
+        };
+
+        [TestCaseSource(nameof(LinksTestCases))]
+        public void RealmObjectAPI_Links_AtlasToRealm(TestCaseData<LinksObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<LinksObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+
+                await collection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
+
+                await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= 1);
+
+                var linkObj = linkObjs.Single();
+
+                AssertEqual(linkObj.Link, obj.Link);
+
+                Assert.That(linkObj.List.Count, Is.EqualTo(obj.List.Count));
+
+                for (int i = 0; i < linkObj.List.Count; i++)
+                {
+                    var retrieved = linkObj.List[i];
+                    var original = obj.List[i];
+                }
+
+
+                static void AssertEqual(LinksObject? retrieved, LinksObject? original)
+                {
+                    if (original is null)
+                    {
+                        Assert.That(retrieved, Is.Null);
+                    }
+                    else
+                    {
+                        Assert.That(retrieved!.Link!.Id, Is.EqualTo(original.Link!.Id));
+                        Assert.That(retrieved!.Link!.Value, Is.EqualTo(original.Link!.Value));
                     }
                 }
             }, timeout: 120000);
+        }
+
+        private void AssertProps(IEnumerable<Property> props, IRealmObjectBase expected, IRealmObjectBase actual)
+        {
+            foreach (var prop in props)
+            {
+                var expectedProp = expected.GetProperty<object>(prop);
+                var actualProp = actual.GetProperty<object>(prop);
+
+                AssertAreEqual(actualProp, expectedProp, $"property: {prop.Name}");
+            }
         }
 
         #endregion
@@ -2386,8 +2662,8 @@ namespace Realms.Tests.Sync
         }
 
         // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
-        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
-            where T : class, IRealmObject
+        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default, bool getSchema = false)
+            where T : class, IRealmObjectBase
         {
             var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
             var user = await GetUserAsync(app);
@@ -2395,10 +2671,14 @@ namespace Realms.Tests.Sync
             // Use sync to create the schema/rules
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            //config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray(); //TODO Why did we need this?
+            //TODO For now I've added the 
+            //if (getSchema)
+            //{
+            //    config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray();
+            //}
 
             using var realm = await GetRealmAsync(config);
-            await WaitForUploadAsync(realm);
+            //await WaitForUploadAsync(realm);  //TODO Do we need this?
 
             var client = user.GetMongoClient(ServiceName);
 
@@ -2415,10 +2695,9 @@ namespace Realms.Tests.Sync
                 {
                     dict.Add(schema.Name, schema);
 
-                    foreach (var prop in schema.Where(p => p.Type.HasFlag(PropertyType.Object) && !p.Type.IsComputed()))
+                    foreach (var prop in schema.Where(p => p.Type.HasFlag(PropertyType.Object)))
                     {
                         type.GetProperty(prop.ManagedName)!.PropertyType.ToPropertyType(out var objectType);
-
                         GetTransitiveSchema(objectType!, dict);
                     }
                 }

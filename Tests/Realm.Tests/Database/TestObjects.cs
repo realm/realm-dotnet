@@ -1129,6 +1129,7 @@ namespace Realms.Tests
     public partial class LinksObject : TestRealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public string Id { get; private set; }
 
         public int Value { get; set; }
