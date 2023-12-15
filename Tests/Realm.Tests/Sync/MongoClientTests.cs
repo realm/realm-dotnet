@@ -2393,11 +2393,12 @@ namespace Realms.Tests.Sync
                 CreateTestCase("All values", new SyncAllTypesObject
                 {
                     ObjectProperty = new IntPropertyObject { Int = 23 },
-                    EmbeddedObjectProperty = new EmbeddedIntPropertyObject { Int = 10 }
                 })
             },
         };
 
+        // TODO We could remove this and the following test, as they are covered by the link tests
+        // The only difference is that here we insert objects as they are needed.
         [TestCaseSource(nameof(ObjectTestCases))]
         public void RealmObjectAPI_Object_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
         {
@@ -2426,9 +2427,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(syncObj.ObjectProperty!.Id, Is.EqualTo(obj.ObjectProperty!.Id));
                 Assert.That(syncObj.ObjectProperty!.Int, Is.EqualTo(obj.ObjectProperty!.Int));
-
-                //TODO Move embedded to his own tests
-                Assert.That(syncObj.EmbeddedObjectProperty!.Int, Is.EqualTo(obj.EmbeddedObjectProperty!.Int));
             }, timeout: 120000);
         }
 
@@ -2458,6 +2456,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
+        //TODO Maybe we can have only one test here, we don't need all these cases
         public static readonly object[] LinksTestCases = new[]
         {
             new object[]
@@ -2540,25 +2539,51 @@ namespace Realms.Tests.Sync
 
                 var obj = testCase.Value;
 
-                await collection.InsertOneAsync(obj);
+                var elementsToInsert = obj.List.Concat(obj.Set).Concat(obj.Dictionary.Values.Where(d => d is not null)).Concat(new[] { obj });
+
+                if (obj.Link is not null)
+                {
+                    elementsToInsert = elementsToInsert.Concat(new[] { obj.Link });
+                }
+
+                await collection.InsertManyAsync(elementsToInsert!);
+
+                // How many objects we expect
+                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Count + 1;
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
 
-                await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= 1);
+                await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
 
-                var linkObj = linkObjs.Single();
+                var linkObj = realm.Find<LinksObject>(obj.Id);
 
-                AssertEqual(linkObj.Link, obj.Link);
+                AssertEqual(linkObj!.Link, obj.Link);
 
                 Assert.That(linkObj.List.Count, Is.EqualTo(obj.List.Count));
 
                 for (int i = 0; i < linkObj.List.Count; i++)
                 {
-                    var retrieved = linkObj.List[i];
-                    var original = obj.List[i];
+                    AssertEqual(linkObj.List[i], obj.List[i]);
                 }
 
+                Assert.That(linkObj.Dictionary.Count, Is.EqualTo(obj.Dictionary.Count));
+
+                foreach (var key in obj.Dictionary.Keys)
+                {
+                    Assert.That(linkObj.Dictionary.ContainsKey(key));
+                    AssertEqual(linkObj.Dictionary[key], obj.Dictionary[key]);
+                }
+
+                Assert.That(linkObj.Set.Count, Is.EqualTo(obj.Set.Count));
+
+                var orderedOriginalSet = obj.Set.OrderBy(a => a.Id).ToList();
+                var orderedRetrievedSet = linkObj.Set.OrderBy(a => a.Id).ToList();
+
+                for (int i = 0; i < orderedOriginalSet.Count; i++)
+                {
+                    AssertEqual(orderedRetrievedSet[i], orderedOriginalSet[i]);
+                }
 
                 static void AssertEqual(LinksObject? retrieved, LinksObject? original)
                 {
@@ -2568,12 +2593,78 @@ namespace Realms.Tests.Sync
                     }
                     else
                     {
-                        Assert.That(retrieved!.Link!.Id, Is.EqualTo(original.Link!.Id));
-                        Assert.That(retrieved!.Link!.Value, Is.EqualTo(original.Link!.Value));
+                        Assert.That(retrieved, Is.Not.Null);
+                        Assert.That(retrieved!.Id, Is.EqualTo(original!.Id));
+                        Assert.That(retrieved!.Value, Is.EqualTo(original!.Value));
                     }
                 }
             }, timeout: 120000);
         }
+
+        [TestCaseSource(nameof(LinksTestCases))]
+        public void RealmObjectAPI_Links_RealmToAtlas(TestCaseData<LinksObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<LinksObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<LinksObject>().SubscribeAsync();
+
+                realm.Write(() => realm.Add(obj));
+                await WaitForUploadAsync(realm);
+
+                var linkObj = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
+
+                await AssertEqual(collection, linkObj.Link, obj.Link);
+
+                for (int i = 0; i < linkObj.List.Count; i++)
+                {
+                    await AssertEqual(collection, linkObj.List[i], obj.List[i]);
+                }
+
+                Assert.That(linkObj.Dictionary.Count, Is.EqualTo(obj.Dictionary.Count));
+
+                foreach (var key in obj.Dictionary.Keys)
+                {
+                    Assert.That(linkObj.Dictionary.ContainsKey(key));
+                    await AssertEqual(collection, linkObj.Dictionary[key], obj.Dictionary[key]);
+                }
+
+                Assert.That(linkObj.Set.Count, Is.EqualTo(obj.Set.Count));
+
+                var orderedOriginalSet = obj.Set.OrderBy(a => a.Id).ToList();
+                var orderedRetrievedSet = linkObj.Set.OrderBy(a => a.Id).ToList();
+
+                for (int i = 0; i < orderedOriginalSet.Count; i++)
+                {
+                    await AssertEqual(collection, orderedRetrievedSet[i], orderedOriginalSet[i]);
+                }
+
+                static async Task AssertEqual(MongoClient.Collection<LinksObject> collection, LinksObject? partiallyRetrieved, LinksObject? original)
+                {
+                    if (original is null)
+                    {
+                        Assert.That(partiallyRetrieved, Is.Null);
+                        return;
+                    }
+
+                    // The partiallyRetrieved object should contain only the id, and not other fields
+                    Assert.That(partiallyRetrieved, Is.Not.Null);
+                    Assert.That(partiallyRetrieved!.Id, Is.EqualTo(original.Id));
+                    Assert.That(partiallyRetrieved.Value, Is.Not.EqualTo(original.Value));
+
+                    var fullyRetrieved = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = original.Id }), item => Task.FromResult(item != null));
+
+                    Assert.That(fullyRetrieved.Id, Is.EqualTo(original.Id));
+                    Assert.That(fullyRetrieved.Value, Is.EqualTo(original.Value));
+                }
+
+            }, timeout: 120000);
+        }
+
 
         private void AssertProps(IEnumerable<Property> props, IRealmObjectBase expected, IRealmObjectBase actual)
         {
@@ -2671,39 +2762,12 @@ namespace Realms.Tests.Sync
             // Use sync to create the schema/rules
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            //TODO For now I've added the 
-            //if (getSchema)
-            //{
-            //    config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray();
-            //}
-
             using var realm = await GetRealmAsync(config);
-            //await WaitForUploadAsync(realm);  //TODO Do we need this?
-
             var client = user.GetMongoClient(ServiceName);
-
             var collection = client.GetCollection<T>();
-
             await collection.DeleteManyAsync(new object());
 
             return collection;
-
-            static Dictionary<string, ObjectSchema> GetTransitiveSchema(Type type, Dictionary<string, ObjectSchema> dict)
-            {
-                var schema = ObjectSchema.FromType(type);
-                if (!dict.ContainsKey(schema.Name))
-                {
-                    dict.Add(schema.Name, schema);
-
-                    foreach (var prop in schema.Where(p => p.Type.HasFlag(PropertyType.Object)))
-                    {
-                        type.GetProperty(prop.ManagedName)!.PropertyType.ToPropertyType(out var objectType);
-                        GetTransitiveSchema(objectType!, dict);
-                    }
-                }
-
-                return dict;
-            }
         }
 
         private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
