@@ -251,6 +251,8 @@ namespace Realms.Tests.Sync
                 schema.Add(typeof(PrimaryKeyInt32Object));
                 schema.Add(typeof(CounterObject));
                 schema.Add(typeof(LinksObject));
+                schema.Add(typeof(ObjectWithEmbeddedProperties));
+                schema.Add(typeof(EmbeddedAllTypesObject));
             }
 
             config.Schema = schema;

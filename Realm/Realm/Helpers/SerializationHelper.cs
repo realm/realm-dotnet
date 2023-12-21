@@ -329,7 +329,6 @@ namespace Realms.Helpers
                     else
                     {
                         // This could be the optional $db field
-                        reader.SkipName();
                         reader.SkipValue();
                     }
 

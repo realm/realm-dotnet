@@ -981,7 +981,8 @@ namespace Realms.Tests
     public partial class ObjectWithEmbeddedProperties : TestRealmObject
     {
         [PrimaryKey]
-        public int PrimaryKey { get; set; }
+        [MapTo("_id")]
+        public ObjectId PrimaryKey { get; set; } = ObjectId.GenerateNewId();
 
         public EmbeddedAllTypesObject? AllTypesObject { get; set; }
 

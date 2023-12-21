@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -488,10 +489,7 @@ namespace Realms.Tests.Database
                 RecursiveObject = new EmbeddedLevel1 { String = "a" }
             };
 
-            var parent2 = new ObjectWithEmbeddedProperties
-            {
-                PrimaryKey = 1
-            };
+            var parent2 = new ObjectWithEmbeddedProperties();
 
             _realm.Write(() =>
             {
@@ -577,9 +575,11 @@ namespace Realms.Tests.Database
         [Test]
         public void EmbeddedParent_AddOrUpdate_DeletesOldChild()
         {
+            var primaryKey = ObjectId.GenerateNewId();
+
             var parent = new ObjectWithEmbeddedProperties
             {
-                PrimaryKey = 123,
+                PrimaryKey = primaryKey,
                 AllTypesObject = new EmbeddedAllTypesObject { StringProperty = "A" }
             };
 
@@ -595,7 +595,7 @@ namespace Realms.Tests.Database
 
             var updatingParent = new ObjectWithEmbeddedProperties
             {
-                PrimaryKey = 123,
+                PrimaryKey = primaryKey,
                 AllTypesObject = new EmbeddedAllTypesObject { StringProperty = "B" }
             };
 
@@ -646,9 +646,11 @@ namespace Realms.Tests.Database
         [Test]
         public void EmbeddedParent_AddOrUpdate_DeletesOldChildren()
         {
+            var primaryKey = ObjectId.GenerateNewId();
+
             var parent = new ObjectWithEmbeddedProperties
             {
-                PrimaryKey = 123,
+                PrimaryKey = primaryKey,
                 ListOfAllTypesObjects =
                 {
                     new EmbeddedAllTypesObject { StringProperty = "A" }
@@ -667,7 +669,7 @@ namespace Realms.Tests.Database
 
             var updatingParent = new ObjectWithEmbeddedProperties
             {
-                PrimaryKey = 123,
+                PrimaryKey = primaryKey,
                 ListOfAllTypesObjects =
                 {
                     new EmbeddedAllTypesObject { StringProperty = "B" }

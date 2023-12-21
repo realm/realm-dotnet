@@ -193,7 +193,6 @@ namespace Realms.Tests.Serialization
             {
                 CreateTestCase("Single", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     AllTypesObject = new()
                     {
                         BooleanProperty = true,
@@ -208,7 +207,6 @@ namespace Realms.Tests.Serialization
             {
                 CreateTestCase("Recursive", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     RecursiveObject = new()
                     {
                         String = "Top",
@@ -228,7 +226,6 @@ namespace Realms.Tests.Serialization
             {
                 CreateTestCase("List", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     ListOfAllTypesObjects =
                     {
                         new()
@@ -254,7 +251,6 @@ namespace Realms.Tests.Serialization
             {
                 CreateTestCase("Dictionary", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     DictionaryOfAllTypesObjects =
                     {
                         ["key1"] = new()
@@ -280,7 +276,6 @@ namespace Realms.Tests.Serialization
             {
                 CreateTestCase("All types", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     AllTypesObject = new()
                     {
                         BooleanProperty = true,

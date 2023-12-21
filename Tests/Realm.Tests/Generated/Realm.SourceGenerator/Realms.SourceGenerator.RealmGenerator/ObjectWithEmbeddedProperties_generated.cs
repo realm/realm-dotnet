@@ -38,7 +38,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithEmbeddedProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "PrimaryKey"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "PrimaryKey"),
             Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
             Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
             Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
@@ -95,7 +95,7 @@ namespace Realms.Tests
                     newAccessor.DictionaryOfAllTypesObjects.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.PrimaryKey != default(int))
+                if (!skipDefaults || oldAccessor.PrimaryKey != default(MongoDB.Bson.ObjectId))
                 {
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
@@ -275,7 +275,7 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithEmbeddedPropertiesAccessor : Realms.IRealmAccessor
         {
-            int PrimaryKey { get; set; }
+            MongoDB.Bson.ObjectId PrimaryKey { get; set; }
 
             Realms.Tests.EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
@@ -289,10 +289,10 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithEmbeddedPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
         {
-            public int PrimaryKey
+            public MongoDB.Bson.ObjectId PrimaryKey
             {
-                get => (int)GetValue("PrimaryKey");
-                set => SetValueUnique("PrimaryKey", value);
+                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                set => SetValueUnique("_id", value);
             }
 
             public Realms.Tests.EmbeddedAllTypesObject? AllTypesObject
@@ -341,8 +341,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ObjectWithEmbeddedProperties.RealmSchema;
 
-            private int _primaryKey;
-            public int PrimaryKey
+            private MongoDB.Bson.ObjectId _primaryKey = ObjectId.GenerateNewId();
+            public MongoDB.Bson.ObjectId PrimaryKey
             {
                 get => _primaryKey;
                 set
@@ -386,7 +386,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "PrimaryKey" => _primaryKey,
+                    "_id" => _primaryKey,
                     "AllTypesObject" => _allTypesObject,
                     "RecursiveObject" => _recursiveObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
@@ -397,7 +397,7 @@ namespace Realms.Tests
             {
                 switch (propertyName)
                 {
-                    case "PrimaryKey":
+                    case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "AllTypesObject":
                         AllTypesObject = (Realms.Tests.EmbeddedAllTypesObject?)val;
@@ -412,12 +412,12 @@ namespace Realms.Tests
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                if (propertyName != "PrimaryKey")
+                if (propertyName != "_id")
                 {
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                PrimaryKey = (int)val;
+                PrimaryKey = (MongoDB.Bson.ObjectId)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -453,7 +453,7 @@ namespace Realms.Tests
             {
                 context.Writer.WriteStartDocument();
 
-                WriteValue(context, args, "PrimaryKey", value.PrimaryKey);
+                WriteValue(context, args, "_id", value.PrimaryKey);
                 WriteValue(context, args, "AllTypesObject", value.AllTypesObject);
                 WriteValue(context, args, "RecursiveObject", value.RecursiveObject);
                 WriteList(context, args, "ListOfAllTypesObjects", value.ListOfAllTypesObjects);
@@ -468,8 +468,8 @@ namespace Realms.Tests
             {
                 switch (name)
                 {
-                    case "PrimaryKey":
-                        instance.PrimaryKey = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                    case "_id":
+                        instance.PrimaryKey = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
                         break;
                     case "AllTypesObject":
                         instance.AllTypesObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>().Deserialize(context);

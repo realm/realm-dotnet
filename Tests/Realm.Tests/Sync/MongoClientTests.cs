@@ -2549,7 +2549,7 @@ namespace Realms.Tests.Sync
                 await collection.InsertManyAsync(elementsToInsert!);
 
                 // How many objects we expect
-                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Count + 1;
+                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Where(d => d.Value != null).Count() + 1;
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
@@ -2665,6 +2665,410 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
+        public static readonly object[] RealmValueLinkTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Single link", new RealmValueObject
+                {
+                    RealmValueProperty = new IntPropertyObject { Int = 2 },
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("List", new RealmValueObject
+                {
+                    RealmValueList =
+                    {
+                        new IntPropertyObject { Int = 100 },
+                        new IntPropertyObject { Int = 200 },
+                    },
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new RealmValueObject
+                {
+                    RealmValueDictionary =
+                    {
+                        ["key_1"] = new IntPropertyObject { Int = 100 },
+                        ["key_null"] = RealmValue.Null,
+                        ["key_2"] = new IntPropertyObject { Int = 200 },
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Set", new RealmValueObject
+                {
+                    RealmValueSet =
+                    {
+                        new IntPropertyObject { Int = 100 },
+                        new IntPropertyObject { Int = 200 },
+                    },
+                }),
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new RealmValueObject
+                {
+                    RealmValueProperty = new IntPropertyObject { Int = 2 },
+                    RealmValueList =
+                    {
+                        new IntPropertyObject { Int = 3 },
+                        new IntPropertyObject { Int = 4 },
+                    },
+                    RealmValueSet =
+                    {
+                        new IntPropertyObject { Int = 5 },
+                        new IntPropertyObject { Int = 6 },
+                    },
+                    RealmValueDictionary =
+                    {
+                        ["dict_1"] = new IntPropertyObject { Int = 7 },
+                        ["dict_2"] = new IntPropertyObject { Int = 8 },
+                        ["dict_null"] = RealmValue.Null
+                    }
+                }),
+            }
+        };
+
+        //TODO This is going to be fixed with https://jira.mongodb.org/browse/BAAS-27410
+        [TestCaseSource(nameof(RealmValueLinkTestCases))]
+        public void RealmObjectAPI_RealmValueLinks_AtlasToRealm(TestCaseData<RealmValueObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realmValCollection = await GetCollection<RealmValueObject>(AppConfigType.FlexibleSync);
+                var intCollection = await GetCollection<IntPropertyObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+                await realmValCollection.InsertOneAsync(obj);
+
+                var elementsToInsert = obj.RealmValueList.Select(o => o.As<IntPropertyObject>())
+                .Concat(obj.RealmValueSet.Select(o => o.As<IntPropertyObject>())
+                .Concat(obj.RealmValueDictionary.Values.Select(o => o.As<IntPropertyObject>()).Where(v => v is not null)));
+
+                if (obj.RealmValueProperty != RealmValue.Null)
+                {
+                    elementsToInsert = elementsToInsert.Concat(new[] { obj.RealmValueProperty.As<IntPropertyObject>() });
+                }
+
+                await intCollection.InsertManyAsync(elementsToInsert!);
+
+                // How many objects we expect
+                var totalCount = obj.RealmValueList.Count + obj.RealmValueSet.Count + obj.RealmValueDictionary.Where(d => d.Value != RealmValue.Null).Count();
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var intObjs = await realm.All<RealmValueObject>().SubscribeAsync();
+                var realmObjs = await realm.All<RealmValueObject>().SubscribeAsync();
+
+                await intObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
+                await realmObjs.WaitForEventAsync((sender, _) => sender.Count >= 1);
+
+                var realmValObj = realm.Find<RealmValueObject>(obj.Id);
+
+                AssertEqual(realmValObj!.RealmValueProperty, obj.RealmValueProperty);
+
+                Assert.That(realmValObj.RealmValueList.Count, Is.EqualTo(obj.RealmValueList.Count));
+
+                for (int i = 0; i < realmValObj.RealmValueList.Count; i++)
+                {
+                    AssertEqual(realmValObj.RealmValueList[i], obj.RealmValueList[i]);
+                }
+
+                Assert.That(realmValObj.RealmValueDictionary.Count, Is.EqualTo(obj.RealmValueDictionary.Count));
+
+                foreach (var key in obj.RealmValueDictionary.Keys)
+                {
+                    Assert.That(realmValObj.RealmValueDictionary.ContainsKey(key));
+                    AssertEqual(realmValObj.RealmValueDictionary[key], obj.RealmValueDictionary[key]);
+                }
+
+                Assert.That(realmValObj.RealmValueSet.Count, Is.EqualTo(obj.RealmValueSet.Count));
+
+                var orderedOriginalSet = obj.RealmValueSet.OrderBy(a => a.As<IntPropertyObject>().Id).ToList();
+                var orderedRetrievedSet = realmValObj.RealmValueSet.OrderBy(a => a.As<IntPropertyObject>().Id).ToList();
+
+                for (int i = 0; i < orderedOriginalSet.Count; i++)
+                {
+                    AssertEqual(orderedRetrievedSet[i], orderedOriginalSet[i]);
+                }
+
+                static void AssertEqual(RealmValue retrieved, RealmValue original)
+                {
+                    if (original == RealmValue.Null)
+                    {
+                        Assert.That(retrieved, Is.EqualTo(RealmValue.Null));
+                        return;
+                    }
+
+                    Assert.That(retrieved.Type, Is.EqualTo(RealmValueType.Object));
+                    Assert.That(original.Type, Is.EqualTo(RealmValueType.Object));
+
+                    var retrievedAsObj = retrieved.As<IntPropertyObject>();
+                    var originalAsObj = original.As<IntPropertyObject>();
+
+                    Assert.That(retrievedAsObj.Id, Is.EqualTo(originalAsObj.Id));
+                    Assert.That(retrievedAsObj.Int, Is.EqualTo(originalAsObj.Int));
+                }
+            }, timeout: 120000);
+        }
+
+        [TestCaseSource(nameof(RealmValueLinkTestCases))]
+        public void RealmObjectAPI_RealmValueLinks_RealmToAtlas(TestCaseData<RealmValueObject> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realmValCollection = await GetCollection<RealmValueObject>(AppConfigType.FlexibleSync);
+                var intCollection = await GetCollection<IntPropertyObject>(AppConfigType.FlexibleSync);
+
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<RealmValueObject>().SubscribeAsync();
+                await realm.All<IntPropertyObject>().SubscribeAsync();
+
+                realm.Write(() => realm.Add(obj));
+                await WaitForUploadAsync(realm);
+
+                var realmValObj = await WaitForConditionAsync(() => realmValCollection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
+
+                await AssertEqual(intCollection, realmValObj.RealmValueProperty, obj.RealmValueProperty);
+
+                for (int i = 0; i < realmValObj.RealmValueList.Count; i++)
+                {
+                    await AssertEqual(intCollection, realmValObj.RealmValueList[i], obj.RealmValueList[i]);
+                }
+
+                Assert.That(realmValObj.RealmValueDictionary.Count, Is.EqualTo(obj.RealmValueDictionary.Count));
+
+                foreach (var key in obj.RealmValueDictionary.Keys)
+                {
+                    Assert.That(realmValObj.RealmValueDictionary.ContainsKey(key));
+                    await AssertEqual(intCollection, realmValObj.RealmValueDictionary[key], obj.RealmValueDictionary[key]);
+                }
+
+                Assert.That(realmValObj.RealmValueSet.Count, Is.EqualTo(obj.RealmValueSet.Count));
+
+                var orderedOriginalSet = obj.RealmValueSet.OrderBy(a => a.As<IntPropertyObject>().Id).ToList();
+                var orderedRetrievedSet = realmValObj.RealmValueSet.OrderBy(a => a.As<IntPropertyObject>().Id).ToList();
+
+                for (int i = 0; i < orderedOriginalSet.Count; i++)
+                {
+                    await AssertEqual(intCollection, orderedRetrievedSet[i], orderedOriginalSet[i]);
+                }
+
+                static async Task AssertEqual(MongoClient.Collection<IntPropertyObject> collection, RealmValue retrieved, RealmValue original)
+                {
+                    if (original == RealmValue.Null)
+                    {
+                        Assert.That(retrieved, Is.EqualTo(RealmValue.Null));
+                        return;
+                    }
+
+                    Assert.That(retrieved.Type, Is.EqualTo(RealmValueType.Object));
+                    Assert.That(original.Type, Is.EqualTo(RealmValueType.Object));
+
+                    var retrievedAsObj = retrieved.As<IntPropertyObject>();
+                    var originalAsObj = original.As<IntPropertyObject>();
+
+                    Assert.That(retrievedAsObj.Id, Is.EqualTo(originalAsObj.Id));
+                    Assert.That(retrievedAsObj.Int, Is.Not.EqualTo(originalAsObj.Int));
+
+                    var fullyRetrieved = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = originalAsObj.Id }), item => Task.FromResult(item != null));
+
+                    Assert.That(fullyRetrieved.Id, Is.EqualTo(originalAsObj.Id));
+                    Assert.That(fullyRetrieved.Int, Is.EqualTo(originalAsObj.Int));
+                }
+
+            }, timeout: 120000);
+        }
+
+        public static readonly object[] EmbeddedTestCases =
+        {
+            new object[]
+            {
+                CreateTestCase("Single", new ObjectWithEmbeddedProperties
+                {
+                    AllTypesObject = new()
+                    {
+                        BooleanProperty = true,
+                        ByteArrayProperty = new byte[] { 1, 2, 3 },
+                        DoubleProperty = 3.14,
+                        Int32Property = 4,
+                        StringProperty = "bla bla"
+                    }
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Recursive", new ObjectWithEmbeddedProperties
+                {
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    }
+                })
+            },
+
+            new object[]
+            {
+                CreateTestCase("List", new ObjectWithEmbeddedProperties
+                {
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new ObjectWithEmbeddedProperties
+                {
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new ObjectWithEmbeddedProperties
+                {
+                    AllTypesObject = new()
+                    {
+                        BooleanProperty = true,
+                        ByteArrayProperty = new byte[] { 1, 2, 3 },
+                        DoubleProperty = 3.14,
+                        Int32Property = 4,
+                        StringProperty = "bla bla"
+                    },
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    },
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 5, 1, 2, 3 },
+                            DoubleProperty = 6.78,
+                            Int32Property = 2,
+                            StringProperty = "blas blas"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 6, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "hej hej"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 6, 3 },
+                            DoubleProperty = 16.14,
+                            Int32Property = 62,
+                            StringProperty = "oha oha"
+                        }
+                    },
+                })
+            }
+        };
+
+        [TestCaseSource(nameof(EmbeddedTestCases))]
+        public void RealmObjectAPI_Embedded_AtlasToRealm(TestCaseData<ObjectWithEmbeddedProperties> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var props = SyncAllTypesObject.RealmSchema
+                    .Where(p => !p.Type.HasFlag(PropertyType.Object))
+                    .ToArray();
+
+                var collection = await GetCollection<ObjectWithEmbeddedProperties>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+
+                await collection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncObjects = await realm.All<ObjectWithEmbeddedProperties>().Where(o => o.PrimaryKey == obj.PrimaryKey).SubscribeAsync();
+                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncObjects.Single();
+
+                if (obj.AllTypesObject is null)
+                {
+                    Assert.That(syncObj.AllTypesObject, Is.Null);
+                }
+                else
+                {
+                    Assert.That(syncObj.AllTypesObject, Is.Not.Null);
+                }
+
+
+                //AssertProps(props, obj, syncObj);
+            }, timeout: 120000);
+        }
 
         private void AssertProps(IEnumerable<Property> props, IRealmObjectBase expected, IRealmObjectBase actual)
         {
