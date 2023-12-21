@@ -2966,7 +2966,8 @@ namespace Realms.Tests.Sync
                             DoubleProperty = 6.14,
                             Int32Property = 6,
                             StringProperty = "oh oh"
-                        }
+                        },
+                        ["key3"] = null,
                     },
                 })
             },
@@ -3030,7 +3031,8 @@ namespace Realms.Tests.Sync
                             DoubleProperty = 16.14,
                             Int32Property = 62,
                             StringProperty = "oha oha"
-                        }
+                        },
+                        ["key3"] = null,
                     },
                 })
             }
@@ -3041,10 +3043,6 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var props = SyncAllTypesObject.RealmSchema
-                    .Where(p => !p.Type.HasFlag(PropertyType.Object))
-                    .ToArray();
-
                 var collection = await GetCollection<ObjectWithEmbeddedProperties>(AppConfigType.FlexibleSync);
                 var obj = testCase.Value;
 
@@ -3056,21 +3054,82 @@ namespace Realms.Tests.Sync
 
                 var syncObj = syncObjects.Single();
 
-                if (obj.AllTypesObject is null)
-                {
-                    Assert.That(syncObj.AllTypesObject, Is.Null);
-                }
-                else
-                {
-                    Assert.That(syncObj.AllTypesObject, Is.Not.Null);
-                }
-
-
-                //AssertProps(props, obj, syncObj);
+                AssertEmbedded(syncObj, obj);
             }, timeout: 120000);
         }
 
-        private void AssertProps(IEnumerable<Property> props, IRealmObjectBase expected, IRealmObjectBase actual)
+        [TestCaseSource(nameof(EmbeddedTestCases))]
+        public void RealmObjectAPI_Embedded_RealmToAtlas(TestCaseData<ObjectWithEmbeddedProperties> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<ObjectWithEmbeddedProperties>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<ObjectWithEmbeddedProperties>().SubscribeAsync();
+
+                realm.Write(() => realm.Add(obj));
+                await WaitForUploadAsync(realm);
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = obj.PrimaryKey }), item => Task.FromResult(item != null));
+
+                AssertEmbedded(syncObj, obj);
+            }, timeout: 120000);
+        }
+
+        private static void AssertEmbedded(ObjectWithEmbeddedProperties syncObj, ObjectWithEmbeddedProperties obj)
+        {
+            var props = EmbeddedAllTypesObject.RealmSchema
+                 .Where(p => !p.Type.HasFlag(PropertyType.Object) && !p.Type.IsComputed())
+                 .ToArray();
+
+            AssertEquals(syncObj.AllTypesObject, obj.AllTypesObject);
+
+            Assert.That(syncObj.ListOfAllTypesObjects.Count, Is.EqualTo(obj.ListOfAllTypesObjects.Count));
+
+            for (int i = 0; i < obj.ListOfAllTypesObjects.Count; i++)
+            {
+                AssertEquals(syncObj.ListOfAllTypesObjects[i], obj.ListOfAllTypesObjects[i]);
+            }
+
+            Assert.That(syncObj.DictionaryOfAllTypesObjects.Count, Is.EqualTo(obj.DictionaryOfAllTypesObjects.Count));
+
+            foreach (var key in obj.DictionaryOfAllTypesObjects.Keys)
+            {
+                Assert.That(syncObj.DictionaryOfAllTypesObjects.ContainsKey(key));
+                AssertEquals(syncObj.DictionaryOfAllTypesObjects[key], obj.DictionaryOfAllTypesObjects[key]);
+            }
+
+            if (obj.RecursiveObject is null)
+            {
+                Assert.That(syncObj.RecursiveObject, Is.Null);
+            }
+            else
+            {
+                // For simplicity, if the top level is not null, then we assume the lower levels are not null either.
+                Assert.That(syncObj.RecursiveObject, Is.Not.Null);
+
+                Assert.That(syncObj.RecursiveObject!.String, Is.EqualTo(obj.RecursiveObject.String));
+                Assert.That(syncObj.RecursiveObject.Child!.String, Is.EqualTo(obj.RecursiveObject.Child!.String));
+                Assert.That(syncObj.RecursiveObject.Child.Child!.String, Is.EqualTo(obj.RecursiveObject.Child.Child!.String));
+            }
+
+            void AssertEquals(EmbeddedAllTypesObject? retrieved, EmbeddedAllTypesObject? original)
+            {
+                if (original is null)
+                {
+                    Assert.That(retrieved, Is.Null);
+                }
+                else
+                {
+                    Assert.That(retrieved, Is.Not.Null);
+                    AssertProps(props, original, retrieved!);
+                }
+            }
+        }
+
+        private static void AssertProps(IEnumerable<Property> props, IRealmObjectBase expected, IRealmObjectBase actual)
         {
             foreach (var prop in props)
             {
