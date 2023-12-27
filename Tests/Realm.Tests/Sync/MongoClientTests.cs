@@ -2125,7 +2125,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var collection = await GetCollection<RemappedTypeObject>(getSchema: true);
+                var collection = await GetCollection<RemappedTypeObject>();
                 var inserted = await InsertRemappedData(collection);
 
                 var result = await collection.FindOneAsync();
@@ -2343,7 +2343,7 @@ namespace Realms.Tests.Sync
             {
                 var props = CounterObject.RealmSchema.ToArray();
 
-                var collection = await GetCollection<CounterObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var collection = await GetCollection<CounterObject>(AppConfigType.FlexibleSync);
                 var obj = testCase.Value;
 
                 using var realm = await GetFLXIntegrationRealmAsync();
@@ -2371,7 +2371,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var collection = await GetCollection<BasicAsymmetricObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var collection = await GetCollection<BasicAsymmetricObject>(AppConfigType.FlexibleSync);
                 var obj = testCase.Value;
                 var stringProperty = obj.PartitionLike;
 
@@ -2435,7 +2435,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var syncAllTypesCollection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync, getSchema: true);
+                var syncAllTypesCollection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
                 var intPropertyCollection = await GetCollection<IntPropertyObject>(AppConfigType.FlexibleSync);
 
                 var obj = testCase.Value;
@@ -3078,6 +3078,36 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
+        [Test]
+        public void RealmObjectAPI_ExtraFields_AtlasToRealm()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetBsonCollection(nameof(PrimaryKeyStringObject), AppConfigType.FlexibleSync);
+
+                const string primaryKey = "primaryKeyVal";
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Value", "myVal" },
+                    { "ExtraField", "extraFieldVal" }
+                };
+
+                await collection.InsertOneAsync(doc);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncObjects = await realm.All<PrimaryKeyStringObject>().Where<PrimaryKeyStringObject>(o => o.Id == primaryKey).SubscribeAsync();
+                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncObjects.Single();
+
+                Assert.That(syncObj, Is.Not.Null);
+                Assert.That(syncObj.Value, Is.EqualTo(doc["Value"].AsString));
+
+            }, timeout: 120000);
+        }
+
         private static void AssertEmbedded(ObjectWithEmbeddedProperties syncObj, ObjectWithEmbeddedProperties obj)
         {
             var props = EmbeddedAllTypesObject.RealmSchema
@@ -3233,24 +3263,30 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
+        //TODO This could be fused with something else
+        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection(string collectionName = FoosCollectionName, string appConfigType = AppConfigType.Default)
+        {
+            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
+            var user = await GetUserAsync(app);
+
+            SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
+
+            using var realm = await GetRealmAsync(config);
+            var client = user.GetMongoClient(ServiceName);
+            var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(appConfigType));
+
+            var collection = db.GetCollection(collectionName);
+            await collection.DeleteManyAsync(new object());
+
+            return collection;
+        }
+
         private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
             var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection<Sale>(SalesCollectionName);
-
-            await collection.DeleteManyAsync();
-
-            return collection;
-        }
-
-        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection()
-        {
-            var user = await GetUserAsync();
-            var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
-            var collection = db.GetCollection(FoosCollectionName);
 
             await collection.DeleteManyAsync();
 

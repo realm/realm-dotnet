@@ -260,7 +260,6 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
     // Read list or set element
     protected abstract void ReadArrayElement(T instance, string name, BsonDeserializationContext context);
 
-    // TODO If it's only for dictionary, maybe we could rename it?
     // Read dictionary element
     protected abstract void ReadDocumentField(T instance, string name, string fieldName, BsonDeserializationContext context);
 
