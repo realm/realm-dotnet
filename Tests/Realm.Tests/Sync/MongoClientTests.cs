@@ -3090,7 +3090,7 @@ namespace Realms.Tests.Sync
                 {
                     { "_id", primaryKey },
                     { "Value", "myVal" },
-                    { "ExtraField", "extraFieldVal" }
+                    { "ExtraField", "extraFieldVal" } // Not defined in the schema
                 };
 
                 await collection.InsertOneAsync(doc);
@@ -3103,7 +3103,46 @@ namespace Realms.Tests.Sync
 
                 Assert.That(syncObj, Is.Not.Null);
                 Assert.That(syncObj.Value, Is.EqualTo(doc["Value"].AsString));
+            }, timeout: 120000);
+        }
 
+        [Test]
+        public void RealmObjectAPI_MismatchedType_AtlasToRealm()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollectionAsBson(nameof(PrimaryKeyStringObject), AppConfigType.FlexibleSync);
+
+                const string primaryKey = "primaryKeyVal";
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Value", ObjectId.GenerateNewId() }, // Wrong type
+                };
+
+                var ex = await TestHelpers.AssertThrows<Realms.Sync.Exceptions.AppException>(() => collection.InsertOneAsync(doc));
+                Assert.That(ex.Message, Does.Contain("insert not permitted"));
+            }, timeout: 120000);
+        }
+
+        [Test]
+        public void RealmObjectAPI_MissingFields_AtlasToRealm()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollectionAsBson(nameof(IntPropertyObject), AppConfigType.FlexibleSync);
+
+                var primaryKey = ObjectId.GenerateNewId();
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Int", 23 }, // Missing the GuidProperty field
+                };
+
+                var ex = await TestHelpers.AssertThrows<Realms.Sync.Exceptions.AppException>(() => collection.InsertOneAsync(doc));
+                Assert.That(ex.Message, Does.Contain("insert not permitted"));
             }, timeout: 120000);
         }
 
@@ -3276,7 +3315,6 @@ namespace Realms.Tests.Sync
             var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
             var user = await GetUserAsync(app);
 
-            // Use sync to create the schema/rules
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
             using var realm = await GetRealmAsync(config);
