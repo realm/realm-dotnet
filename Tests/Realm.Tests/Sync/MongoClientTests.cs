@@ -19,7 +19,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -3083,7 +3082,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var collection = await GetBsonCollection(nameof(PrimaryKeyStringObject), AppConfigType.FlexibleSync);
+                var collection = await GetCollectionAsBson(nameof(PrimaryKeyStringObject), AppConfigType.FlexibleSync);
 
                 const string primaryKey = "primaryKeyVal";
 
@@ -3097,7 +3096,7 @@ namespace Realms.Tests.Sync
                 await collection.InsertOneAsync(doc);
 
                 using var realm = await GetFLXIntegrationRealmAsync();
-                var syncObjects = await realm.All<PrimaryKeyStringObject>().Where<PrimaryKeyStringObject>(o => o.Id == primaryKey).SubscribeAsync();
+                var syncObjects = await realm.All<PrimaryKeyStringObject>().Where(o => o.Id == primaryKey).SubscribeAsync();
                 await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
 
                 var syncObj = syncObjects.Single();
@@ -3245,6 +3244,31 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
+        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection()
+        {
+            var user = await GetUserAsync();
+            var client = user.GetMongoClient(ServiceName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
+            var collection = db.GetCollection(FoosCollectionName);
+
+            await collection.DeleteManyAsync();
+
+            return collection;
+        }
+
+        private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
+        {
+            var user = await GetUserAsync();
+            var client = user.GetMongoClient(ServiceName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
+            var collection = db.GetCollection<Sale>(SalesCollectionName);
+
+            await collection.DeleteManyAsync();
+
+            return collection;
+        }
+
+
         // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
         private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
             where T : class, IRealmObjectBase
@@ -3263,8 +3287,7 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
-        //TODO This could be fused with something else
-        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection(string collectionName = FoosCollectionName, string appConfigType = AppConfigType.Default)
+        private async Task<MongoClient.Collection<BsonDocument>> GetCollectionAsBson(string collectionName = FoosCollectionName, string appConfigType = AppConfigType.Default)
         {
             var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
             var user = await GetUserAsync(app);
@@ -3277,18 +3300,6 @@ namespace Realms.Tests.Sync
 
             var collection = db.GetCollection(collectionName);
             await collection.DeleteManyAsync(new object());
-
-            return collection;
-        }
-
-        private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
-        {
-            var user = await GetUserAsync();
-            var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
-            var collection = db.GetCollection<Sale>(SalesCollectionName);
-
-            await collection.DeleteManyAsync();
 
             return collection;
         }
