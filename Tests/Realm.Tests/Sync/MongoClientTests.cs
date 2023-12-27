@@ -3216,7 +3216,7 @@ namespace Realms.Tests.Sync
         }
 
         // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
-        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default, bool getSchema = false)
+        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
             where T : class, IRealmObjectBase
         {
             var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
