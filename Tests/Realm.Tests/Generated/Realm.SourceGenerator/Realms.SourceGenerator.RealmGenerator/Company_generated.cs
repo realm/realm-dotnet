@@ -450,6 +450,12 @@ namespace Realms.Tests.Database
                         case "Location":
                             instance.Location = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>().Deserialize(context);
                             break;
+                        case "Offices":
+                            ReadArray(instance, name, context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

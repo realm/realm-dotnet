@@ -360,6 +360,9 @@ namespace Foo
                     case "IntValue":
                         instance.IntValue = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

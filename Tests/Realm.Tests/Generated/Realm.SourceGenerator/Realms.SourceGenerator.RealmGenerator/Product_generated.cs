@@ -451,6 +451,12 @@ namespace Realms.Tests.Database
                     case "Date":
                         instance.Date = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "Reports":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

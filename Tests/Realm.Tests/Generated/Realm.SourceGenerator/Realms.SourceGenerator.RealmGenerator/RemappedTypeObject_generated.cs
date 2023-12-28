@@ -555,6 +555,13 @@ namespace Realms.Tests
                     case "__mappedLink":
                         instance.MappedLink = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
                         break;
+                    case "NormalList":
+                    case "__mappedList":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

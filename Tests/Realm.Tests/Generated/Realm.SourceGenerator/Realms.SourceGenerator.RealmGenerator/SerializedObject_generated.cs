@@ -476,6 +476,16 @@ namespace Realms.Tests.Database
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "List":
+                    case "Set":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "Dict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

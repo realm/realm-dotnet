@@ -423,6 +423,12 @@ namespace Realms.Tests
                     case "Child":
                         instance.Child = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel2?>().Deserialize(context);
                         break;
+                    case "Children":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

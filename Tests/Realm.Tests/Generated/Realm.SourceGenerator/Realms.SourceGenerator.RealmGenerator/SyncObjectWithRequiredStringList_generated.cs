@@ -404,6 +404,12 @@ namespace Realms.Tests.Sync
                     case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "Strings":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

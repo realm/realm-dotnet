@@ -441,6 +441,9 @@ namespace Realms.Tests.Database
                     case "Vaccinated":
                         instance.Vaccinated = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

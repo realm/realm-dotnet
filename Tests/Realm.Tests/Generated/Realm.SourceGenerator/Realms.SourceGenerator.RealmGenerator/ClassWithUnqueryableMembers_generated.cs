@@ -475,6 +475,12 @@ namespace Realms.Tests
                     case "FirstName":
                         instance.FirstName = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "RealmListProperty":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

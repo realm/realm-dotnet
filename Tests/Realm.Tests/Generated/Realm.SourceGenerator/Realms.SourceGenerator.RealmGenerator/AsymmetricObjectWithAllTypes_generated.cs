@@ -1257,6 +1257,9 @@ namespace Realms.Tests.Sync
                     case "NullableGuidProperty":
                         instance.NullableGuidProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

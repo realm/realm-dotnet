@@ -396,6 +396,9 @@ namespace Realms.Tests
                     case "StringValue":
                         instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

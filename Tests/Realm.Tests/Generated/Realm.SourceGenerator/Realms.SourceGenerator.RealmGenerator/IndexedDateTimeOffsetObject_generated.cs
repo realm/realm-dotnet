@@ -356,6 +356,9 @@ namespace Realms.Tests.Database
                     case "DateTimeOffset":
                         instance.DateTimeOffset = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

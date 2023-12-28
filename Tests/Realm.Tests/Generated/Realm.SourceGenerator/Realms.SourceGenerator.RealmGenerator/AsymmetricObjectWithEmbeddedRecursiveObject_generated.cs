@@ -396,6 +396,9 @@ namespace Realms.Tests.Sync
                     case "RecursiveObject":
                         instance.RecursiveObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel1?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

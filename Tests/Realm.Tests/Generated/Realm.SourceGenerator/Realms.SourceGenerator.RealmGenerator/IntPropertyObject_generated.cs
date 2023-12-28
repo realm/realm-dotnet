@@ -445,6 +445,9 @@ namespace Realms.Tests
                     case "GuidProperty":
                         instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

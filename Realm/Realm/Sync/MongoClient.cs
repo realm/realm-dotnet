@@ -57,7 +57,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets a collection from MongoDB that can be deserialized in a Realm object.
+        /// Gets a collection of documents from MongoDB that can be deserialized in Realm objects.
         /// </summary>
         /// <remarks>
         /// The collection and database name are automatically derived from the Realm object class.
@@ -75,7 +75,7 @@ namespace Realms.Sync
             return new Collection<TRealmObject>(this, schema.Name);
         }
 
-        //TODO This has been done to avoid the reflection in the GetCollection method. 
+        //TODO This has been done to avoid the reflection in the GetCollection method. Need to look at this again
         public static void RegisterSchema(Type type, ObjectSchema schema)
         {
             SchemaByName.TryAdd(type, schema);

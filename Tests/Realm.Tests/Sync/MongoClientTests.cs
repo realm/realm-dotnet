@@ -3109,7 +3109,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void RealmObjectAPI_ExtraFields2()
+        public void RealmObjectAPI_ExtraFields_IgnoredWhenUsingTypedCollection()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -3141,8 +3141,10 @@ namespace Realms.Tests.Sync
 
                 var typedCollection = db.GetCollection<PrimaryKeyStringObject>(collectionName);
 
-                var ex = await TestHelpers.AssertThrows<SerializationException>(() => typedCollection.FindOneAsync(new { _id = primaryKey }));
-                Assert.That(ex.Message, Does.Contain("Error while deserializing property Value: Cannot deserialize a 'String' from BsonType 'ObjectId'"));
+                var retrieved = await typedCollection.FindOneAsync(new { _id = primaryKey });
+
+                Assert.That(retrieved, Is.Not.Null);
+                Assert.That(retrieved.Value, Is.EqualTo(doc["Value"].AsString));
             }, timeout: 120000);
         }
 

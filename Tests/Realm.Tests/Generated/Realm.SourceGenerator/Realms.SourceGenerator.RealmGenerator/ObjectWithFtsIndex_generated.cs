@@ -426,6 +426,9 @@ namespace Realms.Tests
                     case "NullableSummary":
                         instance.NullableSummary = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

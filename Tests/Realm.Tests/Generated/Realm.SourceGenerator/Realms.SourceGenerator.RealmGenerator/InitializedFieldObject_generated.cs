@@ -355,6 +355,9 @@ namespace Realms.Tests.Database
                     case "Id":
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

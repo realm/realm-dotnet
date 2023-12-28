@@ -478,6 +478,15 @@ namespace Realms.Tests
                     case "RecursiveObject":
                         instance.RecursiveObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel1?>().Deserialize(context);
                         break;
+                    case "ListOfAllTypesObjects":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "DictionaryOfAllTypesObjects":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

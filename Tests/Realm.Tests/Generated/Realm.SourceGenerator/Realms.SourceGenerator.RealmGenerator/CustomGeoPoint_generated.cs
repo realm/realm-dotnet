@@ -397,6 +397,12 @@ namespace Realms.Tests.Database
                         case "type":
                             instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                             break;
+                        case "coordinates":
+                            ReadArray(instance, name, context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

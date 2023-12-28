@@ -392,6 +392,9 @@ namespace Realms.Tests
                     case "Decimal128Value":
                         instance.Decimal128Value = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

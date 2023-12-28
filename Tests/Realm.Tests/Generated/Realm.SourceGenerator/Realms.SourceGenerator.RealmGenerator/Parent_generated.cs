@@ -429,6 +429,9 @@ namespace Realms.Tests.Database
                         case "Child":
                             instance.Child = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.Child?>()!.DeserializeById(context);
                             break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

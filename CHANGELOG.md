@@ -1,7 +1,8 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added the `MongoClient.GetCollection<T>` method to get a collection of documents from MongoDB that can be deserialized in Realm objects. This methods works the same as `MongoClient.GetDatabase(dbName).GetCollection(collectionName)`, but the database name and collection name are automatically derived from the Realm object class.  [#3414](https://github.com/realm/realm-dotnet/pull/3414)
+* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
 * None

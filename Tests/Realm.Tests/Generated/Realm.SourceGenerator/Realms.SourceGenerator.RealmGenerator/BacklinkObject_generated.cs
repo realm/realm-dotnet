@@ -410,6 +410,9 @@ namespace Realms.Tests.Database
                     case "AfterBacklinks":
                         instance.AfterBacklinks = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

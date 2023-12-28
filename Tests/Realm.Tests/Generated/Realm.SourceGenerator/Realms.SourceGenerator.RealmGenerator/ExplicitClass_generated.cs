@@ -358,6 +358,9 @@ namespace Realms.Tests.Database
                     case "Foo":
                         instance.Foo = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

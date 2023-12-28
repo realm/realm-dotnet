@@ -419,6 +419,12 @@ namespace Realms.Tests.Database
                     case "Link":
                         instance.Link = BsonSerializer.LookupSerializer<Realms.Tests.Database.ObjectEmbedded?>().Deserialize(context);
                         break;
+                    case "List":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

@@ -399,6 +399,9 @@ namespace Realms.Tests.Sync
                     case "PartitionLike":
                         instance.PartitionLike = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

@@ -397,6 +397,12 @@ namespace Realms.Tests.Sync
                     case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
                         break;
+                    case "EmbeddedDictionaryObject":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

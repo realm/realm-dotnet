@@ -413,6 +413,9 @@ namespace Realms.Tests
                     case "Parent":
                         instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RecursiveBacklinksObject?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

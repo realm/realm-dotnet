@@ -421,6 +421,9 @@ namespace Realms.Tests.Database
                         case "TopLevelGeoPoint":
                             instance.TopLevelGeoPoint = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TopLevelGeoPoint?>()!.DeserializeById(context);
                             break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

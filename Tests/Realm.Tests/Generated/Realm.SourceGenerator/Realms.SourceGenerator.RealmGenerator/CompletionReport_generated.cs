@@ -391,6 +391,9 @@ namespace Realms.Tests.Database
                     case "Remarks":
                         instance.Remarks = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

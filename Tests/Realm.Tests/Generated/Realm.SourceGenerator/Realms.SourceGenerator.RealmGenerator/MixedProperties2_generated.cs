@@ -442,6 +442,13 @@ namespace Realms.Tests.Database
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "Friends":
+                    case "Enemies":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

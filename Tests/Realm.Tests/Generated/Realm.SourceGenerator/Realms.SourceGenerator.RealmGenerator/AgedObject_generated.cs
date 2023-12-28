@@ -355,6 +355,9 @@ namespace Realms.Tests.Database
                     case "Birthday":
                         instance.Birthday = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

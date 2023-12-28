@@ -390,6 +390,9 @@ namespace Realms.Tests.Database
                     case "IsPartOfResults":
                         instance.IsPartOfResults = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

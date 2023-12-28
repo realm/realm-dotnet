@@ -454,6 +454,9 @@ namespace Realms.Tests.Database
                     case "Parent":
                         instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Product?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

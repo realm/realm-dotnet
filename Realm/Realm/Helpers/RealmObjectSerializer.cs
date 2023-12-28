@@ -129,31 +129,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
 
             try
             {
-                switch (reader.CurrentBsonType)
-                {
-                    case BsonType.Array:
-                        ReadArray(result, name, context);
-                        break;
-
-                    // Either an object, dictionary or DBRef (in a RealmValue)
-                    case BsonType.Document:
-
-                        result!.ObjectSchema!.TryFindProperty(name, out var property);
-                        if (property.Type.IsRealmValue() || (!property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object)))
-                        {
-                            // RealmValue(as DBRef) or Object
-                            ReadValue(result, name, context);
-                        }
-                        else
-                        {
-                            ReadDictionary(result, name, context);
-                        }
-
-                        break;
-                    default:
-                        ReadValue(result, name, context);
-                        break;
-                }
+                ReadValue(result, name, context);
             }
             catch (Exception ex)
             {
@@ -164,52 +140,6 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         reader.ReadEndDocument();
 
         return result;
-    }
-
-    private void ReadArray(T instance, string name, BsonDeserializationContext context)
-    {
-        var reader = context.Reader;
-
-        reader.ReadStartArray();
-        if (reader.State == BsonReaderState.Type)
-        {
-            reader.ReadBsonType();
-        }
-
-        while (reader.State != BsonReaderState.EndOfArray)
-        {
-            ReadArrayElement(instance, name, context);
-
-            if (reader.State == BsonReaderState.Type)
-            {
-                reader.ReadBsonType();
-            }
-        }
-
-        reader.ReadEndArray();
-    }
-
-    private void ReadDictionary(T instance, string name, BsonDeserializationContext context)
-    {
-        var reader = context.Reader;
-        reader.ReadStartDocument();
-        if (reader.State == BsonReaderState.Type)
-        {
-            reader.ReadBsonType();
-        }
-
-        while (reader.State != BsonReaderState.EndOfDocument)
-        {
-            var fieldName = reader.ReadName();
-            ReadDocumentField(instance, name, fieldName, context);
-
-            if (reader.State == BsonReaderState.Type)
-            {
-                reader.ReadBsonType();
-            }
-        }
-
-        reader.ReadEndDocument();
     }
 
     // The methods "SerializeId" and "DeserializeById" are used when serialising/deserialising links, as
@@ -285,6 +215,63 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
     protected abstract void ReadDocumentField(T instance, string name, string fieldName, BsonDeserializationContext context);
 
     protected abstract void SerializeValue(BsonSerializationContext context, BsonSerializationArgs args, T value);
+
+    protected void ReadArray(T instance, string name, BsonDeserializationContext context)
+    {
+        var reader = context.Reader;
+
+        if (reader.CurrentBsonType != BsonType.Array)
+        {
+            throw new SerializationException("BSON element is not an array");
+        }
+
+        reader.ReadStartArray();
+        if (reader.State == BsonReaderState.Type)
+        {
+            reader.ReadBsonType();
+        }
+
+        while (reader.State != BsonReaderState.EndOfArray)
+        {
+            ReadArrayElement(instance, name, context);
+
+            if (reader.State == BsonReaderState.Type)
+            {
+                reader.ReadBsonType();
+            }
+        }
+
+        reader.ReadEndArray();
+    }
+
+    protected void ReadDictionary(T instance, string name, BsonDeserializationContext context)
+    {
+        var reader = context.Reader;
+
+        if (reader.CurrentBsonType != BsonType.Array)
+        {
+            throw new SerializationException("BSON element is not a document");
+        }
+
+        reader.ReadStartDocument();
+        if (reader.State == BsonReaderState.Type)
+        {
+            reader.ReadBsonType();
+        }
+
+        while (reader.State != BsonReaderState.EndOfDocument)
+        {
+            var fieldName = reader.ReadName();
+            ReadDocumentField(instance, name, fieldName, context);
+
+            if (reader.State == BsonReaderState.Type)
+            {
+                reader.ReadBsonType();
+            }
+        }
+
+        reader.ReadEndDocument();
+    }
 
     protected void WriteValue<TValue>(BsonSerializationContext context, BsonSerializationArgs args, string name, TValue value)
     {

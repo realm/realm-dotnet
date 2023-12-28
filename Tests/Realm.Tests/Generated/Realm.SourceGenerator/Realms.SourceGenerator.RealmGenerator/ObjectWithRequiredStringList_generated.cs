@@ -349,7 +349,15 @@ namespace Realms.Tests
 
             protected override void ReadValue(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "Strings":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)

@@ -361,6 +361,9 @@ namespace Realms.Tests
                     case "Int":
                         instance.Int = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

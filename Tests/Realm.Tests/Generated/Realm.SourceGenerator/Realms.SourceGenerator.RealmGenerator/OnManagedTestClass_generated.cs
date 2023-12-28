@@ -429,6 +429,12 @@ namespace Realms.Tests.Database
                     case "RelatedObject":
                         instance.RelatedObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OnManagedTestClass?>()!.DeserializeById(context);
                         break;
+                    case "RelatedCollection":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

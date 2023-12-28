@@ -502,6 +502,16 @@ namespace Realms.Tests.Database
                     case "CompletionReport":
                         instance.CompletionReport = BsonSerializer.LookupSerializer<Realms.Tests.Database.CompletionReport?>().Deserialize(context);
                         break;
+                    case "SubTasks":
+                    case "SubSubTasks":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "SubTasksDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

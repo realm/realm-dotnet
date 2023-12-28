@@ -423,6 +423,12 @@ namespace Realms.Tests.Database
                     case "Link":
                         instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.ObjectV1?>()!.DeserializeById(context);
                         break;
+                    case "List":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

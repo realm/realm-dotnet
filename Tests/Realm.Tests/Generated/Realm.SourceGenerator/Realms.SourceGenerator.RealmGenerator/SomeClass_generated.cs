@@ -359,6 +359,9 @@ namespace Realms.Tests.Database
                     case "BacklinkObject":
                         instance.BacklinkObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.BacklinkObject?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

@@ -361,6 +361,9 @@ namespace Realms.Tests
                     case "Parent":
                         instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.ClassWithUnqueryableMembers?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

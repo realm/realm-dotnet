@@ -346,7 +346,15 @@ namespace Realms.Tests.Database
 
             protected override void ReadValue(OneListProperty instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "People":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(OneListProperty instance, string name, BsonDeserializationContext context)

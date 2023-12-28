@@ -429,6 +429,9 @@ namespace Realms.Tests.Database
                         case "NonPKChild":
                             instance.NonPKChild = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation?>()!.DeserializeById(context);
                             break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

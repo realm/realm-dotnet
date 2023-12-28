@@ -429,6 +429,9 @@ namespace Realms.Tests.Database
                         case "OtherObject":
                             instance.OtherObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject?>()!.DeserializeById(context);
                             break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
                     }
                 }
 

@@ -389,6 +389,9 @@ namespace Realms.Tests.Database
                     case "Age":
                         instance.Age = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

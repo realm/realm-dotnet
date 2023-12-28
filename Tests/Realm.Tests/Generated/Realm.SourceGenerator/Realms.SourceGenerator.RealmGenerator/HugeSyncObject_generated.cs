@@ -396,6 +396,9 @@ namespace Realms.Tests
                     case "Data":
                         instance.Data = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

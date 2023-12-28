@@ -361,6 +361,9 @@ namespace Realms.Tests.Database
                     case "C":
                         instance.C = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

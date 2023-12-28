@@ -541,6 +541,19 @@ namespace Realms.Tests.Database
                     case "TopDog":
                         instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.DynamicDog?>()!.DeserializeById(context);
                         break;
+                    case "Dogs":
+                    case "Tags":
+                    case "DogsSet":
+                    case "TagsSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "DogsDictionary":
+                    case "TagsDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

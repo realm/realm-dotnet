@@ -361,6 +361,9 @@ namespace Realms.Tests.Database
                     case "StringProperty":
                         instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

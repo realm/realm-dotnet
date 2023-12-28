@@ -932,6 +932,9 @@ namespace Realms.Tests
                     case "EmbeddedObjectProperty":
                         instance.EmbeddedObjectProperty = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

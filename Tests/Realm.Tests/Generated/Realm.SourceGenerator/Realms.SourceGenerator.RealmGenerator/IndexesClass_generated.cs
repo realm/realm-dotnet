@@ -586,6 +586,9 @@ namespace Realms.Tests.Database
                     case "IntNone":
                         instance.IntNone = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

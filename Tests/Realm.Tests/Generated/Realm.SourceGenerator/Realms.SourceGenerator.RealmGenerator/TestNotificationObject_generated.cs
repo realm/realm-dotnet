@@ -593,6 +593,19 @@ namespace Realms.Tests.Database
                     case "LinkDifferentType":
                         instance.LinkDifferentType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
                         break;
+                    case "ListSameType":
+                    case "SetSameType":
+                    case "ListDifferentType":
+                    case "SetDifferentType":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "DictionarySameType":
+                    case "DictionaryDifferentType":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

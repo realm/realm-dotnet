@@ -376,7 +376,18 @@ namespace Realms.Tests.Database
 
             protected override void ReadValue(OrderedContainer instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "Items":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "ItemsDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(OrderedContainer instance, string name, BsonDeserializationContext context)

@@ -740,6 +740,22 @@ namespace Realms.Tests.Database
                     case "EmbeddedProperty":
                         instance.EmbeddedProperty = BsonSerializer.LookupSerializer<Realms.Tests.Database.EmbeddedGuidType?>().Deserialize(context);
                         break;
+                    case "GuidList":
+                    case "GuidSet":
+                    case "OptionalList":
+                    case "OptionalSet":
+                    case "MixedList":
+                    case "MixedSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "GuidDict":
+                    case "OptionalDict":
+                    case "MixedDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

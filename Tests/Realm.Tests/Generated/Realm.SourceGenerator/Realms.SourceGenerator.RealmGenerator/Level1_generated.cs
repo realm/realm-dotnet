@@ -391,6 +391,9 @@ namespace Realms.Tests.Database
                     case "Level2":
                         instance.Level2 = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Level2?>()!.DeserializeById(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

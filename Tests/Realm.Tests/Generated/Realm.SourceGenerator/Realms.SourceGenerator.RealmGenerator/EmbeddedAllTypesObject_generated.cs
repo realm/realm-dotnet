@@ -1434,6 +1434,9 @@ namespace Realms.Tests
                     case "NullableInt64CounterProperty":
                         instance.NullableInt64CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>?>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

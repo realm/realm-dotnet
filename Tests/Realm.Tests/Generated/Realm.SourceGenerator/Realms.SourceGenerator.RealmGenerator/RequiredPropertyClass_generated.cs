@@ -355,6 +355,9 @@ namespace Realms.Tests.Database
                     case "FooRequired":
                         instance.FooRequired = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

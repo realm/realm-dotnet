@@ -1559,6 +1559,63 @@ namespace Realms.Tests
                     case "GuidProperty":
                         instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
                         break;
+                    case "CharList":
+                    case "ByteList":
+                    case "Int16List":
+                    case "Int32List":
+                    case "Int64List":
+                    case "FloatList":
+                    case "DoubleList":
+                    case "BooleanList":
+                    case "DecimalList":
+                    case "Decimal128List":
+                    case "ObjectIdList":
+                    case "StringList":
+                    case "ByteArrayList":
+                    case "DateTimeOffsetList":
+                    case "ObjectList":
+                    case "EmbeddedObjectList":
+                    case "RealmValueList":
+                    case "CharSet":
+                    case "ByteSet":
+                    case "Int16Set":
+                    case "Int32Set":
+                    case "Int64Set":
+                    case "FloatSet":
+                    case "DoubleSet":
+                    case "BooleanSet":
+                    case "DecimalSet":
+                    case "Decimal128Set":
+                    case "ObjectIdSet":
+                    case "StringSet":
+                    case "ByteArraySet":
+                    case "DateTimeOffsetSet":
+                    case "ObjectSet":
+                    case "RealmValueSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "CharDict":
+                    case "ByteDict":
+                    case "Int16Dict":
+                    case "Int32Dict":
+                    case "Int64Dict":
+                    case "FloatDict":
+                    case "DoubleDict":
+                    case "BooleanDict":
+                    case "DecimalDict":
+                    case "Decimal128Dict":
+                    case "ObjectIdDict":
+                    case "StringDict":
+                    case "ByteArrayDict":
+                    case "DateTimeOffsetDict":
+                    case "ObjectDict":
+                    case "EmbeddedObjectDict":
+                    case "RealmValueDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

@@ -732,6 +732,12 @@ namespace Realms.Tests.Database
                     case "IsInteresting":
                         instance.IsInteresting = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
                         break;
+                    case "Friends":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

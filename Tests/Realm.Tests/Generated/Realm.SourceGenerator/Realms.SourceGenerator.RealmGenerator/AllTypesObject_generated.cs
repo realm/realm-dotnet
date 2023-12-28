@@ -1404,6 +1404,9 @@ namespace Realms.Tests
                     case "RealmValueProperty":
                         instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 

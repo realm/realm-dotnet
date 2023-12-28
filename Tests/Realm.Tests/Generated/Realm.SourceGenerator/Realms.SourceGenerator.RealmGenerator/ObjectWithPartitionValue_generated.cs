@@ -474,6 +474,9 @@ namespace Realms.Tests.Sync
                     case "Guid":
                         instance.Guid = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
                         break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 
