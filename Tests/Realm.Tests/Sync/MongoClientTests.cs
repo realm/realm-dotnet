@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
@@ -2455,7 +2456,6 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        //TODO Maybe we can have only one test here, we don't need all these cases
         public static readonly object[] LinksTestCases = new[]
         {
             new object[]
@@ -3090,7 +3090,9 @@ namespace Realms.Tests.Sync
                 {
                     { "_id", primaryKey },
                     { "Value", "myVal" },
-                    { "ExtraField", "extraFieldVal" } // Not defined in the schema
+                    { "ExtraField", "extraFieldVal" },
+                    { "ExtraField2", new BsonDocument { { "inner", 22 } } },
+                    { "ExtraField3", new BsonArray(new[] { 1, 2, 3, 4 }) },
                 };
 
                 await collection.InsertOneAsync(doc);
@@ -3107,7 +3109,45 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void RealmObjectAPI_MismatchedType_AtlasToRealm()
+        public void RealmObjectAPI_ExtraFields2()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var app = App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+                var user = await GetUserAsync(app);
+
+                var config = GetFLXIntegrationConfig(user);
+
+                using var realm = await GetRealmAsync(config);
+                var client = user.GetMongoClient(ServiceName);
+                var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(AppConfigType.FlexibleSync));
+
+                const string collectionName = "test";
+                var bsonCollection = db.GetCollection(collectionName);
+                await bsonCollection.DeleteManyAsync(new object());
+
+                const string primaryKey = "primaryKeyVal";
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Value", "myVal" },
+                    { "ExtraField", "extraFieldVal" },
+                    { "ExtraField2", new BsonDocument { { "inner", 22 } } },
+                    { "ExtraField3", new BsonArray(new[] { 1, 2, 3, 4 }) },
+                };
+
+                await bsonCollection.InsertOneAsync(doc);
+
+                var typedCollection = db.GetCollection<PrimaryKeyStringObject>(collectionName);
+
+                var ex = await TestHelpers.AssertThrows<SerializationException>(() => typedCollection.FindOneAsync(new { _id = primaryKey }));
+                Assert.That(ex.Message, Does.Contain("Error while deserializing property Value: Cannot deserialize a 'String' from BsonType 'ObjectId'"));
+            }, timeout: 120000);
+        }
+
+        [Test]
+        public void RealmObjectAPI_MismatchedType_ThrowsOnInsertWhenCollectionInSchema()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -3121,13 +3161,48 @@ namespace Realms.Tests.Sync
                     { "Value", ObjectId.GenerateNewId() }, // Wrong type
                 };
 
-                var ex = await TestHelpers.AssertThrows<Realms.Sync.Exceptions.AppException>(() => collection.InsertOneAsync(doc));
+                var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
             }, timeout: 120000);
         }
 
         [Test]
-        public void RealmObjectAPI_MissingFields_AtlasToRealm()
+        public void RealmObjectAPI_MismatchedType_ThrowsWhenDeserialized()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var app = App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+                var user = await GetUserAsync(app);
+
+                var config = GetFLXIntegrationConfig(user);
+
+                using var realm = await GetRealmAsync(config);
+                var client = user.GetMongoClient(ServiceName);
+                var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(AppConfigType.FlexibleSync));
+
+                const string collectionName = "test";
+                var bsonCollection = db.GetCollection(collectionName);
+                await bsonCollection.DeleteManyAsync(new object());
+
+                const string primaryKey = "primaryKeyVal";
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Value", ObjectId.GenerateNewId() }, // Wrong type
+                };
+
+                await bsonCollection.InsertOneAsync(doc);
+
+                var typedCollection = db.GetCollection<PrimaryKeyStringObject>(collectionName);
+
+                var ex = await TestHelpers.AssertThrows<SerializationException>(() => typedCollection.FindOneAsync(new { _id = primaryKey }));
+                Assert.That(ex.Message, Does.Contain("Error while deserializing property Value: Cannot deserialize a 'String' from BsonType 'ObjectId'"));
+            }, timeout: 120000);
+        }
+
+        [Test]
+        public void RealmObjectAPI_MissingField_ThrowsOnInsertWhenCollectionInSchema()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -3143,6 +3218,43 @@ namespace Realms.Tests.Sync
 
                 var ex = await TestHelpers.AssertThrows<Realms.Sync.Exceptions.AppException>(() => collection.InsertOneAsync(doc));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
+            }, timeout: 120000);
+        }
+
+        [Test]
+        public void RealmObjectAPI_MissingField_GetsDefaultValueWhenDeserialized()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var app = App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+                var user = await GetUserAsync(app);
+
+                var config = GetFLXIntegrationConfig(user);
+
+                using var realm = await GetRealmAsync(config);
+                var client = user.GetMongoClient(ServiceName);
+                var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(AppConfigType.FlexibleSync));
+
+                const string collectionName = "test";
+                var bsonCollection = db.GetCollection(collectionName);
+                await bsonCollection.DeleteManyAsync(new object());
+
+                var primaryKey = ObjectId.GenerateNewId();
+
+                var doc = new BsonDocument
+                {
+                    { "_id", primaryKey },
+                    { "Int", 23 }, // Missing the GuidProperty field
+                };
+
+                await bsonCollection.InsertOneAsync(doc);
+
+                var typedCollection = db.GetCollection<IntPropertyObject>(collectionName);
+                var retrieved = await typedCollection.FindOneAsync(new { _id = primaryKey });
+
+                Assert.That(retrieved.Id, Is.EqualTo(primaryKey));
+                Assert.That(retrieved.Int, Is.EqualTo(doc["Int"].AsInt32));
+                Assert.That(retrieved.GuidProperty, Is.EqualTo(default(Guid)));
             }, timeout: 120000);
         }
 
