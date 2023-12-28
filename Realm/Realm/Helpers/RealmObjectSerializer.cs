@@ -20,6 +20,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
@@ -125,70 +126,90 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         while (reader.ReadBsonType() != BsonType.EndOfDocument)
         {
             var name = reader.ReadName();
-            switch (reader.CurrentBsonType)
+
+            try
             {
-                case BsonType.Array:
-                    reader.ReadStartArray();
-                    if (reader.State == BsonReaderState.Type)
-                    {
-                        reader.ReadBsonType();
-                    }
+                switch (reader.CurrentBsonType)
+                {
+                    case BsonType.Array:
+                        ReadArray(context, result, name);
+                        break;
 
-                    while (reader.State != BsonReaderState.EndOfArray)
-                    {
-                        ReadArrayElement(result, name, context);
+                    // Either an object, dictionary or DBRef (in a RealmValue)
+                    case BsonType.Document:
 
-                        if (reader.State == BsonReaderState.Type)
+                        result!.ObjectSchema!.TryFindProperty(name, out var property);
+                        if (property.Type.IsRealmValue() || (!property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object)))
                         {
-                            reader.ReadBsonType();
+                            // RealmValue(as DBRef) or Object
+                            ReadValue(result, name, context);
                         }
-                    }
+                        else
+                        {
+                            ReadDictionary(context, result, name);
+                        }
 
-                    reader.ReadEndArray();
-
-                    break;
-
-                // Either an object, dictionary or DBRef (in a RealmValue)
-                case BsonType.Document:
-
-                    result!.ObjectSchema!.TryFindProperty(name, out var property);
-                    if (property.Type.IsRealmValue() || (!property.Type.IsDictionary() && property.Type.HasFlag(PropertyType.Object)))
-                    {
-                        // RealmValue(as DBRef) or Object
+                        break;
+                    default:
                         ReadValue(result, name, context);
-                    }
-                    else
-                    {
-                        reader.ReadStartDocument();
-                        if (reader.State == BsonReaderState.Type)
-                        {
-                            reader.ReadBsonType();
-                        }
-
-                        while (reader.State != BsonReaderState.EndOfDocument)
-                        {
-                            var fieldName = reader.ReadName();
-                            ReadDocumentField(result, name, fieldName, context);
-
-                            if (reader.State == BsonReaderState.Type)
-                            {
-                                reader.ReadBsonType();
-                            }
-                        }
-
-                        reader.ReadEndDocument();
-                    }
-
-                    break;
-                default:
-                    ReadValue(result, name, context);
-                    break;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SerializationException($"Error while deserializing property {name}: {ex.Message}");
             }
         }
 
         reader.ReadEndDocument();
 
         return result;
+    }
+
+    private void ReadArray(BsonDeserializationContext context, T result, string name)
+    {
+        var reader = context.Reader;
+
+        reader.ReadStartArray();
+        if (reader.State == BsonReaderState.Type)
+        {
+            reader.ReadBsonType();
+        }
+
+        while (reader.State != BsonReaderState.EndOfArray)
+        {
+            ReadArrayElement(result, name, context);
+
+            if (reader.State == BsonReaderState.Type)
+            {
+                reader.ReadBsonType();
+            }
+        }
+
+        reader.ReadEndArray();
+    }
+
+    private void ReadDictionary(BsonDeserializationContext context, T result, string name)
+    {
+        var reader = context.Reader;
+        reader.ReadStartDocument();
+        if (reader.State == BsonReaderState.Type)
+        {
+            reader.ReadBsonType();
+        }
+
+        while (reader.State != BsonReaderState.EndOfDocument)
+        {
+            var fieldName = reader.ReadName();
+            ReadDocumentField(result, name, fieldName, context);
+
+            if (reader.State == BsonReaderState.Type)
+            {
+                reader.ReadBsonType();
+            }
+        }
+
+        reader.ReadEndDocument();
     }
 
     // The methods "SerializeId" and "DeserializeById" are used when serialising/deserialising links, as

@@ -48,22 +48,37 @@ namespace Realms.Sync
         /// <value>The name of the remote MongoDB service.</value>
         public string ServiceName { get; }
 
-        //TODO Add documentation
-        //TODO Can we avoid reflection here? Maybe we can add the info here in the same way we do for the serializers
-        public Collection<TDocument> GetCollection<TDocument>()
-            where TDocument : class, IRealmObjectBase
-        {
-            var schema = _schemas.GetOrAdd(typeof(TDocument),
-                type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
-                    ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
-
-            return new Collection<TDocument>(this, schema.Name);
-        }
+        private static readonly ConcurrentDictionary<Type, ObjectSchema> SchemaByName = new();
 
         internal MongoClient(User user, string serviceName)
         {
             User = user;
             ServiceName = serviceName;
+        }
+
+        /// <summary>
+        /// Gets a collection from MongoDB that can be deserialized in a Realm object.
+        /// </summary>
+        /// <remarks>
+        /// The collection and database name are automatically derived from the Realm object class.
+        /// </remarks>
+        /// <typeparam name="TRealmObject">The Realm object type that matches the shape of the documents in the collection.</typeparam>
+        /// <returns>A <see cref="Collection{TRealmObject}"/> instance that exposes an API for CRUD operations on its contents.</returns>
+        public Collection<TRealmObject> GetCollection<TRealmObject>()
+            where TRealmObject : class, IRealmObjectBase
+        {
+            if (!SchemaByName.TryGetValue(typeof(TRealmObject), out var schema))
+            {
+                throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject.");
+            }
+
+            return new Collection<TRealmObject>(this, schema.Name);
+        }
+
+        //TODO This has been done to avoid the reflection in the GetCollection method. 
+        public static void RegisterSchema(Type type, ObjectSchema schema)
+        {
+            SchemaByName.TryAdd(type, schema);
         }
 
         /// <summary>
