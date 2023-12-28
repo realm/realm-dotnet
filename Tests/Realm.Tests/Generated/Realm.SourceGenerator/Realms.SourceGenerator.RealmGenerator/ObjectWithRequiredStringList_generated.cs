@@ -31,6 +31,7 @@ namespace Realms.Tests
         static ObjectWithRequiredStringList()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithRequiredStringListSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectWithRequiredStringList), RealmSchema);
         }
 
         /// <summary>

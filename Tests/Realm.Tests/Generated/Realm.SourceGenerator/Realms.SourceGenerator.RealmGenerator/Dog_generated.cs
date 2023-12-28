@@ -31,6 +31,7 @@ namespace Realms.Tests
         static Dog()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DogSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(Dog), RealmSchema);
         }
 
         /// <summary>

@@ -31,6 +31,7 @@ namespace Realms.Tests
         static PrimaryKeyInt32Object()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyInt32ObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(PrimaryKeyInt32Object), RealmSchema);
         }
 
         /// <summary>

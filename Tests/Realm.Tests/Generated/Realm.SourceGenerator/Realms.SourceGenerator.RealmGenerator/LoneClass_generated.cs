@@ -35,6 +35,7 @@ namespace Realms.Tests.Database
         static LoneClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new LoneClassSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(LoneClass), RealmSchema);
         }
 
         /// <summary>

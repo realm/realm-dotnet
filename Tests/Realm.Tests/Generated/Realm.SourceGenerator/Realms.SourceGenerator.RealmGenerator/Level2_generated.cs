@@ -29,6 +29,7 @@ namespace Realms.Tests.Database
         static Level2()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new Level2Serializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(Level2), RealmSchema);
         }
 
         /// <summary>

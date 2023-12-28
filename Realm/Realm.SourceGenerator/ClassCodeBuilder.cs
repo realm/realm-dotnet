@@ -500,6 +500,7 @@ public override string? ToString() => Accessor.ToString();")}";
     static {_classInfo.Name}()
     {{
         Realms.Serialization.RealmObjectSerializer.Register(new {_serializerClassName}());
+        Realms.Sync.MongoClient.RegisterSchema(typeof({_classInfo.Name}), RealmSchema);
     }}
 
 {contents.Indent()}

@@ -32,6 +32,7 @@ namespace Realms.Tests.Database
         static OrderedObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new OrderedObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(OrderedObject), RealmSchema);
         }
 
         /// <summary>

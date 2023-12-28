@@ -27,6 +27,7 @@ namespace Realms.Tests.Database
         static Person()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new PersonSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(Person), RealmSchema);
         }
 
         /// <summary>

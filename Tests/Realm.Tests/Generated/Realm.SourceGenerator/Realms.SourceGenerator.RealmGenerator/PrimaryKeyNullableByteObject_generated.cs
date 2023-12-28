@@ -31,6 +31,7 @@ namespace Realms.Tests
         static PrimaryKeyNullableByteObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyNullableByteObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(PrimaryKeyNullableByteObject), RealmSchema);
         }
 
         /// <summary>

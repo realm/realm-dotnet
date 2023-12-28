@@ -33,6 +33,7 @@ namespace Realms.Tests.Database
         static ThrowsBeforeInitializer()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ThrowsBeforeInitializerSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(ThrowsBeforeInitializer), RealmSchema);
         }
 
         /// <summary>

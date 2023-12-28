@@ -31,6 +31,7 @@ namespace Realms.Tests
         static HugeSyncObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new HugeSyncObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(HugeSyncObject), RealmSchema);
         }
 
         /// <summary>

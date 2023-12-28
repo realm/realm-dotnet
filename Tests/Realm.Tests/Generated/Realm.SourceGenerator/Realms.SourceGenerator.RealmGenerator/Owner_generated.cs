@@ -31,6 +31,7 @@ namespace Realms.Tests
         static Owner()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new OwnerSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(Owner), RealmSchema);
         }
 
         /// <summary>

@@ -31,6 +31,7 @@ namespace Realms.Tests.Database
         static B()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new BSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(B), RealmSchema);
         }
 
         /// <summary>

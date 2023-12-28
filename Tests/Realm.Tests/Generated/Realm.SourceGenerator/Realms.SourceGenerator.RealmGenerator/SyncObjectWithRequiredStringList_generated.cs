@@ -41,6 +41,7 @@ namespace Realms.Tests.Sync
         static SyncObjectWithRequiredStringList()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new SyncObjectWithRequiredStringListSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(SyncObjectWithRequiredStringList), RealmSchema);
         }
 
         /// <summary>

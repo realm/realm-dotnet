@@ -28,6 +28,7 @@ namespace Realms.Tests.Database
         static NoListProperties()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new NoListPropertiesSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(NoListProperties), RealmSchema);
         }
 
         /// <summary>

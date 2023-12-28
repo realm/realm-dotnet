@@ -31,6 +31,7 @@ namespace Realms.Tests.Database
         static ObjectContainerEmbedded()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ObjectContainerEmbeddedSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectContainerEmbedded), RealmSchema);
         }
 
         /// <summary>

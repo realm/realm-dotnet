@@ -31,6 +31,7 @@ namespace Realms.Tests.Database
             static NonPrimaryKeyWithPKRelation()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new NonPrimaryKeyWithPKRelationSerializer());
+                Realms.Sync.MongoClient.RegisterSchema(typeof(NonPrimaryKeyWithPKRelation), RealmSchema);
             }
 
             /// <summary>

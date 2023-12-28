@@ -31,6 +31,7 @@ namespace Realms.Tests
         static EmbeddedLevel3()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedLevel3Serializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(EmbeddedLevel3), RealmSchema);
         }
 
         /// <summary>

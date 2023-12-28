@@ -33,6 +33,7 @@ namespace Realms.Tests.Database
         static OnManagedTestClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new OnManagedTestClassSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(OnManagedTestClass), RealmSchema);
         }
 
         /// <summary>

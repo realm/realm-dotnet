@@ -33,6 +33,7 @@ namespace Realms.Tests.Database
             static TopLevelGeoPoint()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new TopLevelGeoPointSerializer());
+                Realms.Sync.MongoClient.RegisterSchema(typeof(TopLevelGeoPoint), RealmSchema);
             }
 
             /// <summary>

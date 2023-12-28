@@ -41,6 +41,7 @@ namespace Realms.Tests.Sync
         static ObjectWithPartitionValue()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithPartitionValueSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectWithPartitionValue), RealmSchema);
         }
 
         /// <summary>

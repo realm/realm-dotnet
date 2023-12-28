@@ -30,6 +30,7 @@ namespace Realms.Tests.Database
         static IndexedDateTimeOffsetObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new IndexedDateTimeOffsetObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(IndexedDateTimeOffsetObject), RealmSchema);
         }
 
         /// <summary>

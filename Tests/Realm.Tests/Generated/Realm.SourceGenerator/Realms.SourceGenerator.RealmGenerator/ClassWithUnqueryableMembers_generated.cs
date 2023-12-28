@@ -31,6 +31,7 @@ namespace Realms.Tests
         static ClassWithUnqueryableMembers()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ClassWithUnqueryableMembersSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(ClassWithUnqueryableMembers), RealmSchema);
         }
 
         /// <summary>

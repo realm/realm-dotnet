@@ -28,6 +28,7 @@ namespace Realms.Tests.Database
         static OnlyListProperties()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new OnlyListPropertiesSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(OnlyListProperties), RealmSchema);
         }
 
         /// <summary>

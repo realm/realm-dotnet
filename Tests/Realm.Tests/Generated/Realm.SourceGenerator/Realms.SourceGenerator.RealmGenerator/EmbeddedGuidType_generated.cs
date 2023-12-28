@@ -32,6 +32,7 @@ namespace Realms.Tests.Database
         static EmbeddedGuidType()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedGuidTypeSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(EmbeddedGuidType), RealmSchema);
         }
 
         /// <summary>

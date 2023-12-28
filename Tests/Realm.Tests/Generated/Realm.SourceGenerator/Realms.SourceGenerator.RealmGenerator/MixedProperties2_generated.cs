@@ -28,6 +28,7 @@ namespace Realms.Tests.Database
         static MixedProperties2()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new MixedProperties2Serializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(MixedProperties2), RealmSchema);
         }
 
         /// <summary>

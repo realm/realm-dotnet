@@ -31,6 +31,7 @@ namespace Realms.Tests
         static PrimaryKeyNullableInt32Object()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyNullableInt32ObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(PrimaryKeyNullableInt32Object), RealmSchema);
         }
 
         /// <summary>

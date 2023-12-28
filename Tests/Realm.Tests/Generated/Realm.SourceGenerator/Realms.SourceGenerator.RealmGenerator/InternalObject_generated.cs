@@ -29,6 +29,7 @@ namespace Realms.Tests.Database
         static InternalObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new InternalObjectSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(InternalObject), RealmSchema);
         }
 
         /// <summary>

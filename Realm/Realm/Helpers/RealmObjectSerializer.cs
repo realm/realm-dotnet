@@ -132,7 +132,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
                 switch (reader.CurrentBsonType)
                 {
                     case BsonType.Array:
-                        ReadArray(context, result, name);
+                        ReadArray(result, name, context);
                         break;
 
                     // Either an object, dictionary or DBRef (in a RealmValue)
@@ -146,7 +146,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
                         }
                         else
                         {
-                            ReadDictionary(context, result, name);
+                            ReadDictionary(result, name, context);
                         }
 
                         break;
@@ -166,7 +166,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         return result;
     }
 
-    private void ReadArray(BsonDeserializationContext context, T result, string name)
+    private void ReadArray(T instance, string name, BsonDeserializationContext context)
     {
         var reader = context.Reader;
 
@@ -178,7 +178,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
 
         while (reader.State != BsonReaderState.EndOfArray)
         {
-            ReadArrayElement(result, name, context);
+            ReadArrayElement(instance, name, context);
 
             if (reader.State == BsonReaderState.Type)
             {
@@ -189,7 +189,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         reader.ReadEndArray();
     }
 
-    private void ReadDictionary(BsonDeserializationContext context, T result, string name)
+    private void ReadDictionary(T instance, string name, BsonDeserializationContext context)
     {
         var reader = context.Reader;
         reader.ReadStartDocument();
@@ -201,7 +201,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         while (reader.State != BsonReaderState.EndOfDocument)
         {
             var fieldName = reader.ReadName();
-            ReadDocumentField(result, name, fieldName, context);
+            ReadDocumentField(instance, name, fieldName, context);
 
             if (reader.State == BsonReaderState.Type)
             {

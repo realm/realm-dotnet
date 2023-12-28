@@ -29,6 +29,7 @@ namespace Realms.Tests.Database
         static CompletionReport()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new CompletionReportSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(CompletionReport), RealmSchema);
         }
 
         /// <summary>

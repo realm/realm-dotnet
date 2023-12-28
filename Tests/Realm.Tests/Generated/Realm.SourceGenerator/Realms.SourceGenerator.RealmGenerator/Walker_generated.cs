@@ -31,6 +31,7 @@ namespace Realms.Tests
         static Walker()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new WalkerSerializer());
+            Realms.Sync.MongoClient.RegisterSchema(typeof(Walker), RealmSchema);
         }
 
         /// <summary>
