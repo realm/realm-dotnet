@@ -248,7 +248,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
     {
         var reader = context.Reader;
 
-        if (reader.CurrentBsonType != BsonType.Array)
+        if (reader.CurrentBsonType != BsonType.Document)
         {
             throw new SerializationException("BSON element is not a document");
         }
