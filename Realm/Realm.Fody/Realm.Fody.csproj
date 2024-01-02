@@ -7,11 +7,12 @@
     <BuildOutputTargetFolder>weaver</BuildOutputTargetFolder>
     <DevelopmentDependency>true</DevelopmentDependency>
     <Title>Realm.Fody</Title>
-    <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
+    <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of
+      your Realm models with Realm-backed ones.</Description>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1591, NU5100, NU5128, CA1050</NoWarn>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <IncludeSymbols>False</IncludeSymbols>
     <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
     <Nullable>enable</Nullable>

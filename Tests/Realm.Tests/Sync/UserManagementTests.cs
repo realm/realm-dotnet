@@ -1094,7 +1094,7 @@ namespace Realms.Tests.Sync
             Assert.That(user.ToString(), Does.Contain(user.Id));
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserLogOut_RaisesChanged()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1107,7 +1107,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         Assert.That(s, Is.EqualTo(user));
-                        Assert.That(user.State, Is.EqualTo(UserState.Removed));
+                        Assert.That(user.State, Is.EqualTo(UserState.LoggedOut));
                         tcs.TrySetResult();
                     }
                     catch (Exception ex)
@@ -1124,7 +1124,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserChanged_DoesntKeepObjectAlive()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1141,7 +1141,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserCustomDataChange_RaisesChanged()
         {
             var tcs = new TaskCompletionSource();
@@ -1151,8 +1151,6 @@ namespace Realms.Tests.Sync
                 user.Changed += OnUserChanged;
 
                 var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
-
-                var customDataId = ObjectId.GenerateNewId();
 
                 var customDataDoc = new BsonDocument
                 {
