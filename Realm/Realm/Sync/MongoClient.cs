@@ -47,7 +47,7 @@ namespace Realms.Sync
         /// <value>The name of the remote MongoDB service.</value>
         public string ServiceName { get; }
 
-        private static readonly ConcurrentDictionary<Type, ObjectSchema> SchemaByName = new();
+        private static readonly ConcurrentDictionary<Type, ObjectSchema> SchemaByType = new();
 
         internal MongoClient(User user, string serviceName)
         {
@@ -68,7 +68,7 @@ namespace Realms.Sync
         public Collection<TRealmObject> GetCollection<TRealmObject>()
             where TRealmObject : class, IRealmObjectBase
         {
-            if (!SchemaByName.TryGetValue(typeof(TRealmObject), out var schema))
+            if (!SchemaByType.TryGetValue(typeof(TRealmObject), out var schema))
             {
                 throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject.");
             }
@@ -79,7 +79,7 @@ namespace Realms.Sync
         //TODO This has been done to avoid the reflection in the GetCollection method. Need to look at this again
         public static void RegisterSchema(Type type, ObjectSchema schema)
         {
-            SchemaByName.TryAdd(type, schema);
+            SchemaByType.TryAdd(type, schema);
         }
 
         /// <summary>

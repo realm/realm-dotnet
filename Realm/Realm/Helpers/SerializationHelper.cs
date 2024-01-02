@@ -246,7 +246,7 @@ namespace Realms.Helpers
 
                         return value;
                     case BsonType.Document:
-                        return DeseriealizeDBRef(context, args);
+                        return DeserializeDBRef(context, args);
                     case BsonType.Binary:
                         var binary = reader.ReadBinaryData();
                         if (binary.SubType == BsonBinarySubType.UuidStandard)
@@ -292,7 +292,7 @@ namespace Realms.Helpers
                 context.Writer.WriteEndDocument();
             }
 
-            private RealmValue DeseriealizeDBRef(BsonDeserializationContext context, BsonDeserializationArgs args)
+            private RealmValue DeserializeDBRef(BsonDeserializationContext context, BsonDeserializationArgs args)
             {
                 var reader = context.Reader;
                 reader.ReadStartDocument();
