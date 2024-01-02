@@ -31,7 +31,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;

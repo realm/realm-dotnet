@@ -21,7 +21,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -60,6 +59,8 @@ namespace Realms.Sync
         /// Gets a collection of documents from MongoDB that can be deserialized in Realm objects.
         /// </summary>
         /// <remarks>
+        /// This method is only supported for source-generated classes - i.e. ones that inherit from <see cref="IRealmObject"/>
+        /// rather than <see cref="RealmObject"/>.
         /// The collection and database name are automatically derived from the Realm object class.
         /// </remarks>
         /// <typeparam name="TRealmObject">The Realm object type that matches the shape of the documents in the collection.</typeparam>
@@ -174,7 +175,8 @@ namespace Realms.Sync
             /// <summary>
             /// Gets the <see cref="Database"/> this collection belongs to.
             /// </summary>
-            /// <value>The collection's <see cref="Database"/>.</value>
+            /// <value>The collection's <see cref="Database"/> or null if the database was automatically
+            /// inferred with <see cref="MongoClient.Collection{TDocument}"/>.</value>
             public Database? Database { get; }
 
             /// <summary>

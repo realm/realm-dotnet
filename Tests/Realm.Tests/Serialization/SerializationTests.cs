@@ -30,8 +30,12 @@ using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Serialization
 {
+#if TEST_WEAVER
+    [Ignore("These tests are only valid for source-generated classes")]
+#else
     [TestFixture(true)]
     [TestFixture(false)]
+#endif
     public class SerializationTests : RealmInstanceTest
     {
         private readonly bool _managed;
