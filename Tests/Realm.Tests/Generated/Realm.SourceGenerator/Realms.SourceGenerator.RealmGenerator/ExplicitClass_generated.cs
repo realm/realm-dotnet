@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static ExplicitClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ExplicitClassSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(ExplicitClass), RealmSchema);
         }
 
         /// <summary>

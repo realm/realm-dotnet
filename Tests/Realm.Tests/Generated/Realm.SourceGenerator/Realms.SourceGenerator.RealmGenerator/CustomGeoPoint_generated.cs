@@ -33,7 +33,6 @@ namespace Realms.Tests.Database
             static CustomGeoPoint()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new CustomGeoPointSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(CustomGeoPoint), RealmSchema);
             }
 
             /// <summary>

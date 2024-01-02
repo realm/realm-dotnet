@@ -31,7 +31,6 @@ namespace Realms.Tests
         static DictionariesObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DictionariesObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DictionariesObject), RealmSchema);
         }
 
         /// <summary>

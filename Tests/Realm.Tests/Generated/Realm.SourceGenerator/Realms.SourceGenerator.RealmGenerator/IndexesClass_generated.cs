@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static IndexesClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new IndexesClassSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(IndexesClass), RealmSchema);
         }
 
         /// <summary>

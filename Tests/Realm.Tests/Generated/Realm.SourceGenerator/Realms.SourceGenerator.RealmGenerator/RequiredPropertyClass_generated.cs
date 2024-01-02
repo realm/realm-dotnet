@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static RequiredPropertyClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new RequiredPropertyClassSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(RequiredPropertyClass), RealmSchema);
         }
 
         /// <summary>

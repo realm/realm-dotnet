@@ -31,7 +31,6 @@ namespace Realms.Tests
         static IntPropertyObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new IntPropertyObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(IntPropertyObject), RealmSchema);
         }
 
         /// <summary>

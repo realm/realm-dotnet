@@ -31,7 +31,6 @@ namespace Realms.Tests
         static DecimalsObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DecimalsObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DecimalsObject), RealmSchema);
         }
 
         /// <summary>

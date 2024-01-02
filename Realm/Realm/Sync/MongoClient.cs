@@ -21,6 +21,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -68,18 +69,11 @@ namespace Realms.Sync
         public Collection<TRealmObject> GetCollection<TRealmObject>()
             where TRealmObject : class, IRealmObjectBase
         {
-            if (!SchemaByType.TryGetValue(typeof(TRealmObject), out var schema))
-            {
-                throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject.");
-            }
+            var schema = _schemas.GetOrAdd(typeof(TRealmObject),
+                type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
+            ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
 
             return new Collection<TRealmObject>(this, schema.Name);
-        }
-
-        //TODO This has been done to avoid the reflection in the GetCollection method. Need to look at this again
-        public static void RegisterSchema(Type type, ObjectSchema schema)
-        {
-            SchemaByType.TryAdd(type, schema);
         }
 
         /// <summary>

@@ -28,7 +28,6 @@ namespace Realms.Tests.Database
         static DynamicDog()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DynamicDogSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DynamicDog), RealmSchema);
         }
 
         /// <summary>

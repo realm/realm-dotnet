@@ -31,7 +31,6 @@ namespace Realms.Tests.Database
             static Child()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new ChildSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(Child), RealmSchema);
             }
 
             /// <summary>

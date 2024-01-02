@@ -33,12 +33,10 @@ using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
-
 #if TEST_WEAVER
     [Ignore("These tests are only valid for source-generated classes")]
-#else
-    [TestFixture, Preserve(AllMembers = true)]
 #endif
+    [TestFixture, Preserve(AllMembers = true)]
     public class StaticQueriesTests : SyncTestBase
     {
         private const string ServiceName = "BackingDB";

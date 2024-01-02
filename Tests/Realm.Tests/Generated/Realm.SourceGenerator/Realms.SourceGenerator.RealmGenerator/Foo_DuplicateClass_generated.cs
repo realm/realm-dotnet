@@ -31,7 +31,6 @@ namespace Foo
         static DuplicateClass()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DuplicateClassSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DuplicateClass), RealmSchema);
         }
 
         /// <summary>

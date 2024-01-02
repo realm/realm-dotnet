@@ -31,7 +31,6 @@ namespace Realms.Tests
         static ObjectWithFtsIndex()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithFtsIndexSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectWithFtsIndex), RealmSchema);
         }
 
         /// <summary>

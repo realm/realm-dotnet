@@ -31,7 +31,6 @@ namespace Realms.Tests.Database
             static NullablePrimaryKeyObject()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new NullablePrimaryKeyObjectSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(NullablePrimaryKeyObject), RealmSchema);
             }
 
             /// <summary>

@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static Cities()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new CitiesSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(Cities), RealmSchema);
         }
 
         /// <summary>

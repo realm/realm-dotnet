@@ -31,7 +31,6 @@ namespace Realms.Tests
         static RemappedPropertiesObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new RemappedPropertiesObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(RemappedPropertiesObject), RealmSchema);
         }
 
         /// <summary>

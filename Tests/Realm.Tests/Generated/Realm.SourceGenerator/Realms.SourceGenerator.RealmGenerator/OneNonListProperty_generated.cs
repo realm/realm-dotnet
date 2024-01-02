@@ -28,7 +28,6 @@ namespace Realms.Tests.Database
         static OneNonListProperty()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new OneNonListPropertySerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(OneNonListProperty), RealmSchema);
         }
 
         /// <summary>

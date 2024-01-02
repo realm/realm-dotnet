@@ -31,7 +31,6 @@ namespace Realms.Tests
         static ObjectWithEmbeddedProperties()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithEmbeddedPropertiesSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectWithEmbeddedProperties), RealmSchema);
         }
 
         /// <summary>

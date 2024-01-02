@@ -32,7 +32,6 @@ namespace Realms.Tests.Database
         static GuidType()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new GuidTypeSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(GuidType), RealmSchema);
         }
 
         /// <summary>

@@ -27,7 +27,6 @@ namespace Realms.Tests.Database
         static TestNotificationObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new TestNotificationObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(TestNotificationObject), RealmSchema);
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static DynamicSubTask()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DynamicSubTaskSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DynamicSubTask), RealmSchema);
         }
 
         /// <summary>

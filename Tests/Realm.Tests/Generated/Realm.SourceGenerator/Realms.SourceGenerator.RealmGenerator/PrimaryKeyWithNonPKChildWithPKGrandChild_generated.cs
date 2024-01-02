@@ -31,7 +31,6 @@ namespace Realms.Tests.Database
             static PrimaryKeyWithNonPKChildWithPKGrandChild()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyWithNonPKChildWithPKGrandChildSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(PrimaryKeyWithNonPKChildWithPKGrandChild), RealmSchema);
             }
 
             /// <summary>

@@ -28,7 +28,6 @@ namespace Realms.Tests.Database
         static DynamicOwner()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new DynamicOwnerSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(DynamicOwner), RealmSchema);
         }
 
         /// <summary>

@@ -31,7 +31,6 @@ namespace Realms.Tests
         static RecursiveBacklinksObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new RecursiveBacklinksObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(RecursiveBacklinksObject), RealmSchema);
         }
 
         /// <summary>

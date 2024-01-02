@@ -26,7 +26,6 @@ namespace Realms.Tests.Database
         static InitializedFieldObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new InitializedFieldObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(InitializedFieldObject), RealmSchema);
         }
 
         /// <summary>

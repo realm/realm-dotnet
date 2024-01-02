@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static BacklinkObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new BacklinkObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(BacklinkObject), RealmSchema);
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static AgedObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new AgedObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(AgedObject), RealmSchema);
         }
 
         /// <summary>

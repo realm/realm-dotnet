@@ -33,7 +33,6 @@ namespace Realms.Tests.Database
             static Company()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new CompanySerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(Company), RealmSchema);
             }
 
             /// <summary>

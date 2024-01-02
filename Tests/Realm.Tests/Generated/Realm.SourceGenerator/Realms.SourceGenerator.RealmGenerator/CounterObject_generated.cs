@@ -31,7 +31,6 @@ namespace Realms.Tests
         static CounterObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new CounterObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(CounterObject), RealmSchema);
         }
 
         /// <summary>

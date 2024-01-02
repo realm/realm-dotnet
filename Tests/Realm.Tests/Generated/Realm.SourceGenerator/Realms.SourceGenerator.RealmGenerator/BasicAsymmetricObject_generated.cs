@@ -34,7 +34,6 @@ namespace Realms.Tests.Sync
         static BasicAsymmetricObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new BasicAsymmetricObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(BasicAsymmetricObject), RealmSchema);
         }
 
         /// <summary>

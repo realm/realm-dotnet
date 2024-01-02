@@ -31,7 +31,6 @@ namespace Realms.Tests
         static UnqueryableBacklinks()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new UnqueryableBacklinksSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(UnqueryableBacklinks), RealmSchema);
         }
 
         /// <summary>

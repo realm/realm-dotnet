@@ -29,7 +29,6 @@ namespace Realms.Tests.Database
         static Level3()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new Level3Serializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(Level3), RealmSchema);
         }
 
         /// <summary>

@@ -31,7 +31,6 @@ namespace Realms.Tests
         static EmbeddedAllTypesObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedAllTypesObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(EmbeddedAllTypesObject), RealmSchema);
         }
 
         /// <summary>

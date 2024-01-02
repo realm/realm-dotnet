@@ -31,7 +31,6 @@ namespace Realms.Tests
         static CollectionsObject()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new CollectionsObjectSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(CollectionsObject), RealmSchema);
         }
 
         /// <summary>

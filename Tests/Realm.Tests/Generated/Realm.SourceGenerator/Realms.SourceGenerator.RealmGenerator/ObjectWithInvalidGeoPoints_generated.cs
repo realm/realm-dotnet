@@ -33,7 +33,6 @@ namespace Realms.Tests.Database
             static ObjectWithInvalidGeoPoints()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithInvalidGeoPointsSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(ObjectWithInvalidGeoPoints), RealmSchema);
             }
 
             /// <summary>

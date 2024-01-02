@@ -33,7 +33,6 @@ namespace Realms.Tests.Database
             static CoordinatesEmbeddedObject()
             {
                 Realms.Serialization.RealmObjectSerializer.Register(new CoordinatesEmbeddedObjectSerializer());
-                Realms.Sync.MongoClient.RegisterSchema(typeof(CoordinatesEmbeddedObject), RealmSchema);
             }
 
             /// <summary>

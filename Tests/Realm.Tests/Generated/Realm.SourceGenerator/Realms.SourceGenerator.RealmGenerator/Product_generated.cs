@@ -28,7 +28,6 @@ namespace Realms.Tests.Database
         static Product()
         {
             Realms.Serialization.RealmObjectSerializer.Register(new ProductSerializer());
-            Realms.Sync.MongoClient.RegisterSchema(typeof(Product), RealmSchema);
         }
 
         /// <summary>
