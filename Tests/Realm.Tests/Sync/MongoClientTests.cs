@@ -2227,15 +2227,14 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
-
-        // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
-        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
+        private async Task<MongoClient.Collection<T>> GetCollection<T>()
             where T : class, IRealmObjectBase
         {
+            var appConfigType = AppConfigType.Default;
             var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
             var user = await GetUserAsync(app);
 
-            SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
+            SyncConfigurationBase config = GetIntegrationConfig(user);
 
             using var realm = await GetRealmAsync(config);
             var client = user.GetMongoClient(ServiceName);
