@@ -1143,6 +1143,10 @@ namespace Realms.Tests
 
         public IDictionary<string, LinksObject?> Dictionary { get; } = null!;
 
+        public LinksObject()
+        {
+        }
+
         public LinksObject(string id)
         {
             Id = id;

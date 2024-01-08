@@ -17,7 +17,7 @@
     <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([MSBuild]::IsOsPlatform('macOS')) AND '$(MSBuildVersion)' &lt; '17.0')">
       $(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20
     </TargetFrameworks>
-    <TargetFrameworks Condition="$([System.OperatingSystem]::IsWindows())">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>

@@ -298,8 +298,6 @@ namespace Realms.Tests.Sync
             },
         };
 
-        // TODO We could remove this and the following test, as they are covered by the link tests
-        // The only difference is that here we insert objects as they are needed.
         [TestCaseSource(nameof(ObjectTestCases))]
         public void RealmObjectAPI_Object_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
         {

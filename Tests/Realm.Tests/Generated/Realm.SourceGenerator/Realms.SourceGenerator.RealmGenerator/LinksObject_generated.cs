@@ -46,10 +46,6 @@ namespace Realms.Tests
             Realms.Schema.Property.ObjectDictionary("Dictionary", "LinksObject", managedName: "Dictionary"),
         }.Build();
 
-        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private LinksObject() {}
-        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
         #region IRealmObject implementation
 
         private ILinksObjectAccessor? _accessor;
