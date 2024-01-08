@@ -396,8 +396,8 @@ namespace Realms.Tests.Sync
                 {
                     Set =
                     {
-                        new("list.1") { Value = 100 },
-                        new("list.2") { Value = 200 },
+                        new("set.1") { Value = 100 },
+                        new("set.2") { Value = 200 },
                     },
                     Value = 123
                 }),
