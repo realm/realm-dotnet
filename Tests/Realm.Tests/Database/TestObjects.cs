@@ -1131,7 +1131,11 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
+#if TEST_WEAVER
+        public string Id { get; private set; } = null!;
+#else
         public string Id { get; private set; }
+#endif
 
         public int Value { get; set; }
 
@@ -1143,14 +1147,16 @@ namespace Realms.Tests
 
         public IDictionary<string, LinksObject?> Dictionary { get; } = null!;
 
-        public LinksObject()
-        {
-        }
-
         public LinksObject(string id)
         {
             Id = id;
         }
+
+#if TEST_WEAVER
+        public LinksObject()
+        {
+        }
+#endif
     }
 
     public partial class ObjectWithFtsIndex : TestRealmObject
