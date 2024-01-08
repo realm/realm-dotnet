@@ -535,7 +535,7 @@ namespace Realms.Tests
                     return value.AsDouble;
                 case BsonType.String:
                     var stringVal = value.AsString;
-                    if (DateTimeOffset.TryParseExact(stringVal, "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", 
+                    if (DateTimeOffset.TryParseExact(stringVal, "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
                         DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date))
                     {
                         return date;

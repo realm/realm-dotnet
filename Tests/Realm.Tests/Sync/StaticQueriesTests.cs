@@ -563,7 +563,6 @@ namespace Realms.Tests.Sync
                     Assert.That(fullyRetrieved.Id, Is.EqualTo(original.Id));
                     Assert.That(fullyRetrieved.Value, Is.EqualTo(original.Value));
                 }
-
             }, timeout: 120000);
         }
 
@@ -635,7 +634,7 @@ namespace Realms.Tests.Sync
             }
         };
 
-        //TODO This is going to be fixed with https://jira.mongodb.org/browse/BAAS-27410
+        // TODO This is going to be fixed with https://jira.mongodb.org/browse/BAAS-27410
         [TestCaseSource(nameof(RealmValueLinkTestCases))]
         public void RealmObjectAPI_RealmValueLinks_AtlasToRealm(TestCaseData<RealmValueObject> testCase)
         {
@@ -783,7 +782,6 @@ namespace Realms.Tests.Sync
                     Assert.That(fullyRetrieved.Id, Is.EqualTo(originalAsObj.Id));
                     Assert.That(fullyRetrieved.Int, Is.EqualTo(originalAsObj.Int));
                 }
-
             }, timeout: 120000);
         }
 
@@ -1196,7 +1194,6 @@ namespace Realms.Tests.Sync
 
             return collection;
         }
-
 
         private static void AssertEmbedded(ObjectWithEmbeddedProperties syncObj, ObjectWithEmbeddedProperties obj)
         {
