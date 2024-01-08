@@ -33,9 +33,7 @@ using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
-#if TEST_WEAVER
-    [Ignore("These tests are only valid for source-generated classes")]
-#endif
+#if !TEST_WEAVER
     [TestFixture, Preserve(AllMembers = true)]
     public class StaticQueriesTests : SyncTestBase
     {
@@ -1257,4 +1255,5 @@ namespace Realms.Tests.Sync
             }
         }
     }
+#endif
 }
