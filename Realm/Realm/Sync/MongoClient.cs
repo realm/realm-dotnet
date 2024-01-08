@@ -48,8 +48,6 @@ namespace Realms.Sync
         /// <value>The name of the remote MongoDB service.</value>
         public string ServiceName { get; }
 
-        private static readonly ConcurrentDictionary<Type, ObjectSchema> SchemaByType = new();
-
         internal MongoClient(User user, string serviceName)
         {
             User = user;

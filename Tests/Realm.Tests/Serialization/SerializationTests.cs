@@ -33,7 +33,8 @@ namespace Realms.Tests.Serialization
 #if TEST_WEAVER
     [Ignore("These tests are only valid for source-generated classes")]
 #endif
-    [TestFixture, Preserve(AllMembers = true)]
+    [TestFixture(true)]
+    [TestFixture(false)]
     public class SerializationTests : RealmInstanceTest
     {
         private readonly bool _managed;
