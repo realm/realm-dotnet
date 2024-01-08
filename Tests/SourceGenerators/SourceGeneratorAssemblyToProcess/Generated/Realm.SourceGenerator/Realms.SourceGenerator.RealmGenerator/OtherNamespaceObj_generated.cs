@@ -332,8 +332,10 @@ namespace OtherNamespace
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OtherNamespaceObjSerializer : Realms.Serialization.RealmObjectSerializer<OtherNamespaceObj>
+        private class OtherNamespaceObjSerializer : Realms.Serialization.RealmObjectSerializerBase<OtherNamespaceObj>
         {
+            public override string SchemaName => "OtherNamespaceObj";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OtherNamespaceObj value)
             {
                 context.Writer.WriteStartDocument();
@@ -351,6 +353,9 @@ namespace OtherNamespace
                 {
                     case "Id":
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -384,8 +384,10 @@ namespace SourceGeneratorPlayground
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PersonSerializer : Realms.Serialization.RealmObjectSerializer<Person>
+        private class PersonSerializer : Realms.Serialization.RealmObjectSerializerBase<Person>
         {
+            public override string SchemaName => "Person";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Person value)
             {
                 context.Writer.WriteStartDocument();
@@ -407,6 +409,9 @@ namespace SourceGeneratorPlayground
                         break;
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -362,8 +362,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class NamespaceObjSerializer : Realms.Serialization.RealmObjectSerializer<NamespaceObj>
+        private class NamespaceObjSerializer : Realms.Serialization.RealmObjectSerializerBase<NamespaceObj>
         {
+            public override string SchemaName => "NamespaceObj";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NamespaceObj value)
             {
                 context.Writer.WriteStartDocument();
@@ -384,7 +386,10 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "OtherNamespaceObj":
-                        instance.OtherNamespaceObj = LookupSerializer<OtherNamespace.OtherNamespaceObj?>()!.DeserializeById(context);
+                        instance.OtherNamespaceObj = Realms.Serialization.RealmObjectSerializer.LookupSerializer<OtherNamespace.OtherNamespaceObj?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

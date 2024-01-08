@@ -363,8 +363,10 @@ namespace SourceGeneratorPlayground
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class NestedClassSerializer : Realms.Serialization.RealmObjectSerializer<NestedClass>
+            private class NestedClassSerializer : Realms.Serialization.RealmObjectSerializerBase<NestedClass>
             {
+                public override string SchemaName => "NestedClass";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NestedClass value)
                 {
                     context.Writer.WriteStartDocument();
@@ -385,7 +387,10 @@ namespace SourceGeneratorPlayground
                             instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                             break;
                         case "Link":
-                            instance.Link = LookupSerializer<SourceGeneratorPlayground.OuterClass.NestedClass?>()!.DeserializeById(context);
+                            instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorPlayground.OuterClass.NestedClass?>()!.DeserializeById(context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
                             break;
                     }
                 }

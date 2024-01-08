@@ -763,8 +763,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class NullableClassSerializer : Realms.Serialization.RealmObjectSerializer<NullableClass>
+        private class NullableClassSerializer : Realms.Serialization.RealmObjectSerializerBase<NullableClass>
         {
+            public override string SchemaName => "NullableClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NullableClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -821,10 +823,24 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.NullableRealmInt = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>?>().Deserialize(context);
                         break;
                     case "NullableObject":
-                        instance.NullableObject = LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context);
+                        instance.NullableObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context);
                         break;
                     case "NonNullableRealmValue":
                         instance.NonNullableRealmValue = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "CollectionOfNullableInt":
+                    case "CollectionOfNonNullableInt":
+                    case "CollectionOfNullableString":
+                    case "CollectionOfNonNullableString":
+                    case "ListNonNullabeObject":
+                    case "SetNonNullableObject":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "DictionaryNullableObject":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -846,10 +862,10 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.CollectionOfNonNullableString.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
                         break;
                     case "ListNonNullabeObject":
-                        instance.ListNonNullabeObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
+                        instance.ListNonNullabeObject.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
                         break;
                     case "SetNonNullableObject":
-                        instance.SetNonNullableObject.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
+                        instance.SetNonNullableObject.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -859,8 +875,8 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (name)
                 {
                     case "DictionaryNullableObject":
-                                                instance.DictionaryNullableObject[fieldName] = LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context)!;
-                                                break;
+                        instance.DictionaryNullableObject[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.NullableClass?>()!.DeserializeById(context)!;
+                        break;
                 }
             }
         }

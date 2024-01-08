@@ -473,8 +473,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexedClassSerializer : Realms.Serialization.RealmObjectSerializer<IndexedClass>
+        private class IndexedClassSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexedClass>
         {
+            public override string SchemaName => "IndexedClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexedClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -512,6 +514,9 @@ namespace SourceGeneratorAssemblyToProcess
                         break;
                     case "GeneralGuidProp":
                         instance.GeneralGuidProp = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

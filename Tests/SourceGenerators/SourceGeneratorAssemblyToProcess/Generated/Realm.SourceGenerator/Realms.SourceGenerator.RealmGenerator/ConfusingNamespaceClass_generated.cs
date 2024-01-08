@@ -332,8 +332,10 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ConfusingNamespaceClassSerializer : Realms.Serialization.RealmObjectSerializer<ConfusingNamespaceClass>
+        private class ConfusingNamespaceClassSerializer : Realms.Serialization.RealmObjectSerializerBase<ConfusingNamespaceClass>
         {
+            public override string SchemaName => "ConfusingNamespaceClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ConfusingNamespaceClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -351,6 +353,9 @@ namespace SourceGeneratorAssemblyToProcess.Realm
                 {
                     case "Id":
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
