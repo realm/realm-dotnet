@@ -359,7 +359,7 @@ namespace Realms.Tests.Sync
         {
             new object[]
             {
-                CreateTestCase("Single link", new LinksObject("first")
+                CreateTestCase("Single link", new LinksObject("singleLink")
                 {
                     Link = new("second") { Value = 2 },
                     Value = 1,
@@ -367,7 +367,7 @@ namespace Realms.Tests.Sync
             },
             new object[]
             {
-                CreateTestCase("List", new LinksObject("first")
+                CreateTestCase("List", new LinksObject("listLink")
                 {
                     List =
                     {
@@ -379,7 +379,7 @@ namespace Realms.Tests.Sync
             },
             new object[]
             {
-                CreateTestCase("Dictionary", new LinksObject("first")
+                CreateTestCase("Dictionary", new LinksObject("dictLink")
                 {
                     Dictionary =
                     {
@@ -392,7 +392,7 @@ namespace Realms.Tests.Sync
             },
             new object[]
             {
-                CreateTestCase("Set", new LinksObject("first")
+                CreateTestCase("Set", new LinksObject("setLink")
                 {
                     Set =
                     {
