@@ -507,6 +507,22 @@ namespace Realms.Tests.Serialization
             AssertMatchesBsonDocument(deserializedBson, original);
         }
 
+        [Test, Ignore("Serializers are cached, so once we change the serializer we can't restore it, and this is a problem for the other tests.")]
+        public void LegacySerialization_CanBeSet()
+        {
+            var dateTime = new DateTimeOffset(2020, 10, 10, 10, 10, 10, TimeSpan.Zero);
+
+#pragma warning disable CS0618 // This is for a test
+            Realm.SetLegacySerialization();
+#pragma warning restore CS0618 // This is for a test
+
+            var legacySerialized = SerializationHelper.ToNativeJson(dateTime);
+
+            // The new serialization is serializing DateTimeOffset as a BSON DateTime, so
+            // we are veryfying that is being serialized as a string, as in the legacy serializer.
+            Assert.That(legacySerialized, Does.Contain("2020-10-10T10:10:10+00:00"));
+        }
+
         private void AddIfNecessary(IRealmObject obj)
         {
             if (_managed)

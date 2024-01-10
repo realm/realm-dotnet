@@ -55,6 +55,11 @@ namespace Realms.Helpers
             }
         }
 
+        public static void SetLegacySerialization()
+        {
+            BsonSerializer.RegisterSerializationProvider(new LegacyRealmSerializationProvider());
+        }
+
         [Preserve]
         internal static void PreserveSerializers()
         {
@@ -169,6 +174,29 @@ namespace Realms.Helpers
                 var serializerType = typeof(RealmIntegerSerializer<>).MakeGenericType(type);
                 return (IBsonSerializer)Activator.CreateInstance(serializerType)!;
             }
+        }
+
+        private class LegacyRealmSerializationProvider : IBsonSerializationProvider
+        {
+            public IBsonSerializer? GetSerializer(Type type) => type switch
+            {
+                _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
+                _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),
+                _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.String),
+                _ when type == typeof(object) => new ObjectSerializer(
+                    BsonSerializer.LookupDiscriminatorConvention(typeof(object)),
+                    GuidRepresentation.Standard,
+                    allowedSerializationTypes: _ => true,
+                    allowedDeserializationTypes: t => ObjectSerializer.DefaultAllowedTypes(t) || IsAnonymousType(t)),
+                _ => null
+            };
+
+            // TODO: remove this when https://github.com/mongodb/mongo-csharp-driver/commit/e0c14c80e6c31f337439d2915b5dd90fe38f9562
+            // is released
+            private static bool IsAnonymousType(Type type) =>
+                type.GetCustomAttributes(false).Any(x => x is CompilerGeneratedAttribute) &&
+                type.IsGenericType &&
+                type.Name.Contains("Anon");
         }
 
         [Preserve(AllMembers = true)]

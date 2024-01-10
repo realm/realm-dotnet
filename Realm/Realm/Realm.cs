@@ -166,6 +166,22 @@ namespace Realms
             SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
+        /// <summary>
+        /// Sets the serializer to use the legacy serialization.
+        /// </summary>
+        /// <remarks>
+        /// In version 12.0.0 it was introduced a new automatic serialization and deserialization of Realm classes when using methods
+        /// on <see cref="Realms.Sync.MongoClient.Collection{TDocument}"/>, without the need to annotate classes with <see cref="MongoDB.Bson"/> attributes.
+        /// This new serialization changed the default serializer for various types (<see cref="DateTimeOffset"/> for instance), so
+        /// if you need to call this method if you prefer to use the old serialization.
+        /// Please remember to call this method before any kind of serialization is needed, otherwise it is not guaranteed to work as expected.
+        /// </remarks>
+        [Obsolete("It is recommended to use new serialization.")]
+        public static void SetLegacySerialization()
+        {
+            SerializationHelper.SetLegacySerialization();
+        }
+
         #endregion static
 
         private WeakReference<SubscriptionSet>? _subscriptionRef;

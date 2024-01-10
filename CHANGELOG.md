@@ -1,8 +1,10 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
+
 ### Enhancements
 * Added the `MongoClient.GetCollection<T>` method to get a collection of documents from MongoDB that can be deserialized in Realm objects. This methods works the same as `MongoClient.GetDatabase(dbName).GetCollection(collectionName)`, but the database name and collection name are automatically derived from the Realm object class.  [#3414](https://github.com/realm/realm-dotnet/pull/3414)
-* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
 * None
