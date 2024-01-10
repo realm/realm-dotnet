@@ -337,8 +337,10 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CoordinatesEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializer<CoordinatesEmbeddedObject>
+            private class CoordinatesEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CoordinatesEmbeddedObject>
             {
+                public override string SchemaName => "CoordinatesEmbeddedObject";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CoordinatesEmbeddedObject value)
                 {
                     context.Writer.WriteStartDocument();
@@ -352,7 +354,15 @@ namespace Realms.Tests.Database
 
                 protected override void ReadValue(CoordinatesEmbeddedObject instance, string name, BsonDeserializationContext context)
                 {
-                    // No Realm properties to deserialize
+                    switch (name)
+                    {
+                        case "coordinate":
+                            ReadArray(instance, name, context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
+                    }
                 }
 
                 protected override void ReadArrayElement(CoordinatesEmbeddedObject instance, string name, BsonDeserializationContext context)

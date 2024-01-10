@@ -369,8 +369,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IntPrimaryKeyWithValueObjectSerializer : Realms.Serialization.RealmObjectSerializer<IntPrimaryKeyWithValueObject>
+        private class IntPrimaryKeyWithValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IntPrimaryKeyWithValueObject>
         {
+            public override string SchemaName => "IntPrimaryKeyWithValueObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPrimaryKeyWithValueObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -392,6 +394,9 @@ namespace Realms.Tests
                         break;
                     case "StringValue":
                         instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -335,8 +335,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializer<ExplicitClass>
+        private class ExplicitClassSerializer : Realms.Serialization.RealmObjectSerializerBase<ExplicitClass>
         {
+            public override string SchemaName => "ExplicitClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ExplicitClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -354,6 +356,9 @@ namespace Realms.Tests.Database
                 {
                     case "Foo":
                         instance.Foo = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -468,8 +468,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicTaskSerializer : Realms.Serialization.RealmObjectSerializer<DynamicTask>
+        private class DynamicTaskSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicTask>
         {
+            public override string SchemaName => "DynamicTask";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicTask value)
             {
                 context.Writer.WriteStartDocument();
@@ -498,6 +500,16 @@ namespace Realms.Tests.Database
                         break;
                     case "CompletionReport":
                         instance.CompletionReport = BsonSerializer.LookupSerializer<Realms.Tests.Database.CompletionReport?>().Deserialize(context);
+                        break;
+                    case "SubTasks":
+                    case "SubSubTasks":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "SubTasksDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

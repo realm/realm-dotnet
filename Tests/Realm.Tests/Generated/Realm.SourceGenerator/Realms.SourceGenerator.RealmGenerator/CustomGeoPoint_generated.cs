@@ -373,8 +373,10 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializer<CustomGeoPoint>
+            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializerBase<CustomGeoPoint>
             {
+                public override string SchemaName => "CustomGeoPoint";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CustomGeoPoint value)
                 {
                     context.Writer.WriteStartDocument();
@@ -393,6 +395,12 @@ namespace Realms.Tests.Database
                     {
                         case "type":
                             instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                            break;
+                        case "coordinates":
+                            ReadArray(instance, name, context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
                             break;
                     }
                 }

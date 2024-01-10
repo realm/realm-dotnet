@@ -1279,8 +1279,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedAllTypesObject>
+        private class EmbeddedAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedAllTypesObject>
         {
+            public override string SchemaName => "EmbeddedAllTypesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedAllTypesObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -1430,6 +1432,9 @@ namespace Realms.Tests
                         break;
                     case "NullableInt64CounterProperty":
                         instance.NullableInt64CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

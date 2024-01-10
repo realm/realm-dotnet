@@ -336,8 +336,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SomeClassSerializer : Realms.Serialization.RealmObjectSerializer<SomeClass>
+        private class SomeClassSerializer : Realms.Serialization.RealmObjectSerializerBase<SomeClass>
         {
+            public override string SchemaName => "SomeClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SomeClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -354,7 +356,10 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "BacklinkObject":
-                        instance.BacklinkObject = LookupSerializer<Realms.Tests.Database.BacklinkObject?>()!.DeserializeById(context);
+                        instance.BacklinkObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.BacklinkObject?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

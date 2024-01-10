@@ -326,8 +326,10 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     }
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-    private class NoNamespaceClassSerializer : Realms.Serialization.RealmObjectSerializer<NoNamespaceClass>
+    private class NoNamespaceClassSerializer : Realms.Serialization.RealmObjectSerializerBase<NoNamespaceClass>
     {
+        public override string SchemaName => "NoNamespaceClass";
+
         protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NoNamespaceClass value)
         {
             context.Writer.WriteStartDocument();
@@ -345,6 +347,9 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
             {
                 case "Name":
                     instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                    break;
+                default:
+                    context.Reader.SkipValue();
                     break;
             }
         }

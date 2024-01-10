@@ -38,7 +38,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("LinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
             Realms.Schema.Property.Object("Link", "LinksObject", managedName: "Link"),
             Realms.Schema.Property.ObjectList("List", "LinksObject", managedName: "List"),
@@ -304,8 +304,8 @@ namespace Realms.Tests
         {
             public string Id
             {
-                get => (string)GetValue("Id")!;
-                set => SetValueUnique("Id", value);
+                get => (string)GetValue("_id")!;
+                set => SetValueUnique("_id", value);
             }
 
             public int Value
@@ -415,7 +415,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
+                    "_id" => _id,
                     "Value" => _value,
                     "Link" => _link,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
@@ -426,7 +426,7 @@ namespace Realms.Tests
             {
                 switch (propertyName)
                 {
-                    case "Id":
+                    case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
                         Value = (int)val;
@@ -441,7 +441,7 @@ namespace Realms.Tests
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                if (propertyName != "Id")
+                if (propertyName != "_id")
                 {
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
@@ -478,13 +478,15 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<LinksObject>
+        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<LinksObject>
         {
+            public override string SchemaName => "LinksObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LinksObject value)
             {
                 context.Writer.WriteStartDocument();
 
-                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "_id", value.Id);
                 WriteValue(context, args, "Value", value.Value);
                 WriteValue(context, args, "Link", value.Link);
                 WriteList(context, args, "List", value.List);
@@ -500,14 +502,24 @@ namespace Realms.Tests
             {
                 switch (name)
                 {
-                    case "Id":
+                    case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                         break;
                     case "Value":
                         instance.Value = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "Link":
-                        instance.Link = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
+                        instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
+                        break;
+                    case "List":
+                    case "Set":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "Dictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -517,10 +529,10 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "List":
-                        instance.List.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
+                        instance.List.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                     case "Set":
-                        instance.Set.Add(LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
+                        instance.Set.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -530,7 +542,7 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "Dictionary":
-                        instance.Dictionary[fieldName] = LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
+                        instance.Dictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }

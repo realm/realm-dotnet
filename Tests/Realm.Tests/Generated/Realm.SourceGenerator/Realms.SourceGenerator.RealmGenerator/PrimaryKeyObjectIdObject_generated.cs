@@ -341,8 +341,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyObjectIdObjectSerializer : Realms.Serialization.RealmObjectSerializer<PrimaryKeyObjectIdObject>
+        private class PrimaryKeyObjectIdObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyObjectIdObject>
         {
+            public override string SchemaName => "PrimaryKeyObjectIdObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyObjectIdObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -360,6 +362,9 @@ namespace Realms.Tests
                 {
                     case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

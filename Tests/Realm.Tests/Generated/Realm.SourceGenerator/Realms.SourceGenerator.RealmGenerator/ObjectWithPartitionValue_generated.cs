@@ -439,8 +439,10 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithPartitionValue>
+        private class ObjectWithPartitionValueSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithPartitionValue>
         {
+            public override string SchemaName => "ObjectWithPartitionValue";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithPartitionValue value)
             {
                 context.Writer.WriteStartDocument();
@@ -470,6 +472,9 @@ namespace Realms.Tests.Sync
                         break;
                     case "Guid":
                         instance.Guid = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

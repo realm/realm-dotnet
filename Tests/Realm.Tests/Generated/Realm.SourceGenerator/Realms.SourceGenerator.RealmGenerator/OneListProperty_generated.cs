@@ -328,8 +328,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OneListPropertySerializer : Realms.Serialization.RealmObjectSerializer<OneListProperty>
+        private class OneListPropertySerializer : Realms.Serialization.RealmObjectSerializerBase<OneListProperty>
         {
+            public override string SchemaName => "OneListProperty";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OneListProperty value)
             {
                 context.Writer.WriteStartDocument();
@@ -343,7 +345,15 @@ namespace Realms.Tests.Database
 
             protected override void ReadValue(OneListProperty instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "People":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(OneListProperty instance, string name, BsonDeserializationContext context)
@@ -351,7 +361,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "People":
-                        instance.People.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.People.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                 }
             }

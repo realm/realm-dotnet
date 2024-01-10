@@ -414,8 +414,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializer<IntPropertyObject>
+        private class IntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IntPropertyObject>
         {
+            public override string SchemaName => "IntPropertyObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPropertyObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -441,6 +443,9 @@ namespace Realms.Tests
                         break;
                     case "GuidProperty":
                         instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

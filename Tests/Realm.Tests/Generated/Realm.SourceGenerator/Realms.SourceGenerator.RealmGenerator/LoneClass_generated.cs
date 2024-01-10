@@ -341,8 +341,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class LoneClassSerializer : Realms.Serialization.RealmObjectSerializer<LoneClass>
+        private class LoneClassSerializer : Realms.Serialization.RealmObjectSerializerBase<LoneClass>
         {
+            public override string SchemaName => "LoneClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LoneClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -360,6 +362,9 @@ namespace Realms.Tests.Database
                 {
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

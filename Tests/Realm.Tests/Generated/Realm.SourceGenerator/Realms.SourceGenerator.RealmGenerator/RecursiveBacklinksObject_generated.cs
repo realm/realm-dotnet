@@ -386,8 +386,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RecursiveBacklinksObjectSerializer : Realms.Serialization.RealmObjectSerializer<RecursiveBacklinksObject>
+        private class RecursiveBacklinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RecursiveBacklinksObject>
         {
+            public override string SchemaName => "RecursiveBacklinksObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RecursiveBacklinksObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -408,7 +410,10 @@ namespace Realms.Tests
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "Parent":
-                        instance.Parent = LookupSerializer<Realms.Tests.RecursiveBacklinksObject?>()!.DeserializeById(context);
+                        instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RecursiveBacklinksObject?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

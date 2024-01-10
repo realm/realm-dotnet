@@ -341,8 +341,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedLevel3Serializer : Realms.Serialization.RealmObjectSerializer<EmbeddedLevel3>
+        private class EmbeddedLevel3Serializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedLevel3>
         {
+            public override string SchemaName => "EmbeddedLevel3";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedLevel3 value)
             {
                 context.Writer.WriteStartDocument();
@@ -360,6 +362,9 @@ namespace Realms.Tests
                 {
                     case "String":
                         instance.String = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

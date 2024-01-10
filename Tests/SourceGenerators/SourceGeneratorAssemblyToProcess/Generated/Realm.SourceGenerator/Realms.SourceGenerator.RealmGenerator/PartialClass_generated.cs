@@ -357,8 +357,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PartialClassSerializer : Realms.Serialization.RealmObjectSerializer<PartialClass>
+        private class PartialClassSerializer : Realms.Serialization.RealmObjectSerializerBase<PartialClass>
         {
+            public override string SchemaName => "PartialClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PartialClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -380,6 +382,9 @@ namespace SourceGeneratorAssemblyToProcess
                         break;
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

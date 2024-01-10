@@ -398,8 +398,10 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class ParentSerializer : Realms.Serialization.RealmObjectSerializer<Parent>
+            private class ParentSerializer : Realms.Serialization.RealmObjectSerializerBase<Parent>
             {
+                public override string SchemaName => "Parent";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Parent value)
                 {
                     context.Writer.WriteStartDocument();
@@ -424,7 +426,10 @@ namespace Realms.Tests.Database
                             instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                             break;
                         case "Child":
-                            instance.Child = LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.Child?>()!.DeserializeById(context);
+                            instance.Child = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.AddOrUpdateTests.Child?>()!.DeserializeById(context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
                             break;
                     }
                 }

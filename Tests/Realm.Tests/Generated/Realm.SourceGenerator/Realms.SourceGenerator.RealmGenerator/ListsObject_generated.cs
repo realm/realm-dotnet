@@ -991,8 +991,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializer<ListsObject>
+        private class ListsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<ListsObject>
         {
+            public override string SchemaName => "ListsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ListsObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -1036,7 +1038,45 @@ namespace Realms.Tests
 
             protected override void ReadValue(ListsObject instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "CharList":
+                    case "ByteList":
+                    case "Int16List":
+                    case "Int32List":
+                    case "Int64List":
+                    case "SingleList":
+                    case "DoubleList":
+                    case "BooleanList":
+                    case "DecimalList":
+                    case "Decimal128List":
+                    case "ObjectIdList":
+                    case "GuidList":
+                    case "StringList":
+                    case "ByteArrayList":
+                    case "DateTimeOffsetList":
+                    case "NullableCharList":
+                    case "NullableByteList":
+                    case "NullableInt16List":
+                    case "NullableInt32List":
+                    case "NullableInt64List":
+                    case "NullableSingleList":
+                    case "NullableDoubleList":
+                    case "NullableBooleanList":
+                    case "NullableDateTimeOffsetList":
+                    case "NullableDecimalList":
+                    case "NullableDecimal128List":
+                    case "NullableObjectIdList":
+                    case "NullableGuidList":
+                    case "NullableStringList":
+                    case "NullableByteArrayList":
+                    case "RealmValueList":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(ListsObject instance, string name, BsonDeserializationContext context)

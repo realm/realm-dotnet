@@ -395,8 +395,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectContainerV1Serializer : Realms.Serialization.RealmObjectSerializer<ObjectContainerV1>
+        private class ObjectContainerV1Serializer : Realms.Serialization.RealmObjectSerializerBase<ObjectContainerV1>
         {
+            public override string SchemaName => "ObjectContainer";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectContainerV1 value)
             {
                 context.Writer.WriteStartDocument();
@@ -418,7 +420,13 @@ namespace Realms.Tests.Database
                         instance.Value = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "Link":
-                        instance.Link = LookupSerializer<Realms.Tests.Database.ObjectV1?>()!.DeserializeById(context);
+                        instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.ObjectV1?>()!.DeserializeById(context);
+                        break;
+                    case "List":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -428,7 +436,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "List":
-                        instance.List.Add(LookupSerializer<Realms.Tests.Database.ObjectV1>()!.DeserializeById(context)!);
+                        instance.List.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.ObjectV1>()!.DeserializeById(context)!);
                         break;
                 }
             }

@@ -335,8 +335,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CitiesSerializer : Realms.Serialization.RealmObjectSerializer<Cities>
+        private class CitiesSerializer : Realms.Serialization.RealmObjectSerializerBase<Cities>
         {
+            public override string SchemaName => "Cities";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Cities value)
             {
                 context.Writer.WriteStartDocument();
@@ -354,6 +356,9 @@ namespace Realms.Tests.Database
                 {
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

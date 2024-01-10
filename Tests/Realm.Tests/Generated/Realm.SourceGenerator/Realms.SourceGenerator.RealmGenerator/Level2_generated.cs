@@ -364,8 +364,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class Level2Serializer : Realms.Serialization.RealmObjectSerializer<Level2>
+        private class Level2Serializer : Realms.Serialization.RealmObjectSerializerBase<Level2>
         {
+            public override string SchemaName => "Level2";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Level2 value)
             {
                 context.Writer.WriteStartDocument();
@@ -386,7 +388,10 @@ namespace Realms.Tests.Database
                         instance.IntValue = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "Level3":
-                        instance.Level3 = LookupSerializer<Realms.Tests.Database.Level3?>()!.DeserializeById(context);
+                        instance.Level3 = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Level3?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

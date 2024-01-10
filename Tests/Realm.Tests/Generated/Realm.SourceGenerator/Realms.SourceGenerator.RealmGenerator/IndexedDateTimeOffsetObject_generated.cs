@@ -333,8 +333,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexedDateTimeOffsetObjectSerializer : Realms.Serialization.RealmObjectSerializer<IndexedDateTimeOffsetObject>
+        private class IndexedDateTimeOffsetObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexedDateTimeOffsetObject>
         {
+            public override string SchemaName => "IndexedDateTimeOffsetObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexedDateTimeOffsetObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -352,6 +354,9 @@ namespace Realms.Tests.Database
                 {
                     case "DateTimeOffset":
                         instance.DateTimeOffset = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -340,8 +340,10 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class TypeEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializer<TypeEmbeddedObject>
+            private class TypeEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<TypeEmbeddedObject>
             {
+                public override string SchemaName => "TypeEmbeddedObject";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, TypeEmbeddedObject value)
                 {
                     context.Writer.WriteStartDocument();
@@ -359,6 +361,9 @@ namespace Realms.Tests.Database
                     {
                         case "type":
                             instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
                             break;
                     }
                 }

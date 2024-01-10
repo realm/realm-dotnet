@@ -401,8 +401,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OnManagedTestClassSerializer : Realms.Serialization.RealmObjectSerializer<OnManagedTestClass>
+        private class OnManagedTestClassSerializer : Realms.Serialization.RealmObjectSerializerBase<OnManagedTestClass>
         {
+            public override string SchemaName => "OnManagedTestClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OnManagedTestClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -424,7 +426,13 @@ namespace Realms.Tests.Database
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
                     case "RelatedObject":
-                        instance.RelatedObject = LookupSerializer<Realms.Tests.Database.OnManagedTestClass?>()!.DeserializeById(context);
+                        instance.RelatedObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OnManagedTestClass?>()!.DeserializeById(context);
+                        break;
+                    case "RelatedCollection":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -434,7 +442,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "RelatedCollection":
-                        instance.RelatedCollection.Add(LookupSerializer<Realms.Tests.Database.OnManagedTestClass>()!.DeserializeById(context)!);
+                        instance.RelatedCollection.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OnManagedTestClass>()!.DeserializeById(context)!);
                         break;
                 }
             }

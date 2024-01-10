@@ -334,8 +334,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RequiredStringObjectSerializer : Realms.Serialization.RealmObjectSerializer<RequiredStringObject>
+        private class RequiredStringObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RequiredStringObject>
         {
+            public override string SchemaName => "RequiredStringObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RequiredStringObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -353,6 +355,9 @@ namespace Realms.Tests
                 {
                     case "String":
                         instance.String = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

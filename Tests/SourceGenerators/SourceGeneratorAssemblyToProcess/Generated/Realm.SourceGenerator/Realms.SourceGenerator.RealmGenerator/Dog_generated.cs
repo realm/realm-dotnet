@@ -361,8 +361,10 @@ namespace SourceGeneratorPlayground
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DogSerializer : Realms.Serialization.RealmObjectSerializer<Dog>
+        private class DogSerializer : Realms.Serialization.RealmObjectSerializerBase<Dog>
         {
+            public override string SchemaName => "Dog";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Dog value)
             {
                 context.Writer.WriteStartDocument();
@@ -383,7 +385,10 @@ namespace SourceGeneratorPlayground
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "Owner":
-                        instance.Owner = LookupSerializer<SourceGeneratorPlayground.Person?>()!.DeserializeById(context);
+                        instance.Owner = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorPlayground.Person?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

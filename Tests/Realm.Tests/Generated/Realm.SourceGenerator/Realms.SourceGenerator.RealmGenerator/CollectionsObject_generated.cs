@@ -2317,8 +2317,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializer<CollectionsObject>
+        private class CollectionsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CollectionsObject>
         {
+            public override string SchemaName => "CollectionsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CollectionsObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -2422,7 +2424,107 @@ namespace Realms.Tests
 
             protected override void ReadValue(CollectionsObject instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "CharSet":
+                    case "ByteSet":
+                    case "Int16Set":
+                    case "Int32Set":
+                    case "Int64Set":
+                    case "SingleSet":
+                    case "DoubleSet":
+                    case "BooleanSet":
+                    case "DecimalSet":
+                    case "Decimal128Set":
+                    case "ObjectIdSet":
+                    case "StringSet":
+                    case "NullableStringSet":
+                    case "ByteArraySet":
+                    case "NullableByteArraySet":
+                    case "DateTimeOffsetSet":
+                    case "NullableCharSet":
+                    case "NullableByteSet":
+                    case "NullableInt16Set":
+                    case "NullableInt32Set":
+                    case "NullableInt64Set":
+                    case "NullableSingleSet":
+                    case "NullableDoubleSet":
+                    case "NullableBooleanSet":
+                    case "NullableDateTimeOffsetSet":
+                    case "NullableDecimalSet":
+                    case "NullableDecimal128Set":
+                    case "NullableObjectIdSet":
+                    case "ObjectSet":
+                    case "RealmValueSet":
+                    case "CharList":
+                    case "ByteList":
+                    case "Int16List":
+                    case "Int32List":
+                    case "Int64List":
+                    case "SingleList":
+                    case "DoubleList":
+                    case "BooleanList":
+                    case "DecimalList":
+                    case "Decimal128List":
+                    case "ObjectIdList":
+                    case "StringList":
+                    case "NullableStringList":
+                    case "ByteArrayList":
+                    case "NullableByteArrayList":
+                    case "DateTimeOffsetList":
+                    case "NullableCharList":
+                    case "NullableByteList":
+                    case "NullableInt16List":
+                    case "NullableInt32List":
+                    case "NullableInt64List":
+                    case "NullableSingleList":
+                    case "NullableDoubleList":
+                    case "NullableBooleanList":
+                    case "NullableDateTimeOffsetList":
+                    case "NullableDecimalList":
+                    case "NullableDecimal128List":
+                    case "NullableObjectIdList":
+                    case "ObjectList":
+                    case "EmbeddedObjectList":
+                    case "RealmValueList":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "CharDict":
+                    case "ByteDict":
+                    case "Int16Dict":
+                    case "Int32Dict":
+                    case "Int64Dict":
+                    case "SingleDict":
+                    case "DoubleDict":
+                    case "BooleanDict":
+                    case "DecimalDict":
+                    case "Decimal128Dict":
+                    case "ObjectIdDict":
+                    case "StringDict":
+                    case "NullableStringDict":
+                    case "ByteArrayDict":
+                    case "NullableByteArrayDict":
+                    case "DateTimeOffsetDict":
+                    case "NullableCharDict":
+                    case "NullableByteDict":
+                    case "NullableInt16Dict":
+                    case "NullableInt32Dict":
+                    case "NullableInt64Dict":
+                    case "NullableSingleDict":
+                    case "NullableDoubleDict":
+                    case "NullableBooleanDict":
+                    case "NullableDateTimeOffsetDict":
+                    case "NullableDecimalDict":
+                    case "NullableDecimal128Dict":
+                    case "NullableObjectIdDict":
+                    case "ObjectDict":
+                    case "RealmValueDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(CollectionsObject instance, string name, BsonDeserializationContext context)
@@ -2514,7 +2616,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdSet.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context));
                         break;
                     case "ObjectSet":
-                        instance.ObjectSet.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectSet.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "RealmValueSet":
                         instance.RealmValueSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
@@ -2604,7 +2706,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdList.Add(BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context));
                         break;
                     case "ObjectList":
-                        instance.ObjectList.Add(LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
+                        instance.ObjectList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
                         break;
                     case "EmbeddedObjectList":
                         instance.EmbeddedObjectList.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject>().Deserialize(context));
@@ -2704,7 +2806,7 @@ namespace Realms.Tests
                         instance.NullableObjectIdDict[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context);
                         break;
                     case "ObjectDict":
-                        instance.ObjectDict[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.ObjectDict[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "RealmValueDict":
                         instance.RealmValueDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);

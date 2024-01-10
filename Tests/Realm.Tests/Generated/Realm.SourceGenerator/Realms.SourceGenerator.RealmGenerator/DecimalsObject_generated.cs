@@ -365,8 +365,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializer<DecimalsObject>
+        private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DecimalsObject>
         {
+            public override string SchemaName => "DecimalsObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DecimalsObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -388,6 +390,9 @@ namespace Realms.Tests
                         break;
                     case "Decimal128Value":
                         instance.Decimal128Value = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

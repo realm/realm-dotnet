@@ -380,8 +380,10 @@ namespace Realms.Tests.Sync
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<SyncObjectWithRequiredStringList>
+        private class SyncObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializerBase<SyncObjectWithRequiredStringList>
         {
+            public override string SchemaName => "SyncObjectWithRequiredStringList";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SyncObjectWithRequiredStringList value)
             {
                 context.Writer.WriteStartDocument();
@@ -400,6 +402,12 @@ namespace Realms.Tests.Sync
                 {
                     case "_id":
                         instance.Id = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Strings":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

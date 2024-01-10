@@ -1013,8 +1013,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializer<DictionariesObject>
+        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DictionariesObject>
         {
+            public override string SchemaName => "DictionariesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DictionariesObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -1059,7 +1061,46 @@ namespace Realms.Tests
 
             protected override void ReadValue(DictionariesObject instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "CharDictionary":
+                    case "ByteDictionary":
+                    case "Int16Dictionary":
+                    case "Int32Dictionary":
+                    case "Int64Dictionary":
+                    case "SingleDictionary":
+                    case "DoubleDictionary":
+                    case "BooleanDictionary":
+                    case "DecimalDictionary":
+                    case "Decimal128Dictionary":
+                    case "ObjectIdDictionary":
+                    case "StringDictionary":
+                    case "NullableStringDictionary":
+                    case "ByteArrayDictionary":
+                    case "DateTimeOffsetDictionary":
+                    case "NullableCharDictionary":
+                    case "NullableByteDictionary":
+                    case "NullableInt16Dictionary":
+                    case "NullableInt32Dictionary":
+                    case "NullableInt64Dictionary":
+                    case "NullableSingleDictionary":
+                    case "NullableDoubleDictionary":
+                    case "NullableBooleanDictionary":
+                    case "NullableDateTimeOffsetDictionary":
+                    case "NullableDecimalDictionary":
+                    case "NullableDecimal128Dictionary":
+                    case "NullableObjectIdDictionary":
+                    case "NullableBinaryDictionary":
+                    case "BinaryDictionary":
+                    case "ObjectDictionary":
+                    case "EmbeddedObjectDictionary":
+                    case "RealmValueDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(DictionariesObject instance, string name, BsonDeserializationContext context)
@@ -1159,7 +1200,7 @@ namespace Realms.Tests
                         instance.BinaryDictionary[fieldName] = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
                         break;
                     case "ObjectDictionary":
-                        instance.ObjectDictionary[fieldName] = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        instance.ObjectDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
                         break;
                     case "EmbeddedObjectDictionary":
                         instance.EmbeddedObjectDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);

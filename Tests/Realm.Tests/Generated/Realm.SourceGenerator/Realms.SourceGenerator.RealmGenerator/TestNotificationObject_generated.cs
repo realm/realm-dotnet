@@ -556,8 +556,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class TestNotificationObjectSerializer : Realms.Serialization.RealmObjectSerializer<TestNotificationObject>
+        private class TestNotificationObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<TestNotificationObject>
         {
+            public override string SchemaName => "TestNotificationObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, TestNotificationObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -585,10 +587,23 @@ namespace Realms.Tests.Database
                         instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
                     case "LinkSameType":
-                        instance.LinkSameType = LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context);
+                        instance.LinkSameType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context);
                         break;
                     case "LinkDifferentType":
-                        instance.LinkDifferentType = LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
+                        instance.LinkDifferentType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
+                        break;
+                    case "ListSameType":
+                    case "SetSameType":
+                    case "ListDifferentType":
+                    case "SetDifferentType":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "DictionarySameType":
+                    case "DictionaryDifferentType":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -598,16 +613,16 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "ListSameType":
-                        instance.ListSameType.Add(LookupSerializer<Realms.Tests.Database.TestNotificationObject>()!.DeserializeById(context)!);
+                        instance.ListSameType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.TestNotificationObject>()!.DeserializeById(context)!);
                         break;
                     case "SetSameType":
-                        instance.SetSameType.Add(LookupSerializer<Realms.Tests.Database.TestNotificationObject>()!.DeserializeById(context)!);
+                        instance.SetSameType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.TestNotificationObject>()!.DeserializeById(context)!);
                         break;
                     case "ListDifferentType":
-                        instance.ListDifferentType.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.ListDifferentType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                     case "SetDifferentType":
-                        instance.SetDifferentType.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.SetDifferentType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                 }
             }
@@ -617,10 +632,10 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "DictionarySameType":
-                        instance.DictionarySameType[fieldName] = LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context)!;
+                        instance.DictionarySameType[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context)!;
                         break;
                     case "DictionaryDifferentType":
-                        instance.DictionaryDifferentType[fieldName] = LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context)!;
+                        instance.DictionaryDifferentType[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context)!;
                         break;
                 }
             }

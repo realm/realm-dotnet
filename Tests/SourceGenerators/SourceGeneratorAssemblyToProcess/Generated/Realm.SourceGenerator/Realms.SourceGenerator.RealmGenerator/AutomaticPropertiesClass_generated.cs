@@ -332,8 +332,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AutomaticPropertiesClassSerializer : Realms.Serialization.RealmObjectSerializer<AutomaticPropertiesClass>
+        private class AutomaticPropertiesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<AutomaticPropertiesClass>
         {
+            public override string SchemaName => "AutomaticPropertiesClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AutomaticPropertiesClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -351,6 +353,9 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     case "Id":
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

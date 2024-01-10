@@ -363,8 +363,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithObjectPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithObjectProperties>
+        private class ObjectWithObjectPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithObjectProperties>
         {
+            public override string SchemaName => "ObjectWithObjectProperties";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithObjectProperties value)
             {
                 context.Writer.WriteStartDocument();
@@ -382,10 +384,13 @@ namespace Realms.Tests
                 switch (name)
                 {
                     case "StandaloneObject":
-                        instance.StandaloneObject = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
+                        instance.StandaloneObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
                         break;
                     case "EmbeddedObject":
                         instance.EmbeddedObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

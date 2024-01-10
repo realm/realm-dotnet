@@ -664,8 +664,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PersonSerializer : Realms.Serialization.RealmObjectSerializer<Person>
+        private class PersonSerializer : Realms.Serialization.RealmObjectSerializerBase<Person>
         {
+            public override string SchemaName => "Person";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Person value)
             {
                 context.Writer.WriteStartDocument();
@@ -729,6 +731,12 @@ namespace Realms.Tests.Database
                     case "IsInteresting":
                         instance.IsInteresting = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
                         break;
+                    case "Friends":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 
@@ -737,7 +745,7 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Friends":
-                        instance.Friends.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.Friends.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                 }
             }

@@ -413,8 +413,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class MixedProperties2Serializer : Realms.Serialization.RealmObjectSerializer<MixedProperties2>
+        private class MixedProperties2Serializer : Realms.Serialization.RealmObjectSerializerBase<MixedProperties2>
         {
+            public override string SchemaName => "MixedProperties2";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, MixedProperties2 value)
             {
                 context.Writer.WriteStartDocument();
@@ -439,6 +441,13 @@ namespace Realms.Tests.Database
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "Friends":
+                    case "Enemies":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
                 }
             }
 
@@ -447,10 +456,10 @@ namespace Realms.Tests.Database
                 switch (name)
                 {
                     case "Friends":
-                        instance.Friends.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.Friends.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                     case "Enemies":
-                        instance.Enemies.Add(LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
+                        instance.Enemies.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
                 }
             }

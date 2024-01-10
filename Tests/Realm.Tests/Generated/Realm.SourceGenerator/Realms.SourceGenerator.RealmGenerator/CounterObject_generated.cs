@@ -562,8 +562,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializer<CounterObject>
+        private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CounterObject>
         {
+            public override string SchemaName => "CounterObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CounterObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -613,6 +615,9 @@ namespace Realms.Tests
                         break;
                     case "NullableInt64Property":
                         instance.NullableInt64Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

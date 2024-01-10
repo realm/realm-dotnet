@@ -364,8 +364,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CompletionReportSerializer : Realms.Serialization.RealmObjectSerializer<CompletionReport>
+        private class CompletionReportSerializer : Realms.Serialization.RealmObjectSerializerBase<CompletionReport>
         {
+            public override string SchemaName => "CompletionReport";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CompletionReport value)
             {
                 context.Writer.WriteStartDocument();
@@ -387,6 +389,9 @@ namespace Realms.Tests.Database
                         break;
                     case "Remarks":
                         instance.Remarks = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

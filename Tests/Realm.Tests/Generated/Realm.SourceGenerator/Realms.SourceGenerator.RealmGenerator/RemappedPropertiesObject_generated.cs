@@ -369,8 +369,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RemappedPropertiesObjectSerializer : Realms.Serialization.RealmObjectSerializer<RemappedPropertiesObject>
+        private class RemappedPropertiesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RemappedPropertiesObject>
         {
+            public override string SchemaName => "RemappedPropertiesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RemappedPropertiesObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -392,6 +394,9 @@ namespace Realms.Tests
                         break;
                     case "name":
                         instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -332,8 +332,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AgedObjectSerializer : Realms.Serialization.RealmObjectSerializer<AgedObject>
+        private class AgedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<AgedObject>
         {
+            public override string SchemaName => "AgedObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AgedObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -351,6 +353,9 @@ namespace Realms.Tests.Database
                 {
                     case "Birthday":
                         instance.Birthday = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

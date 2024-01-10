@@ -635,8 +635,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedGuidTypeSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedGuidType>
+        private class EmbeddedGuidTypeSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedGuidType>
         {
+            public override string SchemaName => "EmbeddedGuidType";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedGuidType value)
             {
                 context.Writer.WriteStartDocument();
@@ -671,10 +673,26 @@ namespace Realms.Tests.Database
                         instance.OptionalProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
                         break;
                     case "LinkProperty":
-                        instance.LinkProperty = LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
+                        instance.LinkProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
                         break;
                     case "MixedProperty":
                         instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "GuidList":
+                    case "GuidSet":
+                    case "OptionalList":
+                    case "OptionalSet":
+                    case "MixedList":
+                    case "MixedSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "GuidDict":
+                    case "OptionalDict":
+                    case "MixedDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

@@ -688,8 +688,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class GuidTypeSerializer : Realms.Serialization.RealmObjectSerializer<GuidType>
+        private class GuidTypeSerializer : Realms.Serialization.RealmObjectSerializerBase<GuidType>
         {
+            public override string SchemaName => "GuidType";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, GuidType value)
             {
                 context.Writer.WriteStartDocument();
@@ -729,13 +731,29 @@ namespace Realms.Tests.Database
                         instance.OptionalProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
                         break;
                     case "LinkProperty":
-                        instance.LinkProperty = LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
+                        instance.LinkProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
                         break;
                     case "MixedProperty":
                         instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     case "EmbeddedProperty":
                         instance.EmbeddedProperty = BsonSerializer.LookupSerializer<Realms.Tests.Database.EmbeddedGuidType?>().Deserialize(context);
+                        break;
+                    case "GuidList":
+                    case "GuidSet":
+                    case "OptionalList":
+                    case "OptionalSet":
+                    case "MixedList":
+                    case "MixedSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "GuidDict":
+                    case "OptionalDict":
+                    case "MixedDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

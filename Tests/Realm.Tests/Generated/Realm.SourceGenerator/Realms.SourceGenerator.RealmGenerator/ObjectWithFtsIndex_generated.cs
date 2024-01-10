@@ -395,8 +395,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithFtsIndex>
+        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithFtsIndex>
         {
+            public override string SchemaName => "ObjectWithFtsIndex";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithFtsIndex value)
             {
                 context.Writer.WriteStartDocument();
@@ -422,6 +424,9 @@ namespace Realms.Tests
                         break;
                     case "NullableSummary":
                         instance.NullableSummary = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

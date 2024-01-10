@@ -441,8 +441,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DogSerializer : Realms.Serialization.RealmObjectSerializer<Dog>
+        private class DogSerializer : Realms.Serialization.RealmObjectSerializerBase<Dog>
         {
+            public override string SchemaName => "Dog";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Dog value)
             {
                 context.Writer.WriteStartDocument();
@@ -472,6 +474,9 @@ namespace Realms.Tests
                         break;
                     case "Age":
                         instance.Age = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

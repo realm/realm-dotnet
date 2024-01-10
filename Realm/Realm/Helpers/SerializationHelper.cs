@@ -178,8 +178,10 @@ namespace Realms.Helpers
         {
             public Type ValueType => typeof(RealmInteger<T>);
 
-            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-                => Deserialize(context, args);
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmInteger<T> value)
+            {
+                BsonSerializer.LookupSerializer<T>().Serialize(context, args, value);
+            }
 
             void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
             {
@@ -193,19 +195,37 @@ namespace Realms.Helpers
                 BsonSerializer.LookupSerializer<T>().Serialize(context, args, intValue);
             }
 
-            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmInteger<T> value)
-            {
-                BsonSerializer.LookupSerializer<T>().Serialize(context, args, value);
-            }
-
             public RealmInteger<T> Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
                 => BsonSerializer.LookupSerializer<T>().Deserialize(context, args);
+
+            object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                => Deserialize(context, args);
         }
 
         [Preserve(AllMembers = true)]
         private class RealmValueSerializer : IBsonSerializer<RealmValue>
         {
             public Type ValueType => typeof(RealmValue);
+
+            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
+            {
+                if (value.Type == RealmValueType.Null)
+                {
+                    context.Writer.WriteNull();
+                }
+                else if (value.Type == RealmValueType.Object)
+                {
+                    SerializeDbRef(context, args, value);
+                }
+                else
+                {
+                    var boxed = value.AsAny()!;
+                    BsonSerializer.LookupSerializer(boxed.GetType()).Serialize(context, args, boxed);
+                }
+            }
+
+            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+                => Serialize(context, args, (RealmValue)value);
 
             public RealmValue Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
             {
@@ -226,7 +246,7 @@ namespace Realms.Helpers
 
                         return value;
                     case BsonType.Document:
-                        throw new NotImplementedException("TODO");
+                        return DeserializeDBRef(context, args);
                     case BsonType.Binary:
                         var binary = reader.ReadBinaryData();
                         if (binary.SubType == BsonBinarySubType.UuidStandard)
@@ -252,24 +272,87 @@ namespace Realms.Helpers
                 }
             }
 
-            public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
-            {
-                if (value.Type == RealmValueType.Null)
-                {
-                    context.Writer.WriteNull();
-                }
-                else
-                {
-                    var boxed = value.AsAny()!;
-                    BsonSerializer.LookupSerializer(boxed.GetType()).Serialize(context, args, boxed);
-                }
-            }
-
-            void IBsonSerializer.Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-                => Serialize(context, args, (RealmValue)value);
-
             object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
                 => Deserialize(context, args);
+
+            private void SerializeDbRef(BsonSerializationContext context, BsonSerializationArgs args, RealmValue value)
+            {
+                var obj = value.AsIRealmObject()!;
+
+                var schemaName = obj.ObjectSchema!.Name;
+
+                context.Writer.WriteStartDocument();
+
+                context.Writer.WriteName("$ref");
+                BsonSerializer.LookupSerializer(typeof(string)).Serialize(context, schemaName);
+
+                context.Writer.WriteName("$id");
+                RealmObjectSerializer.LookupSerializer(obj.GetType())!.SerializeId(context, args, obj);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            private RealmValue DeserializeDBRef(BsonDeserializationContext context, BsonDeserializationArgs args)
+            {
+                var reader = context.Reader;
+                reader.ReadStartDocument();
+
+                string schemaName = null!;
+                IRealmObjectBase obj = null!;
+                BsonReaderBookmark idBookmark = null!;
+
+                if (reader.State == BsonReaderState.Type)
+                {
+                    reader.ReadBsonType();
+                }
+
+                // We need to get the object schema first, in order to find the correct serializer
+                while (reader.State != BsonReaderState.EndOfDocument)
+                {
+                    var elementName = reader.ReadName();
+                    if (elementName == "$ref")
+                    {
+                        schemaName = reader.ReadString();
+                    }
+                    else if (elementName == "$id")
+                    {
+                        if (!string.IsNullOrEmpty(schemaName))
+                        {
+                            obj = RealmObjectSerializer.LookupSerializer(schemaName)!.DeserializeById(context, args)!;
+                        }
+                        else
+                        {
+                            idBookmark = reader.GetBookmark();
+                            reader.SkipValue();
+                        }
+                    }
+                    else
+                    {
+                        // This could be the optional $db field
+                        reader.SkipValue();
+                    }
+
+                    if (reader.State == BsonReaderState.Type)
+                    {
+                        reader.ReadBsonType();
+                    }
+                }
+
+                // If we didn't find the schema before the object, we go back and deserialize the object now that
+                // we have the schema, and then move back to the end of the dictionary.
+                if (obj is null)
+                {
+                    var endBookmark = reader.GetBookmark()!;
+
+                    reader.ReturnToBookmark(idBookmark);
+                    obj = RealmObjectSerializer.LookupSerializer(schemaName)!.DeserializeById(context, args)!;
+
+                    reader.ReturnToBookmark(endBookmark);
+                }
+
+                reader.ReadEndDocument();
+                return RealmValue.Object(obj);
+            }
         }
     }
 }

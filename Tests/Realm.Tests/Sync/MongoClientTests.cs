@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -26,11 +24,8 @@ using Baas;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using NUnit.Framework;
-using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-
-using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
@@ -70,8 +65,8 @@ namespace Realms.Tests.Sync
             var collection = db.GetCollection("foos");
 
             Assert.That(collection.Name, Is.EqualTo("foos"));
-            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
-            Assert.That(collection.Database.Client.ServiceName, Is.EqualTo("foo-bar"));
+            Assert.That(collection.Database?.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
+            Assert.That(collection.Database?.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
         [Test]
@@ -2125,7 +2120,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var collection = await GetCollection<RemappedTypeObject>();
-                var inserted = await InsertRemappedData(collection, 3);
+                var inserted = await InsertRemappedData(collection);
 
                 var result = await collection.FindOneAsync();
                 Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
@@ -2135,63 +2130,10 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void MongoCollection_RealmObjectAPI()
+        private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var props = SyncCollectionsObject.RealmSchema
-                    .Where(p => p.Type.IsCollection(out _) && !p.Type.HasFlag(PropertyType.Object))
-                    .ToArray();
+            const int documentCount = 3;
 
-                var collection = await GetCollection<SyncCollectionsObject>(AppConfigType.FlexibleSync);
-                var obj1 = new SyncCollectionsObject();
-                FillCollectionProps(obj1);
-
-                var syncObj2 = new SyncCollectionsObject();
-                FillCollectionProps(syncObj2);
-
-                await collection.InsertOneAsync(obj1);
-
-                using var realm = await GetFLXIntegrationRealmAsync();
-                var syncObjects = await realm.All<SyncCollectionsObject>().Where(o => o.Id == obj1.Id || o.Id == syncObj2.Id).SubscribeAsync();
-                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
-
-                var syncObj1 = syncObjects.Single();
-
-                AssertProps(obj1, syncObj1);
-
-                realm.Write(() => realm.Add(syncObj2));
-
-                var filter = new { _id = syncObj2.Id };
-
-                var obj2 = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
-
-                AssertProps(syncObj2, obj2);
-
-                void FillCollectionProps(SyncCollectionsObject obj)
-                {
-                    foreach (var prop in props)
-                    {
-                        DataGenerator.FillCollection(obj.GetProperty<IEnumerable>(prop), 5);
-                    }
-                }
-
-                void AssertProps(SyncCollectionsObject expected, SyncCollectionsObject actual)
-                {
-                    foreach (var prop in props)
-                    {
-                        var expectedProp = expected.GetProperty<IEnumerable>(prop);
-                        var actualProp = actual.GetProperty<IEnumerable>(prop);
-
-                        Assert.That(actualProp, Is.EquivalentTo(expectedProp).Using((object a, object e) => AreValuesEqual(a, e)), $"Expected collections to match for {prop.ManagedName}");
-                    }
-                }
-            }, timeout: 120000);
-        }
-
-        private static async Task<RemappedTypeObject[]> InsertRemappedData(MongoClient.Collection<RemappedTypeObject> collection, int documentCount)
-        {
             var docs = Enumerable.Range(0, documentCount)
                 .Select(i => new RemappedTypeObject
                 {
@@ -2261,45 +2203,16 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
-        private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
-            where T : class, IRealmObject
+        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection()
         {
-            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
-            var user = await GetUserAsync(app);
+            var user = await GetUserAsync();
+            var client = user.GetMongoClient(ServiceName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
+            var collection = db.GetCollection(FoosCollectionName);
 
-            // Use sync to create the schema/rules
-            SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
-
-            config.Schema = GetTransitiveSchema(typeof(T), new()).Values.ToArray();
-
-            using var realm = await GetRealmAsync(config);
-            await WaitForUploadAsync(realm);
-
-            var client = user.GetMongoClient(ServiceName); // TODO: this should be provided by Sync
-            var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(appConfigType)); // TODO: this should be provided by Sync
-            var collection = db.GetCollection<T>();
-
-            await collection.DeleteManyAsync(new object());
+            await collection.DeleteManyAsync();
 
             return collection;
-
-            static Dictionary<string, ObjectSchema> GetTransitiveSchema(Type type, Dictionary<string, ObjectSchema> dict)
-            {
-                var schema = ObjectSchema.FromType(type);
-                if (!dict.ContainsKey(schema.Name))
-                {
-                    dict.Add(schema.Name, schema);
-
-                    foreach (var prop in schema.Where(p => p.Type.HasFlag(PropertyType.Object) && !p.Type.IsComputed()))
-                    {
-                        type.GetProperty(prop.ManagedName)!.PropertyType.ToPropertyType(out var objectType);
-
-                        GetTransitiveSchema(objectType!, dict);
-                    }
-                }
-
-                return dict;
-            }
         }
 
         private async Task<MongoClient.Collection<Sale>> GetSalesCollection()
@@ -2314,14 +2227,19 @@ namespace Realms.Tests.Sync
             return collection;
         }
 
-        private async Task<MongoClient.Collection<BsonDocument>> GetBsonCollection()
+        private async Task<MongoClient.Collection<T>> GetCollection<T>()
+            where T : class, IRealmObjectBase
         {
-            var user = await GetUserAsync();
-            var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
-            var collection = db.GetCollection(FoosCollectionName);
+            var appConfigType = AppConfigType.Default;
+            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
+            var user = await GetUserAsync(app);
 
-            await collection.DeleteManyAsync();
+            SyncConfigurationBase config = GetIntegrationConfig(user);
+
+            using var realm = await GetRealmAsync(config);
+            var client = user.GetMongoClient(ServiceName);
+            var collection = client.GetCollection<T>();
+            await collection.DeleteManyAsync(new object());
 
             return collection;
         }

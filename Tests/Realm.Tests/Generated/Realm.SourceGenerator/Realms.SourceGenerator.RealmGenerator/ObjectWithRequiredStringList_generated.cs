@@ -331,8 +331,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializer<ObjectWithRequiredStringList>
+        private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithRequiredStringList>
         {
+            public override string SchemaName => "ObjectWithRequiredStringList";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithRequiredStringList value)
             {
                 context.Writer.WriteStartDocument();
@@ -346,7 +348,15 @@ namespace Realms.Tests
 
             protected override void ReadValue(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
             {
-                // No Realm properties to deserialize
+                switch (name)
+                {
+                    case "Strings":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
             }
 
             protected override void ReadArrayElement(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)

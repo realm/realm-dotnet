@@ -410,8 +410,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DynamicDogSerializer : Realms.Serialization.RealmObjectSerializer<DynamicDog>
+        private class DynamicDogSerializer : Realms.Serialization.RealmObjectSerializerBase<DynamicDog>
         {
+            public override string SchemaName => "DynamicDog";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DynamicDog value)
             {
                 context.Writer.WriteStartDocument();
@@ -437,6 +439,9 @@ namespace Realms.Tests.Database
                         break;
                     case "Vaccinated":
                         instance.Vaccinated = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

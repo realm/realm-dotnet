@@ -332,8 +332,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class InitializedFieldObjectSerializer : Realms.Serialization.RealmObjectSerializer<InitializedFieldObject>
+        private class InitializedFieldObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<InitializedFieldObject>
         {
+            public override string SchemaName => "InitializedFieldObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InitializedFieldObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -351,6 +353,9 @@ namespace Realms.Tests.Database
                 {
                     case "Id":
                         instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

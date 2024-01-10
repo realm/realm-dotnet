@@ -418,8 +418,10 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CompanySerializer : Realms.Serialization.RealmObjectSerializer<Company>
+            private class CompanySerializer : Realms.Serialization.RealmObjectSerializerBase<Company>
             {
+                public override string SchemaName => "Company";
+
                 protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Company value)
                 {
                     context.Writer.WriteStartDocument();
@@ -446,6 +448,12 @@ namespace Realms.Tests.Database
                             break;
                         case "Location":
                             instance.Location = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>().Deserialize(context);
+                            break;
+                        case "Offices":
+                            ReadArray(instance, name, context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
                             break;
                     }
                 }

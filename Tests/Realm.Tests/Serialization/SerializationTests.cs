@@ -30,6 +30,7 @@ using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Serialization
 {
+#if !TEST_WEAVER
     [TestFixture(true)]
     [TestFixture(false)]
     public class SerializationTests : RealmInstanceTest
@@ -96,7 +97,7 @@ namespace Realms.Tests.Serialization
             new object[] { CreateTestCase("Long RealmValue", new AllTypesObject { RealmValueProperty = 9999999999 }) },
             new object[] { CreateTestCase("Null RealmValue", new AllTypesObject { RealmValueProperty = RealmValue.Null }) },
             new object[] { CreateTestCase("String RealmValue", new AllTypesObject { RealmValueProperty = "abc" }) },
-            new object[] { CreateTestCase("Data RealmValue", new AllTypesObject { RealmValueProperty = TestHelpers.GetBytes(10) }) },
+            new object[] { CreateTestCase("Data RealmValue", new AllTypesObject { RealmValueProperty = GetBytes(10) }) },
             new object[] { CreateTestCase("Float RealmValue", new AllTypesObject { RealmValueProperty = 15.2f }) },
             new object[] { CreateTestCase("Double RealmValue", new AllTypesObject { RealmValueProperty = -123.45678909876 }) },
             new object[] { CreateTestCase("Decimal RealmValue", new AllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
@@ -191,9 +192,8 @@ namespace Realms.Tests.Serialization
         {
             new object[]
             {
-                CreateTestCase("Single embedded", new ObjectWithEmbeddedProperties
+                CreateTestCase("Single", new ObjectWithEmbeddedProperties
                 {
-                    PrimaryKey = 5,
                     AllTypesObject = new()
                     {
                         BooleanProperty = true,
@@ -201,6 +201,153 @@ namespace Realms.Tests.Serialization
                         DoubleProperty = 3.14,
                         Int32Property = 4,
                         StringProperty = "bla bla"
+                    }
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Recursive", new ObjectWithEmbeddedProperties
+                {
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    }
+                })
+            },
+
+            new object[]
+            {
+                CreateTestCase("List", new ObjectWithEmbeddedProperties
+                {
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("Dictionary", new ObjectWithEmbeddedProperties
+                {
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 2, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "bla bla"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                })
+            },
+            new object[]
+            {
+                CreateTestCase("All types", new ObjectWithEmbeddedProperties
+                {
+                    AllTypesObject = new()
+                    {
+                        BooleanProperty = true,
+                        ByteArrayProperty = new byte[] { 1, 2, 3 },
+                        DoubleProperty = 3.14,
+                        Int32Property = 4,
+                        StringProperty = "bla bla"
+                    },
+                    RecursiveObject = new()
+                    {
+                        String = "Top",
+                        Child = new()
+                        {
+                            String = "Middle",
+                            Child = new()
+                            {
+                                String = "Bottom"
+                            }
+                        }
+                    },
+                    ListOfAllTypesObjects =
+                    {
+                        new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 5, 1, 2, 3 },
+                            DoubleProperty = 6.78,
+                            Int32Property = 2,
+                            StringProperty = "blas blas"
+                        },
+                        new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 2, 3 },
+                            DoubleProperty = 6.14,
+                            Int32Property = 6,
+                            StringProperty = "oh oh"
+                        }
+                    },
+                    DictionaryOfAllTypesObjects =
+                    {
+                        ["key1"] = new()
+                        {
+                            BooleanProperty = true,
+                            ByteArrayProperty = new byte[] { 1, 6, 3 },
+                            DoubleProperty = 3.14,
+                            Int32Property = 4,
+                            StringProperty = "hej hej"
+                        },
+                        ["key2"] = new()
+                        {
+                            BooleanProperty = false,
+                            ByteArrayProperty = new byte[] { 4, 1, 6, 3 },
+                            DoubleProperty = 16.14,
+                            Int32Property = 62,
+                            StringProperty = "oha oha"
+                        }
+                    },
+                })
+            }
+        };
+
+        public static readonly object[] RealmValueObjectTestCases = new[]
+        {
+            new object[]
+            {
+                CreateTestCase("Object RealmValue", new AllTypesObject
+                {
+                    RealmValueProperty = new LinksObject("primaryKeyVal")
+                    {
+                         Value = 23,
                     }
                 })
             }
@@ -213,13 +360,35 @@ namespace Realms.Tests.Serialization
             AddIfNecessary(original);
 
             var json = SerializationHelper.ToNativeJson(original);
-            var actual = BsonSerializer.Deserialize<AllTypesObject>(json);
-            var actualDocument = BsonSerializer.Deserialize<BsonDocument>(json);
+            var deserializedObj = BsonSerializer.Deserialize<AllTypesObject>(json);
+            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
-            AssertAreEqual(actual, original);
-            AssertMatchesBsonDocument(actualDocument, original);
+            AssertAreEqual(deserializedObj, original);
+            AssertMatchesBsonDocument(deserializedBson, original);
         }
 
+        [TestCaseSource(nameof(RealmValueObjectTestCases))]
+        public void RealmObject_RealmValue_Serializes(TestCaseData<AllTypesObject> testCase)
+        {
+            var original = testCase.Value;
+            var originalLink = original.RealmValueProperty.AsRealmObject<LinksObject>();
+
+            AddIfNecessary(original);
+
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserializedObj = BsonSerializer.Deserialize<AllTypesObject>(json);
+
+            var deserializedLink = deserializedObj.RealmValueProperty.AsRealmObject<LinksObject>();
+
+            Assert.That(originalLink.Id, Is.EqualTo(deserializedLink.Id));
+            Assert.That(originalLink.Value, Is.Not.EqualTo(deserializedLink.Value));
+        }
+
+        /*
+         * In this method we're not using AssertMatchesBsonDocument or directly AssertAreEqual, as it would be too cumbersome
+         * to make those two methods generic enough to work in all cases and it's easier to check the properties one by one.
+         * Nevertheless, the correctness of the serialization and deserialization is proven in the tests in MongoClientTests.cs
+         */
         [TestCaseSource(nameof(LinksTestCases))]
         public void RealmObject_Links_Serializes(TestCaseData<LinksObject> testCase)
         {
@@ -287,41 +456,55 @@ namespace Realms.Tests.Serialization
             }
         }
 
+        /*
+         * In this method we're not using AssertMatchesBsonDocument or directly AssertAreEqual, as it would be too cumbersome
+         * to make those two methods generic enough to work in all cases and it's easier to check the properties one by one.
+         * Nevertheless, the correctness of the serialization and deserialization is proven in the tests in MongoClientTests.cs
+         */
+        [TestCaseSource(nameof(EmbeddedTestCases))]
+        public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
+        {
+            var original = testCase.Value;
+            AddIfNecessary(original);
+
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserialized = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
+
+            Assert.That(original.PrimaryKey, Is.EqualTo(deserialized.PrimaryKey));
+
+            AssertAreEqual(deserialized.AllTypesObject, original.AllTypesObject);
+            AssertAreEqual(deserialized.RecursiveObject, original.RecursiveObject);
+
+            Assert.That(original.ListOfAllTypesObjects.Count, Is.EqualTo(deserialized.ListOfAllTypesObjects.Count));
+            for (int i = 0; i < original.ListOfAllTypesObjects.Count; i++)
+            {
+                AssertAreEqual(original.ListOfAllTypesObjects[i], deserialized.ListOfAllTypesObjects[i]);
+            }
+
+            Assert.That(original.DictionaryOfAllTypesObjects.Count, Is.EqualTo(deserialized.DictionaryOfAllTypesObjects.Count));
+            foreach (var key in original.DictionaryOfAllTypesObjects.Keys)
+            {
+                Assert.That(deserialized.DictionaryOfAllTypesObjects.ContainsKey(key), Is.True);
+                AssertAreEqual(original.DictionaryOfAllTypesObjects[key], deserialized.DictionaryOfAllTypesObjects[key]);
+            }
+        }
+
         [TestCaseSource(nameof(CollectionTestCases))]
         public void CollectionsObject_Serializes(TestCaseData<Property> testCase)
         {
             var prop = testCase.Value;
-            var obj = new CollectionsObject();
+            var original = new CollectionsObject();
 
-            DataGenerator.FillCollection(obj.GetProperty<IEnumerable>(prop), 5);
+            DataGenerator.FillCollection(original.GetProperty<IEnumerable>(prop), 5);
 
-            AddIfNecessary(obj);
+            AddIfNecessary(original);
 
-            var json = SerializationHelper.ToNativeJson(obj);
-            var deserialized = BsonSerializer.Deserialize<CollectionsObject>(json);
+            var json = SerializationHelper.ToNativeJson(original);
+            var deserializedObj = BsonSerializer.Deserialize<CollectionsObject>(json);
+            var deserializedBson = BsonSerializer.Deserialize<BsonDocument>(json);
 
-            var actual = deserialized.GetProperty<IEnumerable>(prop);
-            var expected = obj.GetProperty<IEnumerable>(prop);
-
-            AssertAreEqual(actual, expected, $"property: {prop.Name}");
-        }
-
-        [TestCaseSource(nameof(EmbeddedTestCases))]
-        public void RealmObject_Embedded_Serializes(TestCaseData<ObjectWithEmbeddedProperties> testCase)
-        {
-            var obj = testCase.Value;
-            AddIfNecessary(obj);
-
-            var json = SerializationHelper.ToNativeJson(obj);
-
-            var deserialized = BsonSerializer.Deserialize<ObjectWithEmbeddedProperties>(json);
-
-            Assert.That(obj.PrimaryKey, Is.EqualTo(deserialized.PrimaryKey));
-
-            if (obj.AllTypesObject is not null)
-            {
-                AssertAreEqual(deserialized.AllTypesObject, obj.AllTypesObject);
-            }
+            AssertAreEqual(deserializedObj, original);
+            AssertMatchesBsonDocument(deserializedBson, original);
         }
 
         private void AddIfNecessary(IRealmObject obj)
@@ -335,4 +518,5 @@ namespace Realms.Tests.Serialization
             }
         }
     }
+#endif
 }

@@ -333,8 +333,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ClassWithoutParameterlessConstructorSerializer : Realms.Serialization.RealmObjectSerializer<ClassWithoutParameterlessConstructor>
+        private class ClassWithoutParameterlessConstructorSerializer : Realms.Serialization.RealmObjectSerializerBase<ClassWithoutParameterlessConstructor>
         {
+            public override string SchemaName => "ClassWithoutParameterlessConstructor";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ClassWithoutParameterlessConstructor value)
             {
                 context.Writer.WriteStartDocument();
@@ -352,6 +354,9 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     case "Name":
                         instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

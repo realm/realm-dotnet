@@ -362,8 +362,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class NoListPropertiesSerializer : Realms.Serialization.RealmObjectSerializer<NoListProperties>
+        private class NoListPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<NoListProperties>
         {
+            public override string SchemaName => "NoListProperties";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, NoListProperties value)
             {
                 context.Writer.WriteStartDocument();
@@ -385,6 +387,9 @@ namespace Realms.Tests.Database
                         break;
                     case "Age":
                         instance.Age = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

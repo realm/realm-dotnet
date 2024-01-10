@@ -338,8 +338,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedIntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializer<EmbeddedIntPropertyObject>
+        private class EmbeddedIntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedIntPropertyObject>
         {
+            public override string SchemaName => "EmbeddedIntPropertyObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedIntPropertyObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -357,6 +359,9 @@ namespace Realms.Tests
                 {
                     case "Int":
                         instance.Int = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

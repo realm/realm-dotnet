@@ -1249,8 +1249,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<AllTypesObject>
+        private class AllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<AllTypesObject>
         {
+            public override string SchemaName => "AllTypesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AllTypesObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -1400,6 +1402,9 @@ namespace Realms.Tests
                         break;
                     case "RealmValueProperty":
                         instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

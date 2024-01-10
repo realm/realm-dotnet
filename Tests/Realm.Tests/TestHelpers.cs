@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -427,78 +428,143 @@ namespace Realms.Tests
 
             foreach (var prop in expected.ObjectSchema!)
             {
-                // TODO: handle collections
-                if (prop.Type.IsCollection(out _))
+                var value = actual!.Contains(prop.Name) ? actual.GetValue(prop.Name) : null;
+
+                if (value == null)
                 {
+                    if (prop.Type == (PropertyType.LinkingObjects | PropertyType.Array))
+                    {
+                        // Backlinks
+                        continue;
+                    }
+
+                    AssertAreEqual(value, expected.GetProperty<object>(prop));
                     continue;
                 }
 
-                var value = actual![prop.Name];
-
-                switch (prop.Type)
+                if (prop.Type.IsCollection(out var collectionType))
                 {
-                    case PropertyType.Object:
-                        // TODO: handle objects
-                        break;
-                    case PropertyType.Int:
-                        AssertAreEqual(value.ToInt64(), expected.GetProperty<long>(prop));
-                        break;
-                    case PropertyType.Bool:
-                        AssertAreEqual(value.AsBoolean, expected.GetProperty<bool>(prop));
-                        break;
-                    case PropertyType.String:
-                        AssertAreEqual(value.AsString, expected.GetProperty<string?>(prop));
-                        break;
-                    case PropertyType.NullableString:
-                        AssertAreEqual(value.IsBsonNull ? null : value.AsString, expected.GetProperty<string?>(prop));
-                        break;
-                    case PropertyType.Data:
-                        AssertAreEqual(value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
-                        break;
-                    case PropertyType.NullableData:
-                        AssertAreEqual(value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes, expected.GetProperty<byte[]>(prop));
-                        break;
-                    case PropertyType.Date:
-                        AssertAreEqual(new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset>(prop));
-                        break;
-                    case PropertyType.Float:
-                    case PropertyType.Double:
-                        AssertAreEqual(value.AsDouble, expected.GetProperty<double>(prop));
-                        break;
-                    case PropertyType.RealmValue:
-                        break;
-                    case PropertyType.ObjectId:
-                        AssertAreEqual(value.AsObjectId, expected.GetProperty<ObjectId>(prop));
-                        break;
-                    case PropertyType.Decimal:
-                        AssertAreEqual(value.AsDecimal128, expected.GetProperty<Decimal128>(prop));
-                        break;
-                    case PropertyType.Guid:
-                        AssertAreEqual(value.AsGuid, expected.GetProperty<Guid>(prop));
-                        break;
-                    case PropertyType.NullableInt:
-                        AssertAreEqual(value.IsBsonNull ? null : value.ToInt64(), expected.GetProperty<long?>(prop));
-                        break;
-                    case PropertyType.NullableBool:
-                        AssertAreEqual(value.AsNullableBoolean, expected.GetProperty<bool?>(prop));
-                        break;
-                    case PropertyType.NullableDate:
-                        AssertAreEqual(value.IsBsonNull ? null : new DateTimeOffset(value.ToUniversalTime()), expected.GetProperty<DateTimeOffset?>(prop));
-                        break;
-                    case PropertyType.NullableFloat:
-                    case PropertyType.NullableDouble:
-                        AssertAreEqual(value.AsNullableDouble, expected.GetProperty<double?>(prop));
-                        break;
-                    case PropertyType.NullableObjectId:
-                        AssertAreEqual(value.AsNullableObjectId, expected.GetProperty<ObjectId?>(prop));
-                        break;
-                    case PropertyType.NullableDecimal:
-                        AssertAreEqual(value.AsNullableDecimal128, expected.GetProperty<Decimal128?>(prop));
-                        break;
-                    case PropertyType.NullableGuid:
-                        AssertAreEqual(value.AsNullableGuid, expected.GetProperty<Guid?>(prop));
-                        break;
+                    if (collectionType == PropertyType.Array || collectionType == PropertyType.Set)
+                    {
+                        var asArray = value.AsBsonArray;
+                        var asExpected = expected.GetProperty<IEnumerable>(prop);
+
+                        AssertAreEqual(asArray.Select(a => ConvertBsonVal(a, prop.Type.UnderlyingType())), asExpected);
+                    }
+                    else if (collectionType == PropertyType.Dictionary)
+                    {
+                        var asDictionary = value.AsBsonDocument;
+                        var asExpected = expected.GetProperty<IEnumerable>(prop);
+
+                        foreach (var item in asExpected)
+                        {
+                            var type = item.GetType();
+                            var stringKey = (string)type.GetProperty("Key")!.GetValue(item)!;
+                            var expectedValue = type.GetProperty("Value")!.GetValue(item)!;
+
+                            Assert.That(asDictionary.Contains(stringKey), Is.True);
+
+                            var actualValue = asDictionary[stringKey];
+
+                            AssertAreEqual(ConvertBsonVal(actualValue, prop.Type.UnderlyingType()), expectedValue);
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid collection type");
+                    }
+
+                    continue;
                 }
+
+                if (prop.Type.UnderlyingType() == PropertyType.Object)
+                {
+                    var expectedProp = expected.GetProperty<IRealmObjectBase>(prop);
+                    if (value.BsonType == BsonType.Null)
+                    {
+                        Assert.That(expectedProp, Is.Null);
+                    }
+                    else if (expectedProp is IEmbeddedObject)
+                    {
+                        AssertMatchesBsonDocument(value.AsBsonDocument, expected.GetProperty<IRealmObjectBase>(prop));
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("This method works only with embedded objects.");
+                    }
+
+                    continue;
+                }
+
+                AssertAreEqual(ConvertBsonVal(value, prop.Type), expected.GetProperty<object?>(prop));
+            }
+        }
+
+        private static object? ConvertBsonVal(BsonValue value, PropertyType type)
+        {
+            return type switch
+            {
+                PropertyType.Int => value.ToInt64(),
+                PropertyType.Bool => value.AsBoolean,
+                PropertyType.String => value.AsString,
+                PropertyType.Data => value.AsBsonBinaryData.Bytes,
+                PropertyType.Date => new DateTimeOffset(value.ToUniversalTime()),
+                PropertyType.Float or PropertyType.Double => value.AsDouble,
+                PropertyType.ObjectId => value.AsObjectId,
+                PropertyType.Decimal => value.AsDecimal128,
+                PropertyType.Guid => value.AsGuid,
+                PropertyType.NullableInt => value.IsBsonNull ? null : value.ToInt64(),
+                PropertyType.NullableBool => value.AsNullableBoolean,
+                PropertyType.NullableString => value.IsBsonNull ? null : value.AsString,
+                PropertyType.NullableData => value.IsBsonNull ? null : value.AsBsonBinaryData.Bytes,
+                PropertyType.NullableFloat or PropertyType.NullableDouble => value.AsNullableDouble,
+                PropertyType.NullableDate => value.IsBsonNull ? null : new DateTimeOffset(value.ToUniversalTime()),
+                PropertyType.NullableObjectId => value.AsNullableObjectId,
+                PropertyType.NullableDecimal => value.AsNullableDecimal128,
+                PropertyType.NullableGuid => value.AsNullableGuid,
+                PropertyType.RealmValue or PropertyType.RealmValue | PropertyType.Nullable => (object?)ConvertBsonValToRealmValue(value),  // Cast to object is necessary, otherwise the compiler gets confused
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private static RealmValue ConvertBsonValToRealmValue(BsonValue value)
+        {
+            switch (value.BsonType)
+            {
+                case BsonType.Double:
+                    return value.AsDouble;
+                case BsonType.String:
+                    var stringVal = value.AsString;
+                    if (DateTimeOffset.TryParseExact(stringVal, "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
+                        DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date))
+                    {
+                        return date;
+                    }
+
+                    return stringVal;
+                case BsonType.Binary:
+                    var binary = value.AsBsonBinaryData;
+                    if (binary.SubType == BsonBinarySubType.UuidStandard)
+                    {
+                        return GuidConverter.FromBytes(binary.Bytes, GuidRepresentation.Standard);
+                    }
+
+                    return binary.Bytes;
+                case BsonType.ObjectId:
+                    return value.AsObjectId;
+                case BsonType.Boolean:
+                    return value.AsBoolean;
+                case BsonType.DateTime:
+                    return DateTimeOffset.FromUnixTimeMilliseconds(value.AsBsonDateTime.MillisecondsSinceEpoch);
+                case BsonType.Null:
+                    return RealmValue.Null;
+                case BsonType.Int32:
+                case BsonType.Int64:
+                    return value.AsInt64;
+                case BsonType.Decimal128:
+                    return value.AsDecimal128;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -585,6 +651,26 @@ namespace Realms.Tests
                 return actual is DateTimeOffset dateActual && dateExpected.ToUnixTimeMilliseconds() == dateActual.ToUnixTimeMilliseconds();
             }
 
+            if (expected is char || expected is short || expected is int || expected is long || expected is byte)
+            {
+                return Operator.Convert<long>(actual).Equals(Operator.Convert<long>(expected));
+            }
+
+            if (expected is decimal)
+            {
+                return Operator.Convert<Decimal128>(actual).Equals(Operator.Convert<Decimal128>(expected));
+            }
+
+            if (expected is float || expected is double)
+            {
+                return Operator.Convert<double>(actual).Equals(Operator.Convert<double>(expected));
+            }
+
+            if (expected is RealmInteger<int> || expected is RealmInteger<short> || expected is RealmInteger<long> || expected is RealmInteger<byte>)
+            {
+                return Operator.Convert<long>(actual).Equals(Operator.Convert<long>(expected));
+            }
+
             return actual.Equals(expected);
         }
 
@@ -622,10 +708,10 @@ namespace Realms.Tests
 
         public static TestCaseData<Property> CreateTestCase(Property prop)
         {
-            var propType = $"{prop.Type.UnderlyingType()}{(prop.Type.IsNullable() ? "?" : string.Empty)}";
+            var propType = $"{prop.ManagedName}";
             if (prop.Type.IsCollection(out var collection))
             {
-                propType = $"{collection}<{propType}>";
+                propType = $"{collection}-{propType}>";
             }
 
             return new(propType, prop);

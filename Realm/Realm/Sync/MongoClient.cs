@@ -36,6 +36,10 @@ namespace Realms.Sync
     /// </summary>
     public class MongoClient
     {
+        private static readonly char[] _invalidChars = new[] { '\0', '.' };
+
+        private static readonly ConcurrentDictionary<Type, ObjectSchema> _schemas = new();
+
         private User User { get; }
 
         /// <summary>
@@ -48,6 +52,26 @@ namespace Realms.Sync
         {
             User = user;
             ServiceName = serviceName;
+        }
+
+        /// <summary>
+        /// Gets a collection of documents from MongoDB that can be deserialized in Realm objects.
+        /// </summary>
+        /// <remarks>
+        /// This method is only supported for source-generated classes - i.e. ones that inherit from <see cref="IRealmObject"/>
+        /// rather than <see cref="RealmObject"/>.
+        /// The collection and database name are automatically derived from the Realm object class.
+        /// </remarks>
+        /// <typeparam name="TRealmObject">The Realm object type that matches the shape of the documents in the collection.</typeparam>
+        /// <returns>A <see cref="Collection{TRealmObject}"/> instance that exposes an API for CRUD operations on its contents.</returns>
+        public Collection<TRealmObject> GetCollection<TRealmObject>()
+            where TRealmObject : class, IRealmObjectBase
+        {
+            var schema = _schemas.GetOrAdd(typeof(TRealmObject),
+                type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
+            ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
+
+            return new Collection<TRealmObject>(this, schema.Name);
         }
 
         /// <summary>
@@ -69,7 +93,7 @@ namespace Realms.Sync
                 return false;
             }
 
-            var index = name.IndexOfAny(new[] { '\0', '.' });
+            var index = name.IndexOfAny(_invalidChars);
             return index == -1;
         }
 
@@ -129,16 +153,6 @@ namespace Realms.Sync
 
                 return new Collection<TDocument>(this, name);
             }
-
-            public Collection<TDocument> GetCollection<TDocument>()
-                where TDocument : class, IRealmObject
-            {
-                var schema = _schemas.GetOrAdd(typeof(TDocument),
-                    type => (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Static | BindingFlags.Public)?.GetValue(null)
-                        ?? throw new NotSupportedException("This method is only supported for source-generated classes - i.e. ones that inherit from IRealmObject rather than RealmObject."));
-
-                return new Collection<TDocument>(this, schema.Name);
-            }
         }
 
         /// <summary>
@@ -148,11 +162,14 @@ namespace Realms.Sync
         public class Collection<TDocument>
             where TDocument : class
         {
+            private MongoClient _client;
+
             /// <summary>
             /// Gets the <see cref="Database"/> this collection belongs to.
             /// </summary>
-            /// <value>The collection's <see cref="Database"/>.</value>
-            public Database Database { get; }
+            /// <value>The collection's <see cref="Database"/> or null if the database was automatically
+            /// inferred with <see cref="MongoClient.Collection{TDocument}"/>.</value>
+            public Database? Database { get; }
 
             /// <summary>
             /// Gets the name of the collection.
@@ -162,7 +179,14 @@ namespace Realms.Sync
 
             internal Collection(Database database, string name)
             {
+                _client = database.Client;
                 Database = database;
+                Name = name;
+            }
+
+            internal Collection(MongoClient client, string name)
+            {
+                _client = client;
                 Name = name;
             }
 
@@ -458,7 +482,18 @@ namespace Realms.Sync
             private async Task<T> InvokeOperationAsync<T>(string functionName, params object?[] args)
             {
                 var jsonBuilder = new StringBuilder();
-                jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
+
+                jsonBuilder.Append("[{");
+
+                if (Database is not null)
+                {
+                    jsonBuilder.Append($"\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
+                }
+                else
+                {
+                    // Database and Collection names are automatically inferred by server based on schema name
+                    jsonBuilder.Append($"\"schema_name\":\"{Name}\"");
+                }
 
                 Debug.Assert(args.Length % 2 == 0, "args should be provided as key-value pairs");
 
@@ -472,7 +507,7 @@ namespace Realms.Sync
 
                 jsonBuilder.Append("}]");
 
-                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), Database.Client.ServiceName);
+                return await _client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), _client.ServiceName);
             }
         }
 

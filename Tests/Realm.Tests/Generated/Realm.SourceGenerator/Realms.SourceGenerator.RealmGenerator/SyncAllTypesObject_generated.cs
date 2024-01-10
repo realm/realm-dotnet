@@ -837,8 +837,10 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SyncAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializer<SyncAllTypesObject>
+        private class SyncAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<SyncAllTypesObject>
         {
+            public override string SchemaName => "SyncAllTypesObject";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SyncAllTypesObject value)
             {
                 context.Writer.WriteStartDocument();
@@ -924,10 +926,13 @@ namespace Realms.Tests
                         instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     case "ObjectProperty":
-                        instance.ObjectProperty = LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
+                        instance.ObjectProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
                         break;
                     case "EmbeddedObjectProperty":
                         instance.EmbeddedObjectProperty = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }

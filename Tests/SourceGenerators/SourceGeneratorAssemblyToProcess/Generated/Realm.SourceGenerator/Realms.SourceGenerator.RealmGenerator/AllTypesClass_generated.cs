@@ -1532,8 +1532,10 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AllTypesClassSerializer : Realms.Serialization.RealmObjectSerializer<AllTypesClass>
+        private class AllTypesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<AllTypesClass>
         {
+            public override string SchemaName => "AllTypesClass";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AllTypesClass value)
             {
                 context.Writer.WriteStartDocument();
@@ -1700,7 +1702,24 @@ namespace SourceGeneratorAssemblyToProcess
                         instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     case "ObjectProperty":
-                        instance.ObjectProperty = LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass?>()!.DeserializeById(context);
+                        instance.ObjectProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass?>()!.DeserializeById(context);
+                        break;
+                    case "ObjectCollectionProperty":
+                    case "IntCollectionProperty":
+                    case "NullableIntCollectionProperty":
+                    case "StringCollectionProperty":
+                    case "RequiredStringListProperty":
+                    case "RequiredStringSetProperty":
+                    case "NonRequiredStringListProperty":
+                    case "NonRequiredStringSetProperty":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "RequiredStringDictionaryProperty":
+                    case "NonRequiredStringDictionaryProperty":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
@@ -1710,7 +1729,7 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (name)
                 {
                     case "ObjectCollectionProperty":
-                        instance.ObjectCollectionProperty.Add(LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass>()!.DeserializeById(context)!);
+                        instance.ObjectCollectionProperty.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass>()!.DeserializeById(context)!);
                         break;
                     case "IntCollectionProperty":
                         instance.IntCollectionProperty.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
@@ -1741,11 +1760,11 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (name)
                 {
                     case "RequiredStringDictionaryProperty":
-                                                instance.RequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                                                break;
+                        instance.RequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
                     case "NonRequiredStringDictionaryProperty":
-                                                instance.NonRequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                                                break;
+                        instance.NonRequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
                 }
             }
         }

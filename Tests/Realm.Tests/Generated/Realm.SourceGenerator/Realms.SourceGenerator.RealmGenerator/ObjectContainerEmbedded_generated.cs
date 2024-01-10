@@ -391,8 +391,10 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectContainerEmbeddedSerializer : Realms.Serialization.RealmObjectSerializer<ObjectContainerEmbedded>
+        private class ObjectContainerEmbeddedSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectContainerEmbedded>
         {
+            public override string SchemaName => "ObjectContainer";
+
             protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectContainerEmbedded value)
             {
                 context.Writer.WriteStartDocument();
@@ -415,6 +417,12 @@ namespace Realms.Tests.Database
                         break;
                     case "Link":
                         instance.Link = BsonSerializer.LookupSerializer<Realms.Tests.Database.ObjectEmbedded?>().Deserialize(context);
+                        break;
+                    case "List":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
                         break;
                 }
             }
