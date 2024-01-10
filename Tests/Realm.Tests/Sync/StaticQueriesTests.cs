@@ -181,6 +181,95 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
+        /* We need specific tests regarding datetime because of the different behaviour of the server and
+         * DateTimeOffset.ToUnixUniversalTime():
+         * - DateTimeOffset.ToUnixTimeMilliseconds always rounds to the “past”.So for dates after Unix epoch it’s the same as a truncation, 
+         * for dates before this means that they subtract 1 millisecond if there’s any sub-millisecond digit (https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/datetimeoffset.cs#L666C11-L666C11)
+         * - The server truncates sub-milliseconds precision all times
+         * This means that there is an issue when going from Realm to Atlas and then deserializing from Atlas, as there will be a difference
+         * of 1 millisecond when the original DateTimeOffset has sub-millisecond precision.
+         */
+        public static readonly object[] DateTimeTestCasesAtlasToRealm = new[]
+        {
+            new object[] { CreateTestCase("PostEpoch", new DateTimeOffset(638404890727190000, TimeSpan.Zero)) },
+            new object[] { CreateTestCase("PostEpoch-subprecision", new DateTimeOffset(638404890727196472, TimeSpan.Zero)) },
+            new object[] { CreateTestCase("PreEpoch", new DateTimeOffset(606033288264220000, TimeSpan.Zero)) },
+            new object[] { CreateTestCase("PreEpoch-subprecision", new DateTimeOffset(606033288264226494, TimeSpan.Zero)) },  // Problematic case
+        };
+
+        [TestCaseSource(nameof(DateTimeTestCasesAtlasToRealm))]
+        public void RealmObjectAPI_DateTime_AtlasToRealm(TestCaseData<DateTimeOffset> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var obj = new SyncAllTypesObject { DateTimeOffsetProperty = testCase.Value };
+
+                await collection.InsertOneAsync(obj);
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                var syncObjects = await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                await syncObjects.WaitForEventAsync((sender, _) => sender.Count > 0);
+
+                var syncObj = syncObjects.Single();
+
+                AssertAreEqual(syncObj.DateTimeOffsetProperty, obj.DateTimeOffsetProperty);
+            }, timeout: 120000);
+        }
+
+        public static readonly object[] DateTimeTestCasesRealmToAtlas = new[]
+        {
+            new object[] { CreateTestCase("PostEpoch", new DateTimeOffset(638404890727190000, TimeSpan.Zero)) },
+            new object[] { CreateTestCase("PostEpoch-subprecision", new DateTimeOffset(638404890727196472, TimeSpan.Zero)) },
+            new object[] { CreateTestCase("PreEpoch", new DateTimeOffset(606033288264220000, TimeSpan.Zero)) },
+        };
+
+        [TestCaseSource(nameof(DateTimeTestCasesRealmToAtlas))]
+        public void RealmObjectAPI_DateTime_RealmToAtlas(TestCaseData<DateTimeOffset> testCase)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var obj = new SyncAllTypesObject { DateTimeOffsetProperty = testCase.Value };
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var filter = new { _id = obj.Id };
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+
+                AssertAreEqual(syncObj.DateTimeOffsetProperty, obj.DateTimeOffsetProperty);
+            }, timeout: 120000);
+        }
+
+        [TestCase]
+        public void RealmObjectAPI_DateTime_RealmToAtlas_SpecialCase()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                // This is problematic because it's before UnixEpoch, and has sub-millisecond precision
+                var problematicDateTime = new DateTimeOffset(606033288264226494, TimeSpan.Zero);
+
+                var collection = await GetCollection<SyncAllTypesObject>(AppConfigType.FlexibleSync);
+                var obj = new SyncAllTypesObject { DateTimeOffsetProperty = problematicDateTime };
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                await realm.All<SyncAllTypesObject>().Where(o => o.Id == obj.Id).SubscribeAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var filter = new { _id = obj.Id };
+
+                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+
+                var originalUnixMs = obj.DateTimeOffsetProperty.ToUnixTimeMilliseconds();
+                var expectedUnixMs = syncObj.DateTimeOffsetProperty.ToUnixTimeMilliseconds();
+
+                Assert.That(expectedUnixMs - originalUnixMs, Is.EqualTo(1));
+            }, timeout: 120000);
+        }
+
         public static readonly object[] CounterTestCases = new[]
         {
             new object[]
