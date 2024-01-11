@@ -48,7 +48,7 @@ namespace Realms.Tests
             [typeof(ObjectId)] = () => ObjectId.GenerateNewId(),
             [typeof(string)] = () => Guid.NewGuid().ToString(),
             [typeof(byte[])] = () => TestHelpers.GetBytes(10),
-            [typeof(DateTimeOffset)] = () => new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero).AddDays(GenerateDouble(-365 * 1000, 365 * 1000)),
+            [typeof(DateTimeOffset)] = () => new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero).AddDays(GenerateInt(-365 * 1000, 365 * 1000)),
             [typeof(Guid)] = () => Guid.NewGuid(),
             [typeof(RealmValue)] = () => GenerateRealmValue(),
         };
@@ -113,6 +113,8 @@ namespace Realms.Tests
         }
 
         private static T PickRandomElement<T>(T[] items) => (T)PickRandomElement((Array)items);
+
+        private static int GenerateInt(int minValue, int maxValue) => _random.Next(minValue, maxValue);
 
         private static double GenerateDouble(double minValue, double maxValue) => (_random.NextDouble() * (maxValue - minValue)) + minValue;
 
