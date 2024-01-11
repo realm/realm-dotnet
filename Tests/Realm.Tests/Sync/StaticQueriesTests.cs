@@ -536,7 +536,7 @@ namespace Realms.Tests.Sync
                 await collection.InsertManyAsync(elementsToInsert!);
 
                 // How many objects we expect
-                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Where(d => d.Value != null).Count() + 1;
+                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Where(d => d.Value != null).Count() + 1 + (obj.Link is null ? 0 : 1);
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
@@ -599,6 +599,8 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 await realm.All<LinksObject>().SubscribeAsync();
+
+                await WaitForConditionAsync(() => !realm.All<LinksObject>().Any());
 
                 realm.Write(() => realm.Add(obj));
                 await WaitForUploadAsync(realm);
