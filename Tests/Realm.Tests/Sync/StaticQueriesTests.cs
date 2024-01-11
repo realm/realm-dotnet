@@ -541,6 +541,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
 
+                await realm.SyncSession.WaitForDownloadAsync();
                 await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
 
                 var linkObj = realm.Find<LinksObject>(obj.Id);
