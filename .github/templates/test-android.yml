@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "fetchPackageArtifacts", "setupWorkloads")
+#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "fetchPackageArtifacts", "setupWorkloads", "setupJDK")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
@@ -11,6 +11,7 @@ jobs:
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
+      - #@ setupJDK()
       - #@ template.replace(prepareTest("android"))
       - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
@@ -32,7 +33,8 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupWorkloads()
+      - #@ template.replace(setupWorkloads())
+      - #@ setupJDK()
       - name: Build the tests
         run: #@ "dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
