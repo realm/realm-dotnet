@@ -34,7 +34,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes, [MarshalAs(UnmanagedType.U1)] bool shallow);
+        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes, [MarshalAs(UnmanagedType.U1)] KeyPathIdentifier keypathsIdentifier);
 
         private static class NativeMethods
         {
@@ -136,10 +136,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IEnumerable<string>? keypaths, KeyPathIdentifier keypathsIdentifier)
         {
             EnsureIsOpen();
 
+            //TODO Fix
+            var shallow = true;
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root!, result);
@@ -338,11 +340,11 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes, bool shallow)
+        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes, KeyPathIdentifier keypathsIdentifier)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, shallow);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, keypathsIdentifier);
             }
         }
     }

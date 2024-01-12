@@ -62,10 +62,12 @@ public static class CollectionExtensions
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
+    //TODO Add docs, and add keyPaths to all other methods too
+    //TODO Unify keyPath spelling
+    public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback, params string[] keyPaths)
         where T : IRealmObjectBase?
     {
-        return results.AsRealmCollection().SubscribeForNotifications(callback);
+        return results.AsRealmCollection().SubscribeForNotifications(callback, keyPaths);
     }
 
     /// <summary>

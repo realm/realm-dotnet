@@ -155,6 +155,7 @@ namespace Realms
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForKeyNotifications{T}(IDictionary{string, T}, DictionaryNotificationCallbackDelegate{T})"/>
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
+        /// //TODO Fix docs
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths);
     }
 }

@@ -189,15 +189,33 @@ namespace Realms
             return CreateCollection(frozenRealm, frozenHandle);
         }
 
-        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
-            => SubscribeForNotificationsImpl(callback, shallow: false);
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths)
+        {
+            //TODO Maybe this can be cached? 
+            if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
+            {
+                throw new InvalidOperationException("KeyPaths can be used only with Realm objects");
+            }
 
-        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
+            if (keypaths is null)
+            {
+                throw new ArgumentNullException(nameof(keypaths));
+            }
+
+            if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
+            {
+                throw new ArgumentException("A keypath cannot be null, empty, or consisting only of white spaces");
+            }
+
+            return SubscribeForNotificationsImpl(callback, keypaths);
+        }
+
+        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, IEnumerable<string>? keypaths)
         {
             Argument.NotNull(callback, nameof(callback));
-            _notificationCallbacks.Value.Add(callback, shallow);
+            _notificationCallbacks.Value.Add(callback, keypaths);
 
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keypaths));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -257,9 +275,9 @@ namespace Realms
             return result;
         }
 
-        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
+        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, IEnumerable<string>? keypaths)
         {
-            _notificationCallbacks.Value.Remove(callback, shallow);
+            _notificationCallbacks.Value.Remove(callback, keypaths);
         }
 
         #region INotifyCollectionChanged
@@ -396,18 +414,18 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotificationsImpl(OnChange, shallow: true);
+                    SubscribeForNotificationsImpl(OnChange, null);
                 }
                 else
                 {
-                    UnsubscribeFromNotifications(OnChange, shallow: true);
+                    UnsubscribeFromNotifications(OnChange, null);
                 }
             }
         }
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, KeyPathIdentifier kpId)
         {
             ChangeSet? changeset = null;
             if (changes != null)
@@ -422,7 +440,7 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            _notificationCallbacks.Value.Notify(changeset, shallow);
+            _notificationCallbacks.Value.Notify(changeset, kpId);
         }
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
@@ -611,19 +629,23 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<KeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<KeyPathIdentifier, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
             _parent = parent;
         }
 
-        // Shallow here and everywhere else is a bit of a shortcut we're taking until we have proper keypath filtering.
-        // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
-        public void Add(NotificationCallbackDelegate<T> callback, bool shallow)
+        // keypaths = empty => shallow
+        // keypath = null => full
+        public void Add(NotificationCallbackDelegate<T> callback, IEnumerable<string>? keypaths)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            if (keypaths == null)
+            {
+            }
+
+            var kpId = GetIdentifierFromKeypaths(keypaths);
+            if (_subscriptions.TryGetValue(kpId, out var subscription))
             {
                 if (subscription.DeliveredInitialNotification)
                 {
@@ -638,33 +660,29 @@ namespace Realms
             else
             {
                 // If this is a new subscription, we store it in the backing dictionary, then we subscribe outside of transaction
-                _subscriptions[keyPath] = (null, false, new() { callback });
+                _subscriptions[kpId] = (null, false, new() { callback });
                 _parent.Realm.ExecuteOutsideTransaction(() =>
                 {
                     // It's possible that we unsubscribed in the meantime, so only add a notification callback if we still have callbacks
-                    if (_subscriptions.TryGetValue(keyPath, out var sub) && sub.Callbacks.Count > 0)
+                    if (_subscriptions.TryGetValue(kpId, out var sub) && sub.Callbacks.Count > 0)
                     {
                         var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
-                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), sub.DeliveredInitialNotification, sub.Callbacks);
+                        _subscriptions[kpId] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keypaths, kpId), sub.DeliveredInitialNotification, sub.Callbacks);
                     }
                 });
             }
         }
-        /*
-         * Keypath now needs to be a list of strings, can't be an enum only. We probably need to keep the keypath for empty and full though
-         * 
-         * 
-         */
-        public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
+
+        public bool Remove(NotificationCallbackDelegate<T> callback, IEnumerable<string>? keypaths)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            var kpId = GetIdentifierFromKeypaths(keypaths);
+            if (_subscriptions.TryGetValue(kpId, out var subscription))
             {
                 subscription.Callbacks.Remove(callback);
                 if (subscription.Callbacks.Count == 0)
                 {
                     subscription.Token?.Dispose();
-                    _subscriptions.Remove(keyPath);
+                    _subscriptions.Remove(kpId);
                 }
 
                 return true;
@@ -673,14 +691,13 @@ namespace Realms
             return false;
         }
 
-        public void Notify(ChangeSet? changes, bool shallow)
+        public void Notify(ChangeSet? changes, KeyPathIdentifier kpId)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            if (_subscriptions.TryGetValue(kpId, out var subscription))
             {
                 if (changes == null)
                 {
-                    _subscriptions[keyPath] = (subscription.Token, true, subscription.Callbacks);
+                    _subscriptions[kpId] = (subscription.Token, true, subscription.Callbacks);
                 }
 
                 foreach (var callback in subscription.Callbacks.ToArray())
@@ -697,7 +714,14 @@ namespace Realms
                 token?.Dispose();
             }
         }
+
+        private KeyPathIdentifier GetIdentifierFromKeypaths(IEnumerable<string>? keypaths)
+        {
+            return default(KeyPathIdentifier); //TODO Find a reasonableone
+        }
     }
+
+    internal struct KeyPathIdentifier { }
 
     // Eventually this should be a proper class holding the keypaths
     internal enum KeyPath

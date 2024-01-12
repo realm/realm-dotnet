@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
@@ -36,6 +37,83 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class NotificationTests : RealmInstanceTest
     {
+        #region Keypath filtering
+
+        [Test]
+        public void Results_Keypath_BasicExample()
+        {
+            var query = _realm.All<Person>();
+            ChangeSet? changes = null;
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c) => changes = c;
+
+            using (query.SubscribeForNotifications(OnNotification))
+            {
+                _realm.Write(() => _realm.Add(new Person()));
+
+                _realm.Refresh();
+                Assert.That(changes, Is.Not.Null);
+                Assert.That(changes!.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+            }
+        }
+
+        [Test]
+        public void Results_SubscribingWithKeypath_NestedProperties() 
+        {
+        }
+
+        // Unknown top level property (error)
+
+        // Unknown nested property (error)
+
+        [Test]
+        public void SubscribeWithKeypaths_WithEmptyOrWhiteSpaceKeypaths_Throws()
+        {
+            var query = _realm.All<Person>();
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
+            {
+            }
+
+            Assert.That(query.SubscribeForNotifications(OnNotification, string.Empty), Throws.Exception.TypeOf<ArgumentException>());
+            Assert.That(query.SubscribeForNotifications(OnNotification, " "), Throws.Exception.TypeOf<ArgumentException>());
+            Assert.That(query.SubscribeForNotifications(OnNotification, "test", null!), Throws.Exception.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WithNullKeypaths_Throws()
+        {
+            var query = _realm.All<Person>();
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
+            {
+            }
+
+            Assert.That(query.SubscribeForNotifications(OnNotification, null!), Throws.Exception.TypeOf<ArgumentNullException>());
+        }
+
+        // Can pass keypaths only when the collection is of objects (error)
+
+        // MapTo properties
+
+        // Backlinks (works?)
+
+        // Keypaths with repeated string (should be ignored?)
+
+        // Tests for nested properties (also at more than 4 levels)
+
+        // Changing the order of keypaths should not make a new subscription in core
+
+        // Tests with results/list/sets/dictionaries
+
+        // Verify that default subscriptions is the same as "*.*.*.*" (should be 4 levels)
+
+        // Verify you can't get notifications deeper than 4 levels (error?)
+
+        // Verify that "*" is the same as shallow
+
+        #endregion
+
         [Test]
         public void ShouldTriggerRealmChangedEvent()
         {
