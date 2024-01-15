@@ -33,8 +33,8 @@ namespace Realms
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
-        /// <param name="keypathsIdentifier">Identifier for the collection of keypaths used for the subscription.</param>
-        void NotifyCallbacks(TChangeset? changes, KeyPathIdentifier keypathsIdentifier);
+        /// <param name="shallow">Whether the changes are coming from a shallow notifier or not.</param>
+        void NotifyCallbacks(TChangeset? changes, bool shallow);
     }
 
     internal class NotificationToken<TCallback> : IDisposable

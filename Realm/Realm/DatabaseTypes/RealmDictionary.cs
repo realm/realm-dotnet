@@ -249,10 +249,9 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, KeyPathIdentifier keypathsIdentifier)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, bool shallow)
         {
-            //TODO Need to fix the debug assert
-            //Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
+            Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
 
             DictionaryChangeSet? changeset = null;
             if (changes != null)

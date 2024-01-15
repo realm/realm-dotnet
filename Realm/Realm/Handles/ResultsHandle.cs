@@ -157,12 +157,10 @@ namespace Realms
             return new SortDescriptorHandle(Root!, result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IEnumerable<string> keypaths, KeyPathIdentifier kpId)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            //TODO Fix test
-            var shallow = true;
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root!, result);
