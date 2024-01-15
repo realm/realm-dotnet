@@ -204,6 +204,12 @@ namespace Realms
                 throw new ArgumentException("A keypath cannot be null, empty, or consisting only of white spaces");
             }
 
+            //TODO We can make this prettier later. It's a little bit difficult to make two different paths for notifications for now
+            if (keypaths.Any())
+            {
+                return SubscribeForNotificationsWithKeypathImpl(callback, keypaths);
+            }
+
             return SubscribeForNotificationsImpl(callback, false);
         }
 
@@ -213,6 +219,20 @@ namespace Realms
             _notificationCallbacks.Value.Add(callback, shallow);
 
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
+        }
+
+        internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, IEnumerable<string> keypaths)
+        {
+            Argument.NotNull(callback, nameof(callback));
+
+            var keypathsTest = new List<string> { " a", " bbb" };
+            // TODO Here we subscribe
+
+            var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+
+            Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), keypathsTest);
+
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, false));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -665,11 +685,7 @@ namespace Realms
                 });
             }
         }
-        /*
-         * Keypath now needs to be a list of strings, can't be an enum only. We probably need to keep the keypath for empty and full though
-         * 
-         * 
-         */
+
         public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;

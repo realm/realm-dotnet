@@ -100,6 +100,30 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
     });
 }
 
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_keypaths(Results* results, void* managed_results, 
+    size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
+{
+    auto shallow = true;
+
+    KeyPathArray kpa = KeyPathArray();
+
+
+    for (size_t i = 0; i < keypaths_length; i++)
+    {
+        auto kp = from_capi(keypaths[i].string);
+        kpa.push_back(kp);
+    }
+
+
+
+    return handle_errors(ex, [=]() {
+        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+        }, shallow);
+    });
+}
+
+
 REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

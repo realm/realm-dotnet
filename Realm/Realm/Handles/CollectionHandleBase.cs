@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Realms.Native;
 
 namespace Realms
@@ -63,5 +65,10 @@ namespace Realms
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
 
         public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
+
+        public virtual NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, IEnumerable<string> keypaths)
+        {
+            return AddNotificationCallback(managedObjectHandle, true);
+        }
     }
 }

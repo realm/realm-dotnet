@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -42,6 +43,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback_keypaths", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_notification_callback_keypaths(ResultsHandle results, IntPtr managedResultsHandle,
+                IntPtr keypaths_len, [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
@@ -162,6 +167,18 @@ namespace Realms
             EnsureIsOpen();
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new NotificationTokenHandle(Root!, result);
+        }
+
+        public override NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, IEnumerable<string> keypaths)
+        {
+            EnsureIsOpen();
+
+            var toNative = keypaths.Select(k => ((RealmValue)k).ToNative());
+
+            var result = NativeMethods.add_notification_callback_keypaths(this, managedObjectHandle, (IntPtr)keypaths.Count(),
+                toNative.Select(t => t.Value).ToArray(), out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root!, result);
         }

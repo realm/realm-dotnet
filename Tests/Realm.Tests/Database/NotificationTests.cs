@@ -46,7 +46,7 @@ namespace Realms.Tests.Database
 
             void OnNotification(IRealmCollection<Person> s, ChangeSet? c) => changes = c;
 
-            using (query.SubscribeForNotifications(OnNotification))
+            using (query.SubscribeForNotifications(OnNotification, "meh", "mahhh"))
             {
                 _realm.Write(() => _realm.Add(new Person()));
 
