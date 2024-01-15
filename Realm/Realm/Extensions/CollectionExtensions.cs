@@ -96,7 +96,8 @@ public static class CollectionExtensions
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback);
+    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) 
+        => set.AsRealmCollection().SubscribeForNotifications(callback);
 
     /// <summary>
     /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
@@ -196,7 +197,8 @@ public static class CollectionExtensions
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
+    public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback, params string[] keyPaths)
+        => list.AsRealmCollection().SubscribeForNotifications(callback, keyPaths);
 
     /// <summary>
     /// Move the specified item to a new position within the list.

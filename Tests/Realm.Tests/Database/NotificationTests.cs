@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
@@ -58,13 +57,26 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Results_SubscribingWithKeypath_NestedProperties() 
+        public void Results_SubscribingWithKeypath_NestedProperties()
         {
         }
 
-        // Unknown top level property (error)
+        [Test]
+        public void SubscribeWithKeypaths_WithUnknownProperty_Throws()
+        {
+            var query = _realm.All<Person>();
 
-        // Unknown nested property (error)
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
+            {
+            }
+
+            //TODO Wrong exception, so I remember to put the right one later
+            // Top level property
+            Assert.That(query.SubscribeForNotifications(OnNotification, "unknownProp"), Throws.Exception.TypeOf<InvalidCastException>());
+
+            // Nested property 
+            Assert.That(query.SubscribeForNotifications(OnNotification, "Friends.unknownProp"), Throws.Exception.TypeOf<InvalidCastException>());
+        }
 
         [Test]
         public void SubscribeWithKeypaths_WithEmptyOrWhiteSpaceKeypaths_Throws()
@@ -92,7 +104,22 @@ namespace Realms.Tests.Database
             Assert.That(query.SubscribeForNotifications(OnNotification, null!), Throws.Exception.TypeOf<ArgumentNullException>());
         }
 
-        // Can pass keypaths only when the collection is of objects (error)
+        [Test]
+        public void SubscribeWithKeypaths_WithNonRealmObjectType_Throws()
+        {
+            var collectionObject = _realm.Write(() => _realm.Add(new CollectionsObject
+            {
+                Int16List = { 1, 2 }
+            }));
+
+            var list = collectionObject.Int16List;
+
+            void OnNotification(IRealmCollection<short> s, ChangeSet? c)
+            {
+            }
+
+            Assert.That(list.SubscribeForNotifications(OnNotification, "test"), Throws.Exception.TypeOf<InvalidOperationException>());
+        }
 
         // MapTo properties
 
@@ -100,7 +127,7 @@ namespace Realms.Tests.Database
 
         // Keypaths with repeated string (should be ignored?)
 
-        // Tests for nested properties (also at more than 4 levels)
+        // Tests for nested properties
 
         // Changing the order of keypaths should not make a new subscription in core
 

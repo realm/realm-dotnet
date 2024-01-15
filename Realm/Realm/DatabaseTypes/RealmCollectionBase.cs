@@ -197,10 +197,7 @@ namespace Realms
                 throw new InvalidOperationException("KeyPaths can be used only with Realm objects");
             }
 
-            if (keypaths is null)
-            {
-                throw new ArgumentNullException(nameof(keypaths));
-            }
+            Argument.NotNull(keypaths, nameof(keypaths));
 
             if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
             {
@@ -690,6 +687,11 @@ namespace Realms
 
             return false;
         }
+
+        // Check with MapTo
+        // Add method notifications for objects (another PR)
+        // Caching for full/shallow - no caching for the rest
+        // See if we can add expression body (like LINQ) for specifying keypaths
 
         public void Notify(ChangeSet? changes, KeyPathIdentifier kpId)
         {
