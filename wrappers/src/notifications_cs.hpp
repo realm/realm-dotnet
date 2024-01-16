@@ -52,6 +52,7 @@ struct ManagedNotificationTokenContext {
     ObjectSchema* schema;
 };
 
+using ObjectNotificationCallbackAndKeypathT = void(void* managed_results, MarshallableCollectionChangeSet*);
 using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*, bool shallow);
 using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*, bool shallow);
 
@@ -125,6 +126,38 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
     }
 }
 
+static inline void handle_changes_2(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::function<ObjectNotificationCallbackAndKeypathT> callback) {
+    auto shallow = true;
+    if (changes.empty()) {
+        callback(context->managed_object, nullptr);
+    }
+    else {
+        auto deletions = get_indexes_vector(changes.deletions);
+        auto insertions = get_indexes_vector(changes.insertions);
+        auto modifications = get_indexes_vector(changes.modifications);
+        auto modifications_new = get_indexes_vector(changes.modifications_new);
+
+        std::vector<int32_t> properties;
+
+        for (auto& pair : changes.columns) {
+            if (!pair.second.empty()) {
+                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
+            }
+        }
+
+        MarshallableCollectionChangeSet marshallable_changes{
+            deletions,
+            insertions,
+            modifications,
+            modifications_new,
+            changes.moves,
+            changes.collection_was_cleared,
+            properties
+        };
+
+        callback(context->managed_object, &marshallable_changes);
+    }
+}
 
 template<typename Subscriber>
 inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber, bool shallow, ObjectSchema* schema = nullptr)
@@ -138,6 +171,20 @@ inline ManagedNotificationTokenContext* subscribe_for_notifications(void* manage
 
     return context;
 }
+
+template<typename Subscriber>
+inline ManagedNotificationTokenContext* subscribe_for_notifications_keypaths(void* managed_object, Subscriber subscriber, ObjectSchema* schema = nullptr)
+{
+    auto context = new ManagedNotificationTokenContext();
+    context->managed_object = managed_object;
+    context->schema = schema;
+    context->token = subscriber([context](CollectionChangeSet changes) {
+        handle_changes_2(context, changes);
+    });
+
+    return context;
+}
+
 }
 
 #endif // NOTIFICATIONS_CS_HPP

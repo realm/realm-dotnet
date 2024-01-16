@@ -225,14 +225,40 @@ namespace Realms
         {
             Argument.NotNull(callback, nameof(callback));
 
-            var keypathsTest = new List<string> { " a", " bbb" };
-            // TODO Here we subscribe
-
             var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            Action<NotifiableObjectHandleBase.CollectionChangeSet?> simpleCallback = (changeset) => NotifyCallbacksKeypath(changeset, callback);
+            var callbackHandle = GCHandle.Alloc(simpleCallback);
 
-            Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), keypathsTest);
+            Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
 
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, false));
+            //TODO Check if we need to clean the handle
+            //TODO What do with callbackHandle
+
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotificationsKeypath(c, false));
+        }
+
+        private void UnsubscribeFromNotificationsKeypath(NotificationCallbackDelegate<T> callback, bool shallow)
+        {
+            //TODO Need to remove shallow, and go directly into core
+            _notificationCallbacks.Value.Remove(callback, shallow);
+        }
+
+        void NotifyCallbacksKeypath(NotifiableObjectHandleBase.CollectionChangeSet? changes, NotificationCallbackDelegate<T> callback)
+        {
+            ChangeSet? changeset = null;
+            if (changes != null)
+            {
+                var actualChanges = changes.Value;
+                changeset = new ChangeSet(
+                    insertedIndices: actualChanges.Insertions.ToEnumerable().Select(i => (int)i).ToArray(),
+                    modifiedIndices: actualChanges.Modifications.ToEnumerable().Select(i => (int)i).ToArray(),
+                    newModifiedIndices: actualChanges.Modifications_New.ToEnumerable().Select(i => (int)i).ToArray(),
+                    deletedIndices: actualChanges.Deletions.ToEnumerable().Select(i => (int)i).ToArray(),
+                    moves: actualChanges.Moves.ToEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
+                    cleared: actualChanges.Cleared);
+            }
+
+            callback(this, changeset);
         }
 
         protected abstract T GetValueAtIndex(int index);

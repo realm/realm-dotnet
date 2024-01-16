@@ -91,7 +91,8 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, bool shallow, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, 
+    bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
         return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
@@ -103,22 +104,20 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_keypaths(Results* results, void* managed_results, 
     size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
 {
-    auto shallow = true;
-
-    KeyPathArray kpa = KeyPathArray();
-
-
-    for (size_t i = 0; i < keypaths_length; i++)
-    {
-        auto kp = from_capi(keypaths[i].string);
-        kpa.push_back(kp);
-    }
-
-
-
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+
+        auto shallow = true;
+
+        std::vector<std::string> keypaths_vector;
+        for (size_t i = 0; i < keypaths_length; i++)
+        {
+            keypaths_vector.push_back(from_capi(keypaths[i].string));
+        }
+
+        auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
+
+        return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, keypath_array);
         }, shallow);
     });
 }

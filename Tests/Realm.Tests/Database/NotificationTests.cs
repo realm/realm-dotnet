@@ -46,13 +46,18 @@ namespace Realms.Tests.Database
 
             void OnNotification(IRealmCollection<Person> s, ChangeSet? c) => changes = c;
 
-            using (query.SubscribeForNotifications(OnNotification, "meh", "mahhh"))
+            using (query.SubscribeForNotifications(OnNotification, "FirstName"))
             {
-                _realm.Write(() => _realm.Add(new Person()));
-
+                var person = new Person();
+                _realm.Write(() => _realm.Add(person));
                 _realm.Refresh();
-                Assert.That(changes, Is.Not.Null);
-                Assert.That(changes!.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+
+                Assert.That(changes, Is.Null);
+
+                _realm.Write(() => person.FirstName = "New");
+                _realm.Refresh();
+
+                Assert.That(changes!.ModifiedIndices, Is.EquivalentTo(new int[] { 0 }));
             }
         }
 
