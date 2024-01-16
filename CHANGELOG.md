@@ -1,16 +1,27 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. (Core 13.24.1)
+* Exceptions thrown during bootstrap application will now be surfaced to the user rather than terminating the program with an unhandled exception. (Core 13.25.0)
 
 ### Fixed
-* None
+* Automatic client reset recovery would duplicate insertions in a list when recovering a write which made an unrecoverable change to a list (i.e. modifying or deleting a pre-existing entry), followed by a subscription change, followed by a write which added an entry to the list. (Core 13.24.0)
+* During a client reset recovery a Set of links could be missing items, or an exception could be thrown that prevents recovery. (Core 13.24.0)
+* During a client reset with recovery when recovering a move or set operation on a `IList<RealmObject>` or `IList<RealmValue>` that operated on indices that were not also added in the recovery, links to an object which had been deleted by another client while offline would be recreated by the recovering client. But the objects of these links would only have the primary key populated and all other fields would be default values. Now, instead of creating these zombie objects, the lists being recovered skip such deleted links. (Core 13.24.0)
+* Errors encountered while reapplying local changes for client reset recovery on partition-based sync Realms would result in the client reset attempt not being recorded, possibly resulting in an endless loop of attempting and failing to automatically recover the client reset. (Core 13.24.0)
+* Changesets have wrong timestamps if the local clock lags behind 2015-01-01T00:00:00Z. The sync client now throws an exception if that happens. (Core 13.24.1)
+* If the very first open of a flexible sync Realm triggered a client reset, the configuration had an initial subscriptions callback, both before and after reset callbacks, and the initial subscription callback began a read transaction without ending it (which is normally going to be the case), opening the frozen Realm for the after reset callback would trigger a BadVersion exception. (Core 13.24.1)
+* Automatic client reset recovery on flexible sync Realms would apply recovered changes in multiple write transactions, releasing the write lock in between. (Core 13.24.1)
+* Having a class name of length 57 would make client reset crash as a limit of 56 was wrongly enforced. (Core 13.24.1)
+* Fixed several causes of "decryption failed" exceptions that could happen when opening multiple encrypted Realm files in the same process while using Apple/linux and storing the Realms on an exFAT file system. (Core 13.24.1) 
+* Fixed several errors that could cause a crash of the sync client. (Core 13.25.0)
+* Bad performance of initial Sync download involving many backlinks. (Core 13.25.1)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.25.1.
 
 ## 11.6.1 (2023-11-17)
 
