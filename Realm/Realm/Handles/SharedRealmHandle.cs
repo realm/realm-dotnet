@@ -178,6 +178,7 @@ namespace Realms
                 DisposeGCHandleCallback dispose_gchandle_callback,
                 LogMessageCallback log_message_callback,
                 NotifiableObjectHandleBase.NotificationCallback notify_object,
+                NotifiableObjectHandleBase.NotificationCallbackKeypath notify_object_keypath,
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,
                 ShouldCompactCallback should_compact_callback,
@@ -246,6 +247,7 @@ namespace Realms
             NativeMethods.DisposeGCHandleCallback disposeGCHandle = OnDisposeGCHandle;
             NativeMethods.LogMessageCallback logMessage = LogMessage;
             NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
+            NotifiableObjectHandleBase.NotificationCallbackKeypath notifyObjectKeypath = NotifiableObjectHandleBase.NotifyObjectChangedKeypath;
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
             NativeMethods.MigrationCallback onMigration = OnMigration;
             NativeMethods.ShouldCompactCallback shouldCompact = ShouldCompactOnLaunchCallback;
@@ -264,7 +266,8 @@ namespace Realms
             GCHandle.Alloc(handleTaskCompletion);
             GCHandle.Alloc(onInitialization);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, 
+                notifyObject, notifyObjectKeypath, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
 
         public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);

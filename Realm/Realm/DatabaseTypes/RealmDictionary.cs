@@ -272,5 +272,10 @@ namespace Realms
                 callback(this, changeset);
             }
         }
+
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacksKeypath(DictionaryHandle.DictionaryChangeSet? changes, IntPtr callbackNative)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

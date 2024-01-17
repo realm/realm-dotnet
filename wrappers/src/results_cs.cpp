@@ -101,8 +101,8 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_keypaths(Results* results, void* managed_results, 
-    size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_keypaths(Results* results, void* managed_results,
+    void* callback, size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
 
@@ -116,9 +116,9 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_
 
         auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
 
-        return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+        return subscribe_for_notifications_keypaths(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
             return results->add_notification_callback(callback, keypath_array);
-        }, shallow);
+        }, callback);
     });
 }
 

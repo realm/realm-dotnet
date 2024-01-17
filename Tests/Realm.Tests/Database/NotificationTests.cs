@@ -57,6 +57,7 @@ namespace Realms.Tests.Database
                 _realm.Write(() => person.FirstName = "New");
                 _realm.Refresh();
 
+                Assert.That(changes, Is.Not.Null);
                 Assert.That(changes!.ModifiedIndices, Is.EquivalentTo(new int[] { 0 }));
             }
         }

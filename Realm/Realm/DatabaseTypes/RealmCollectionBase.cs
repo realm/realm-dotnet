@@ -29,7 +29,9 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
+using static Realms.NotifiableObjectHandleBase;
 
 namespace Realms
 {
@@ -226,13 +228,12 @@ namespace Realms
             Argument.NotNull(callback, nameof(callback));
 
             var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            Action<NotifiableObjectHandleBase.CollectionChangeSet?> simpleCallback = (changeset) => NotifyCallbacksKeypath(changeset, callback);
-            var callbackHandle = GCHandle.Alloc(simpleCallback);
+            var callbackHandle = GCHandle.Alloc(callback);
 
             Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
 
             //TODO Check if we need to clean the handle
-            //TODO What do with callbackHandle
+            //TODO What do with callbackHandle? 
 
             return NotificationToken.Create(callback, c => UnsubscribeFromNotificationsKeypath(c, false));
         }
@@ -243,8 +244,10 @@ namespace Realms
             _notificationCallbacks.Value.Remove(callback, shallow);
         }
 
-        void NotifyCallbacksKeypath(NotifiableObjectHandleBase.CollectionChangeSet? changes, NotificationCallbackDelegate<T> callback)
+        void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
         {
+            var callback = GCHandle.FromIntPtr(callbackNative).Target as NotificationCallbackDelegate<T>;
+
             ChangeSet? changeset = null;
             if (changes != null)
             {

@@ -35,6 +35,9 @@ namespace Realms
         /// <param name="changes">The changes that occurred.</param>
         /// <param name="shallow">Whether the changes are coming from a shallow notifier or not.</param>
         void NotifyCallbacks(TChangeset? changes, bool shallow);
+
+        void NotifyCallbacksKeypath(TChangeset? changes, IntPtr callbackNative);
+
     }
 
     internal class NotificationToken<TCallback> : IDisposable

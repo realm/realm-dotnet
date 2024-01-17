@@ -302,6 +302,11 @@ namespace Realms
 
             return ObjectHandle.ObjEquals(ma.ObjectHandle);
         }
+
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacksKeypath(NotifiableObjectHandleBase.CollectionChangeSet? changes, IntPtr callbackNative)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]
