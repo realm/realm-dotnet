@@ -29,7 +29,6 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 using static Realms.NotifiableObjectHandleBase;
 
@@ -196,14 +195,14 @@ namespace Realms
             //TODO Maybe this can be cached? 
             if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
             {
-                throw new InvalidOperationException("KeyPaths can be used only with Realm objects");
+                throw new InvalidOperationException("Key paths can be used only with Realm objects");
             }
 
             Argument.NotNull(keypaths, nameof(keypaths));
 
             if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
             {
-                throw new ArgumentException("A keypath cannot be null, empty, or consisting only of white spaces");
+                throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
             }
 
             //TODO We can make this prettier later. It's a little bit difficult to make two different paths for notifications for now
@@ -223,12 +222,15 @@ namespace Realms
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
+        private NotificationCallbackDelegate<T> callbackP;
+
         internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, IEnumerable<string> keypaths)
         {
             Argument.NotNull(callback, nameof(callback));
 
+            callbackP = callback;
             var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var callbackHandle = GCHandle.Alloc(callback);
+            var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
             Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
 

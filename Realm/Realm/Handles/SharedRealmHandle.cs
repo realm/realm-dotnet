@@ -260,6 +260,7 @@ namespace Realms
             GCHandle.Alloc(disposeGCHandle);
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(notifyObject);
+            GCHandle.Alloc(notifyObjectKeypath);
             GCHandle.Alloc(notifyDictionary);
             GCHandle.Alloc(onMigration);
             GCHandle.Alloc(shouldCompact);

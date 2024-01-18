@@ -95,36 +95,32 @@ static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed
     return result;
 }
 
-static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, bool shallow) {
-    if (changes.empty()) {
-        s_object_notification_callback(context->managed_object, nullptr, shallow);
-    }
-    else {
-        auto deletions = get_indexes_vector(changes.deletions);
-        auto insertions = get_indexes_vector(changes.insertions);
-        auto modifications = get_indexes_vector(changes.modifications);
-        auto modifications_new = get_indexes_vector(changes.modifications_new);
+// TODO Later I need to investigate why using this method to extrac this functionality does not work
+static inline MarshallableCollectionChangeSet build_marshallable_change_set(ObjectSchema* schema, CollectionChangeSet changes) {
+    auto deletions = get_indexes_vector(changes.deletions);
+    auto insertions = get_indexes_vector(changes.insertions);
+    auto modifications = get_indexes_vector(changes.modifications);
+    auto modifications_new = get_indexes_vector(changes.modifications_new);
 
-        std::vector<int32_t> properties;
+    std::vector<int32_t> properties;
 
-        for (auto& pair : changes.columns) {
-            if (!pair.second.empty()) {
-                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
-            }
+    for (auto& pair : changes.columns) {
+        if (!pair.second.empty()) {
+            properties.emplace_back(get_property_index(schema, ColKey(pair.first)));
         }
-
-        MarshallableCollectionChangeSet marshallable_changes{
-            deletions,
-            insertions,
-            modifications,
-            modifications_new,
-            changes.moves,
-            changes.collection_was_cleared,
-            properties
-        };
-
-        s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);
     }
+
+    MarshallableCollectionChangeSet marshallable_changes{
+        deletions,
+        insertions,
+        modifications,
+        modifications_new,
+        changes.moves,
+        changes.collection_was_cleared,
+        properties
+    };
+
+    return marshallable_changes;
 }
 
 static inline void handle_changes_keypath(ManagedNotificationTokenContext* context, CollectionChangeSet changes, void* callback) {
@@ -154,7 +150,45 @@ static inline void handle_changes_keypath(ManagedNotificationTokenContext* conte
             changes.collection_was_cleared,
             properties
         };
+
         s_object_notification_keypath_callback(context->managed_object, &marshallable_changes, callback);
+    }
+}
+
+static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, bool shallow) {
+    if (changes.empty()) {
+        s_object_notification_callback(context->managed_object, nullptr, shallow);
+    }
+    else {
+        auto deletions = get_indexes_vector(changes.deletions);
+        auto insertions = get_indexes_vector(changes.insertions);
+        auto modifications = get_indexes_vector(changes.modifications);
+        auto modifications_new = get_indexes_vector(changes.modifications_new);
+
+        std::vector<int32_t> properties;
+
+        for (auto& pair : changes.columns) {
+            if (!pair.second.empty()) {
+                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
+            }
+        }
+
+        // TODO Using this method instead of creating marshallable_changes here makes lots of test fail. Later I want to investigate why
+        // The funny thing is that it fails when running, but putting a breakpoint on the line when s_notification_callback gets called
+        // makes it succeed in debug. 
+        //MarshallableCollectionChangeSet marshallable_changes = build_marshallable_change_set(context->schema, changes);
+
+        MarshallableCollectionChangeSet marshallable_changes{
+            deletions,
+            insertions,
+            modifications,
+            modifications_new,
+            changes.moves,
+            changes.collection_was_cleared,
+            properties
+        };
+
+        s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);
     }
 }
 

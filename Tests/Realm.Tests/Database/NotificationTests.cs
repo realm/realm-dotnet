@@ -39,32 +39,100 @@ namespace Realms.Tests.Database
         #region Keypath filtering
 
         [Test]
-        public void Results_Keypath_BasicExample()
+        public void SubscribeWithKeypaths_TopLevelProperties_Works()
         {
             var query = _realm.All<Person>();
-            ChangeSet? changes = null;
+            var changesets = new List<ChangeSet>();
 
-            void OnNotification(IRealmCollection<Person> s, ChangeSet? c) => changes = c;
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var person = new Person();
+            _realm.Write(() => _realm.Add(person));
 
             using (query.SubscribeForNotifications(OnNotification, "FirstName"))
             {
-                var person = new Person();
-                _realm.Write(() => _realm.Add(person));
-                _realm.Refresh();
+                // Changed property in keypath
+                _realm.Write(() => person.FirstName = "NewFirstName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
 
-                Assert.That(changes, Is.Null);
+                // Changing properties not in keypath
+                _realm.Write(() => person.LastName = "NewLastName");
+                _realm.Write(() => person.Email = "NewEmails");
+                VerifyNotifications(changesets, expectedNotifications: false);
 
-                _realm.Write(() => person.FirstName = "New");
-                _realm.Refresh();
-
-                Assert.That(changes, Is.Not.Null);
-                Assert.That(changes!.ModifiedIndices, Is.EquivalentTo(new int[] { 0 }));
+                // Changed key path property again
+                _realm.Write(() => person.FirstName = "AgainNewFirstName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
             }
         }
 
         [Test]
-        public void Results_SubscribingWithKeypath_NestedProperties()
+        public void SubscribeWithKeypaths_WithRepeatedKeypath_IgnoresRepeated()
         {
+            var query = _realm.All<Person>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var person = new Person();
+            _realm.Write(() => _realm.Add(person));
+
+            using (query.SubscribeForNotifications(OnNotification, "FirstName", "FirstName"))
+            {
+                // Changed property in keypath
+                _realm.Write(() => person.FirstName = "NewFirstName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing property not in keypath
+                _realm.Write(() => person.LastName = "NewLastName");
+                _realm.Write(() => person.Email = "NewEmails");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_NestedProperties_Works()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.FirstName"))
+            {
+                // Changed top level property on the keypath
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changed keypath property
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changed property not on keypath
+                _realm.Write(() => tno.LinkDifferentType!.LastName = "NewName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
         }
 
         [Test]
@@ -76,12 +144,15 @@ namespace Realms.Tests.Database
             {
             }
 
-            //TODO Wrong exception, so I remember to put the right one later
-            // Top level property
-            Assert.That(query.SubscribeForNotifications(OnNotification, "unknownProp"), Throws.Exception.TypeOf<InvalidCastException>());
+            var exMessage = "not a valid property in Person";
 
-            // Nested property 
-            Assert.That(query.SubscribeForNotifications(OnNotification, "Friends.unknownProp"), Throws.Exception.TypeOf<InvalidCastException>());
+            // Top level property
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, "unknownProp"),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
+
+            // Nested property
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, "Friends.unknownProp"),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
         }
 
         [Test]
@@ -93,9 +164,14 @@ namespace Realms.Tests.Database
             {
             }
 
-            Assert.That(query.SubscribeForNotifications(OnNotification, string.Empty), Throws.Exception.TypeOf<ArgumentException>());
-            Assert.That(query.SubscribeForNotifications(OnNotification, " "), Throws.Exception.TypeOf<ArgumentException>());
-            Assert.That(query.SubscribeForNotifications(OnNotification, "test", null!), Throws.Exception.TypeOf<ArgumentException>());
+            var exMessage = "A key path cannot be null, empty, or consisting only of white spaces";
+
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, string.Empty),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, " "),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, "test", null!),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
         }
 
         [Test]
@@ -107,7 +183,7 @@ namespace Realms.Tests.Database
             {
             }
 
-            Assert.That(query.SubscribeForNotifications(OnNotification, null!), Throws.Exception.TypeOf<ArgumentNullException>());
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, null!), Throws.Exception.TypeOf<ArgumentNullException>());
         }
 
         [Test]
@@ -124,18 +200,19 @@ namespace Realms.Tests.Database
             {
             }
 
-            Assert.That(list.SubscribeForNotifications(OnNotification, "test"), Throws.Exception.TypeOf<InvalidOperationException>());
+            var exMessage = "Key paths can be used only with Realm objects";
+
+            Assert.That(() => list.SubscribeForNotifications(OnNotification, "test"),
+                Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
         // MapTo properties
 
         // Backlinks (works?)
 
-        // Keypaths with repeated string (should be ignored?)
+        // Test more complicated things, like multiple notifications on same list/result
 
-        // Tests for nested properties
-
-        // Changing the order of keypaths should not make a new subscription in core
+        // Test with collection properties
 
         // Tests with results/list/sets/dictionaries
 
@@ -144,6 +221,8 @@ namespace Realms.Tests.Database
         // Verify you can't get notifications deeper than 4 levels (error?)
 
         // Verify that "*" is the same as shallow
+
+        // Verify that disposing the token cancel the notifications
 
         #endregion
 
