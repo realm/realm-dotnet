@@ -222,28 +222,21 @@ namespace Realms
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
-        private NotificationCallbackDelegate<T> callbackP;
-
         internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, IEnumerable<string> keypaths)
         {
             Argument.NotNull(callback, nameof(callback));
 
-            callbackP = callback;
             var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
             var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-            Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
+            var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
 
-            //TODO Check if we need to clean the handle
-            //TODO What do with callbackHandle? 
-
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotificationsKeypath(c, false));
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotificationsKeypath(token));
         }
 
-        private void UnsubscribeFromNotificationsKeypath(NotificationCallbackDelegate<T> callback, bool shallow)
+        private void UnsubscribeFromNotificationsKeypath(NotificationTokenHandle token)
         {
-            //TODO Need to remove shallow, and go directly into core
-            _notificationCallbacks.Value.Remove(callback, shallow);
+            token.Dispose();
         }
 
         void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
@@ -263,7 +256,7 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            callback(this, changeset);
+            callback!(this, changeset);
         }
 
         protected abstract T GetValueAtIndex(int index);
