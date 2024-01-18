@@ -39,12 +39,12 @@ namespace Realms.Tests.Database
         #region Keypath filtering
 
         [Test]
-        public void SubscribeWithKeypaths_TopLevelProperties_Works()
+        public void SubscribeWithKeypaths_TopLevelProperties_WorksWithScalar()
         {
-            var query = _realm.All<Person>();
+            var query = _realm.All<TestNotificationObject>();
             var changesets = new List<ChangeSet>();
 
-            void OnNotification(IRealmCollection<Person> s, ChangeSet? changes)
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
             {
                 if (changes != null)
                 {
@@ -52,24 +52,167 @@ namespace Realms.Tests.Database
                 }
             }
 
-            var person = new Person();
-            _realm.Write(() => _realm.Add(person));
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "FirstName"))
+            using (query.SubscribeForNotifications(OnNotification, "StringProperty"))
             {
-                // Changed property in keypath
-                _realm.Write(() => person.FirstName = "NewFirstName");
+                // Changing property in keypath
+                _realm.Write(() => tno.StringProperty = "NewString");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
 
                 // Changing properties not in keypath
-                _realm.Write(() => person.LastName = "NewLastName");
-                _realm.Write(() => person.Email = "NewEmails");
+                _realm.Write(() => tno.IntProperty = 23);
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                _realm.Write(() => tno.SetDifferentType.Add(new Person()));
                 VerifyNotifications(changesets, expectedNotifications: false);
 
-                // Changed key path property again
-                _realm.Write(() => person.FirstName = "AgainNewFirstName");
+                // Changing key path property again
+                _realm.Write(() => tno.StringProperty = "AgainNewString");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
             }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_TopLevelProperties_WorksWithCollection()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType"))
+            {
+                // Changing collection in keypath
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing properties not in keypath
+                _realm.Write(() => tno.StringProperty = "23");
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                _realm.Write(() => tno.SetDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                // Changing elements in the collection does not raise notification
+                _realm.Write(() => tno.ListDifferentType[0].FirstName = "FirstName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                // Changing collection
+                _realm.Write(() => tno.ListDifferentType.RemoveAt(0));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_NestedProperties_WorksWithScalar()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.FirstName"))
+            {
+                // Changing top level property on the keypath
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing top level property not on the keypath
+                _realm.Write(() => tno.StringProperty = "23");
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                _realm.Write(() => tno.SetDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                // Changing keypath property
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing property not on keypath
+                _realm.Write(() => tno.LinkDifferentType!.LastName = "NewName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_NestedProperties_WorksWithCollections()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType.FirstName"))
+            {
+                // Changing top level property on the keypath
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing keypath property
+                _realm.Write(() => tno.ListDifferentType[0].FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Changing top level property not on the keypath
+                _realm.Write(() => tno.ListDifferentType[0].LastName = "NewName");
+                _realm.Write(() => tno.StringProperty = "23");
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_DisposingToken_CancelNotifications()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            var token = query.SubscribeForNotifications(OnNotification, "StringProperty");
+
+            _realm.Write(() => tno.StringProperty = "NewString");
+            VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+            token.Dispose();
+
+            _realm.Write(() => tno.StringProperty = "NewValue");
+            VerifyNotifications(changesets, expectedNotifications: false);
         }
 
         [Test]
@@ -91,46 +234,13 @@ namespace Realms.Tests.Database
 
             using (query.SubscribeForNotifications(OnNotification, "FirstName", "FirstName"))
             {
-                // Changed property in keypath
+                // Changing property in keypath
                 _realm.Write(() => person.FirstName = "NewFirstName");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
 
                 // Changing property not in keypath
                 _realm.Write(() => person.LastName = "NewLastName");
-                _realm.Write(() => person.Email = "NewEmails");
-                VerifyNotifications(changesets, expectedNotifications: false);
-            }
-        }
-
-        [Test]
-        public void SubscribeWithKeypaths_NestedProperties_Works()
-        {
-            var query = _realm.All<TestNotificationObject>();
-            var changesets = new List<ChangeSet>();
-
-            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
-            {
-                if (changes != null)
-                {
-                    changesets.Add(changes);
-                }
-            }
-
-            var tno = new TestNotificationObject();
-            _realm.Write(() => _realm.Add(tno));
-
-            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.FirstName"))
-            {
-                // Changed top level property on the keypath
-                _realm.Write(() => tno.LinkDifferentType = new Person());
-                VerifyNotifications(changesets, expectedModified: new[] { 0 });
-
-                // Changed keypath property
-                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
-                VerifyNotifications(changesets, expectedModified: new[] { 0 });
-
-                // Changed property not on keypath
-                _realm.Write(() => tno.LinkDifferentType!.LastName = "NewName");
+                _realm.Write(() => person.Salary = 240);
                 VerifyNotifications(changesets, expectedNotifications: false);
             }
         }

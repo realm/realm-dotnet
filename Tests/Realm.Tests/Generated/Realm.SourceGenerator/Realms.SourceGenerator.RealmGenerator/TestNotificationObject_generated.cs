@@ -27,6 +27,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TestNotificationObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringProperty"),
+            Realms.Schema.Property.Primitive("IntProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntProperty"),
             Realms.Schema.Property.ObjectList("ListSameType", "TestNotificationObject", managedName: "ListSameType"),
             Realms.Schema.Property.ObjectSet("SetSameType", "TestNotificationObject", managedName: "SetSameType"),
             Realms.Schema.Property.ObjectDictionary("DictionarySameType", "TestNotificationObject", managedName: "DictionarySameType"),
@@ -95,6 +96,10 @@ namespace Realms.Tests.Database
                 if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
+                if (!skipDefaults || oldAccessor.IntProperty != default(int))
+                {
+                    newAccessor.IntProperty = oldAccessor.IntProperty;
                 }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListSameType, newAccessor.ListSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetSameType, newAccessor.SetSameType, update, skipDefaults);
@@ -286,6 +291,8 @@ namespace Realms.Tests.Database
         {
             string? StringProperty { get; set; }
 
+            int IntProperty { get; set; }
+
             System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; }
 
             System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; }
@@ -312,6 +319,12 @@ namespace Realms.Tests.Database
             {
                 get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
+            }
+
+            public int IntProperty
+            {
+                get => (int)GetValue("IntProperty");
+                set => SetValue("IntProperty", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> _listSameType = null!;
@@ -441,6 +454,17 @@ namespace Realms.Tests.Database
                 }
             }
 
+            private int _intProperty;
+            public int IntProperty
+            {
+                get => _intProperty;
+                set
+                {
+                    _intProperty = value;
+                    RaisePropertyChanged("IntProperty");
+                }
+            }
+
             public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; } = new List<Realms.Tests.Database.TestNotificationObject>();
 
             public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; } = new HashSet<Realms.Tests.Database.TestNotificationObject>(RealmSet<Realms.Tests.Database.TestNotificationObject>.Comparer);
@@ -486,6 +510,7 @@ namespace Realms.Tests.Database
                 return propertyName switch
                 {
                     "StringProperty" => _stringProperty,
+                    "IntProperty" => _intProperty,
                     "LinkSameType" => _linkSameType,
                     "LinkDifferentType" => _linkDifferentType,
                     "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
@@ -499,6 +524,9 @@ namespace Realms.Tests.Database
                 {
                     case "StringProperty":
                         StringProperty = (string?)val;
+                        return;
+                    case "IntProperty":
+                        IntProperty = (int)val;
                         return;
                     case "LinkSameType":
                         LinkSameType = (Realms.Tests.Database.TestNotificationObject?)val;
