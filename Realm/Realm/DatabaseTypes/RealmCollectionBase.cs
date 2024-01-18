@@ -192,10 +192,9 @@ namespace Realms
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths)
         {
-            //TODO Maybe this can be cached? 
             if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
             {
-                throw new InvalidOperationException("Key paths can be used only with Realm objects");
+                throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
             }
 
             Argument.NotNull(keypaths, nameof(keypaths));
@@ -205,8 +204,8 @@ namespace Realms
                 throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
             }
 
-            //TODO We can make this prettier later. It's a little bit difficult to make two different paths for notifications for now
-            if (keypaths.Any())
+            //TODO We can try to make this prettier later
+            if (keypaths.Length != 0)
             {
                 return SubscribeForNotificationsWithKeypathImpl(callback, keypaths);
             }
@@ -231,32 +230,28 @@ namespace Realms
 
             var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
 
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotificationsKeypath(token));
-        }
-
-        private void UnsubscribeFromNotificationsKeypath(NotificationTokenHandle token)
-        {
-            token.Dispose();
+            return NotificationToken.Create(callback, c => token.Dispose());
         }
 
         void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
         {
-            var callback = GCHandle.FromIntPtr(callbackNative).Target as NotificationCallbackDelegate<T>;
-
-            ChangeSet? changeset = null;
-            if (changes != null)
+            if (GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
             {
-                var actualChanges = changes.Value;
-                changeset = new ChangeSet(
-                    insertedIndices: actualChanges.Insertions.ToEnumerable().Select(i => (int)i).ToArray(),
-                    modifiedIndices: actualChanges.Modifications.ToEnumerable().Select(i => (int)i).ToArray(),
-                    newModifiedIndices: actualChanges.Modifications_New.ToEnumerable().Select(i => (int)i).ToArray(),
-                    deletedIndices: actualChanges.Deletions.ToEnumerable().Select(i => (int)i).ToArray(),
-                    moves: actualChanges.Moves.ToEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
-                    cleared: actualChanges.Cleared);
-            }
+                ChangeSet? changeset = null;
+                if (changes != null)
+                {
+                    var actualChanges = changes.Value;
+                    changeset = new ChangeSet(
+                        insertedIndices: actualChanges.Insertions.ToEnumerable().Select(i => (int)i).ToArray(),
+                        modifiedIndices: actualChanges.Modifications.ToEnumerable().Select(i => (int)i).ToArray(),
+                        newModifiedIndices: actualChanges.Modifications_New.ToEnumerable().Select(i => (int)i).ToArray(),
+                        deletedIndices: actualChanges.Deletions.ToEnumerable().Select(i => (int)i).ToArray(),
+                        moves: actualChanges.Moves.ToEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
+                        cleared: actualChanges.Cleared);
+                }
 
-            callback!(this, changeset);
+                callback(this, changeset);
+            }
         }
 
         protected abstract T GetValueAtIndex(int index);
