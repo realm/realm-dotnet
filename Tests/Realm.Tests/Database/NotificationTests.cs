@@ -224,11 +224,7 @@ namespace Realms.Tests.Database
 
                 // Modifying the collection elements/links should not raise a notification
                 _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.ListDifferentType[0].LastName = "NewName");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.DictionaryDifferentType["key"]!.LastName = "NewName");
                 VerifyNotifications(changesets, expectedNotifications: false);
             }
@@ -289,8 +285,6 @@ namespace Realms.Tests.Database
 
                 // Modifying something 3 levels deep should not raise a notification
                 _realm.Write(() => tno.LinkAnotherType!.TopDog.Name = "Test");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.LinkAnotherType!.ListOfDogs[0].Name = "Test");
                 VerifyNotifications(changesets, expectedNotifications: false);
             }
@@ -326,8 +320,6 @@ namespace Realms.Tests.Database
 
                 // Out of keypath
                 _realm.Write(() => tno.StringProperty = "NewString");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.ListDifferentType.Add(new Person()));
                 VerifyNotifications(changesets, expectedNotifications: false);
 
@@ -367,8 +359,6 @@ namespace Realms.Tests.Database
 
                 // Out of keypath
                 _realm.Write(() => tno.StringProperty = "NewString");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.LinkDifferentType = new Person());
                 VerifyNotifications(changesets, expectedNotifications: false);
 
@@ -411,9 +401,72 @@ namespace Realms.Tests.Database
 
                 // Out of keypath
                 _realm.Write(() => tno.LinkDifferentType!.LastName = "Test");
-                VerifyNotifications(changesets, expectedNotifications: false);
-
                 _realm.Write(() => tno.ListDifferentType[0]!.LastName = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_Backlinks()
+        {
+            var query = _realm.All<Dog>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<Dog> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var dog = new Dog();
+            _realm.Write(() => _realm.Add(dog));
+
+            using (query.SubscribeForNotifications(OnNotification, "Owners"))
+            {
+                var owner = new Owner { Name = "Mario", ListOfDogs = { dog } };
+                _realm.Write(() => _realm.Add(owner));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => owner.Name = "Luigi");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Not in keypath
+                _realm.Write(() => dog.Name = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_MultipleKeypaths()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "StringProperty", "LinkDifferentType"))
+            {
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Not in keypath
+                _realm.Write(() => tno.IntProperty = 23);
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "Test");
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
                 VerifyNotifications(changesets, expectedNotifications: false);
             }
         }
@@ -589,15 +642,7 @@ namespace Realms.Tests.Database
                 Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
-        // Backlinks (works?)
-
-        // Test more complicated things, like multiple notifications on same list/result, with collections
-
         // Tests with results/list/sets/dictionaries. Do we need to repeat all of the tests?
-
-        // Verify that default subscriptions is the same as "*.*.*.*" (should be 4 levels)
-
-        // Verify you can't get notifications deeper than 4 levels (error?)
 
         #endregion
 
