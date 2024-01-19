@@ -95,7 +95,7 @@ static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed
     return result;
 }
 
-// TODO Later I need to investigate why using this method to extrac this functionality does not work
+// TODO Later I need to investigate why using this method didn't work
 static inline MarshallableCollectionChangeSet build_marshallable_change_set(ObjectSchema* schema, CollectionChangeSet changes) {
     auto deletions = get_indexes_vector(changes.deletions);
     auto insertions = get_indexes_vector(changes.insertions);
@@ -132,14 +132,7 @@ static inline void handle_changes_keypath(ManagedNotificationTokenContext* conte
         auto insertions = get_indexes_vector(changes.insertions);
         auto modifications = get_indexes_vector(changes.modifications);
         auto modifications_new = get_indexes_vector(changes.modifications_new);
-
         std::vector<int32_t> properties;
-
-        for (auto& pair : changes.columns) {
-            if (!pair.second.empty()) {
-                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
-            }
-        }
 
         MarshallableCollectionChangeSet marshallable_changes{
             deletions,
@@ -167,9 +160,12 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
 
         std::vector<int32_t> properties;
 
-        for (auto& pair : changes.columns) {
-            if (!pair.second.empty()) {
-                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
+        if (shallow) //Property names are necessary only for shallow notifications (PropertyChanged/CollectionChanged)
+        {
+            for (auto& pair : changes.columns) {
+                if (!pair.second.empty()) {
+                    properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
+                }
             }
         }
 
