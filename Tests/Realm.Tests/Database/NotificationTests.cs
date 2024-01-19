@@ -216,6 +216,32 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_MappedProperty_UsesOriginalName()
+            //TODO Is this what we expect?
+        {
+            var query = _realm.All<Person>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var person = new Person();
+            _realm.Write(() => _realm.Add(person));
+
+            using (query.SubscribeForNotifications(OnNotification, "Email_"))
+            {
+                // Changing property in keypath
+                _realm.Write(() => person.Email = "email@test.com");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_WithRepeatedKeypath_IgnoresRepeated()
         {
             var query = _realm.All<Person>();
@@ -243,6 +269,21 @@ namespace Realms.Tests.Database
                 _realm.Write(() => person.Salary = 240);
                 VerifyNotifications(changesets, expectedNotifications: false);
             }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WildcardOnScalarProperty_Throws()
+        {
+            var query = _realm.All<Person>();
+
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
+            {
+            }
+            //TODO Check the message, it's missing something, open an issue
+            var exMessage = "is not a collection of objects or an object reference, so it cannot be used as an intermediate keypath element";
+
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, "FirstName.*"),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
         }
 
         [Test]
@@ -310,29 +351,25 @@ namespace Realms.Tests.Database
             {
             }
 
-            var exMessage = "Key paths can be used only with Realm objects";
+            var exMessage = "Key paths can be used only with collections of Realm objects";
 
             Assert.That(() => list.SubscribeForNotifications(OnNotification, "test"),
                 Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
-        // MapTo properties
-
         // Backlinks (works?)
 
-        // Test more complicated things, like multiple notifications on same list/result
+        // Test more complicated things, like multiple notifications on same list/result, with collections
 
-        // Test with collection properties
-
-        // Tests with results/list/sets/dictionaries
+        // Tests with results/list/sets/dictionaries. Do we need to repeat all of the tests?
 
         // Verify that default subscriptions is the same as "*.*.*.*" (should be 4 levels)
 
         // Verify you can't get notifications deeper than 4 levels (error?)
 
-        // Verify that "*" is the same as shallow
+        // Tests with wildcards (also *.property.*.*, *.*, *, ...)
 
-        // Verify that disposing the token cancel the notifications
+        // Eventually errors with wildcards (like "scalarproperty.*)
 
         #endregion
 
