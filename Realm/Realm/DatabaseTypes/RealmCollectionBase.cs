@@ -192,21 +192,20 @@ namespace Realms
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths)
         {
-            if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
-            {
-                throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
-            }
-
             Argument.NotNull(keypaths, nameof(keypaths));
 
-            if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
-            {
-                throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
-            }
-
-            //TODO We can try to make this prettier later
             if (keypaths.Length != 0)
             {
+                if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
+                {
+                    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
+                }
+
+                if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
+                {
+                    throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
+                }
+
                 return SubscribeForNotificationsWithKeypathImpl(callback, keypaths);
             }
 
