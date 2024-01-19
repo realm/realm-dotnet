@@ -13,9 +13,10 @@
 * If the very first open of a flexible sync Realm triggered a client reset, the configuration had an initial subscriptions callback, both before and after reset callbacks, and the initial subscription callback began a read transaction without ending it (which is normally going to be the case), opening the frozen Realm for the after reset callback would trigger a BadVersion exception. (Core 13.24.1)
 * Automatic client reset recovery on flexible sync Realms would apply recovered changes in multiple write transactions, releasing the write lock in between. (Core 13.24.1)
 * Having a class name of length 57 would make client reset crash as a limit of 56 was wrongly enforced. (Core 13.24.1)
-* Fixed several causes of "decryption failed" exceptions that could happen when opening multiple encrypted Realm files in the same process while using Apple/linux and storing the Realms on an exFAT file system. (Core 13.24.1) 
+* Fixed several causes of "decryption failed" exceptions that could happen when opening multiple encrypted Realm files in the same process while using Apple/linux and storing the Realms on an exFAT file system. (Core 13.24.1)
 * Fixed several errors that could cause a crash of the sync client. (Core 13.25.0)
 * Bad performance of initial Sync download involving many backlinks. (Core 13.25.1)
+* Explicitly bumped the minimum version of System.Net.Security to 4.3.2 as 4.3.0 has been marked as vulnerable (more details can be found in the deprecation notice on the [NuGet page](https://www.nuget.org/packages/System.Net.Security/4.3.0)).
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
