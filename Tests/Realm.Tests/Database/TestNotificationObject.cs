@@ -48,6 +48,8 @@ namespace Realms.Tests.Database
 
         public Person? LinkDifferentType { get; set; }
 
+        public Owner? LinkAnotherType { get; set; }
+
         [Backlink(nameof(LinkSameType))]
         public IQueryable<TestNotificationObject> Backlink { get; } = null!;
     }

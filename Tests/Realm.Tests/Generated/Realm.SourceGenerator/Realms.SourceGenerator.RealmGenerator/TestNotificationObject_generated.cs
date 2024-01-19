@@ -36,6 +36,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.ObjectSet("SetDifferentType", "Person", managedName: "SetDifferentType"),
             Realms.Schema.Property.ObjectDictionary("DictionaryDifferentType", "Person", managedName: "DictionaryDifferentType"),
             Realms.Schema.Property.Object("LinkDifferentType", "Person", managedName: "LinkDifferentType"),
+            Realms.Schema.Property.Object("LinkAnotherType", "Owner", managedName: "LinkAnotherType"),
             Realms.Schema.Property.Backlinks("Backlink", "TestNotificationObject", "LinkSameType", managedName: "Backlink"),
         }.Build();
 
@@ -117,6 +118,11 @@ namespace Realms.Tests.Database
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
                 }
                 newAccessor.LinkDifferentType = oldAccessor.LinkDifferentType;
+                if (oldAccessor.LinkAnotherType != null && newAccessor.Realm != null)
+                {
+                    newAccessor.Realm.Add(oldAccessor.LinkAnotherType, update);
+                }
+                newAccessor.LinkAnotherType = oldAccessor.LinkAnotherType;
             }
 
             if (_propertyChanged != null)
@@ -309,6 +315,8 @@ namespace Realms.Tests.Database
 
             Realms.Tests.Database.Person? LinkDifferentType { get; set; }
 
+            Realms.Tests.Owner? LinkAnotherType { get; set; }
+
             System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
         }
 
@@ -423,6 +431,12 @@ namespace Realms.Tests.Database
                 set => SetValue("LinkDifferentType", value);
             }
 
+            public Realms.Tests.Owner? LinkAnotherType
+            {
+                get => (Realms.Tests.Owner?)GetValue("LinkAnotherType");
+                set => SetValue("LinkAnotherType", value);
+            }
+
             private System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> _backlink = null!;
             public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink
             {
@@ -499,6 +513,17 @@ namespace Realms.Tests.Database
                 }
             }
 
+            private Realms.Tests.Owner? _linkAnotherType;
+            public Realms.Tests.Owner? LinkAnotherType
+            {
+                get => _linkAnotherType;
+                set
+                {
+                    _linkAnotherType = value;
+                    RaisePropertyChanged("LinkAnotherType");
+                }
+            }
+
             public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
             public TestNotificationObjectUnmanagedAccessor(Type objectType) : base(objectType)
@@ -513,6 +538,7 @@ namespace Realms.Tests.Database
                     "IntProperty" => _intProperty,
                     "LinkSameType" => _linkSameType,
                     "LinkDifferentType" => _linkDifferentType,
+                    "LinkAnotherType" => _linkAnotherType,
                     "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
@@ -533,6 +559,9 @@ namespace Realms.Tests.Database
                         return;
                     case "LinkDifferentType":
                         LinkDifferentType = (Realms.Tests.Database.Person?)val;
+                        return;
+                    case "LinkAnotherType":
+                        LinkAnotherType = (Realms.Tests.Owner?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -188,6 +188,237 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_WildCard_WorksWithTopLevel()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "*"))
+            {
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.IntProperty = 23);
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Modifying links / changing the elements of collections should raise a notification
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Modifying the collection elements/links should not raise a notification
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.ListDifferentType[0].LastName = "NewName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.DictionaryDifferentType["key"]!.LastName = "NewName");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WildCard_WorksWithMultipleLevels()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject()
+            {
+                LinkAnotherType = new Owner()
+                {
+                    TopDog = new Dog(),
+                }
+            };
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "*.*"))
+            {
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.IntProperty = 23);
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Modifying collection/links should raise a notification
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.DictionaryDifferentType.Add("key", new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType[0].LastName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.DictionaryDifferentType["key"]!.LastName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkAnotherType!.ListOfDogs.Add(new Dog()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Modifying something 3 levels deep should not raise a notification
+                _realm.Write(() => tno.LinkAnotherType!.TopDog.Name = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.LinkAnotherType!.ListOfDogs[0].Name = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WildCard_WorksAfterLinkProperty()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.*"))
+            {
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkDifferentType!.Friends.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Out of keypath
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                // Too deep
+                _realm.Write(() => tno.LinkDifferentType!.Friends[0].FirstName = "Luis");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WildCard_WorksAfterCollectionProperty()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType.*"))
+            {
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType[0].FirstName = "Luis");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType[0].Friends.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Out of keypath
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                // Too deep
+                _realm.Write(() => tno.ListDifferentType[0]!.Friends[0].FirstName = "Luis");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_WildCard_WorksWithPropertyAfterward()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var tno = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(tno));
+
+            using (query.SubscribeForNotifications(OnNotification, "*.FirstName"))
+            {
+                _realm.Write(() => tno.LinkDifferentType = new Person());
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.LinkDifferentType!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType.Add(new Person()));
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => tno.ListDifferentType[0]!.FirstName = "NewName");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                // Out of keypath
+                _realm.Write(() => tno.LinkDifferentType!.LastName = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => tno.ListDifferentType[0]!.LastName = "Test");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_DisposingToken_CancelNotifications()
         {
             var query = _realm.All<TestNotificationObject>();
@@ -217,7 +448,6 @@ namespace Realms.Tests.Database
 
         [Test]
         public void SubscribeWithKeypaths_MappedProperty_UsesOriginalName()
-            //TODO Is this what we expect?
         {
             var query = _realm.All<Person>();
             var changesets = new List<ChangeSet>();
@@ -271,6 +501,7 @@ namespace Realms.Tests.Database
             }
         }
 
+        // TODO Failing because of https://github.com/realm/realm-core/issues/7269
         [Test]
         public void SubscribeWithKeypaths_WildcardOnScalarProperty_Throws()
         {
@@ -279,11 +510,12 @@ namespace Realms.Tests.Database
             void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
             {
             }
-            //TODO Check the message, it's missing something, open an issue
-            var exMessage = "is not a collection of objects or an object reference, so it cannot be used as an intermediate keypath element";
+
+            var exMessage = "Property 'FirstName' in KeyPath 'FirstName.*' " +
+                "is not a collection of objects or an object reference, so it cannot be used as an intermediate keypath element.";
 
             Assert.That(() => query.SubscribeForNotifications(OnNotification, "FirstName.*"),
-                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
         }
 
         [Test]
@@ -366,10 +598,6 @@ namespace Realms.Tests.Database
         // Verify that default subscriptions is the same as "*.*.*.*" (should be 4 levels)
 
         // Verify you can't get notifications deeper than 4 levels (error?)
-
-        // Tests with wildcards (also *.property.*.*, *.*, *, ...)
-
-        // Eventually errors with wildcards (like "scalarproperty.*)
 
         #endregion
 
