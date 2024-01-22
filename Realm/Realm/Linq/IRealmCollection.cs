@@ -132,6 +132,14 @@ namespace Realms
         /// it will contain information about which rows in the results were added, removed or modified.
         /// </para>
         /// <para>
+        /// It is possible to pass an optional array of key paths, that indicates which changes in properties should raise a notification.
+        /// Each key path is a string representing the name of a property (e.g "FirstName"), eventually dotted to indicated nested properties
+        /// (e.g "Dog.Name"). Wildcards can also be used in key paths to capture all properties at a given level (e.g "*", "Friends.*" or "*.FirstName").
+        /// If no key paths are indicated, changes to all top-level properties and 4 nested levels will raise a notification.
+        /// Please note that passing a collection property in a keypath (e.g. "Friends") will raise notifications only when the collection itself is changed,
+        /// for example when an element is added or removed, but not notification is raised if any of the properties of the elements of the collections are changed.
+        /// </para>
+        /// <para>
         /// If a write transaction did not modify any objects in this <see cref="IRealmCollection{T}" />, the callback is not invoked at all.
         /// </para>
         /// <para>
@@ -146,6 +154,7 @@ namespace Realms
         /// </para>
         /// </remarks>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
+        /// <param name="keyPaths">An optional array of key paths that indicates which changes in properties should raise a notification.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
@@ -155,7 +164,6 @@ namespace Realms
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForKeyNotifications{T}(IDictionary{string, T}, DictionaryNotificationCallbackDelegate{T})"/>
-        /// //TODO Fix docs
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths);
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keyPaths);
     }
 }

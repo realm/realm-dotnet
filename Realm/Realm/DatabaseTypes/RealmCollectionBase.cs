@@ -232,27 +232,6 @@ namespace Realms
             return NotificationToken.Create(callback, c => token.Dispose());
         }
 
-        void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
-        {
-            if (GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
-            {
-                ChangeSet? changeset = null;
-                if (changes != null)
-                {
-                    var actualChanges = changes.Value;
-                    changeset = new ChangeSet(
-                        insertedIndices: actualChanges.Insertions.ToEnumerable().Select(i => (int)i).ToArray(),
-                        modifiedIndices: actualChanges.Modifications.ToEnumerable().Select(i => (int)i).ToArray(),
-                        newModifiedIndices: actualChanges.Modifications_New.ToEnumerable().Select(i => (int)i).ToArray(),
-                        deletedIndices: actualChanges.Deletions.ToEnumerable().Select(i => (int)i).ToArray(),
-                        moves: actualChanges.Moves.ToEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
-                        cleared: actualChanges.Cleared);
-                }
-
-                callback(this, changeset);
-            }
-        }
-
         protected abstract T GetValueAtIndex(int index);
 
         protected void AddToRealmIfNecessary(in RealmValue value)
@@ -460,7 +439,21 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
+        void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, bool shallow)
+        {
+            var changeset = GetFromNative(changes);
+            _notificationCallbacks.Value.Notify(changeset, shallow);
+        }
+
+        void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
+        {
+            if (GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
+            {
+                callback(this, GetFromNative(changes));
+            }
+        }
+
+        private ChangeSet? GetFromNative(CollectionChangeSet? changes)
         {
             ChangeSet? changeset = null;
             if (changes != null)
@@ -475,7 +468,7 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            _notificationCallbacks.Value.Notify(changeset, shallow);
+            return changeset;
         }
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
@@ -721,11 +714,6 @@ namespace Realms
 
             return false;
         }
-
-        // Check with MapTo
-        // Add method notifications for objects (another PR)
-        // Caching for full/shallow - no caching for the rest
-        // See if we can add expression body (like LINQ) for specifying keypaths
 
         public void Notify(ChangeSet? changes, bool shallow)
         {
