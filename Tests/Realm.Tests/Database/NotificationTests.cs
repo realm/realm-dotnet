@@ -1633,6 +1633,35 @@ namespace Realms.Tests.Database
         #region Keypath filtering
 
         [Test]
+        public void SubscribeWithKeypaths_AnyKeypath_RaisesNotificationsForResults()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            using (query.SubscribeForNotifications(OnNotification, "StringProperty"))
+            {
+                var tno = new TestNotificationObject();
+
+                _realm.Write(() => _realm.Add(tno));
+                VerifyNotifications(changesets, expectedInserted: new[] { 0 });
+
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => _realm.Remove(tno));
+                VerifyNotifications(changesets, expectedDeleted: new[] { 0 });
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_TopLevelProperties_WorksWithScalar()
         {
             var query = _realm.All<TestNotificationObject>();
@@ -2236,7 +2265,99 @@ namespace Realms.Tests.Database
                 Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
-        // Tests with results/list/sets/dictionaries. Do we need to repeat all of the tests?
+        //TODO Fix following tests
+        [Test]
+        public void SubscribeWithKeypaths_List()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new CollectionsObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<IntPropertyObject> s, ChangeSet? c) => changes = c;
+
+            using (obj1.ObjectList.SubscribeForNotifications(OnNotification, "Int"))
+            {
+                var ipo = new IntPropertyObject();
+
+                _realm.Write(() => obj1.ObjectList.Add(ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.Int = 23);
+                _realm.Refresh();
+                Assert.That(changes?.ModifiedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.GuidProperty = Guid.NewGuid());
+                _realm.Refresh();
+                Assert.That(changes, Is.Null);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_Set()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new CollectionsObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<IntPropertyObject> s, ChangeSet? c) => changes = c;
+
+            using (obj1.ObjectSet.SubscribeForNotifications(OnNotification, "Int"))
+            {
+                var ipo = new IntPropertyObject();
+
+                _realm.Write(() => obj1.ObjectSet.Add(ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.Int = 23);
+                _realm.Refresh();
+                Assert.That(changes?.ModifiedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.GuidProperty = Guid.NewGuid());
+                _realm.Refresh();
+                Assert.That(changes, Is.Null);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_Dictionary()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new CollectionsObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<KeyValuePair<string, IntPropertyObject?>> s, ChangeSet? c) => changes = c;
+
+            using (obj1.ObjectDict.SubscribeForNotifications(OnNotification, "Int"))
+            {
+                var ipo = new IntPropertyObject();
+
+                _realm.Write(() => obj1.ObjectDict.Add("main", ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.Int = 23);
+                _realm.Refresh();
+                Assert.That(changes?.ModifiedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+
+                _realm.Write(() => ipo.GuidProperty = Guid.NewGuid());
+                _realm.Refresh();
+                Assert.That(changes, Is.Null);
+            }
+        }
 
         #endregion
 

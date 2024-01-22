@@ -159,6 +159,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
+        /// //TODO need to change the ref
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>

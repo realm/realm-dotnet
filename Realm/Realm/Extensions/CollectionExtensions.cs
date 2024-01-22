@@ -97,7 +97,7 @@ public static class CollectionExtensions
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
     public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback, params string[] keyPaths)
-        => set.AsRealmCollection().SubscribeForNotifications(callback);
+        => set.AsRealmCollection().SubscribeForNotifications(callback, keyPaths);
 
     /// <summary>
     /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
