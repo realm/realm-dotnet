@@ -811,17 +811,17 @@ namespace Realms
     internal enum KeyPathType
     {
         Default,
-        Shallow,
+        Empty,
         Full
     }
 
     public class KeyPathCollection : IEnumerable<KeyPath>
     {
-        private IEnumerable<KeyPath> _collection;
+        private IEnumerable<KeyPath>? _collection;
 
         private KeyPathType _type;
 
-        private KeyPathCollection(KeyPathType type, IEnumerable<KeyPath> collection = null)
+        private KeyPathCollection(KeyPathType type, IEnumerable<KeyPath>? collection = null)
         {
             _type = type;
             _collection = collection;
@@ -829,6 +829,11 @@ namespace Realms
 
         public static KeyPathCollection Of(params KeyPath[] paths)
         {
+            if (paths.Length == 0)
+            {
+                return new KeyPathCollection(KeyPathType.Empty);
+            }
+
             return new KeyPathCollection(KeyPathType.Full, paths);
         }
 
@@ -836,7 +841,6 @@ namespace Realms
 
         public static KeyPathCollection Default => new KeyPathCollection(KeyPathType.Default);
 
-        public static KeyPathCollection 
 
         public static implicit operator KeyPathCollection(List<string> paths)
         {
