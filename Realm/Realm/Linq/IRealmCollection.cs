@@ -160,11 +160,12 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         /// //TODO need to change the ref
+        /// //TODO Fix docs
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForKeyNotifications{T}(IDictionary{string, T}, DictionaryNotificationCallbackDelegate{T})"/>
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keyPaths);
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathCollection = null);
     }
 }

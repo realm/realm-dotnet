@@ -1646,7 +1646,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            using (query.SubscribeForNotifications(OnNotification, "StringProperty"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringProperty")))
             {
                 var tno = new TestNotificationObject();
 
@@ -1676,7 +1676,7 @@ namespace Realms.Tests.Database
             }
 
             //TODO Fix keypath
-            using (query.SubscribeForNotifications(OnNotification, new string[] { }))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Empty))
             {
                 var tno = new TestNotificationObject();
 
@@ -1708,7 +1708,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "StringProperty"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringProperty")))
             {
                 // Changing property in keypath
                 _realm.Write(() => tno.StringProperty = "NewString");
@@ -1744,7 +1744,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("ListDifferentType")))
             {
                 // Changing collection in keypath
                 _realm.Write(() => tno.ListDifferentType.Add(new Person()));
@@ -1783,7 +1783,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.FirstName"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("LinkDifferentType.FirstName")))
             {
                 // Changing top level property on the keypath
                 _realm.Write(() => tno.LinkDifferentType = new Person());
@@ -1822,7 +1822,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType.FirstName"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("ListDifferentType.FirstName")))
             {
                 // Changing top level property on the keypath
                 _realm.Write(() => tno.ListDifferentType.Add(new Person()));
@@ -1857,7 +1857,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "*"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("*")))
             {
                 _realm.Write(() => tno.StringProperty = "NewString");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -1906,7 +1906,7 @@ namespace Realms.Tests.Database
             };
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "*.*"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("*.*")))
             {
                 _realm.Write(() => tno.StringProperty = "NewString");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -1960,7 +1960,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "LinkDifferentType.*"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("LinkDifferentType.*")))
             {
                 _realm.Write(() => tno.LinkDifferentType = new Person());
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -1999,7 +1999,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "ListDifferentType.*"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("ListDifferentType.*")))
             {
                 _realm.Write(() => tno.ListDifferentType.Add(new Person()));
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -2038,7 +2038,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "*.FirstName"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("*.FirstName")))
             {
                 _realm.Write(() => tno.LinkDifferentType = new Person());
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -2076,7 +2076,7 @@ namespace Realms.Tests.Database
             var dog = new Dog();
             _realm.Write(() => _realm.Add(dog));
 
-            using (query.SubscribeForNotifications(OnNotification, "Owners"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Owners")))
             {
                 var owner = new Owner { Name = "Mario", ListOfDogs = { dog } };
                 _realm.Write(() => _realm.Add(owner));
@@ -2108,7 +2108,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            using (query.SubscribeForNotifications(OnNotification, "StringProperty", "LinkDifferentType"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringProperty", "LinkDifferentType")))
             {
                 _realm.Write(() => tno.StringProperty = "NewString");
                 VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -2141,7 +2141,7 @@ namespace Realms.Tests.Database
             var tno = new TestNotificationObject();
             _realm.Write(() => _realm.Add(tno));
 
-            var token = query.SubscribeForNotifications(OnNotification, "StringProperty");
+            var token = query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringProperty"));
 
             _realm.Write(() => tno.StringProperty = "NewString");
             VerifyNotifications(changesets, expectedModified: new[] { 0 });
@@ -2169,7 +2169,7 @@ namespace Realms.Tests.Database
             var person = new Person();
             _realm.Write(() => _realm.Add(person));
 
-            using (query.SubscribeForNotifications(OnNotification, "Email_"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Email_")))
             {
                 // Changing property in keypath
                 _realm.Write(() => person.Email = "email@test.com");
@@ -2194,7 +2194,7 @@ namespace Realms.Tests.Database
             var person = new Person();
             _realm.Write(() => _realm.Add(person));
 
-            using (query.SubscribeForNotifications(OnNotification, "FirstName", "FirstName"))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("FirstName", "FirstName")))
             {
                 // Changing property in keypath
                 _realm.Write(() => person.FirstName = "NewFirstName");
@@ -2220,7 +2220,7 @@ namespace Realms.Tests.Database
             var exMessage = "Property 'FirstName' in KeyPath 'FirstName.*' " +
                 "is not a collection of objects or an object reference, so it cannot be used as an intermediate keypath element.";
 
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, "FirstName.*"),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("FirstName.*")),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
         }
 
@@ -2236,11 +2236,11 @@ namespace Realms.Tests.Database
             var exMessage = "not a valid property in Person";
 
             // Top level property
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, "unknownProp"),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("unknownProp")),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
 
             // Nested property
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, "Friends.unknownProp"),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Friends.unknownProp")),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.Contain(exMessage));
         }
 
@@ -2255,24 +2255,12 @@ namespace Realms.Tests.Database
 
             var exMessage = "A key path cannot be null, empty, or consisting only of white spaces";
 
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, string.Empty),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of(string.Empty)),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, " "),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of(" ")),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, "test", null!),
+            Assert.That(() => query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("test", null!)),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo(exMessage));
-        }
-
-        [Test]
-        public void SubscribeWithKeypaths_WithNullKeypaths_Throws()
-        {
-            var query = _realm.All<Person>();
-
-            void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
-            {
-            }
-
-            Assert.That(() => query.SubscribeForNotifications(OnNotification, null!), Throws.Exception.TypeOf<ArgumentNullException>());
         }
 
         [Test]
@@ -2291,7 +2279,7 @@ namespace Realms.Tests.Database
 
             var exMessage = "Key paths can be used only with collections of Realm objects";
 
-            Assert.That(() => list.SubscribeForNotifications(OnNotification, "test"),
+            Assert.That(() => list.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("test")),
                 Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
@@ -2307,7 +2295,7 @@ namespace Realms.Tests.Database
             ChangeSet? changes = null!;
             void OnNotification(IRealmCollection<IntPropertyObject> s, ChangeSet? c) => changes = c;
 
-            using (obj1.ObjectList.SubscribeForNotifications(OnNotification, "Int"))
+            using (obj1.ObjectList.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Int")))
             {
                 var ipo = new IntPropertyObject();
 
@@ -2327,6 +2315,7 @@ namespace Realms.Tests.Database
             }
         }
 
+        //TODO Not working
         [Test]
         public void SubscribeWithKeypaths_Set()
         {
@@ -2338,7 +2327,7 @@ namespace Realms.Tests.Database
             ChangeSet? changes = null!;
             void OnNotification(IRealmCollection<IntPropertyObject> s, ChangeSet? c) => changes = c;
 
-            using (obj1.ObjectSet.SubscribeForNotifications(OnNotification, "Int"))
+            using (obj1.ObjectSet.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Int")))
             {
                 var ipo = new IntPropertyObject();
 
@@ -2358,6 +2347,7 @@ namespace Realms.Tests.Database
             }
         }
 
+        //TODO Not working
         [Test]
         public void SubscribeWithKeypaths_Dictionary()
         {
@@ -2369,7 +2359,7 @@ namespace Realms.Tests.Database
             ChangeSet? changes = null!;
             void OnNotification(IRealmCollection<KeyValuePair<string, IntPropertyObject?>> s, ChangeSet? c) => changes = c;
 
-            using (obj1.ObjectDict.SubscribeForNotifications(OnNotification, "Int"))
+            using (obj1.ObjectDict.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Int")))
             {
                 var ipo = new IntPropertyObject();
 

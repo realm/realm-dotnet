@@ -23,6 +23,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -190,29 +191,26 @@ namespace Realms
             return CreateCollection(frozenRealm, frozenHandle);
         }
 
-        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, params string[] keypaths)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathCollection = null)
         {
-            Argument.NotNull(keypaths, nameof(keypaths));
+            keyPathCollection ??= KeyPathsCollection.Default;
 
-            if (keypaths.Length != 0)
+            if (keyPathCollection.Type == KeyPathType.Full)
             {
-                //if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
-                //{
-                //    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
-                //}
-
-                if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
+                if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
                 {
-                    throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
+                    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
                 }
 
-                return SubscribeForNotificationsWithKeypathImpl(callback, keypaths);
+                keyPathCollection.Verify();
+
+                return SubscribeForNotificationsWithKeypathImpl(callback, keyPathCollection);
             }
 
             return SubscribeForNotificationsImpl(callback, false);
         }
 
-        public void Subscribe(KeyPathCollection? keyPaths = null)
+        public void Subscribe(KeyPathsCollection? keyPaths = null)
         {
 
         }
@@ -227,11 +225,11 @@ namespace Realms
             Subscribe(new List<KeyPath> { explicitKeypath, "two" });
             Subscribe(new KeyPath[] { explicitKeypath, "two" });
 
-            Subscribe(KeyPathCollection.Of(explicitKeypath, "two"));
+            Subscribe(KeyPathsCollection.Of(explicitKeypath, "two"));
 
             // Those are both empty collections (shallow)
-            Subscribe(KeyPathCollection.Of());
-            Subscribe(KeyPathCollection.Empty);
+            Subscribe(KeyPathsCollection.Of());
+            Subscribe(KeyPathsCollection.Empty);
 
             // Classic full subscription
             Subscribe();
@@ -245,14 +243,17 @@ namespace Realms
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
-        internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, IEnumerable<string> keypaths)
+        internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathCollection)
         {
             Argument.NotNull(callback, nameof(callback));
 
             var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
             var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-            var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle), keypaths);
+            var stringCollection = keyPathCollection.GetAsStringCollection().ToList();
+
+            var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle),
+                stringCollection);
 
             return NotificationToken.Create(callback, c => token.Dispose());
         }
@@ -798,11 +799,11 @@ namespace Realms
 
     public class KeyPath
     {
-        private string _path;
+        internal string Path { get; private set; }
 
         private KeyPath(string path)
         {
-            _path = path;
+            Path = path;
         }
 
         public static implicit operator KeyPath(string s) => new(s);
@@ -815,46 +816,66 @@ namespace Realms
         Full
     }
 
-    public class KeyPathCollection : IEnumerable<KeyPath>
+    public class KeyPathsCollection : IEnumerable<KeyPath>
     {
         private IEnumerable<KeyPath>? _collection;
 
-        private KeyPathType _type;
+        internal KeyPathType Type { get; set; }
 
-        private KeyPathCollection(KeyPathType type, IEnumerable<KeyPath>? collection = null)
+        private KeyPathsCollection(KeyPathType type, IEnumerable<KeyPath>? collection = null)
         {
-            _type = type;
+            Type = type;
             _collection = collection;
         }
 
-        public static KeyPathCollection Of(params KeyPath[] paths)
+        internal IEnumerable<string> GetAsStringCollection()
+        {
+            return _collection.Select(x => x.Path);
+        }
+
+        internal void Verify()
+        {
+            if (Type != KeyPathType.Full)
+            {
+                return;
+            }
+
+            foreach (var item in _collection)
+            {
+                if (string.IsNullOrWhiteSpace(item?.Path))
+                {
+                    throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
+                }
+            }
+        }
+
+        public static KeyPathsCollection Of(params KeyPath[] paths)
         {
             if (paths.Length == 0)
             {
-                return new KeyPathCollection(KeyPathType.Empty);
+                return new KeyPathsCollection(KeyPathType.Empty);
             }
 
-            return new KeyPathCollection(KeyPathType.Full, paths);
+            return new KeyPathsCollection(KeyPathType.Full, paths);
         }
 
-        public static KeyPathCollection Empty => KeyPathCollection.Of();
+        public static KeyPathsCollection Empty => KeyPathsCollection.Of();
 
-        public static KeyPathCollection Default => new KeyPathCollection(KeyPathType.Default);
+        public static KeyPathsCollection Default => new KeyPathsCollection(KeyPathType.Default);
 
-
-        public static implicit operator KeyPathCollection(List<string> paths)
+        public static implicit operator KeyPathsCollection(List<string> paths)
         {
-            return new KeyPathCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathCollection(List<KeyPath> paths) => new(KeyPathType.Full, paths);
+        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathType.Full, paths);
 
-        public static implicit operator KeyPathCollection(string[] paths)
+        public static implicit operator KeyPathsCollection(string[] paths)
         {
-            return new KeyPathCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathCollection(KeyPath[] paths) => new(KeyPathType.Full, paths);
+        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathType.Full, paths);
 
         public IEnumerator<KeyPath> GetEnumerator()
         {
