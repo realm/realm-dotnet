@@ -1662,6 +1662,36 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_EmptyKeypath_ActsLikeShallowNotifications()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<TestNotificationObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            //TODO Fix keypath
+            using (query.SubscribeForNotifications(OnNotification, new string[] { }))
+            {
+                var tno = new TestNotificationObject();
+
+                _realm.Write(() => _realm.Add(tno));
+                VerifyNotifications(changesets, expectedInserted: new[] { 0 });
+
+                _realm.Write(() => tno.StringProperty = "NewString");
+                VerifyNotifications(changesets, expectedNotifications: false);
+
+                _realm.Write(() => _realm.Remove(tno));
+                VerifyNotifications(changesets, expectedDeleted: new[] { 0 });
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_TopLevelProperties_WorksWithScalar()
         {
             var query = _realm.All<TestNotificationObject>();

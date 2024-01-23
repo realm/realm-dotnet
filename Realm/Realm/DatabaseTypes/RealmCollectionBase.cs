@@ -196,10 +196,10 @@ namespace Realms
 
             if (keypaths.Length != 0)
             {
-                if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
-                {
-                    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
-                }
+                //if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
+                //{
+                //    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
+                //}
 
                 if (keypaths.Any(k => string.IsNullOrWhiteSpace(k)))
                 {
@@ -210,6 +210,31 @@ namespace Realms
             }
 
             return SubscribeForNotificationsImpl(callback, false);
+        }
+
+        public void Subscribe(KeyPathCollection? keyPaths = null)
+        {
+
+        }
+
+        public void Test()
+        {
+            Subscribe(new List<string> { " ah", "two" });
+            Subscribe(new string[] { " ah", "two" });
+
+            KeyPath explicitKeypath = "test";
+
+            Subscribe(new List<KeyPath> { explicitKeypath, "two" });
+            Subscribe(new KeyPath[] { explicitKeypath, "two" });
+
+            Subscribe(KeyPathCollection.Of(explicitKeypath, "two"));
+
+            // Those are both empty collections (shallow)
+            Subscribe(KeyPathCollection.Of());
+            Subscribe(KeyPathCollection.Empty);
+
+            // Classic full subscription
+            Subscribe();
         }
 
         internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
@@ -657,7 +682,7 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<KeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<InternalKeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
@@ -668,7 +693,7 @@ namespace Realms
         // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
         public void Add(NotificationCallbackDelegate<T> callback, bool shallow)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
             if (_subscriptions.TryGetValue(keyPath, out var subscription))
             {
                 if (subscription.DeliveredInitialNotification)
@@ -699,7 +724,7 @@ namespace Realms
 
         public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
             if (_subscriptions.TryGetValue(keyPath, out var subscription))
             {
                 subscription.Callbacks.Remove(callback);
@@ -717,7 +742,7 @@ namespace Realms
 
         public void Notify(ChangeSet? changes, bool shallow)
         {
-            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
             if (_subscriptions.TryGetValue(keyPath, out var subscription))
             {
                 if (changes == null)
@@ -742,7 +767,8 @@ namespace Realms
     }
 
     // Eventually this should be a proper class holding the keypaths
-    internal enum KeyPath
+    //TODO Decide what do do with this, given we're not expanding this, we could just remove it
+    internal enum InternalKeyPath
     {
         Full,
         Empty
@@ -767,6 +793,73 @@ namespace Realms
         {
             // This is to resolve the WPF bug
             return true;
+        }
+    }
+
+    public class KeyPath
+    {
+        private string _path;
+
+        private KeyPath(string path)
+        {
+            _path = path;
+        }
+
+        public static implicit operator KeyPath(string s) => new(s);
+    }
+
+    internal enum KeyPathType
+    {
+        Default,
+        Shallow,
+        Full
+    }
+
+    public class KeyPathCollection : IEnumerable<KeyPath>
+    {
+        private IEnumerable<KeyPath> _collection;
+
+        private KeyPathType _type;
+
+        private KeyPathCollection(KeyPathType type, IEnumerable<KeyPath> collection = null)
+        {
+            _type = type;
+            _collection = collection;
+        }
+
+        public static KeyPathCollection Of(params KeyPath[] paths)
+        {
+            return new KeyPathCollection(KeyPathType.Full, paths);
+        }
+
+        public static KeyPathCollection Empty => KeyPathCollection.Of();
+
+        public static KeyPathCollection Default => new KeyPathCollection(KeyPathType.Default);
+
+        public static KeyPathCollection 
+
+        public static implicit operator KeyPathCollection(List<string> paths)
+        {
+            return new KeyPathCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+        }
+
+        public static implicit operator KeyPathCollection(List<KeyPath> paths) => new(KeyPathType.Full, paths);
+
+        public static implicit operator KeyPathCollection(string[] paths)
+        {
+            return new KeyPathCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+        }
+
+        public static implicit operator KeyPathCollection(KeyPath[] paths) => new(KeyPathType.Full, paths);
+
+        public IEnumerator<KeyPath> GetEnumerator()
+        {
+            return _collection.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
