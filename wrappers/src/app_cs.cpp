@@ -175,9 +175,10 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            SharedApp app = app_config.use_cache
-                ? App::get_shared_app(std::move(config), std::move(sync_client_config))
-                : App::get_uncached_app(std::move(config), std::move(sync_client_config));
+            SharedApp app = App::get_app(app_config.use_cache ? 
+                realm::app::App::CacheMode::Enabled : realm::app::App::CacheMode::Disabled,
+                std::move(config), 
+                std::move(sync_client_config));
 
             return new SharedApp(app);
         });
@@ -321,7 +322,7 @@ extern "C" {
     REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return to_capi(app->base_url());
+            return to_capi(app->get_base_url());
         });
     }
 

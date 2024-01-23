@@ -17,12 +17,15 @@
 * Fixed several errors that could cause a crash of the sync client. (Core 13.25.0)
 * Bad performance of initial Sync download involving many backlinks. (Core 13.25.1)
 * Explicitly bumped the minimum version of System.Net.Security to 4.3.2 as 4.3.0 has been marked as vulnerable (more details can be found in the deprecation notice on the [NuGet page](https://www.nuget.org/packages/System.Net.Security/4.3.0)).
+* Handle EOPNOTSUPP when using posix_fallocate() and fallback to manually consume space. This should enable android users to open a Realm on restrictive filesystems. (Core 13.26.0)
+* Application may crash with incoming_changesets.size() != 0 when a download message is mistaken for a bootstrap message. This can happen if the synchronization session is paused and resumed at a specific time. (Core 13.26.0)
+* Fixed errors complaining about missing symbols such as `__atomic_is_lock_free` on ARMv7 Linux (Core 13.26.0)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.25.1.
+* Using Core 13.26.0.
 
 ## 11.6.1 (2023-11-17)
 
