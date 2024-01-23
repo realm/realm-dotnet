@@ -749,7 +749,7 @@ namespace Realms.Tests.Sync
                 var totalCount = obj.RealmValueList.Count + obj.RealmValueSet.Count + obj.RealmValueDictionary.Where(d => d.Value != RealmValue.Null).Count();
 
                 using var realm = await GetFLXIntegrationRealmAsync();
-                var intObjs = await realm.All<RealmValueObject>().SubscribeAsync();
+                var intObjs = await realm.All<IntPropertyObject>().SubscribeAsync();
                 var realmObjs = await realm.All<RealmValueObject>().SubscribeAsync();
 
                 await intObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
