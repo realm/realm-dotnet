@@ -201,35 +201,10 @@ namespace Realms
                     throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
                 }
 
-                keyPathCollection.Verify();
+                keyPathCollection.Verify();  //TODO We could call verify for all cases, and maybe move the other check also inside?
             }
 
             return SubscribeForNotificationsImpl(callback, keyPathCollection);
-        }
-
-        public void Subscribe(KeyPathsCollection? keyPaths = null)
-        {
-
-        }
-
-        public void Test()
-        {
-            Subscribe(new List<string> { " ah", "two" });
-            Subscribe(new string[] { " ah", "two" });
-
-            KeyPath explicitKeypath = "test";
-
-            Subscribe(new List<KeyPath> { explicitKeypath, "two" });
-            Subscribe(new KeyPath[] { explicitKeypath, "two" });
-
-            Subscribe(KeyPathsCollection.Of(explicitKeypath, "two"));
-
-            // Those are both empty collections (shallow)
-            Subscribe(KeyPathsCollection.Of());
-            Subscribe(KeyPathsCollection.Shallow);
-
-            // Classic full subscription
-            Subscribe();
         }
 
         internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
