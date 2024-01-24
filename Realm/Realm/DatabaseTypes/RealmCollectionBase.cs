@@ -661,8 +661,6 @@ namespace Realms
             _parent = parent;
         }
 
-        // Shallow here and everywhere else is a bit of a shortcut we're taking until we have proper keypath filtering.
-        // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
         public void Add(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
         {
             var kpcType = keyPathsCollection.Type;

@@ -106,8 +106,6 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_
 {
     return handle_errors(ex, [=]() {
 
-        auto shallow = true;
-
         std::vector<std::string> keypaths_vector;
         for (size_t i = 0; i < keypaths_length; i++)
         {
