@@ -23,7 +23,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -195,7 +194,7 @@ namespace Realms
         {
             keyPathCollection ??= KeyPathsCollection.Default;
 
-            if (keyPathCollection.Type == KeyPathType.Full)
+            if (keyPathCollection.Type == KeypathsCollectionType.Full)
             {
                 if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
                 {
@@ -203,11 +202,9 @@ namespace Realms
                 }
 
                 keyPathCollection.Verify();
-
-                return SubscribeForNotificationsWithKeypathImpl(callback, keyPathCollection);
             }
 
-            return SubscribeForNotificationsImpl(callback, false);
+            return SubscribeForNotificationsImpl(callback, keyPathCollection);
         }
 
         public void Subscribe(KeyPathsCollection? keyPaths = null)
@@ -229,33 +226,31 @@ namespace Realms
 
             // Those are both empty collections (shallow)
             Subscribe(KeyPathsCollection.Of());
-            Subscribe(KeyPathsCollection.Empty);
+            Subscribe(KeyPathsCollection.Shallow);
 
             // Classic full subscription
             Subscribe();
         }
 
-        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
-        {
-            Argument.NotNull(callback, nameof(callback));
-            _notificationCallbacks.Value.Add(callback, shallow);
-
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
-        }
-
-        internal IDisposable SubscribeForNotificationsWithKeypathImpl(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathCollection)
+        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
         {
             Argument.NotNull(callback, nameof(callback));
 
-            var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
+            if (keyPathsCollection.Type == KeypathsCollectionType.Full)
+            {
+                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-            var stringCollection = keyPathCollection.GetAsStringCollection().ToList();
+                var stringCollection = keyPathsCollection.GetAsStringCollection().ToList();
 
-            var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle),
-                stringCollection);
+                var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle),
+                    stringCollection);
 
-            return NotificationToken.Create(callback, c => token.Dispose());
+                return NotificationToken.Create(callback, c => token.Dispose());
+            }
+
+            _notificationCallbacks.Value.Add(callback, keyPathsCollection);
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -315,9 +310,9 @@ namespace Realms
             return result;
         }
 
-        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
+        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
         {
-            _notificationCallbacks.Value.Remove(callback, shallow);
+            _notificationCallbacks.Value.Remove(callback, keyPathsCollection);
         }
 
         #region INotifyCollectionChanged
@@ -454,11 +449,11 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotificationsImpl(OnChange, shallow: true);
+                    SubscribeForNotificationsImpl(OnChange, KeyPathsCollection.Shallow);
                 }
                 else
                 {
-                    UnsubscribeFromNotifications(OnChange, shallow: true);
+                    UnsubscribeFromNotifications(OnChange, KeyPathsCollection.Shallow);
                 }
             }
         }
@@ -468,7 +463,8 @@ namespace Realms
         void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, bool shallow)
         {
             var changeset = GetFromNative(changes);
-            _notificationCallbacks.Value.Notify(changeset, shallow);
+            var kpc = shallow == true ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            _notificationCallbacks.Value.Notify(changeset, kpc);
         }
 
         void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
@@ -683,7 +679,7 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<InternalKeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<KeypathsCollectionType, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
@@ -692,10 +688,10 @@ namespace Realms
 
         // Shallow here and everywhere else is a bit of a shortcut we're taking until we have proper keypath filtering.
         // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
-        public void Add(NotificationCallbackDelegate<T> callback, bool shallow)
+        public void Add(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
         {
-            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            var kpcType = keyPathsCollection.Type;
+            if (_subscriptions.TryGetValue(kpcType, out var subscription))
             {
                 if (subscription.DeliveredInitialNotification)
                 {
@@ -710,29 +706,30 @@ namespace Realms
             else
             {
                 // If this is a new subscription, we store it in the backing dictionary, then we subscribe outside of transaction
-                _subscriptions[keyPath] = (null, false, new() { callback });
+                _subscriptions[kpcType] = (null, false, new() { callback });
                 _parent.Realm.ExecuteOutsideTransaction(() =>
                 {
                     // It's possible that we unsubscribed in the meantime, so only add a notification callback if we still have callbacks
-                    if (_subscriptions.TryGetValue(keyPath, out var sub) && sub.Callbacks.Count > 0)
+                    if (_subscriptions.TryGetValue(kpcType, out var sub) && sub.Callbacks.Count > 0)
                     {
                         var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
-                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), sub.DeliveredInitialNotification, sub.Callbacks);
+                        var shallow = kpcType == KeypathsCollectionType.Shallow ? true : false;
+                        _subscriptions[kpcType] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), sub.DeliveredInitialNotification, sub.Callbacks);
                     }
                 });
             }
         }
 
-        public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
+        public bool Remove(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
         {
-            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            var kpcType = keyPathsCollection.Type;
+            if (_subscriptions.TryGetValue(kpcType, out var subscription))
             {
                 subscription.Callbacks.Remove(callback);
                 if (subscription.Callbacks.Count == 0)
                 {
                     subscription.Token?.Dispose();
-                    _subscriptions.Remove(keyPath);
+                    _subscriptions.Remove(kpcType);
                 }
 
                 return true;
@@ -741,14 +738,14 @@ namespace Realms
             return false;
         }
 
-        public void Notify(ChangeSet? changes, bool shallow)
+        public void Notify(ChangeSet? changes, KeyPathsCollection keyPathsCollection)
         {
-            var keyPath = shallow ? InternalKeyPath.Empty : InternalKeyPath.Full;
-            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            var kpcType = keyPathsCollection.Type;
+            if (_subscriptions.TryGetValue(kpcType, out var subscription))
             {
                 if (changes == null)
                 {
-                    _subscriptions[keyPath] = (subscription.Token, true, subscription.Callbacks);
+                    _subscriptions[kpcType] = (subscription.Token, true, subscription.Callbacks);
                 }
 
                 foreach (var callback in subscription.Callbacks.ToArray())
@@ -765,14 +762,6 @@ namespace Realms
                 token?.Dispose();
             }
         }
-    }
-
-    // Eventually this should be a proper class holding the keypaths
-    //TODO Decide what do do with this, given we're not expanding this, we could just remove it
-    internal enum InternalKeyPath
-    {
-        Full,
-        Empty
     }
 
     /// <summary>
@@ -809,10 +798,10 @@ namespace Realms
         public static implicit operator KeyPath(string s) => new(s);
     }
 
-    internal enum KeyPathType
+    internal enum KeypathsCollectionType
     {
         Default,
-        Empty,
+        Shallow,
         Full
     }
 
@@ -820,9 +809,9 @@ namespace Realms
     {
         private IEnumerable<KeyPath>? _collection;
 
-        internal KeyPathType Type { get; set; }
+        internal KeypathsCollectionType Type { get; set; }
 
-        private KeyPathsCollection(KeyPathType type, IEnumerable<KeyPath>? collection = null)
+        private KeyPathsCollection(KeypathsCollectionType type, IEnumerable<KeyPath>? collection = null)
         {
             Type = type;
             _collection = collection;
@@ -835,7 +824,7 @@ namespace Realms
 
         internal void Verify()
         {
-            if (Type != KeyPathType.Full)
+            if (Type != KeypathsCollectionType.Full)
             {
                 return;
             }
@@ -853,29 +842,30 @@ namespace Realms
         {
             if (paths.Length == 0)
             {
-                return new KeyPathsCollection(KeyPathType.Empty);
+                return new KeyPathsCollection(KeypathsCollectionType.Shallow);
             }
 
-            return new KeyPathsCollection(KeyPathType.Full, paths);
+            return new KeyPathsCollection(KeypathsCollectionType.Full, paths);
         }
 
-        public static KeyPathsCollection Empty => KeyPathsCollection.Of();
+        //TODO Decide if we should call it shallow or empty 
+        public static KeyPathsCollection Shallow => KeyPathsCollection.Of();
 
-        public static KeyPathsCollection Default => new KeyPathsCollection(KeyPathType.Default);
+        public static KeyPathsCollection Default => new KeyPathsCollection(KeypathsCollectionType.Default);
 
         public static implicit operator KeyPathsCollection(List<string> paths)
         {
-            return new KeyPathsCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeypathsCollectionType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathType.Full, paths);
+        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeypathsCollectionType.Full, paths);
 
         public static implicit operator KeyPathsCollection(string[] paths)
         {
-            return new KeyPathsCollection(KeyPathType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeypathsCollectionType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathType.Full, paths);
+        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeypathsCollectionType.Full, paths);
 
         public IEnumerator<KeyPath> GetEnumerator()
         {

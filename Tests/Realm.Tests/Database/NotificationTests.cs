@@ -1298,6 +1298,8 @@ namespace Realms.Tests.Database
         {
             var changesets = new List<ChangeSet>();
 
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             // This is testing using the internal API because we're not exposing the shallow/keypath functionality publicly yet.
             var results = (RealmResults<TestNotificationObject>)_realm.All<TestNotificationObject>();
 
@@ -1307,7 +1309,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1334,6 +1336,8 @@ namespace Realms.Tests.Database
         [Test]
         public void ListOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1345,7 +1349,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1395,6 +1399,8 @@ namespace Realms.Tests.Database
         [Test]
         public void ListOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1406,7 +1412,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1449,6 +1455,8 @@ namespace Realms.Tests.Database
         [Test]
         public void SetOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1460,7 +1468,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1495,6 +1503,8 @@ namespace Realms.Tests.Database
         [Test]
         public void SetOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1506,7 +1516,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1534,6 +1544,8 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1545,7 +1557,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1587,6 +1599,8 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
 
@@ -1598,7 +1612,7 @@ namespace Realms.Tests.Database
                 {
                     changesets.Add(changes);
                 }
-            }, shallow);
+            }, kpCollection);
 
             _realm.Write(() =>
             {
@@ -1676,7 +1690,7 @@ namespace Realms.Tests.Database
             }
 
             //TODO Fix keypath
-            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Empty))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Shallow))
             {
                 var tno = new TestNotificationObject();
 
