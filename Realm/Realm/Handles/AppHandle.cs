@@ -100,6 +100,9 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string access_token_buf, IntPtr access_token_len,
                 out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_set_fake_sync_route_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_fake_sync_route_for_testing(AppHandle app, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_clear_cached_apps", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_cached_apps(out NativeException ex);
 
@@ -107,7 +110,7 @@ namespace Realms.Sync
             public static extern IntPtr get_base_file_path(AppHandle app, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_base_uri", CallingConvention = CallingConvention.Cdecl)]
-            public static extern StringValue get_base_uri(AppHandle app, out NativeException ex);
+            public static extern IntPtr get_base_uri(AppHandle app, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern StringValue get_id(AppHandle app, out NativeException ex);
@@ -307,23 +310,6 @@ namespace Realms.Sync
             }
         }
 
-        public void ResetForTesting()
-        {
-            NativeMethods.reset_for_testing(this);
-        }
-
-        public SyncUserHandle GetUserForTesting(string id, string refreshToken, string accessToken)
-        {
-            var result = NativeMethods.get_user_for_testing(
-                this,
-                id, (IntPtr)id.Length,
-                refreshToken, (IntPtr)refreshToken.Length,
-                accessToken, (IntPtr)accessToken.Length,
-                out var ex);
-            ex.ThrowIfNecessary();
-            return new SyncUserHandle(result);
-        }
-
         public string GetBaseFilePath()
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
@@ -335,9 +321,15 @@ namespace Realms.Sync
 
         public Uri GetBaseUri()
         {
-            var value = NativeMethods.get_base_uri(this, out var ex);
-            ex.ThrowIfNecessary();
-            return new Uri(value!);
+            var uriString = MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                var value = NativeMethods.get_base_uri(this, buffer, length, out ex);
+                ex.ThrowIfNecessary();
+                return value;
+            })!;
+
+            return new Uri(uriString);
         }
 
         public string GetId()
@@ -355,6 +347,32 @@ namespace Realms.Sync
         }
 
         protected override void Unbind() => NativeMethods.destroy(handle);
+
+        #region Testing
+        public void ResetForTesting()
+        {
+            NativeMethods.reset_for_testing(this);
+        }
+
+        public SyncUserHandle GetUserForTesting(string id, string refreshToken, string accessToken)
+        {
+            var result = NativeMethods.get_user_for_testing(
+                this,
+                id, (IntPtr)id.Length,
+                refreshToken, (IntPtr)refreshToken.Length,
+                accessToken, (IntPtr)accessToken.Length,
+                out var ex);
+            ex.ThrowIfNecessary();
+            return new SyncUserHandle(result);
+        }
+
+        public void SetFakeSyncRouteForTesting()
+        {
+            NativeMethods.set_fake_sync_route_for_testing(this, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        #endregion
 
         [MonoPInvokeCallback(typeof(NativeMethods.UserCallback))]
         private static void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)

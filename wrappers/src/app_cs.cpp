@@ -251,6 +251,15 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void shared_app_set_fake_sync_route_for_testing(SharedApp& app,
+        NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->sync_manager()->set_sync_route("realm://www.test.com:1000");
+        });
+    }
+
+
     REALM_EXPORT void shared_app_remove_user(SharedApp& app, SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -319,10 +328,11 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t shared_app_get_base_uri(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return to_capi(app->get_base_url());
+            std::string url(app->get_base_url());
+            return stringdata_to_csharpstringbuffer(url, buffer, buffer_length);
         });
     }
 
