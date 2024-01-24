@@ -324,9 +324,7 @@ namespace Realms.Sync
             var uriString = MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
-                var value = NativeMethods.get_base_uri(this, buffer, length, out ex);
-                ex.ThrowIfNecessary();
-                return value;
+                return NativeMethods.get_base_uri(this, buffer, length, out ex);
             })!;
 
             return new Uri(uriString);

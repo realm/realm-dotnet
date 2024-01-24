@@ -276,7 +276,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null, 
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null,
             string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
