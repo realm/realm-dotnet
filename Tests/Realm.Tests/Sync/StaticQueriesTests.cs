@@ -722,7 +722,6 @@ namespace Realms.Tests.Sync
             }
         };
 
-        // TODO This is going to be fixed with https://jira.mongodb.org/browse/BAAS-27410
         [TestCaseSource(nameof(RealmValueLinkTestCases))]
         public void RealmObjectAPI_RealmValueLinks_AtlasToRealm(TestCaseData<RealmValueObject> testCase)
         {
