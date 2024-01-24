@@ -66,7 +66,7 @@ namespace Realms
 
         public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
 
-        public virtual NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, IntPtr callback, IEnumerable<string> keypaths)
+        public virtual NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, PrimitiveKeyPathsCollection arguments)
         {
             //TODO This should be just abstract, so we need to implement it in all handles
             return AddNotificationCallback(managedObjectHandle, true);

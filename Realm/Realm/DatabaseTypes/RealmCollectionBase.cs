@@ -29,6 +29,7 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 using static Realms.NotifiableObjectHandleBase;
 
@@ -216,16 +217,33 @@ namespace Realms
                 var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-                var stringCollection = keyPathsCollection.GetAsStringCollection().ToList();
-
-                var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GCHandle.ToIntPtr(callbackHandle),
-                    stringCollection);
+                var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GetNativeArguments(keyPathsCollection, callbackHandle));
 
                 return NotificationToken.Create(callback, c => token.Dispose());
             }
 
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection));
+        }
+
+        internal PrimitiveKeyPathsCollection GetNativeArguments(KeyPathsCollection collection, GCHandle callbackHandle)
+        {
+            PrimitiveValue[] keyPathsString = null;
+            int length = 0;
+
+            if (collection.Type == KeypathsCollectionType.Full)
+            {
+                keyPathsString = collection.GetAsStringCollection().Select(k => ((RealmValue)k).ToNative().Value).ToArray();
+                length = keyPathsString.Count();
+            }
+
+            return new PrimitiveKeyPathsCollection
+            {
+                type = collection.Type,
+                callback = GCHandle.ToIntPtr(callbackHandle),
+                keypaths = keyPathsString,
+                keypaths_len = (IntPtr)length,
+            };
         }
 
         protected abstract T GetValueAtIndex(int index);

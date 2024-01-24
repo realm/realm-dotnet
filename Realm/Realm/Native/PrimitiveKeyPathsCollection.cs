@@ -24,7 +24,7 @@ using System.Text;
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal class PrimitiveKeyPathsCollection
+    internal struct PrimitiveKeyPathsCollection
     {
         internal KeypathsCollectionType type;
 
