@@ -264,7 +264,7 @@ namespace Realms.Tests.Sync
         }
 
         protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null,
-            string? optionalPath = null, bool setFakeSyncRoute = false)
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
 
@@ -277,7 +277,7 @@ namespace Realms.Tests.Sync
         }
 
         protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null, 
-            string? optionalPath = null, bool setFakeSyncRoute = false)
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
 
