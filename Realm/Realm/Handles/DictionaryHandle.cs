@@ -34,7 +34,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes, [MarshalAs(UnmanagedType.U1)] bool shallow);
+        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes);
 
         private static class NativeMethods
         {
@@ -342,11 +342,12 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes, bool shallow)
+        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, shallow);
+                //TODO Check if it makes sense to do something different for dictionaries, so we don't need to pass default here
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Default);
             }
         }
     }

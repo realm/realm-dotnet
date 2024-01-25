@@ -249,9 +249,11 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, bool shallow)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes,
+            KeyPathsCollectionType type, IntPtr callback)
         {
-            Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
+            Debug.Assert(type == KeyPathsCollectionType.Default,
+                "Notifications should always be default here as we don't expose a way to configure it.");
 
             DictionaryChangeSet? changeset = null;
             if (changes != null)
@@ -267,15 +269,10 @@ namespace Realms
                 _deliveredInitialKeyNotification = true;
             }
 
-            foreach (var callback in _keyCallbacks.ToArray())
+            foreach (var keyCallback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset);
+                keyCallback(this, changeset);
             }
-        }
-
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacksKeypath(DictionaryHandle.DictionaryChangeSet? changes, IntPtr callbackNative)
-        {
-            throw new NotImplementedException();
         }
     }
 }

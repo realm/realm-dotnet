@@ -209,7 +209,8 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes,
+            KeyPathsCollectionType type, IntPtr callback)
         {
             if (changes.HasValue)
             {
@@ -301,11 +302,6 @@ namespace Realms
             }
 
             return ObjectHandle.ObjEquals(ma.ObjectHandle);
-        }
-
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacksKeypath(NotifiableObjectHandleBase.CollectionChangeSet? changes, IntPtr callbackNative)
-        {
-            throw new NotImplementedException();
         }
     }
 

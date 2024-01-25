@@ -29,15 +29,13 @@ namespace Realms
     internal interface INotifiable<TChangeset>
         where TChangeset : struct
     {
+        //TODO Fix docs
         /// <summary>
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
         /// <param name="shallow">Whether the changes are coming from a shallow notifier or not.</param>
-        void NotifyCallbacks(TChangeset? changes, bool shallow);
-
-        void NotifyCallbacksKeypath(TChangeset? changes, IntPtr callbackNative);
-
+        void NotifyCallbacks(TChangeset? changes, KeyPathsCollectionType type, IntPtr callbackNative = default);
     }
 
     internal class NotificationToken<TCallback> : IDisposable

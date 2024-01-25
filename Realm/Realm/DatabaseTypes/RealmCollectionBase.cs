@@ -224,7 +224,7 @@ namespace Realms
             }
 
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
-            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection));
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection.Type));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -284,9 +284,9 @@ namespace Realms
             return result;
         }
 
-        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
+        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollectionType type)
         {
-            _notificationCallbacks.Value.Remove(callback, keyPathsCollection);
+            _notificationCallbacks.Value.Remove(callback, type);
         }
 
         #region INotifyCollectionChanged
@@ -427,26 +427,24 @@ namespace Realms
                 }
                 else
                 {
-                    UnsubscribeFromNotifications(OnChange, KeyPathsCollection.Shallow);
+                    UnsubscribeFromNotifications(OnChange, KeyPathsCollectionType.Shallow);
                 }
             }
         }
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, bool shallow)
+        void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, KeyPathsCollectionType type, IntPtr callbackNative)
         {
-            var changeset = GetFromNative(changes);
-            var kpc = shallow == true ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
-            _notificationCallbacks.Value.Notify(changeset, kpc);
-        }
-
-        void INotifiable<CollectionChangeSet>.NotifyCallbacksKeypath(CollectionChangeSet? changes, IntPtr callbackNative)
-        {
-            if (GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
+            if (type == KeyPathsCollectionType.Full
+                && GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
             {
                 callback(this, GetFromNative(changes));
+                return;
             }
+
+            var changeset = GetFromNative(changes);
+            _notificationCallbacks.Value.Notify(changeset, type);
         }
 
         private ChangeSet? GetFromNative(CollectionChangeSet? changes)
@@ -691,9 +689,8 @@ namespace Realms
             }
         }
 
-        public bool Remove(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
+        public bool Remove(NotificationCallbackDelegate<T> callback, KeyPathsCollectionType kpcType)
         {
-            var kpcType = keyPathsCollection.Type;
             if (_subscriptions.TryGetValue(kpcType, out var subscription))
             {
                 subscription.Callbacks.Remove(callback);
@@ -709,9 +706,8 @@ namespace Realms
             return false;
         }
 
-        public void Notify(ChangeSet? changes, KeyPathsCollection keyPathsCollection)
+        public void Notify(ChangeSet? changes, KeyPathsCollectionType kpcType)
         {
-            var kpcType = keyPathsCollection.Type;
             if (_subscriptions.TryGetValue(kpcType, out var subscription))
             {
                 if (changes == null)
@@ -819,7 +815,8 @@ namespace Realms
             return new KeyPathsCollection(KeyPathsCollectionType.Full, paths);
         }
 
-        //TODO Decide if we should call it shallow or empty 
+        //TODO We should try to make those created only once
+        //TODO Fix implementation of shallow
         public static KeyPathsCollection Shallow => KeyPathsCollection.Of();
 
         public static KeyPathsCollection Default => new KeyPathsCollection(KeyPathsCollectionType.Default);
