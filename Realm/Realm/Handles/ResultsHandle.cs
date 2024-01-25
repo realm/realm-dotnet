@@ -44,8 +44,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle,
-                KeyPathsCollectionType type, IntPtr callback,
-                IntPtr keypaths_len, [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] keypaths, out NativeException ex);
+                KeyPathsCollectionType type, IntPtr callback, MarshaledVector<StringValue> keypaths, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
@@ -166,25 +165,14 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            IntPtr result;
-            NativeException nativeException;
+            using Arena arena = new Arena();
 
-            if (keyPathsCollection.Type == KeyPathsCollectionType.Full)
-            {
-                var keypaths = keyPathsCollection.GetAsStringCollection();
-                var toNative = keypaths.Select(k => ((RealmValue)k).ToNative());
+            var keypaths = keyPathsCollection.GetAsStringCollection();
+            var mv = MarshaledVector<StringValue>.AllocateFrom(keypaths.Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
-                result = NativeMethods.add_notification_callback(this, managedObjectHandle, 
-                    keyPathsCollection.Type,
-                    callback, (IntPtr)keypaths.Count(),
-                    toNative.Select(t => t.Value).ToArray(), out nativeException);
-            }
-            else
-            {
-                result = NativeMethods.add_notification_callback(this, managedObjectHandle,
-                        keyPathsCollection.Type,
-                        callback, (IntPtr)0, null!, out nativeException);
-            }
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                keyPathsCollection.Type,
+                callback, mv, out var nativeException);
 
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root!, result);

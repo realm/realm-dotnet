@@ -93,28 +93,25 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
 
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results,
     key_path_collection_type type,
-    void* callback, size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
+    void* callback, MarshaledVector<realm_string_t> keypaths, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
 
         std::optional<KeyPathArray> keypath_array;
 
-        if (type == key_path_collection_type::FULL)
-        {
+        if (type == key_path_collection_type::FULL) {
             std::vector<std::string> keypaths_vector;
-            for (size_t i = 0; i < keypaths_length; i++)
-            {
-                keypaths_vector.push_back(from_capi(keypaths[i].string));
+
+            for (auto& property : keypaths) {
+                keypaths_vector.push_back(capi_to_std(property));
             }
 
             keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
         }
-        else if (type == key_path_collection_type::SHALLOW)
-        {
+        else if (type == key_path_collection_type::SHALLOW) {
             keypath_array = std::make_optional(KeyPathArray());
         }
-        else if (type == key_path_collection_type::DEFAULT )
-        {
+        else if (type == key_path_collection_type::DEFAULT ){
             keypath_array = std::nullopt;
         }
         else
