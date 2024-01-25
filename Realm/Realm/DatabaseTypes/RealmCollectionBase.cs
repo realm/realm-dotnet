@@ -195,7 +195,7 @@ namespace Realms
         {
             keyPathCollection ??= KeyPathsCollection.Default;
 
-            if (keyPathCollection.Type == KeypathsCollectionType.Full)
+            if (keyPathCollection.Type == KeyPathsCollectionType.Full)
             {
                 if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
                 {
@@ -212,38 +212,19 @@ namespace Realms
         {
             Argument.NotNull(callback, nameof(callback));
 
-            if (keyPathsCollection.Type == KeypathsCollectionType.Full)
+            if (keyPathsCollection.Type == KeyPathsCollectionType.Full)
             {
                 var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-                var token = Handle.Value.AddNotificationCallbackKeypaths(GCHandle.ToIntPtr(managedResultsHandle), GetNativeArguments(keyPathsCollection, callbackHandle));
+                var token = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keyPathsCollection, 
+                    GCHandle.ToIntPtr(callbackHandle));
 
                 return NotificationToken.Create(callback, c => token.Dispose());
             }
 
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection));
-        }
-
-        internal PrimitiveKeyPathsCollection GetNativeArguments(KeyPathsCollection collection, GCHandle callbackHandle)
-        {
-            PrimitiveValue[] keyPathsString = null;
-            int length = 0;
-
-            if (collection.Type == KeypathsCollectionType.Full)
-            {
-                keyPathsString = collection.GetAsStringCollection().Select(k => ((RealmValue)k).ToNative().Value).ToArray();
-                length = keyPathsString.Count();
-            }
-
-            return new PrimitiveKeyPathsCollection
-            {
-                type = collection.Type,
-                callback = GCHandle.ToIntPtr(callbackHandle),
-                keypaths = keyPathsString,
-                keypaths_len = (IntPtr)length,
-            };
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -672,7 +653,7 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<KeypathsCollectionType, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<KeyPathsCollectionType, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
@@ -704,8 +685,7 @@ namespace Realms
                     if (_subscriptions.TryGetValue(kpcType, out var sub) && sub.Callbacks.Count > 0)
                     {
                         var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
-                        var shallow = kpcType == KeypathsCollectionType.Shallow ? true : false;
-                        _subscriptions[kpcType] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), sub.DeliveredInitialNotification, sub.Callbacks);
+                        _subscriptions[kpcType] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keyPathsCollection), sub.DeliveredInitialNotification, sub.Callbacks);
                     }
                 });
             }
@@ -789,7 +769,7 @@ namespace Realms
         public static implicit operator KeyPath(string s) => new(s);
     }
 
-    internal enum KeypathsCollectionType
+    internal enum KeyPathsCollectionType
     {
         Default,
         Shallow,
@@ -800,9 +780,9 @@ namespace Realms
     {
         private IEnumerable<KeyPath>? _collection;
 
-        internal KeypathsCollectionType Type { get; set; }
+        internal KeyPathsCollectionType Type { get; set; }
 
-        private KeyPathsCollection(KeypathsCollectionType type, IEnumerable<KeyPath>? collection = null)
+        private KeyPathsCollection(KeyPathsCollectionType type, IEnumerable<KeyPath>? collection = null)
         {
             Type = type;
             _collection = collection;
@@ -815,7 +795,7 @@ namespace Realms
 
         internal void Verify()
         {
-            if (Type != KeypathsCollectionType.Full)
+            if (Type != KeyPathsCollectionType.Full)
             {
                 return;
             }
@@ -833,30 +813,30 @@ namespace Realms
         {
             if (paths.Length == 0)
             {
-                return new KeyPathsCollection(KeypathsCollectionType.Shallow);
+                return new KeyPathsCollection(KeyPathsCollectionType.Shallow);
             }
 
-            return new KeyPathsCollection(KeypathsCollectionType.Full, paths);
+            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths);
         }
 
         //TODO Decide if we should call it shallow or empty 
         public static KeyPathsCollection Shallow => KeyPathsCollection.Of();
 
-        public static KeyPathsCollection Default => new KeyPathsCollection(KeypathsCollectionType.Default);
+        public static KeyPathsCollection Default => new KeyPathsCollection(KeyPathsCollectionType.Default);
 
         public static implicit operator KeyPathsCollection(List<string> paths)
         {
-            return new KeyPathsCollection(KeypathsCollectionType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeypathsCollectionType.Full, paths);
+        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Full, paths);
 
         public static implicit operator KeyPathsCollection(string[] paths)
         {
-            return new KeyPathsCollection(KeypathsCollectionType.Full, paths.Select(path => (KeyPath)path));
+            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
         }
 
-        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeypathsCollectionType.Full, paths);
+        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Full, paths);
 
         public IEnumerator<KeyPath> GetEnumerator()
         {

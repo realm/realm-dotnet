@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Native;
 
 namespace Realms
@@ -42,11 +43,9 @@ namespace Realms
             public static extern void clear(ResultsHandle results, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback_keypaths", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback_keypaths(ResultsHandle results, IntPtr managedResultsHandle,
-                PrimitiveKeyPathsCollection arguments, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle,
+                KeyPathsCollectionType type, IntPtr callback,
+                IntPtr keypaths_len, [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] keypaths, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
@@ -162,20 +161,31 @@ namespace Realms
             return new SortDescriptorHandle(Root!, result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
+            KeyPathsCollection keyPathsCollection, IntPtr callback = default)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root!, result);
-        }
+            IntPtr result;
+            NativeException nativeException;
 
-        public override NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, PrimitiveKeyPathsCollection arguments)
-        {
-            EnsureIsOpen();
+            if (keyPathsCollection.Type == KeyPathsCollectionType.Full)
+            {
+                var keypaths = keyPathsCollection.GetAsStringCollection();
+                var toNative = keypaths.Select(k => ((RealmValue)k).ToNative());
 
-            var result = NativeMethods.add_notification_callback_keypaths(this, managedObjectHandle, arguments, out var nativeException);
+                result = NativeMethods.add_notification_callback(this, managedObjectHandle, 
+                    keyPathsCollection.Type,
+                    callback, (IntPtr)keypaths.Count(),
+                    toNative.Select(t => t.Value).ToArray(), out nativeException);
+            }
+            else
+            {
+                result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                        keyPathsCollection.Type,
+                        callback, (IntPtr)0, null!, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root!, result);
         }

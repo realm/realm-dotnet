@@ -91,32 +91,33 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, 
-    bool shallow, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-        }, shallow);
-    });
-}
-
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback_keypaths(Results* results, void* managed_results,
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results,
+    key_path_collection_type type,
     void* callback, size_t keypaths_length, realm_value_t* keypaths, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
 
-        std::vector<std::string> keypaths_vector;
-        for (size_t i = 0; i < keypaths_length; i++)
+        if (type == key_path_collection_type::FULL)
         {
-            keypaths_vector.push_back(from_capi(keypaths[i].string));
+            std::vector<std::string> keypaths_vector;
+            for (size_t i = 0; i < keypaths_length; i++)
+            {
+                keypaths_vector.push_back(from_capi(keypaths[i].string));
+            }
+
+            auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
+
+            return subscribe_for_notifications_keypaths(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+                return results->add_notification_callback(callback, keypath_array);
+            }, callback);
         }
 
-        auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
+        bool shallow = type == key_path_collection_type::SHALLOW ? true : false;
 
-        return subscribe_for_notifications_keypaths(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, keypath_array);
-        }, callback);
+        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+        }, shallow);
+
     });
 }
 

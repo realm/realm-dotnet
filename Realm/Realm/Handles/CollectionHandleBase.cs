@@ -64,12 +64,11 @@ namespace Realms
 
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
-
-        public virtual NotificationTokenHandle AddNotificationCallbackKeypaths(IntPtr managedObjectHandle, PrimitiveKeyPathsCollection arguments)
+        public virtual NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, KeyPathsCollection keyPathsCollection,
+            IntPtr callback = default)
         {
             //TODO This should be just abstract, so we need to implement it in all handles
-            return AddNotificationCallback(managedObjectHandle, true);
+            return AddNotificationCallback(managedObjectHandle, KeyPathsCollection.Default);
         }
     }
 }

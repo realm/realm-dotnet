@@ -103,6 +103,12 @@ enum class realm_value_type : uint8_t {
     RLM_TYPE_UUID,
 };
 
+enum class key_path_collection_type : uint8_t {
+    DEFAULT,
+    SHALLOW,
+    FULL
+};
+
 enum class query_argument_type : uint8_t {
     PRIMITIVE,
     BOX,

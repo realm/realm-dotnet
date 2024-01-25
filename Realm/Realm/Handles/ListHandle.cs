@@ -213,9 +213,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
+            KeyPathsCollection keyPathsCollection, IntPtr callback = default)
         {
             EnsureIsOpen();
+
+            //TODO This needs to be fixed
+            var shallow = keyPathsCollection.Type == KeyPathsCollectionType.Shallow;
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
