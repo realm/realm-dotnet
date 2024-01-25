@@ -97,6 +97,8 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
 {
     return handle_errors(ex, [=]() {
 
+        std::optional<KeyPathArray> keypath_array;
+
         if (type == key_path_collection_type::FULL)
         {
             std::vector<std::string> keypaths_vector;
@@ -105,21 +107,24 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
                 keypaths_vector.push_back(from_capi(keypaths[i].string));
             }
 
-            auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
-
-            return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
-                return results->add_notification_callback(callback, keypath_array);
-            }, type, callback);
+            keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
+        }
+        else if (type == key_path_collection_type::SHALLOW)
+        {
+            keypath_array = std::make_optional(KeyPathArray());
+        }
+        else if (type == key_path_collection_type::DEFAULT )
+        {
+            keypath_array = std::nullopt;
+        }
+        else
+        {
+            REALM_UNREACHABLE();
         }
 
-        auto array = type == key_path_collection_type::SHALLOW ? std::make_optional(KeyPathArray()) : std::nullopt;
-
-        //TODO Matybe I can move the keypath calculation to subscribe for notifications?
-
-        return subscribe_for_notifications(managed_results, [results, array](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, array);
+        return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, keypath_array);
         }, type, callback);
-
     });
 }
 

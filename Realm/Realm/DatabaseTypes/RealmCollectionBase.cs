@@ -774,19 +774,27 @@ namespace Realms
 
     public class KeyPathsCollection : IEnumerable<KeyPath>
     {
-        private IEnumerable<KeyPath>? _collection;
+        private IEnumerable<KeyPath> _collection;
+
+        private static readonly KeyPathsCollection _shallow = new KeyPathsCollection(KeyPathsCollectionType.Shallow);
+        private static readonly KeyPathsCollection _default = new KeyPathsCollection(KeyPathsCollectionType.Default);
 
         internal KeyPathsCollectionType Type { get; set; }
 
         private KeyPathsCollection(KeyPathsCollectionType type, IEnumerable<KeyPath>? collection = null)
         {
             Type = type;
-            _collection = collection;
+            _collection = collection ?? Enumerable.Empty<KeyPath>();
         }
 
         internal IEnumerable<string> GetAsStringCollection()
         {
-            return _collection.Select(x => x.Path);
+            if (Type == KeyPathsCollectionType.Full)
+            {
+                return _collection.Select(x => x.Path);
+            }
+
+            return Enumerable.Empty<string>();
         }
 
         internal void Verify()
@@ -815,31 +823,27 @@ namespace Realms
             return new KeyPathsCollection(KeyPathsCollectionType.Full, paths);
         }
 
-        //TODO We should try to make those created only once
-        //TODO Fix implementation of shallow
-        public static KeyPathsCollection Shallow => KeyPathsCollection.Of();
+        public static KeyPathsCollection Shallow => _shallow;
 
-        public static KeyPathsCollection Default => new KeyPathsCollection(KeyPathsCollectionType.Default);
+        public static KeyPathsCollection Default => _default;
 
-        public static implicit operator KeyPathsCollection(List<string> paths)
-        {
-            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
-        }
+        public static implicit operator KeyPathsCollection(List<string> paths) =>
+            new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
 
         public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Full, paths);
 
-        public static implicit operator KeyPathsCollection(string[] paths)
-        {
-            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
-        }
+        public static implicit operator KeyPathsCollection(string[] paths) =>
+            new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
 
         public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Full, paths);
 
+        /// <inheritdoc/>
         public IEnumerator<KeyPath> GetEnumerator()
         {
             return _collection.GetEnumerator();
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

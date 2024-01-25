@@ -1647,6 +1647,66 @@ namespace Realms.Tests.Database
         #region Keypath filtering
 
         [Test]
+        public void KeyPath_ImplicitOperator_CorrectlyConvertsFromString()
+        {
+            KeyPath keyPath = "test";
+
+            Assert.That(keyPath.Path, Is.EqualTo("test"));
+        }
+
+        [Test]
+        public void KeyPathsCollection_CanBeBuiltInDifferentWays()
+        {
+            var kpString1 = "test1";
+            var kpString2 = "test2";
+
+            KeyPath kp1 = "test1";
+            KeyPath kp2 = "test2";
+
+            var expected = new List<string> { kpString1, kpString2 };
+
+            KeyPathsCollection kpc;
+
+            kpc = new List<string> { kpString1, kpString2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = new List<KeyPath> { kpString1, kp2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = new List<KeyPath> { kp1, kp2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = new string[] { kpString1, kpString2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = new KeyPath[] { kpString1, kpString2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = new KeyPath[] { kp1, kp2 };
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = KeyPathsCollection.Of(kpString1, kpString2);
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = KeyPathsCollection.Of(kp1, kp2);
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = KeyPathsCollection.Shallow;
+            Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Shallow));
+            Assert.That(kpc.GetAsStringCollection(), Is.Empty);
+
+            kpc = KeyPathsCollection.Default;
+            Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Default));
+            Assert.That(kpc.GetAsStringCollection(), Is.Empty);
+
+            void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
+            {
+                Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Full));
+                Assert.That(k.GetAsStringCollection(), Is.EqualTo(expected));
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_AnyKeypath_RaisesNotificationsForResults()
         {
             var query = _realm.All<TestNotificationObject>();
@@ -1676,7 +1736,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SubscribeWithKeypaths_EmptyKeypath_ActsLikeShallowNotifications()
+        public void SubscribeWithKeypaths_ShallowKeypath_RaisesOnlyCollectioNotifications()
         {
             var query = _realm.All<TestNotificationObject>();
             var changesets = new List<ChangeSet>();
@@ -1689,7 +1749,6 @@ namespace Realms.Tests.Database
                 }
             }
 
-            //TODO Fix keypath
             using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Shallow))
             {
                 var tno = new TestNotificationObject();
