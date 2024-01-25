@@ -286,7 +286,7 @@ extern "C" {
             return subscribe_for_notifications(managed_object, [&](CollectionChangeCallback callback) {
                 auto keyPaths = construct_key_path_array(object->get_object_schema());
                 return object->add_notification_callback(callback, keyPaths);
-            }, true, new ObjectSchema(object->get_object_schema()));
+            }, key_path_collection_type::SHALLOW, nullptr, new ObjectSchema(object->get_object_schema()));
         });
     }
 

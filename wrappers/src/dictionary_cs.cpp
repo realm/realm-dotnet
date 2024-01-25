@@ -174,9 +174,12 @@ extern "C" {
     
     {
         return handle_errors(ex, [=]() {
+
+            auto type = shallow ? key_path_collection_type::SHALLOW : key_path_collection_type::DEFAULT;
+
             return subscribe_for_notifications(managed_dict, [dictionary, shallow](CollectionChangeCallback callback) {
                 return dictionary->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-            }, shallow);
+            }, type);
         });
     }
 
@@ -187,7 +190,7 @@ extern "C" {
             context->managed_object = managed_dict;
             context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes) {
                 if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
-                    s_dictionary_notification_callback(context->managed_object, nullptr, false);
+                    s_dictionary_notification_callback(context->managed_object, nullptr);
                 }
                 else {
                     auto deletions = get_keys_vector(changes.deletions);
@@ -200,7 +203,7 @@ extern "C" {
                         modifications,
                     };
 
-                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes, false);
+                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
                 }
             }, KeyPathArray());
 

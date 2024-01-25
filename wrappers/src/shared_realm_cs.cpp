@@ -62,7 +62,6 @@ using SharedSubscriptionSet = std::shared_ptr<SubscriptionSet>;
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
-    std::function<ObjectNotificationCallbackAndKeypathT> s_object_notification_keypath_callback;
     std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
 
 namespace binding {
@@ -272,7 +271,6 @@ REALM_EXPORT void shared_realm_install_callbacks(
     ReleaseGCHandleT* release_gchandle_callback,
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
-    ObjectNotificationCallbackAndKeypathT notify_keypath_object,
     DictionaryNotificationCallbackT* notify_dictionary,
     MigrationCallbackT* on_migration,
     ShouldCompactCallbackT* should_compact,
@@ -285,7 +283,6 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_release_gchandle = wrap_managed_callback(release_gchandle_callback);
     s_log_message = wrap_managed_callback(log_message);
     realm::s_object_notification_callback = wrap_managed_callback(notify_object);
-    realm::s_object_notification_keypath_callback = wrap_managed_callback(notify_keypath_object);
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
     s_on_migration = wrap_managed_callback(on_migration);
     s_should_compact = wrap_managed_callback(should_compact);

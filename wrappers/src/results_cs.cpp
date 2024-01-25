@@ -107,16 +107,18 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
 
             auto keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
 
-            return subscribe_for_notifications_keypaths(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+            return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
                 return results->add_notification_callback(callback, keypath_array);
-            }, callback);
+            }, type, callback);
         }
 
-        bool shallow = type == key_path_collection_type::SHALLOW ? true : false;
+        auto array = type == key_path_collection_type::SHALLOW ? std::make_optional(KeyPathArray()) : std::nullopt;
 
-        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-        }, shallow);
+        //TODO Matybe I can move the keypath calculation to subscribe for notifications?
+
+        return subscribe_for_notifications(managed_results, [results, array](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, array);
+        }, type, callback);
 
     });
 }
