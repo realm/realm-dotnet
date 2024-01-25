@@ -753,6 +753,7 @@ namespace Realms
         }
     }
 
+    //TODO Add docs for this and the following types
     public class KeyPath
     {
         internal string Path { get; private set; }
