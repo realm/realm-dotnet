@@ -190,13 +190,13 @@ namespace Realms
             return CreateCollection(frozenRealm, frozenHandle);
         }
 
-        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathCollection = null)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathsCollection = null)
         {
             keyPathCollection ??= KeyPathsCollection.Default;
 
             if (keyPathCollection.Type == KeyPathsCollectionType.Full && !ContainsRealmObjects())
             {
-                    throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
+                throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
             }
 
             return SubscribeForNotificationsImpl(callback, keyPathCollection);

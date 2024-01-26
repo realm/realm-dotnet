@@ -29,8 +29,8 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 {
     private IEnumerable<KeyPath> _collection;
 
-    private static readonly KeyPathsCollection _shallow = new KeyPathsCollection(KeyPathsCollectionType.Shallow);
-    private static readonly KeyPathsCollection _default = new KeyPathsCollection(KeyPathsCollectionType.Default);
+    private static readonly KeyPathsCollection _shallow = new(KeyPathsCollectionType.Shallow);
+    private static readonly KeyPathsCollection _default = new(KeyPathsCollectionType.Default);
 
     internal KeyPathsCollectionType Type { get; }
 

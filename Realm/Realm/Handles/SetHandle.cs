@@ -143,7 +143,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            using Arena arena = new Arena();
+            using Arena arena = new();
             var nativeKeyPathsArray = MarshaledVector<StringValue>
                 .AllocateFrom(keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
