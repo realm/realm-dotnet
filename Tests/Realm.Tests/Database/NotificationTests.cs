@@ -2334,8 +2334,6 @@ namespace Realms.Tests.Database
             }
         }
 
-        //TODO Add tests shallow and default
-
         [Test]
         public void SubscribeWithKeypaths_MappedClass_WorksCorrectly()
         {
