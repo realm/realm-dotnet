@@ -32,9 +32,9 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     private static readonly KeyPathsCollection _shallow = new KeyPathsCollection(KeyPathsCollectionType.Shallow);
     private static readonly KeyPathsCollection _default = new KeyPathsCollection(KeyPathsCollectionType.Default);
 
-    internal KeyPathsCollectionType Type { get; set; }
+    internal KeyPathsCollectionType Type { get; }
 
-    private KeyPathsCollection(KeyPathsCollectionType type, IEnumerable<KeyPath>? collection = null)
+    private KeyPathsCollection(KeyPathsCollectionType type, ICollection<KeyPath>? collection = null)
     {
         Debug.Assert(type == KeyPathsCollectionType.Full == (collection?.Any() == true), "If collection isn't empty, then the type must be Full");
 
@@ -72,12 +72,12 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     public static KeyPathsCollection Default => _default;
 
     public static implicit operator KeyPathsCollection(List<string> paths) =>
-        new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
+        new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path).ToArray());
 
     public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Full, paths);
 
     public static implicit operator KeyPathsCollection(string[] paths) =>
-        new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
+        new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path).ToArray());
 
     public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Full, paths);
 
@@ -96,7 +96,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 
 public class KeyPath
 {
-    internal string Path { get; private set; }
+    internal string Path { get; }
 
     private KeyPath(string path)
     {

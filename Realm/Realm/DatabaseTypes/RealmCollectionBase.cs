@@ -436,19 +436,6 @@ namespace Realms
 
         void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, KeyPathsCollectionType type, IntPtr callbackNative)
         {
-            if (type == KeyPathsCollectionType.Full
-                && GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
-            {
-                callback(this, GetFromNative(changes));
-                return;
-            }
-
-            var changeset = GetFromNative(changes);
-            _notificationCallbacks.Value.Notify(changeset, type);
-        }
-
-        private ChangeSet? GetFromNative(CollectionChangeSet? changes)
-        {
             ChangeSet? changeset = null;
             if (changes != null)
             {
@@ -462,7 +449,14 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            return changeset;
+            if (type == KeyPathsCollectionType.Full
+                && GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
+            {
+                callback(this, changeset);
+                return;
+            }
+
+            _notificationCallbacks.Value.Notify(changeset, type);
         }
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
