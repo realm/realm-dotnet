@@ -29,7 +29,6 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 using static Realms.NotifiableObjectHandleBase;
 
@@ -202,8 +201,6 @@ namespace Realms
                 {
                     throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
                 }
-
-                keyPathCollection.Verify();  //TODO We could call verify for all cases, and maybe move the other check also inside?
             }
 
             return SubscribeForNotificationsImpl(callback, keyPathCollection);
@@ -218,12 +215,13 @@ namespace Realms
                 var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
 
-                var token = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keyPathsCollection, 
+                var token = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keyPathsCollection,
                     GCHandle.ToIntPtr(callbackHandle));
 
                 return NotificationToken.Create(callback, c => token.Dispose());
             }
 
+            // For notifications with type Default or Shallow we cache the callbacks on the managed level, to avoid creating multiple notifications in core
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection.Type));
         }

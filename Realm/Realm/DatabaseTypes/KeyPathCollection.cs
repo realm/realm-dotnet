@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Realms;
@@ -54,27 +55,18 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 
     private KeyPathsCollection(KeyPathsCollectionType type, IEnumerable<KeyPath>? collection = null)
     {
+        Debug.Assert(type == KeyPathsCollectionType.Full == (collection?.Any() == true), "If collection isn't empty, then the type must be Full");
+
         Type = type;
         _collection = collection ?? Enumerable.Empty<KeyPath>();
+
+        VerifyKeyPaths();
     }
 
-    internal IEnumerable<string> GetStrings()
+    internal IEnumerable<string> GetStrings() => _collection.Select(x => x.Path);
+
+    internal void VerifyKeyPaths()
     {
-        if (Type == KeyPathsCollectionType.Full)
-        {
-            return _collection.Select(x => x.Path);
-        }
-
-        return Enumerable.Empty<string>();
-    }
-
-    internal void Verify()
-    {
-        if (Type != KeyPathsCollectionType.Full)
-        {
-            return;
-        }
-
         foreach (var item in _collection)
         {
             if (string.IsNullOrWhiteSpace(item?.Path))
