@@ -106,7 +106,7 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
 
         std::vector<int32_t> properties;
 
-        //Property names are necessary only for shallow notifications (PropertyChanged/CollectionChanged)
+        //Property names are necessary only for shallow notifications of objects (PropertyChanged)
         if (type == key_path_collection_type::SHALLOW)
         {
             for (auto& pair : changes.columns) {
@@ -147,23 +147,24 @@ inline ManagedNotificationTokenContext* subscribe_for_notifications(void* manage
 static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedRealm& realm, StringData class_name, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
     std::optional<KeyPathArray> keypath_array;
 
-    if (type == key_path_collection_type::FULL) {
+    switch (type) {
+    case key_path_collection_type::FULL: {
         std::vector<std::string> keypaths_vector;
-
         for (auto& property : keypaths) {
             keypaths_vector.push_back(capi_to_std(property));
         }
-
         keypath_array = realm->create_key_path_array(class_name, keypaths_vector);
+        break;
     }
-    else if (type == key_path_collection_type::SHALLOW) {
+    case key_path_collection_type::SHALLOW:
         keypath_array = std::make_optional(KeyPathArray());
-    }
-    else if (type == key_path_collection_type::DEFAULT) {
+        break;
+    case key_path_collection_type::DEFAULT:
         keypath_array = std::nullopt;
-    }
-    else {
+        break;
+    default:
         REALM_UNREACHABLE();
+        break;
     }
 
     return keypath_array;

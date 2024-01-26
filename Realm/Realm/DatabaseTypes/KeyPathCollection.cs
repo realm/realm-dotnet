@@ -50,7 +50,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     {
         foreach (var item in _collection)
         {
-            if (string.IsNullOrWhiteSpace(item?.Path))
+            if (string.IsNullOrWhiteSpace(item.Path))
             {
                 throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
             }
@@ -94,7 +94,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     }
 }
 
-public class KeyPath
+public struct KeyPath
 {
     internal string Path { get; }
 
@@ -104,6 +104,12 @@ public class KeyPath
     }
 
     public static implicit operator KeyPath(string s) => new(s);
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is KeyPath path && Path == path.Path;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => Path.GetHashCode();
 }
 
 internal enum KeyPathsCollectionType

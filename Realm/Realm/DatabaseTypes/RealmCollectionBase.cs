@@ -192,14 +192,14 @@ namespace Realms
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathsCollection = null)
         {
-            keyPathCollection ??= KeyPathsCollection.Default;
+            keyPathsCollection ??= KeyPathsCollection.Default;
 
-            if (keyPathCollection.Type == KeyPathsCollectionType.Full && !ContainsRealmObjects())
+            if (keyPathsCollection.Type == KeyPathsCollectionType.Full && !ContainsRealmObjects())
             {
                 throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
             }
 
-            return SubscribeForNotificationsImpl(callback, keyPathCollection);
+            return SubscribeForNotificationsImpl(callback, keyPathsCollection);
         }
 
         internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, KeyPathsCollection keyPathsCollection)
