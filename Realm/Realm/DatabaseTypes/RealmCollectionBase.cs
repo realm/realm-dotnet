@@ -197,6 +197,7 @@ namespace Realms
 
             if (keyPathCollection.Type == KeyPathsCollectionType.Full)
             {
+                //TODO This doesn't work for dictionaries
                 if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
                 {
                     throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
@@ -750,104 +751,6 @@ namespace Realms
         {
             // This is to resolve the WPF bug
             return true;
-        }
-    }
-
-    //TODO Add docs for this and the following types
-    public class KeyPath
-    {
-        internal string Path { get; private set; }
-
-        private KeyPath(string path)
-        {
-            Path = path;
-        }
-
-        public static implicit operator KeyPath(string s) => new(s);
-    }
-
-    internal enum KeyPathsCollectionType
-    {
-        Default,
-        Shallow,
-        Full
-    }
-
-    public class KeyPathsCollection : IEnumerable<KeyPath>
-    {
-        private IEnumerable<KeyPath> _collection;
-
-        private static readonly KeyPathsCollection _shallow = new KeyPathsCollection(KeyPathsCollectionType.Shallow);
-        private static readonly KeyPathsCollection _default = new KeyPathsCollection(KeyPathsCollectionType.Default);
-
-        internal KeyPathsCollectionType Type { get; set; }
-
-        private KeyPathsCollection(KeyPathsCollectionType type, IEnumerable<KeyPath>? collection = null)
-        {
-            Type = type;
-            _collection = collection ?? Enumerable.Empty<KeyPath>();
-        }
-
-        internal IEnumerable<string> GetAsStringCollection()
-        {
-            if (Type == KeyPathsCollectionType.Full)
-            {
-                return _collection.Select(x => x.Path);
-            }
-
-            return Enumerable.Empty<string>();
-        }
-
-        internal void Verify()
-        {
-            if (Type != KeyPathsCollectionType.Full)
-            {
-                return;
-            }
-
-            foreach (var item in _collection)
-            {
-                if (string.IsNullOrWhiteSpace(item?.Path))
-                {
-                    throw new ArgumentException("A key path cannot be null, empty, or consisting only of white spaces");
-                }
-            }
-        }
-
-        public static KeyPathsCollection Of(params KeyPath[] paths)
-        {
-            if (paths.Length == 0)
-            {
-                return new KeyPathsCollection(KeyPathsCollectionType.Shallow);
-            }
-
-            return new KeyPathsCollection(KeyPathsCollectionType.Full, paths);
-        }
-
-        public static KeyPathsCollection Shallow => _shallow;
-
-        public static KeyPathsCollection Default => _default;
-
-        public static implicit operator KeyPathsCollection(List<string> paths) =>
-            new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
-
-        public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Full, paths);
-
-        public static implicit operator KeyPathsCollection(string[] paths) =>
-            new(KeyPathsCollectionType.Full, paths.Select(path => (KeyPath)path));
-
-        public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Full, paths);
-
-        /// <inheritdoc/>
-        public IEnumerator<KeyPath> GetEnumerator()
-        {
-            return _collection.GetEnumerator();
-        }
-
-        /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
