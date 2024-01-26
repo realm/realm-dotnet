@@ -46,6 +46,12 @@ namespace Realms.Tests.Database
 
         public IDictionary<string, Person?> DictionaryDifferentType { get; } = null!;
 
+        public IList<RemappedTypeObject> ListRemappedType { get; } = null!;
+
+        public ISet<RemappedTypeObject> SetRemappedType { get; } = null!;
+
+        public IDictionary<string, RemappedTypeObject?> DictionaryRemappedType { get; } = null!;
+
         public Person? LinkDifferentType { get; set; }
 
         public Owner? LinkAnotherType { get; set; }

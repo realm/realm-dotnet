@@ -35,6 +35,9 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.ObjectList("ListDifferentType", "Person", managedName: "ListDifferentType"),
             Realms.Schema.Property.ObjectSet("SetDifferentType", "Person", managedName: "SetDifferentType"),
             Realms.Schema.Property.ObjectDictionary("DictionaryDifferentType", "Person", managedName: "DictionaryDifferentType"),
+            Realms.Schema.Property.ObjectList("ListRemappedType", "__RemappedTypeObject", managedName: "ListRemappedType"),
+            Realms.Schema.Property.ObjectSet("SetRemappedType", "__RemappedTypeObject", managedName: "SetRemappedType"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryRemappedType", "__RemappedTypeObject", managedName: "DictionaryRemappedType"),
             Realms.Schema.Property.Object("LinkDifferentType", "Person", managedName: "LinkDifferentType"),
             Realms.Schema.Property.Object("LinkAnotherType", "Owner", managedName: "LinkAnotherType"),
             Realms.Schema.Property.Backlinks("Backlink", "TestNotificationObject", "LinkSameType", managedName: "Backlink"),
@@ -92,6 +95,9 @@ namespace Realms.Tests.Database
                     newAccessor.ListDifferentType.Clear();
                     newAccessor.SetDifferentType.Clear();
                     newAccessor.DictionaryDifferentType.Clear();
+                    newAccessor.ListRemappedType.Clear();
+                    newAccessor.SetRemappedType.Clear();
+                    newAccessor.DictionaryRemappedType.Clear();
                 }
 
                 if (!skipDefaults || oldAccessor.StringProperty != default(string?))
@@ -113,6 +119,9 @@ namespace Realms.Tests.Database
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListDifferentType, newAccessor.ListDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetDifferentType, newAccessor.SetDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryDifferentType, newAccessor.DictionaryDifferentType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListRemappedType, newAccessor.ListRemappedType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetRemappedType, newAccessor.SetRemappedType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryRemappedType, newAccessor.DictionaryRemappedType, update, skipDefaults);
                 if (oldAccessor.LinkDifferentType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
@@ -313,6 +322,12 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person?> DictionaryDifferentType { get; }
 
+            System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType { get; }
+
+            System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType { get; }
+
             Realms.Tests.Database.Person? LinkDifferentType { get; set; }
 
             Realms.Tests.Owner? LinkAnotherType { get; set; }
@@ -425,6 +440,48 @@ namespace Realms.Tests.Database
                 }
             }
 
+            private System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> _listRemappedType = null!;
+            public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType
+            {
+                get
+                {
+                    if (_listRemappedType == null)
+                    {
+                        _listRemappedType = GetListValue<Realms.Tests.RemappedTypeObject>("ListRemappedType");
+                    }
+
+                    return _listRemappedType;
+                }
+            }
+
+            private System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> _setRemappedType = null!;
+            public System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType
+            {
+                get
+                {
+                    if (_setRemappedType == null)
+                    {
+                        _setRemappedType = GetSetValue<Realms.Tests.RemappedTypeObject>("SetRemappedType");
+                    }
+
+                    return _setRemappedType;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> _dictionaryRemappedType = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType
+            {
+                get
+                {
+                    if (_dictionaryRemappedType == null)
+                    {
+                        _dictionaryRemappedType = GetDictionaryValue<Realms.Tests.RemappedTypeObject?>("DictionaryRemappedType");
+                    }
+
+                    return _dictionaryRemappedType;
+                }
+            }
+
             public Realms.Tests.Database.Person? LinkDifferentType
             {
                 get => (Realms.Tests.Database.Person?)GetValue("LinkDifferentType");
@@ -501,6 +558,12 @@ namespace Realms.Tests.Database
             public System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType { get; } = new HashSet<Realms.Tests.Database.Person>(RealmSet<Realms.Tests.Database.Person>.Comparer);
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person?> DictionaryDifferentType { get; } = new Dictionary<string, Realms.Tests.Database.Person?>();
+
+            public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType { get; } = new List<Realms.Tests.RemappedTypeObject>();
+
+            public System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType { get; } = new HashSet<Realms.Tests.RemappedTypeObject>(RealmSet<Realms.Tests.RemappedTypeObject>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType { get; } = new Dictionary<string, Realms.Tests.RemappedTypeObject?>();
 
             private Realms.Tests.Database.Person? _linkDifferentType;
             public Realms.Tests.Database.Person? LinkDifferentType
@@ -579,6 +642,7 @@ namespace Realms.Tests.Database
                 {
                     "ListSameType" => (IList<T>)ListSameType,
                     "ListDifferentType" => (IList<T>)ListDifferentType,
+                    "ListRemappedType" => (IList<T>)ListRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                 };
             }
@@ -589,6 +653,7 @@ namespace Realms.Tests.Database
                 {
                     "SetSameType" => (ISet<T>)SetSameType,
                     "SetDifferentType" => (ISet<T>)SetDifferentType,
+                    "SetRemappedType" => (ISet<T>)SetRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                 };
             }
@@ -599,6 +664,7 @@ namespace Realms.Tests.Database
                 {
                     "DictionarySameType" => (IDictionary<string, TValue>)DictionarySameType,
                     "DictionaryDifferentType" => (IDictionary<string, TValue>)DictionaryDifferentType,
+                    "DictionaryRemappedType" => (IDictionary<string, TValue>)DictionaryRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
             }

@@ -1769,6 +1769,51 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_DefaultKeyPath_SameAsFourLevelsDepth()
+        {
+            var query = _realm.All<DeepObject1>();
+            var changesets = new List<ChangeSet>();
+
+            var dp5 = new DeepObject5();
+            var dp4 = new DeepObject4() { RecursiveObject = dp5 };
+            var dp3 = new DeepObject3() { RecursiveObject = dp4 };
+            var dp2 = new DeepObject2() { RecursiveObject = dp3 };
+            var dp1 = new DeepObject1() { RecursiveObject = dp2 };
+
+            void OnNotification(IRealmCollection<DeepObject1> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            _realm.Write(() => _realm.Add(dp1));
+
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("*.*.*.*")))
+            {
+                VerifyFourLevelsDepth();
+            }
+
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Default))
+            {
+                VerifyFourLevelsDepth();
+            }
+
+            void VerifyFourLevelsDepth()
+            {
+                _realm.Write(() => dp2.StringValue = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => dp4.StringValue = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => dp5.StringValue = "New String");
+                VerifyNotifications(changesets, expectedNotifications: false);
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_TopLevelProperties_WorksWithScalar()
         {
             var query = _realm.All<TestNotificationObject>();
@@ -2137,6 +2182,41 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_WildCard_CanGetDeeperThanFourLevels()
+        {
+            var query = _realm.All<DeepObject1>();
+            var changesets = new List<ChangeSet>();
+
+            var dp5 = new DeepObject5();
+            var dp4 = new DeepObject4() { RecursiveObject = dp5 };
+            var dp3 = new DeepObject3() { RecursiveObject = dp4 };
+            var dp2 = new DeepObject2() { RecursiveObject = dp3 };
+            var dp1 = new DeepObject1() { RecursiveObject = dp2 };
+
+            void OnNotification(IRealmCollection<DeepObject1> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            _realm.Write(() => _realm.Add(dp1));
+
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("*.*.*.*.*")))
+            {
+                _realm.Write(() => dp2.StringValue = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => dp4.StringValue = "NewString");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+                _realm.Write(() => dp5.StringValue = "New String");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_Backlinks()
         {
             var query = _realm.All<Dog>();
@@ -2254,7 +2334,32 @@ namespace Realms.Tests.Database
             }
         }
 
-        //TODO Add test for class with MapTo on class
+        //TODO Add tests shallow and default
+
+        [Test]
+        public void SubscribeWithKeypaths_MappedClass_WorksCorrectly()
+        {
+            var query = _realm.All<RemappedTypeObject>();
+            var changesets = new List<ChangeSet>();
+
+            void OnNotification(IRealmCollection<RemappedTypeObject> s, ChangeSet? changes)
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }
+
+            var rto = new RemappedTypeObject();
+            _realm.Write(() => _realm.Add(rto));
+
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringValue")))
+            {
+                // Changing property in keypath
+                _realm.Write(() => rto.StringValue = "email@test.com");
+                VerifyNotifications(changesets, expectedModified: new[] { 0 });
+            }
+        }
 
         [Test]
         public void SubscribeWithKeypaths_WithRepeatedKeypath_IgnoresRepeated()
@@ -2394,6 +2499,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_OnCollection_ListRemapped()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new TestNotificationObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<RemappedTypeObject> s, ChangeSet? c) => changes = c;
+
+            using (obj1.ListRemappedType.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringValue")))
+            {
+                var ipo = new RemappedTypeObject();
+
+                _realm.Write(() => obj1.ListRemappedType.Add(ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_OnCollection_Set()
         {
             var obj1 = _realm.Write(() =>
@@ -2425,6 +2552,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SubscribeWithKeypaths_OnCollection_SetRemapped()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new TestNotificationObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<RemappedTypeObject> s, ChangeSet? c) => changes = c;
+
+            using (obj1.SetRemappedType.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringValue")))
+            {
+                var ipo = new RemappedTypeObject();
+
+                _realm.Write(() => obj1.SetRemappedType.Add(ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
+            }
+        }
+
+        [Test]
         public void SubscribeWithKeypaths_OnCollection_Dictionary()
         {
             var obj1 = _realm.Write(() =>
@@ -2452,6 +2601,28 @@ namespace Realms.Tests.Database
                 _realm.Write(() => ipo.GuidProperty = Guid.NewGuid());
                 _realm.Refresh();
                 Assert.That(changes, Is.Null);
+            }
+        }
+
+        [Test]
+        public void SubscribeWithKeypaths_OnCollection_DictionaryRemapped()
+        {
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new TestNotificationObject());
+            });
+
+            ChangeSet? changes = null!;
+            void OnNotification(IRealmCollection<KeyValuePair<string, RemappedTypeObject?>> s, ChangeSet? c) => changes = c;
+
+            using (obj1.DictionaryRemappedType.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("StringValue")))
+            {
+                var ipo = new RemappedTypeObject();
+
+                _realm.Write(() => obj1.DictionaryRemappedType.Add("test", ipo));
+                _realm.Refresh();
+                Assert.That(changes?.InsertedIndices, Is.EqualTo(new int[] { 0 }));
+                changes = null;
             }
         }
 
@@ -2497,5 +2668,38 @@ namespace Realms.Tests.Database
         {
             return $"[OrderedObject: Order={Order}]";
         }
+    }
+
+    public partial class DeepObject1 : TestRealmObject
+    {
+        public string? StringValue { get; set; }
+
+        public DeepObject2? RecursiveObject { get; set; }
+    }
+
+    public partial class DeepObject2 : TestRealmObject
+    {
+        public string? StringValue { get; set; }
+
+        public DeepObject3? RecursiveObject { get; set; }
+    }
+
+    public partial class DeepObject3 : TestRealmObject
+    {
+        public string? StringValue { get; set; }
+
+        public DeepObject4? RecursiveObject { get; set; }
+    }
+
+    public partial class DeepObject4 : TestRealmObject
+    {
+        public string? StringValue { get; set; }
+
+        public DeepObject5? RecursiveObject { get; set; }
+    }
+
+    public partial class DeepObject5 : TestRealmObject
+    {
+        public string? StringValue { get; set; }
     }
 }
