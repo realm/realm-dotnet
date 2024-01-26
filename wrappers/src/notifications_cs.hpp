@@ -170,8 +170,16 @@ static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedR
 
 static inline std::optional<KeyPathArray> build_keypath_array(Results* results, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
     std::optional<KeyPathArray> keypath_array;
-
     return build_keypath_array_impl(results->get_realm(), results->get_table()->get_class_name(), type, keypaths);
+}
+
+static inline std::optional<KeyPathArray> build_keypath_array(object_store::Collection* collection, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+    std::optional<KeyPathArray> keypath_array;
+
+    //TODO I don't think this is correct, need to fix it later
+    std::string class_name = type == key_path_collection_type::FULL ? collection->get_object_schema().name : "";
+
+    return build_keypath_array_impl(collection->get_realm(), class_name, type, keypaths);
 }
 
 }

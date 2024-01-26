@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -36,7 +37,8 @@ namespace Realms
             public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle,
+                KeyPathsCollectionType type, IntPtr callback, MarshaledVector<StringValue> keypaths, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -141,10 +143,12 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            //TODO This needs to be fixed
-            var shallow = keyPathsCollection.Type == KeyPathsCollectionType.Shallow;
+            using Arena arena = new Arena();
+            var nativeKeyPathsArray = MarshaledVector<StringValue>
+                .AllocateFrom(keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                keyPathsCollection.Type, callback, nativeKeyPathsArray, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new(Root!, result);
         }

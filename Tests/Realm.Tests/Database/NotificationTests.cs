@@ -2254,6 +2254,8 @@ namespace Realms.Tests.Database
             }
         }
 
+        //TODO Add test for class with MapTo on class
+
         [Test]
         public void SubscribeWithKeypaths_WithRepeatedKeypath_IgnoresRepeated()
         {

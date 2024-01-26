@@ -166,15 +166,14 @@ namespace Realms
             EnsureIsOpen();
 
             using Arena arena = new Arena();
-
-            var keypaths = keyPathsCollection.GetStrings();
-            var mv = MarshaledVector<StringValue>.AllocateFrom(keypaths.Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
+            var nativeKeyPathsArray = MarshaledVector<StringValue>
+                .AllocateFrom(keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
                 keyPathsCollection.Type,
-                callback, mv, out var nativeException);
-
+                callback, nativeKeyPathsArray, out var nativeException);
             nativeException.ThrowIfNecessary();
+
             return new NotificationTokenHandle(Root!, result);
         }
 

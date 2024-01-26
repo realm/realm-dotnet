@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -48,7 +49,8 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
+            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle,
+                KeyPathsCollectionType type, IntPtr callback, MarshaledVector<StringValue> keypaths, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
@@ -141,11 +143,12 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            //TODO This needs to be fixed
-            var shallow = keyPathsCollection.Type == KeyPathsCollectionType.Shallow;
+            using Arena arena = new Arena();
+            var nativeKeyPathsArray = MarshaledVector<StringValue>
+                .AllocateFrom(keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                keyPathsCollection.Type, callback, nativeKeyPathsArray, out var nativeException);
             return new NotificationTokenHandle(Root!, result);
         }
 
