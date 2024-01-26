@@ -143,6 +143,37 @@ inline ManagedNotificationTokenContext* subscribe_for_notifications(void* manage
     return context;
 }
 
+static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedRealm& realm, StringData class_name, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+    std::optional<KeyPathArray> keypath_array;
+
+    if (type == key_path_collection_type::FULL) {
+        std::vector<std::string> keypaths_vector;
+
+        for (auto& property : keypaths) {
+            keypaths_vector.push_back(capi_to_std(property));
+        }
+
+        keypath_array = realm->create_key_path_array(class_name, keypaths_vector);
+    }
+    else if (type == key_path_collection_type::SHALLOW) {
+        keypath_array = std::make_optional(KeyPathArray());
+    }
+    else if (type == key_path_collection_type::DEFAULT) {
+        keypath_array = std::nullopt;
+    }
+    else {
+        REALM_UNREACHABLE();
+    }
+
+    return keypath_array;
+}
+
+static inline std::optional<KeyPathArray> build_keypath_array(Results* results, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+    std::optional<KeyPathArray> keypath_array;
+
+    return build_keypath_array_impl(results->get_realm(), results->get_table()->get_class_name(), type, keypaths);
+}
+
 }
 
 #endif // NOTIFICATIONS_CS_HPP

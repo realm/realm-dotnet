@@ -25,25 +25,6 @@ using System.Linq;
 namespace Realms;
 
 //TODO Add docs for this and the following types
-public class KeyPath
-{
-    internal string Path { get; private set; }
-
-    private KeyPath(string path)
-    {
-        Path = path;
-    }
-
-    public static implicit operator KeyPath(string s) => new(s);
-}
-
-internal enum KeyPathsCollectionType
-{
-    Default,
-    Shallow,
-    Full
-}
-
 public class KeyPathsCollection : IEnumerable<KeyPath>
 {
     private IEnumerable<KeyPath> _collection;
@@ -111,4 +92,23 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     {
         return GetEnumerator();
     }
+}
+
+public class KeyPath
+{
+    internal string Path { get; private set; }
+
+    private KeyPath(string path)
+    {
+        Path = path;
+    }
+
+    public static implicit operator KeyPath(string s) => new(s);
+}
+
+internal enum KeyPathsCollectionType
+{
+    Default,
+    Shallow,
+    Full
 }

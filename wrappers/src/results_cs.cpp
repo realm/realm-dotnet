@@ -95,35 +95,12 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
     key_path_collection_type type, void* callback, MarshaledVector<realm_string_t> keypaths, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-
-        std::optional<KeyPathArray> keypath_array;
-
-        if (type == key_path_collection_type::FULL) {
-            std::vector<std::string> keypaths_vector;
-
-            for (auto& property : keypaths) {
-                keypaths_vector.push_back(capi_to_std(property));
-            }
-
-            keypath_array = results->get_realm()->create_key_path_array(results->get_table()->get_class_name(), keypaths_vector);
-        }
-        else if (type == key_path_collection_type::SHALLOW) {
-            keypath_array = std::make_optional(KeyPathArray());
-        }
-        else if (type == key_path_collection_type::DEFAULT){
-            keypath_array = std::nullopt;
-        }
-        else
-        {
-            REALM_UNREACHABLE();
-        }
-
+        auto keypath_array = build_keypath_array(results, type, keypaths);
         return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
             return results->add_notification_callback(callback, keypath_array);
         }, type, callback);
     });
 }
-
 
 REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshallable& ex)
 {
