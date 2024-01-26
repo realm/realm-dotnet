@@ -92,8 +92,7 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
 }
 
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results,
-    key_path_collection_type type,
-    void* callback, MarshaledVector<realm_string_t> keypaths, NativeException::Marshallable& ex)
+    key_path_collection_type type, void* callback, MarshaledVector<realm_string_t> keypaths, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
 
@@ -111,7 +110,7 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
         else if (type == key_path_collection_type::SHALLOW) {
             keypath_array = std::make_optional(KeyPathArray());
         }
-        else if (type == key_path_collection_type::DEFAULT ){
+        else if (type == key_path_collection_type::DEFAULT){
             keypath_array = std::nullopt;
         }
         else

@@ -313,7 +313,6 @@ namespace Realms.Native
 
         public static readonly StringValue Null = new() { data = null };
 
-        // Check if we can use this;
         public static StringValue AllocateFrom(string? value, Arena arena)
         {
             if (value is null)

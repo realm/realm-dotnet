@@ -167,7 +167,7 @@ namespace Realms
 
             using Arena arena = new Arena();
 
-            var keypaths = keyPathsCollection.GetAsStringCollection();
+            var keypaths = keyPathsCollection.GetStrings();
             var mv = MarshaledVector<StringValue>.AllocateFrom(keypaths.Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle,

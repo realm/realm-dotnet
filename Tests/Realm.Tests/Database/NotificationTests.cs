@@ -1693,16 +1693,20 @@ namespace Realms.Tests.Database
 
             kpc = KeyPathsCollection.Shallow;
             Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Shallow));
-            Assert.That(kpc.GetAsStringCollection(), Is.Empty);
+            Assert.That(kpc.GetStrings(), Is.Empty);
+
+            kpc = KeyPathsCollection.Of();
+            Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Shallow));
+            Assert.That(kpc.GetStrings(), Is.Empty);
 
             kpc = KeyPathsCollection.Default;
             Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Default));
-            Assert.That(kpc.GetAsStringCollection(), Is.Empty);
+            Assert.That(kpc.GetStrings(), Is.Empty);
 
             void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
             {
                 Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Full));
-                Assert.That(k.GetAsStringCollection(), Is.EqualTo(expected));
+                Assert.That(k.GetStrings(), Is.EqualTo(expected));
             }
         }
 
