@@ -2362,9 +2362,8 @@ namespace Realms.Tests.Database
                 Throws.Exception.TypeOf<InvalidOperationException>().With.Message.EqualTo(exMessage));
         }
 
-        //TODO Fix following tests
         [Test]
-        public void SubscribeWithKeypaths_List()
+        public void SubscribeWithKeypaths_OnCollection_List()
         {
             var obj1 = _realm.Write(() =>
             {
@@ -2394,9 +2393,8 @@ namespace Realms.Tests.Database
             }
         }
 
-        //TODO Not working
         [Test]
-        public void SubscribeWithKeypaths_Set()
+        public void SubscribeWithKeypaths_OnCollection_Set()
         {
             var obj1 = _realm.Write(() =>
             {
@@ -2426,9 +2424,8 @@ namespace Realms.Tests.Database
             }
         }
 
-        //TODO Not working
         [Test]
-        public void SubscribeWithKeypaths_Dictionary()
+        public void SubscribeWithKeypaths_OnCollection_Dictionary()
         {
             var obj1 = _realm.Write(() =>
             {

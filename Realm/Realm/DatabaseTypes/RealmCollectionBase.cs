@@ -194,13 +194,9 @@ namespace Realms
         {
             keyPathCollection ??= KeyPathsCollection.Default;
 
-            if (keyPathCollection.Type == KeyPathsCollectionType.Full)
+            if (keyPathCollection.Type == KeyPathsCollectionType.Full && !ContainsRealmObjects())
             {
-                //TODO This doesn't work for dictionaries
-                if (!typeof(IRealmObjectBase).IsAssignableFrom(typeof(T)))
-                {
                     throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
-                }
             }
 
             return SubscribeForNotificationsImpl(callback, keyPathCollection);
@@ -224,6 +220,11 @@ namespace Realms
             // For notifications with type Default or Shallow we cache the callbacks on the managed level, to avoid creating multiple notifications in core
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection.Type));
+        }
+
+        protected virtual bool ContainsRealmObjects()
+        {
+            return typeof(IRealmObjectBase).IsAssignableFrom(typeof(T));
         }
 
         protected abstract T GetValueAtIndex(int index);

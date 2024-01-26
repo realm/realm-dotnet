@@ -243,6 +243,11 @@ namespace Realms
             }
         }
 
+        protected override bool ContainsRealmObjects()
+        {
+            return typeof(IRealmObjectBase).IsAssignableFrom(typeof(TValue));
+        }
+
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
