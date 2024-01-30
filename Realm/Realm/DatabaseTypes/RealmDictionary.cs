@@ -257,7 +257,7 @@ namespace Realms
         void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes,
             KeyPathsCollectionType type, IntPtr callback)
         {
-            Debug.Assert(type == KeyPathsCollectionType.Default,
+            Debug.Assert(type == KeyPathsCollectionType.Full,
                 "Notifications should always be default here as we don't expose a way to configure it.");
 
             DictionaryChangeSet? changeset = null;

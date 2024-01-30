@@ -106,14 +106,10 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
 
         std::vector<int32_t> properties;
 
-        //Property names are necessary only for shallow notifications of objects (PropertyChanged)
-        if (type == key_path_collection_type::SHALLOW)
-        {
-            for (auto& pair : changes.columns) {
+        for (auto& pair : changes.columns) {
                 if (!pair.second.empty()) {
                     properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
                 }
-            }
         }
 
         MarshallableCollectionChangeSet marshallable_changes{

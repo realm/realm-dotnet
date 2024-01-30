@@ -139,7 +139,7 @@ namespace Realms
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
-            KeyPathsCollection keyPathsCollection, IntPtr callback = default)
+            KeyPathsCollection keyPathsCollection, IntPtr callback)
         {
             EnsureIsOpen();
 
@@ -350,7 +350,7 @@ namespace Realms
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
                 //TODO Check if it makes sense to do something different for dictionaries, so we don't need to pass default here
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Default);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Full);
             }
         }
     }

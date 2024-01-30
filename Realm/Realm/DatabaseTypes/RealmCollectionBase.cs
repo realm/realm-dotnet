@@ -192,9 +192,9 @@ namespace Realms
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathsCollection = null)
         {
-            keyPathsCollection ??= KeyPathsCollection.Default;
+            keyPathsCollection ??= KeyPathsCollection.Full;
 
-            if (keyPathsCollection.Type == KeyPathsCollectionType.Full && !ContainsRealmObjects())
+            if (keyPathsCollection.Type == KeyPathsCollectionType.Explicit && !ContainsRealmObjects())
             {
                 throw new InvalidOperationException("Key paths can be used only with collections of Realm objects");
             }
@@ -206,7 +206,7 @@ namespace Realms
         {
             Argument.NotNull(callback, nameof(callback));
 
-            if (keyPathsCollection.Type == KeyPathsCollectionType.Full)
+            if (keyPathsCollection.Type == KeyPathsCollectionType.Explicit)
             {
                 var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 var callbackHandle = GCHandle.Alloc(callback, GCHandleType.Weak);
@@ -449,7 +449,7 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            if (type == KeyPathsCollectionType.Full
+            if (type == KeyPathsCollectionType.Explicit
                 && GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
             {
                 callback(this, changeset);

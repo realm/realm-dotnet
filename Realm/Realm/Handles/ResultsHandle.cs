@@ -161,7 +161,7 @@ namespace Realms
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
-            KeyPathsCollection keyPathsCollection, IntPtr callback = default)
+            KeyPathsCollection keyPathsCollection, IntPtr callback)
         {
             EnsureIsOpen();
 

@@ -1298,7 +1298,7 @@ namespace Realms.Tests.Database
         {
             var changesets = new List<ChangeSet>();
 
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             // This is testing using the internal API because we're not exposing the shallow/keypath functionality publicly yet.
             var results = (RealmResults<TestNotificationObject>)_realm.All<TestNotificationObject>();
@@ -1336,7 +1336,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ListOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1399,7 +1399,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ListOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1455,7 +1455,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SetOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1503,7 +1503,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SetOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1544,7 +1544,7 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1599,7 +1599,7 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
         {
-            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Default;
+            var kpCollection = shallow ? KeyPathsCollection.Shallow : KeyPathsCollection.Full;
 
             var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
             var changesets = new List<ChangeSet>();
@@ -1699,13 +1699,13 @@ namespace Realms.Tests.Database
             Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Shallow));
             Assert.That(kpc.GetStrings(), Is.Empty);
 
-            kpc = KeyPathsCollection.Default;
-            Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Default));
+            kpc = KeyPathsCollection.Full;
+            Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Full));
             Assert.That(kpc.GetStrings(), Is.Empty);
 
             void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
             {
-                Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Full));
+                Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
                 Assert.That(k.GetStrings(), Is.EqualTo(expected));
             }
         }
@@ -1769,7 +1769,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SubscribeWithKeypaths_DefaultKeyPath_SameAsFourLevelsDepth()
+        public void SubscribeWithKeypaths_FullKeyPath_SameAsFourLevelsDepth()
         {
             var query = _realm.All<DeepObject1>();
             var changesets = new List<ChangeSet>();
@@ -1795,7 +1795,7 @@ namespace Realms.Tests.Database
                 VerifyFourLevelsDepth();
             }
 
-            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Default))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Full))
             {
                 VerifyFourLevelsDepth();
             }
