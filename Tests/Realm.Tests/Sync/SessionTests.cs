@@ -1417,6 +1417,32 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test, Ignore("Requires https://github.com/realm/realm-core/issues/6839 to be fixed first")]
+        public void SubscriptionSet_WaitForSynchronization_AfterSession_WaitForDownload_ReportsCorrectErrorData()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncCollectionsObject>().Filter("SUBQUERY(ObjectList, $obj, $obj.Int > 10).@count > 0"));
+                });
+
+                await WaitForDownloadAsync(realm);
+
+                try
+                {
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    Assert.Fail("Expected an error to be thrown.");
+                }
+                catch (SubscriptionException ex)
+                {
+                    Assert.That(ex.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
+                }
+            });
+        }
+
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
             BeforeResetCallback? beforeCb = null,
