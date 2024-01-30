@@ -150,7 +150,7 @@ namespace Realms.Tests.Database
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            var config = GetFakeFLXConfig();
+            var config = GetFakeFLXConfig(setFakeSyncRoute: true);
             config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
             using var realm = GetRealm(config);
 
@@ -310,7 +310,7 @@ namespace Realms.Tests.Database
 
             var expected = GetGuidObjects().ToArray();
 
-            var config = GetFakeConfig(userId: "sync-guids-test-user");
+            var config = GetFakeConfig(userId: "sync-guids-test-user", setFakeSyncRoute: true);
             config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
 
             TestHelpers.CopyBundledFileToDocuments("sync-guids.realm", config.DatabasePath);
