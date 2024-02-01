@@ -1417,7 +1417,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("Requires https://github.com/realm/realm-core/issues/6839 to be fixed first")]
+        [Test]
         public void SubscriptionSet_WaitForSynchronization_AfterSession_WaitForDownload_ReportsCorrectErrorData()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
