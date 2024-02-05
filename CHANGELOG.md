@@ -3,6 +3,7 @@
 ### Enhancements
 * Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. (Core 13.24.1)
 * Exceptions thrown during bootstrap application will now be surfaced to the user rather than terminating the program with an unhandled exception. (Core 13.25.0)
+* Allow the using `>`, `>=`, `<`, `<=` operators in `Realm.Filter()` queries for string constants. This is a case sensitive lexicographical comparison. Improved performance of RQL (`.Filter()`) queries on a non-linked string property using: >, >=, <, <=, operators and fixed behaviour that a null string should be evaluated as less than everything, previously nulls were not matched. (Core 13.26.0-14-gdf25f)
 
 ### Fixed
 * Automatic client reset recovery would duplicate insertions in a list when recovering a write which made an unrecoverable change to a list (i.e. modifying or deleting a pre-existing entry), followed by a subscription change, followed by a write which added an entry to the list. (Core 13.24.0)
@@ -20,12 +21,14 @@
 * Handle EOPNOTSUPP when using posix_fallocate() and fallback to manually consume space. This should enable android users to open a Realm on restrictive filesystems. (Core 13.26.0)
 * Application may crash with incoming_changesets.size() != 0 when a download message is mistaken for a bootstrap message. This can happen if the synchronization session is paused and resumed at a specific time. (Core 13.26.0)
 * Fixed errors complaining about missing symbols such as `__atomic_is_lock_free` on ARMv7 Linux (Core 13.26.0)
+* Uploading the changesets recovered during an automatic client reset recovery may lead to 'Bad server version' errors and a new client reset. (Core 13.26.0-14-gdf25f)
+* Fixed invalid data in error reason string when registering a subscription change notification after the subscription has already failed. (Core 13.26.0-14-gdf25f)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.26.0.
+* Using Core v13.26.0-14-gdf25f.
 
 ## 11.6.1 (2023-11-17)
 
