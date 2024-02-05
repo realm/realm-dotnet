@@ -300,7 +300,7 @@ namespace Realms
         public static implicit operator QueryArgument(RealmObjectBase? value) => new(value);
 
         /// <summary>
-        /// Implicitly constructs a <see cref="QueryArgument"/> from <see cref="RealmValue" />.
+        /// Implicitly constructs a <see cref="QueryArgument"/> from <see cref="Realms.RealmValue" />.
         /// </summary>
         /// <param name="value">The value to store in the <see cref="QueryArgument"/>.</param>
         /// <returns>A <see cref="QueryArgument"/> containing the supplied <paramref name="value"/>.</returns>
