@@ -47,10 +47,13 @@ namespace Realms
     /// }
     /// </code>
     /// </example>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property)]
     public sealed class BacklinkAttribute : Attribute
     {
-        internal string Property { get; }
+        /// <summary>
+        /// Gets the property that is on the other end of the relationship.
+        /// </summary>
+        public string Property { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BacklinkAttribute"/> class.

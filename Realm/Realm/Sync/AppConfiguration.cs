@@ -94,7 +94,7 @@ namespace Realms.Sync
         /// Gets or sets the encryption key for user metadata on this device.
         /// </summary>
         /// <remarks>
-        /// This will not change the encryption key for individual Realms. This should still be set in <see cref="RealmConfigurationBase.EncryptionKey"/>
+        /// This will not change the encryption key for individual Realms. This should still be set in <see cref="SyncConfigurationBase.EncryptionKey"/>
         /// when opening the <see cref="Realm"/>.
         /// </remarks>
         /// <value>The user metadata encryption key.</value>

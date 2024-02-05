@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.7.0 (2024-02-05)
 
 ### Enhancements
 * Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. (Core 13.24.1)
