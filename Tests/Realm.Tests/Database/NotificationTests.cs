@@ -2389,8 +2389,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        // TODO Failing because of https://github.com/realm/realm-core/issues/7269
-        [Test]
+        [Test, Ignore("Failing because of https://github.com/realm/realm-core/issues/7269")]
         public void SubscribeWithKeypaths_WildcardOnScalarProperty_Throws()
         {
             var query = _realm.All<Person>();
