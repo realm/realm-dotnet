@@ -58,7 +58,7 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
-    /// <param name="keyPaths">An optional array of key paths that indicates which changes in properties should raise a notification.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
@@ -92,7 +92,7 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the set.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
-    /// <param name="keyPaths">An optional array of key paths that indicates which changes in properties should raise a notification.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
@@ -195,7 +195,7 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the list.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
-    /// <param name="keyPaths">An optional array of key paths that indicates which changes in properties should raise a notification.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
@@ -320,6 +320,7 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.

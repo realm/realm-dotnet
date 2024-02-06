@@ -24,7 +24,25 @@ using System.Linq;
 
 namespace Realms;
 
-//TODO Add docs for this and the following types
+/// <summary>
+/// Represents a collection of <see cref="KeyPath"/> that can be used when subscribing to notifications with <see cref="IRealmCollection{T}.SubscribeForNotifications(Realms.NotificationCallbackDelegate{T}, Realms.KeyPathsCollection?)"/>.
+/// <remarks>
+/// <para>
+/// A <see cref="KeyPathsCollection"/> can be obtained by:
+/// <list type="bullet">
+///     <item>
+///         <description>building it explicitly by using the method <see cref="KeyPathsCollection.Of(Realms.KeyPath[])"/>;</description>
+///     </item>
+///     <item>
+///         <description>building it implicitly with the conversion from a <see cref="List{T}"/> or array of <see cref="KeyPath"/> or strings;</description>
+///     </item>
+///     <item>
+///         <description>getting one of the static values <see cref="Full"/> and <see cref="Shallow"/> for full and shallow notifications respectively.</description>
+///     </item>
+/// </list>
+/// </para>
+/// </remarks>
+/// </summary>
 public class KeyPathsCollection : IEnumerable<KeyPath>
 {
     private IEnumerable<KeyPath> _collection;
@@ -36,7 +54,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 
     private KeyPathsCollection(KeyPathsCollectionType type, ICollection<KeyPath>? collection = null)
     {
-        Debug.Assert(type == KeyPathsCollectionType.Explicit == (collection?.Any() == true), 
+        Debug.Assert(type == KeyPathsCollectionType.Explicit == (collection?.Any() == true),
             $"If collection isn't empty, then the type must be {nameof(KeyPathsCollectionType.Explicit)}");
 
         Type = type;
@@ -44,6 +62,42 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 
         VerifyKeyPaths();
     }
+
+    /// <summary>
+    /// Builds a <see cref="KeyPathsCollection"/> from an array of <see cref="KeyPath"/>.
+    /// </summary>
+    /// <param name="paths">The array of <see cref="KeyPath"/> to use for the  <see cref="KeyPathsCollection"/>.</param>
+    /// <returns>The <see cref="KeyPathsCollection"/> built from the input array of <see cref="KeyPath"/>.</returns>
+    public static KeyPathsCollection Of(params KeyPath[] paths)
+    {
+        if (paths.Length == 0)
+        {
+            return new KeyPathsCollection(KeyPathsCollectionType.Shallow);
+        }
+
+        return new KeyPathsCollection(KeyPathsCollectionType.Explicit, paths);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="KeyPathsCollection"/> value for shallow notifications, that will raise notifications only for changes to the collection itself (for example when an element is added or removed),
+    /// but not for changes to any of the properties of the elements of the collection.
+    /// </summary>
+    public static KeyPathsCollection Shallow => _shallow;
+
+    /// <summary>
+    /// Gets a <see cref="KeyPathsCollection"/> value for full notifications, for which changes to all top-level properties and 4 nested levels will raise a notification. This is the default <see cref="KeyPathsCollection"/> value.
+    /// </summary>
+    public static KeyPathsCollection Full => _full;
+
+    public static implicit operator KeyPathsCollection(List<string> paths) =>
+        new(KeyPathsCollectionType.Explicit, paths.Select(path => (KeyPath)path).ToArray());
+
+    public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Explicit, paths);
+
+    public static implicit operator KeyPathsCollection(string[] paths) =>
+        new(KeyPathsCollectionType.Explicit, paths.Select(path => (KeyPath)path).ToArray());
+
+    public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Explicit, paths);
 
     internal IEnumerable<string> GetStrings() => _collection.Select(x => x.Path);
 
@@ -58,30 +112,6 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
         }
     }
 
-    public static KeyPathsCollection Of(params KeyPath[] paths)
-    {
-        if (paths.Length == 0)
-        {
-            return new KeyPathsCollection(KeyPathsCollectionType.Shallow);
-        }
-
-        return new KeyPathsCollection(KeyPathsCollectionType.Explicit, paths);
-    }
-
-    public static KeyPathsCollection Shallow => _shallow;
-
-    public static KeyPathsCollection Full => _full;
-
-    public static implicit operator KeyPathsCollection(List<string> paths) =>
-        new(KeyPathsCollectionType.Explicit, paths.Select(path => (KeyPath)path).ToArray());
-
-    public static implicit operator KeyPathsCollection(List<KeyPath> paths) => new(KeyPathsCollectionType.Explicit, paths);
-
-    public static implicit operator KeyPathsCollection(string[] paths) =>
-        new(KeyPathsCollectionType.Explicit, paths.Select(path => (KeyPath)path).ToArray());
-
-    public static implicit operator KeyPathsCollection(KeyPath[] paths) => new(KeyPathsCollectionType.Explicit, paths);
-
     /// <inheritdoc/>
     public IEnumerator<KeyPath> GetEnumerator()
     {
@@ -95,7 +125,12 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     }
 }
 
-public struct KeyPath
+/// <summary>
+/// Represents a key path that can be used as a part of a <see cref="KeyPathsCollection"/> when subscribing for notifications.
+/// A <see cref="KeyPath"/> can be implicitly built from a string, where the string is the name of a property (e.g "FirstName"), eventually dotted to indicated nested properties.
+/// (e.g "Dog.Name"). Wildcards can also be used in key paths to capture all properties at a given level (e.g "*", "Friends.*" or "*.FirstName").
+/// </summary>
+public readonly struct KeyPath
 {
     internal string Path { get; }
 
@@ -111,6 +146,16 @@ public struct KeyPath
 
     /// <inheritdoc/>
     public override int GetHashCode() => Path.GetHashCode();
+
+    public static bool operator ==(KeyPath left, KeyPath right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(KeyPath left, KeyPath right)
+    {
+        return !(left == right);
+    }
 }
 
 internal enum KeyPathsCollectionType

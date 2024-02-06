@@ -1,7 +1,27 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
+
+  A `KeyPathsCollection` can be obtained by:
+  - building it explicitly by using the method `KeyPathsCollection`;
+  - building it implicitly with the conversion from a `List` or array of `KeyPath` or strings;
+  - getting one of the static values `Full` and `Shallow` for full and shallow notifications respectively.
+
+
+  For example:
+  ```csharp
+  var query = realm.All<Person>();
+
+  KeyPathsCollection kpc;
+
+  //Equivalent declarations
+  kpc = KeyPathsCollection.Of("Email", "Name");
+  kpc = new List<KeyPath> {"Email", "Name"};
+
+  query.SubscribeForNotifications(NotificationCallback, kpc);
+  ```
+  (PR [#3501 ](https://github.com/realm/realm-dotnet/pull/3501))
 
 ### Fixed
 * None
