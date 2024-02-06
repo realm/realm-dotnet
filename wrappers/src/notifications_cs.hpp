@@ -140,14 +140,14 @@ inline ManagedNotificationTokenContext* subscribe_for_notifications(void* manage
     return context;
 }
 
-static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedRealm& realm, StringData class_name, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedRealm& realm, StringData class_name, key_path_collection_type type, realm_string_t* keypaths, size_t len) {
     std::optional<KeyPathArray> keypath_array;
 
     switch (type) {
     case key_path_collection_type::FULL: {
         std::vector<std::string> keypaths_vector;
-        for (auto& property : keypaths) {
-            keypaths_vector.push_back(capi_to_std(property));
+        for (size_t i = 0; i < len; i++) {
+            keypaths_vector.push_back(capi_to_std(keypaths[i]));
         }
         keypath_array = realm->create_key_path_array(class_name, keypaths_vector);
         break;
@@ -166,14 +166,16 @@ static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedR
     return keypath_array;
 }
 
-static inline std::optional<KeyPathArray> build_keypath_array(Results* results, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+static inline std::optional<KeyPathArray> build_keypath_array(Results* results, key_path_collection_type type,
+    realm_string_t* keypaths, size_t keypaths_len) {
     const auto& class_name = type == key_path_collection_type::FULL ? results->get_table()->get_class_name() : "";
-    return build_keypath_array_impl(results->get_realm(), class_name, type, keypaths);
+    return build_keypath_array_impl(results->get_realm(), class_name, type, keypaths, keypaths_len);
 }
 
-static inline std::optional<KeyPathArray> build_keypath_array(object_store::Collection* collection, key_path_collection_type type, MarshaledVector<realm_string_t> keypaths) {
+static inline std::optional<KeyPathArray> build_keypath_array(object_store::Collection* collection, key_path_collection_type type, 
+    realm_string_t* keypaths, size_t keypaths_len) {
     const auto& class_name = type == key_path_collection_type::FULL ? collection->get_object_schema().name : "";
-    return build_keypath_array_impl(collection->get_realm(), class_name, type, keypaths);
+    return build_keypath_array_impl(collection->get_realm(), class_name, type, keypaths, keypaths_len);
 }
 
 }

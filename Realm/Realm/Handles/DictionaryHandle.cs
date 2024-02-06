@@ -50,7 +50,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle,
-                KeyPathsCollectionType type, IntPtr callback, MarshaledVector<StringValue> keypaths, out NativeException ex);
+                KeyPathsCollectionType type, IntPtr callback, StringValue[] keypaths, IntPtr keypaths_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
@@ -144,11 +144,12 @@ namespace Realms
             EnsureIsOpen();
 
             using Arena arena = new();
-            var nativeKeyPathsArray = MarshaledVector<StringValue>
-                .AllocateFrom(keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray(), arena);
+            var nativeKeyPathsArray = keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray();
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
-                keyPathsCollection.Type, callback, nativeKeyPathsArray, out var nativeException);
+                keyPathsCollection.Type, callback, nativeKeyPathsArray, (IntPtr)nativeKeyPathsArray.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
             return new NotificationTokenHandle(Root!, result);
         }
 

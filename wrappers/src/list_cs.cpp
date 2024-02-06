@@ -213,10 +213,10 @@ REALM_EXPORT void list_destroy(List* list)
 }
 
 REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list,
-    key_path_collection_type type, void* managedCallback, MarshaledVector<realm_string_t> keypaths, NativeException::Marshallable& ex)
+    key_path_collection_type type, void* managedCallback, realm_string_t* keypaths, size_t keypaths_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        auto keypath_array = build_keypath_array(list, type, keypaths);
+        auto keypath_array = build_keypath_array(list, type, keypaths, keypaths_len);
         return subscribe_for_notifications(managed_list, [list, keypath_array](CollectionChangeCallback callback) {
             return list->add_notification_callback(callback, keypath_array);
         }, type, managedCallback);
