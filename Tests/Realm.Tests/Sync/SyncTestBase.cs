@@ -138,6 +138,13 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
+        // This could be useful when opening a "fake" sync realm locally
+        protected void SetFakeSyncRoute(App? app)
+        {
+            app ??= DefaultApp;
+            app.Handle.SetFakeSyncRouteForTesting();
+        }
+
         protected async Task<Realm> GetIntegrationRealmAsync(string? partition = null, App? app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
@@ -261,15 +268,29 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null, string? optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null,
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
+
+            if (setFakeSyncRoute)
+            {
+                SetFakeSyncRoute(app);
+            }
+
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null, string? optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null,
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
+
+            if (setFakeSyncRoute)
+            {
+                SetFakeSyncRoute(app);
+            }
+
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
