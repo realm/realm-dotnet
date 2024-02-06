@@ -268,7 +268,7 @@ public static class CollectionExtensions
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
     public static IRealmCollection<KeyValuePair<string, T>> AsRealmCollection<T>(this IDictionary<string, T> dictionary)
     {
@@ -318,7 +318,7 @@ public static class CollectionExtensions
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
@@ -335,7 +335,7 @@ public static class CollectionExtensions
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
@@ -412,10 +412,7 @@ public static class CollectionExtensions
     /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
     /// </code>
     /// </example>
-    /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
-    /// Examples of the NSPredicate syntax
-    /// </seealso>
-    /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+    /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/"/>
     public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params QueryArgument[] arguments)
         where T : IRealmObjectBase
     {

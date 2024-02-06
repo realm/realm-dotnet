@@ -102,7 +102,7 @@ namespace Realms.Schema
         /// <returns><c>true</c> if the builder contains the specified item; <c>false</c> otherwise.</returns>
         public bool Contains(string name) => _values.ContainsKey(name);
 
-        protected abstract string GetKey(T item);
+        private protected abstract string GetKey(T item);
 
         /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator() => _values.Values.GetEnumerator();

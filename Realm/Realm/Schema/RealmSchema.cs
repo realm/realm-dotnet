@@ -355,7 +355,7 @@ namespace Realms.Schema
                 return this;
             }
 
-            protected override string GetKey(ObjectSchema item) => Argument.ValidateNotNull(item, nameof(item)).Name;
+            private protected override string GetKey(ObjectSchema item) => Argument.ValidateNotNull(item, nameof(item)).Name;
         }
     }
 }

@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Sync;
+
 namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception, raised when file decryption is unsuccessful, most likely due to invalid
-    /// <see cref="RealmConfigurationBase.EncryptionKey"/>.
+    /// <see cref="RealmConfiguration.EncryptionKey"/>.
+    /// <see cref="SyncConfigurationBase.EncryptionKey"/>.
     /// </summary>
     public class RealmDecryptionFailedException : RealmFileAccessErrorException
     {
