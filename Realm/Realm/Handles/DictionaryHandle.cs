@@ -350,7 +350,7 @@ namespace Realms
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Full);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Full, callback: null);
             }
         }
     }

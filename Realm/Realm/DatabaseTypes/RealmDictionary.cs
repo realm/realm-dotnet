@@ -255,10 +255,12 @@ namespace Realms
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
         void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes,
-            KeyPathsCollectionType type, IntPtr callback)
+            KeyPathsCollectionType type, Delegate? callback)
         {
             Debug.Assert(type == KeyPathsCollectionType.Full,
                 "Notifications should always be default here as we don't expose a way to configure it.");
+
+            Debug.Assert(callback == null, "Dictionary notifications don't expose keypaths, so the callback should always be null");
 
             DictionaryChangeSet? changeset = null;
             if (changes != null)
