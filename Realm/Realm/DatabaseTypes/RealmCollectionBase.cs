@@ -217,7 +217,7 @@ namespace Realms
                 return NotificationToken.Create(callback, _ => token.Dispose());
             }
 
-            // For notifications with type Default or Shallow we cache the callbacks on the managed level, to avoid creating multiple notifications in core
+            // For notifications with type Full or Shallow we cache the callbacks on the managed level, to avoid creating multiple notifications in core
             _notificationCallbacks.Value.Add(callback, keyPathsCollection);
             return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, keyPathsCollection.Type));
         }
