@@ -1740,7 +1740,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SubscribeWithKeypaths_ShallowKeypath_RaisesOnlyCollectioNotifications()
+        public void SubscribeWithKeypaths_ShallowKeypath_RaisesOnlyCollectionNotifications()
         {
             var query = _realm.All<TestNotificationObject>();
             var changesets = new List<ChangeSet>();

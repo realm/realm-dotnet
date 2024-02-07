@@ -214,7 +214,7 @@ namespace Realms
                 var token = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), keyPathsCollection,
                     GCHandle.ToIntPtr(callbackHandle));
 
-                return NotificationToken.Create(callback, c => token.Dispose());
+                return NotificationToken.Create(callback, _ => token.Dispose());
             }
 
             // For notifications with type Default or Shallow we cache the callbacks on the managed level, to avoid creating multiple notifications in core
@@ -434,7 +434,7 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, KeyPathsCollectionType type, IntPtr callbackNative)
+        void INotifiable<CollectionChangeSet>.NotifyCallbacks(CollectionChangeSet? changes, KeyPathsCollectionType type, Delegate? callback)
         {
             ChangeSet? changeset = null;
             if (changes != null)
@@ -449,10 +449,9 @@ namespace Realms
                     cleared: actualChanges.Cleared);
             }
 
-            if (type == KeyPathsCollectionType.Explicit
-                && GCHandle.FromIntPtr(callbackNative).Target is NotificationCallbackDelegate<T> callback)
+            if (callback is NotificationCallbackDelegate<T> notificationCallback)
             {
-                callback(this, changeset);
+                notificationCallback(this, changeset);
                 return;
             }
 

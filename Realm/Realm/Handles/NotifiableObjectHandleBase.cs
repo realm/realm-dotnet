@@ -60,7 +60,8 @@ namespace Realms
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<CollectionChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, type, callback);
+                var managedCallback = type == KeyPathsCollectionType.Explicit && GCHandle.FromIntPtr(callback).Target is Delegate c ? c : null;
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, type, managedCallback);
             }
         }
     }
