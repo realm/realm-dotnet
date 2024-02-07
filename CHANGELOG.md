@@ -4,7 +4,7 @@
 * Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
 
   A `KeyPathsCollection` can be obtained by:
-  - building it explicitly by using the method `KeyPathsCollection`;
+  - building it explicitly by using the method `KeyPathsCollection.Of`;
   - building it implicitly with the conversion from a `List` or array of `KeyPath` or strings;
   - getting one of the static values `Full` and `Shallow` for full and shallow notifications respectively.
 
