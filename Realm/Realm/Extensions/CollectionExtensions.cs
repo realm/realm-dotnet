@@ -97,7 +97,7 @@ public static class CollectionExtensions
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback, 
+    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback,
         KeyPathsCollection? keyPathsCollection = null)
         => set.AsRealmCollection().SubscribeForNotifications(callback, keyPathsCollection);
 
@@ -320,7 +320,7 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
-    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
