@@ -46,7 +46,7 @@ jobs:
         include:
         - framework: net7.0
           os:
-            runner: macos-arm
+            runner: macos-14
             runtime: osx-arm64
         - framework: net7.0
           os:
