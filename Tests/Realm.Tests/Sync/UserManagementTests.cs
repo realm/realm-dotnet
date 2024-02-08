@@ -1107,7 +1107,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         Assert.That(s, Is.EqualTo(user));
-                        Assert.That(user.State, Is.EqualTo(UserState.LoggedOut));
+                        Assert.That(user.State, Is.EqualTo(UserState.Removed));
                         tcs.TrySetResult();
                     }
                     catch (Exception ex)
