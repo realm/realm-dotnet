@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyInt16ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyInt16Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static PrimaryKeyInt16Object()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyInt16ObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyInt16Object"/> class.
         /// </summary>
@@ -257,7 +265,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyInt16ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyInt16ObjectAccessor
+        private class PrimaryKeyInt16ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyInt16ObjectAccessor
         {
             public short Id
             {
@@ -267,7 +275,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt16ObjectAccessor
+        private class PrimaryKeyInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt16ObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyInt16Object.RealmSchema;
 
@@ -329,6 +337,46 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class PrimaryKeyInt16ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyInt16Object>
+        {
+            public override string SchemaName => "PrimaryKeyInt16Object";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyInt16Object value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override PrimaryKeyInt16Object CreateInstance() => new PrimaryKeyInt16Object();
+
+            protected override void ReadValue(PrimaryKeyInt16Object instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<short>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(PrimaryKeyInt16Object instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(PrimaryKeyInt16Object instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

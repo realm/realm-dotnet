@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(UnqueryableBacklinksObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static UnqueryableBacklinks()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new UnqueryableBacklinksSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="UnqueryableBacklinks"/> class.
         /// </summary>
@@ -258,7 +266,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
+        private class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
         {
             public Realms.Tests.ClassWithUnqueryableMembers? Parent
             {
@@ -268,7 +276,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
+        private class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
         {
             public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
 
@@ -326,6 +334,46 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class UnqueryableBacklinksSerializer : Realms.Serialization.RealmObjectSerializerBase<UnqueryableBacklinks>
+        {
+            public override string SchemaName => "UnqueryableBacklinks";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, UnqueryableBacklinks value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Parent", value.Parent);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override UnqueryableBacklinks CreateInstance() => new UnqueryableBacklinks();
+
+            protected override void ReadValue(UnqueryableBacklinks instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Parent":
+                        instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.ClassWithUnqueryableMembers?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(UnqueryableBacklinks instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(UnqueryableBacklinks instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Baas;
 using MongoDB.Bson;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -103,10 +104,10 @@ namespace Realms.Tests.Sync
                     {
                         realm.Add(new BasicAsymmetricObject[]
                         {
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new() { PartitionLike = partitionLike },
+                            new() { PartitionLike = partitionLike },
+                            new() { PartitionLike = partitionLike },
+                            new() { PartitionLike = partitionLike },
                         });
                     });
                 });
@@ -636,7 +637,7 @@ namespace Realms.Tests.Sync
             where T : class
         {
             var mongoClient = user.GetMongoClient("BackingDB");
-            var db = mongoClient.GetDatabase(SyncTestHelpers.RemoteMongoDBName("FLX"));
+            var db = mongoClient.GetDatabase(SyncTestHelpers.SyncMongoDBName(AppConfigType.FlexibleSync));
             var collection = db.GetCollection<T>(typeof(T).Name);
             var filter = new BsonDocument
             {

@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(DictionariesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static DictionariesObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new DictionariesObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="DictionariesObject"/> class.
         /// </summary>
@@ -414,7 +422,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
+        private class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
         {
             private System.Collections.Generic.IDictionary<string, char> _charDictionary = null!;
             public System.Collections.Generic.IDictionary<string, char> CharDictionary
@@ -866,7 +874,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
+        private class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DictionariesObject.RealmSchema;
 
@@ -1001,6 +1009,206 @@ namespace Realms.Tests
                     "RealmValueDictionary" => (IDictionary<string, TValue>)RealmValueDictionary,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class DictionariesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DictionariesObject>
+        {
+            public override string SchemaName => "DictionariesObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DictionariesObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteDictionary(context, args, "CharDictionary", value.CharDictionary);
+                WriteDictionary(context, args, "ByteDictionary", value.ByteDictionary);
+                WriteDictionary(context, args, "Int16Dictionary", value.Int16Dictionary);
+                WriteDictionary(context, args, "Int32Dictionary", value.Int32Dictionary);
+                WriteDictionary(context, args, "Int64Dictionary", value.Int64Dictionary);
+                WriteDictionary(context, args, "SingleDictionary", value.SingleDictionary);
+                WriteDictionary(context, args, "DoubleDictionary", value.DoubleDictionary);
+                WriteDictionary(context, args, "BooleanDictionary", value.BooleanDictionary);
+                WriteDictionary(context, args, "DecimalDictionary", value.DecimalDictionary);
+                WriteDictionary(context, args, "Decimal128Dictionary", value.Decimal128Dictionary);
+                WriteDictionary(context, args, "ObjectIdDictionary", value.ObjectIdDictionary);
+                WriteDictionary(context, args, "StringDictionary", value.StringDictionary);
+                WriteDictionary(context, args, "NullableStringDictionary", value.NullableStringDictionary);
+                WriteDictionary(context, args, "ByteArrayDictionary", value.ByteArrayDictionary);
+                WriteDictionary(context, args, "DateTimeOffsetDictionary", value.DateTimeOffsetDictionary);
+                WriteDictionary(context, args, "NullableCharDictionary", value.NullableCharDictionary);
+                WriteDictionary(context, args, "NullableByteDictionary", value.NullableByteDictionary);
+                WriteDictionary(context, args, "NullableInt16Dictionary", value.NullableInt16Dictionary);
+                WriteDictionary(context, args, "NullableInt32Dictionary", value.NullableInt32Dictionary);
+                WriteDictionary(context, args, "NullableInt64Dictionary", value.NullableInt64Dictionary);
+                WriteDictionary(context, args, "NullableSingleDictionary", value.NullableSingleDictionary);
+                WriteDictionary(context, args, "NullableDoubleDictionary", value.NullableDoubleDictionary);
+                WriteDictionary(context, args, "NullableBooleanDictionary", value.NullableBooleanDictionary);
+                WriteDictionary(context, args, "NullableDateTimeOffsetDictionary", value.NullableDateTimeOffsetDictionary);
+                WriteDictionary(context, args, "NullableDecimalDictionary", value.NullableDecimalDictionary);
+                WriteDictionary(context, args, "NullableDecimal128Dictionary", value.NullableDecimal128Dictionary);
+                WriteDictionary(context, args, "NullableObjectIdDictionary", value.NullableObjectIdDictionary);
+                WriteDictionary(context, args, "NullableBinaryDictionary", value.NullableBinaryDictionary);
+                WriteDictionary(context, args, "BinaryDictionary", value.BinaryDictionary);
+                WriteDictionary(context, args, "ObjectDictionary", value.ObjectDictionary);
+                WriteDictionary(context, args, "EmbeddedObjectDictionary", value.EmbeddedObjectDictionary);
+                WriteDictionary(context, args, "RealmValueDictionary", value.RealmValueDictionary);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override DictionariesObject CreateInstance() => new DictionariesObject();
+
+            protected override void ReadValue(DictionariesObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "CharDictionary":
+                    case "ByteDictionary":
+                    case "Int16Dictionary":
+                    case "Int32Dictionary":
+                    case "Int64Dictionary":
+                    case "SingleDictionary":
+                    case "DoubleDictionary":
+                    case "BooleanDictionary":
+                    case "DecimalDictionary":
+                    case "Decimal128Dictionary":
+                    case "ObjectIdDictionary":
+                    case "StringDictionary":
+                    case "NullableStringDictionary":
+                    case "ByteArrayDictionary":
+                    case "DateTimeOffsetDictionary":
+                    case "NullableCharDictionary":
+                    case "NullableByteDictionary":
+                    case "NullableInt16Dictionary":
+                    case "NullableInt32Dictionary":
+                    case "NullableInt64Dictionary":
+                    case "NullableSingleDictionary":
+                    case "NullableDoubleDictionary":
+                    case "NullableBooleanDictionary":
+                    case "NullableDateTimeOffsetDictionary":
+                    case "NullableDecimalDictionary":
+                    case "NullableDecimal128Dictionary":
+                    case "NullableObjectIdDictionary":
+                    case "NullableBinaryDictionary":
+                    case "BinaryDictionary":
+                    case "ObjectDictionary":
+                    case "EmbeddedObjectDictionary":
+                    case "RealmValueDictionary":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(DictionariesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(DictionariesObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "CharDictionary":
+                        instance.CharDictionary[fieldName] = BsonSerializer.LookupSerializer<char>().Deserialize(context);
+                        break;
+                    case "ByteDictionary":
+                        instance.ByteDictionary[fieldName] = BsonSerializer.LookupSerializer<byte>().Deserialize(context);
+                        break;
+                    case "Int16Dictionary":
+                        instance.Int16Dictionary[fieldName] = BsonSerializer.LookupSerializer<short>().Deserialize(context);
+                        break;
+                    case "Int32Dictionary":
+                        instance.Int32Dictionary[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Int64Dictionary":
+                        instance.Int64Dictionary[fieldName] = BsonSerializer.LookupSerializer<long>().Deserialize(context);
+                        break;
+                    case "SingleDictionary":
+                        instance.SingleDictionary[fieldName] = BsonSerializer.LookupSerializer<float>().Deserialize(context);
+                        break;
+                    case "DoubleDictionary":
+                        instance.DoubleDictionary[fieldName] = BsonSerializer.LookupSerializer<double>().Deserialize(context);
+                        break;
+                    case "BooleanDictionary":
+                        instance.BooleanDictionary[fieldName] = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    case "DecimalDictionary":
+                        instance.DecimalDictionary[fieldName] = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
+                        break;
+                    case "Decimal128Dictionary":
+                        instance.Decimal128Dictionary[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    case "ObjectIdDictionary":
+                        instance.ObjectIdDictionary[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "StringDictionary":
+                        instance.StringDictionary[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "NullableStringDictionary":
+                        instance.NullableStringDictionary[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "ByteArrayDictionary":
+                        instance.ByteArrayDictionary[fieldName] = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
+                        break;
+                    case "DateTimeOffsetDictionary":
+                        instance.DateTimeOffsetDictionary[fieldName] = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    case "NullableCharDictionary":
+                        instance.NullableCharDictionary[fieldName] = BsonSerializer.LookupSerializer<char?>().Deserialize(context);
+                        break;
+                    case "NullableByteDictionary":
+                        instance.NullableByteDictionary[fieldName] = BsonSerializer.LookupSerializer<byte?>().Deserialize(context);
+                        break;
+                    case "NullableInt16Dictionary":
+                        instance.NullableInt16Dictionary[fieldName] = BsonSerializer.LookupSerializer<short?>().Deserialize(context);
+                        break;
+                    case "NullableInt32Dictionary":
+                        instance.NullableInt32Dictionary[fieldName] = BsonSerializer.LookupSerializer<int?>().Deserialize(context);
+                        break;
+                    case "NullableInt64Dictionary":
+                        instance.NullableInt64Dictionary[fieldName] = BsonSerializer.LookupSerializer<long?>().Deserialize(context);
+                        break;
+                    case "NullableSingleDictionary":
+                        instance.NullableSingleDictionary[fieldName] = BsonSerializer.LookupSerializer<float?>().Deserialize(context);
+                        break;
+                    case "NullableDoubleDictionary":
+                        instance.NullableDoubleDictionary[fieldName] = BsonSerializer.LookupSerializer<double?>().Deserialize(context);
+                        break;
+                    case "NullableBooleanDictionary":
+                        instance.NullableBooleanDictionary[fieldName] = BsonSerializer.LookupSerializer<bool?>().Deserialize(context);
+                        break;
+                    case "NullableDateTimeOffsetDictionary":
+                        instance.NullableDateTimeOffsetDictionary[fieldName] = BsonSerializer.LookupSerializer<System.DateTimeOffset?>().Deserialize(context);
+                        break;
+                    case "NullableDecimalDictionary":
+                        instance.NullableDecimalDictionary[fieldName] = BsonSerializer.LookupSerializer<decimal?>().Deserialize(context);
+                        break;
+                    case "NullableDecimal128Dictionary":
+                        instance.NullableDecimal128Dictionary[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128?>().Deserialize(context);
+                        break;
+                    case "NullableObjectIdDictionary":
+                        instance.NullableObjectIdDictionary[fieldName] = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context);
+                        break;
+                    case "NullableBinaryDictionary":
+                        instance.NullableBinaryDictionary[fieldName] = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
+                        break;
+                    case "BinaryDictionary":
+                        instance.BinaryDictionary[fieldName] = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
+                        break;
+                    case "ObjectDictionary":
+                        instance.ObjectDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context)!;
+                        break;
+                    case "EmbeddedObjectDictionary":
+                        instance.EmbeddedObjectDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
+                        break;
+                    case "RealmValueDictionary":
+                        instance.RealmValueDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                }
             }
         }
     }

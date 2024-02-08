@@ -1179,10 +1179,10 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                var matchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties { PrimaryKey = 0 });
+                var matchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties());
                 propInfoObjWithEmbedded.SetValue(matchingEmbeddedObj, embeddedAllTypesMatch);
 
-                var nonMatchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties { PrimaryKey = 1 });
+                var nonMatchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties());
                 propInfoObjWithEmbedded.SetValue(nonMatchingEmbeddedObj, embeddedAllTypesNonMatch);
             });
 

@@ -29,7 +29,7 @@ using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
-    public static partial class SyncTestHelpers
+    public static class SyncTestHelpers
     {
         public const string DefaultPassword = "123456";
         private const string DummyAppId = "myapp-123";
@@ -71,6 +71,8 @@ namespace Realms.Tests.Sync
         };
 
         public static string RemoteMongoDBName(string prefix = "Schema") => $"{prefix}_{_baasClient?.Differentiator}";
+
+        public static string SyncMongoDBName(string type = AppConfigType.Default) => _baasClient!.GetSyncDatabaseName(type);
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
@@ -161,13 +163,7 @@ namespace Realms.Tests.Sync
             return (remaining, logger);
         }
 
-        public static string[] ExtractBaasSettings(string[] args)
-        {
-            return AsyncContext.Run(async () =>
-            {
-                return await ExtractBaasSettingsAsync(args);
-            });
-        }
+        public static string[] ExtractBaasSettings(string[] args) => AsyncContext.Run(() => ExtractBaasSettingsAsync(args));
 
         private static async Task CreateBaasAppsAsync()
         {

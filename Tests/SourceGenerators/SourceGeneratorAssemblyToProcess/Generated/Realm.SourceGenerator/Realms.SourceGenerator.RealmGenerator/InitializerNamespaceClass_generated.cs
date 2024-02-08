@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Weaving;
@@ -21,6 +22,13 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(InitializerNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class InitializerNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static InitializerNamespaceClass()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new InitializerNamespaceClassSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="InitializerNamespaceClass"/> class.
         /// </summary>
@@ -250,7 +258,7 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
+        private class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
         {
             public string Id
             {
@@ -260,7 +268,7 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class InitializerNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializerNamespaceClassAccessor
+        private class InitializerNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializerNamespaceClassAccessor
         {
             public override ObjectSchema ObjectSchema => InitializerNamespaceClass.RealmSchema;
 
@@ -318,6 +326,46 @@ namespace SourceGeneratorAssemblyToProcess
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class InitializerNamespaceClassSerializer : Realms.Serialization.RealmObjectSerializerBase<InitializerNamespaceClass>
+        {
+            public override string SchemaName => "InitializerNamespaceClass";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InitializerNamespaceClass value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Id", value.Id);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override InitializerNamespaceClass CreateInstance() => new InitializerNamespaceClass();
+
+            protected override void ReadValue(InitializerNamespaceClass instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(InitializerNamespaceClass instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(InitializerNamespaceClass instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

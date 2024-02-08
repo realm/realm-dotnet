@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(RemappedTypeObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static RemappedTypeObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new RemappedTypeObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="RemappedTypeObject"/> class.
         /// </summary>
@@ -300,7 +308,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RemappedTypeObjectManagedAccessor : Realms.ManagedAccessor, IRemappedTypeObjectAccessor
+        private class RemappedTypeObjectManagedAccessor : Realms.ManagedAccessor, IRemappedTypeObjectAccessor
         {
             public int Id
             {
@@ -384,7 +392,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RemappedTypeObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedTypeObjectAccessor
+        private class RemappedTypeObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedTypeObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RemappedTypeObject.RealmSchema;
 
@@ -506,6 +514,72 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class RemappedTypeObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RemappedTypeObject>
+        {
+            public override string SchemaName => "__RemappedTypeObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RemappedTypeObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "StringValue", value.StringValue);
+                WriteValue(context, args, "NormalLink", value.NormalLink);
+                WriteValue(context, args, "__mappedLink", value.MappedLink);
+                WriteList(context, args, "NormalList", value.NormalList);
+                WriteList(context, args, "__mappedList", value.MappedList);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override RemappedTypeObject CreateInstance() => new RemappedTypeObject();
+
+            protected override void ReadValue(RemappedTypeObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "StringValue":
+                        instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "NormalLink":
+                        instance.NormalLink = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
+                        break;
+                    case "__mappedLink":
+                        instance.MappedLink = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context);
+                        break;
+                    case "NormalList":
+                    case "__mappedList":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(RemappedTypeObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "NormalList":
+                        instance.NormalList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        break;
+                    case "__mappedList":
+                        instance.MappedList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        break;
+                }
+            }
+
+            protected override void ReadDocumentField(RemappedTypeObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }
