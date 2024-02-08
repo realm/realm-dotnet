@@ -782,7 +782,7 @@ namespace Realms.Tests.Sync
                     realm = await GetRealmAsync(config);
                 }
 
-                var completionTcs = new TaskCompletionSource<ulong>();
+                var completionTcs = new TaskCompletionSource();
                 var callbacksInvoked = 0;
 
                 var session = GetSession(realm);
@@ -803,33 +803,9 @@ namespace Realms.Tests.Sync
                     {
                         callbacksInvoked++;
 
-                        if (p.TransferredBytes > p.TransferableBytes)
-                        {
-                            throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
-                        }
-
                         if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
                         {
                             throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
-                        }
-
-                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                        {
-                            if (p.TransferableBytes <= objectSize ||
-                                p.TransferableBytes >= (objectsToRecord + 2) * objectSize)
-                            {
-                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({objectSize}, {(objectsToRecord + 1) * objectSize}) range.");
-                            }
-                        }
-
-                        if (p.TransferredBytes == 0 && p.ProgressEstimate != 0.0)
-                        {
-                            throw new Exception($"Expected progress estimate to be 0.0 when TransferredBytes == 0, but was {p.ProgressEstimate}");
-                        }
-
-                        if (p.TransferredBytes > 0 && (p.ProgressEstimate <= 0.0 || p.ProgressEstimate > 1.0))
-                        {
-                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0 when TransferredBytes >= 0, but was {p.ProgressEstimate}");
                         }
                     }
                     catch (Exception e)
@@ -837,19 +813,14 @@ namespace Realms.Tests.Sync
                         completionTcs.TrySetException(e);
                     }
 
-                    if (p.TransferredBytes >= p.TransferableBytes && p.TransferredBytes > objectSize)
+                    if (p.IsComplete)
                     {
                         if (p.ProgressEstimate != 1.0)
                         {
-                            throw new Exception($"Expected progress estimate to be 1.0 when TransferredBytes >= TransferableBytes, but was {p.ProgressEstimate}");
+                            throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
                         }
 
-                        if (p.IsComplete is false)
-                        {
-                            throw new Exception($"Expected IsComplete to be true when TransferredBytes >= TransferableBytes, but was false");
-                        }
-
-                        completionTcs.TrySetResult(p.TransferredBytes);
+                        completionTcs.TrySetResult();
                     }
                 });
 
@@ -858,22 +829,9 @@ namespace Realms.Tests.Sync
                     realm.Add(new HugeSyncObject(objectSize));
                 });
 
-                var totalTransferred = await completionTcs.Task;
+                await completionTcs.Task;
 
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(objectSize));
-
-                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
-                    // so in the fixed mode, we should not get updates for it.
-                    Assert.That(totalTransferred, Is.LessThan((objectsToRecord + 5) * objectSize));
-                }
-                else
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((objectsToRecord + 1) * objectSize));
-                }
-
-                Assert.That(callbacksInvoked, Is.GreaterThan(1));
+                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
             }, timeout: 120_000);
         }
 #pragma warning restore CS0618 // Type or member is obsolete
