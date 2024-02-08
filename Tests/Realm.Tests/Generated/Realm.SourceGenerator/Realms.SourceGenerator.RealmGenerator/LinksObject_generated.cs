@@ -23,36 +23,40 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RealmValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
-    public partial class RealmValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(LinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
+    public partial class LinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
 
         [Realms.Preserve]
-        static RealmValueObject()
+        static LinksObject()
         {
-            Realms.Serialization.RealmObjectSerializer.Register(new RealmValueObjectSerializer());
+            Realms.Serialization.RealmObjectSerializer.Register(new LinksObjectSerializer());
         }
 
         /// <summary>
-        /// Defines the schema for the <see cref="RealmValueObject"/> class.
+        /// Defines the schema for the <see cref="LinksObject"/> class.
         /// </summary>
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RealmValueObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("LinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
-            Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
-            Realms.Schema.Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
-            Realms.Schema.Property.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
-            Realms.Schema.Property.PrimitiveDictionary("TestDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "TestDict"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
+            Realms.Schema.Property.Object("Link", "LinksObject", managedName: "Link"),
+            Realms.Schema.Property.ObjectList("List", "LinksObject", managedName: "List"),
+            Realms.Schema.Property.ObjectSet("Set", "LinksObject", managedName: "Set"),
+            Realms.Schema.Property.ObjectDictionary("Dictionary", "LinksObject", managedName: "Dictionary"),
         }.Build();
+
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        private LinksObject() {}
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         #region IRealmObject implementation
 
-        private IRealmValueObjectAccessor? _accessor;
+        private ILinksObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        private IRealmValueObjectAccessor Accessor => _accessor ??= new RealmValueObjectUnmanagedAccessor(typeof(RealmValueObject));
+        private ILinksObjectAccessor Accessor => _accessor ??= new LinksObjectUnmanagedAccessor(typeof(LinksObject));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
@@ -84,7 +88,7 @@ namespace Realms.Tests
 
         void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
-            var newAccessor = (IRealmValueObjectAccessor)managedAccessor;
+            var newAccessor = (ILinksObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
@@ -92,21 +96,24 @@ namespace Realms.Tests
             {
                 if (!skipDefaults)
                 {
-                    newAccessor.RealmValueList.Clear();
-                    newAccessor.RealmValueSet.Clear();
-                    newAccessor.RealmValueDictionary.Clear();
-                    newAccessor.TestDict.Clear();
+                    newAccessor.List.Clear();
+                    newAccessor.Set.Clear();
+                    newAccessor.Dictionary.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.Id != default(int))
+                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Value != default(int))
                 {
-                    newAccessor.Id = oldAccessor.Id;
+                    newAccessor.Value = oldAccessor.Value;
                 }
-                newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.TestDict, newAccessor.TestDict, update, skipDefaults);
+                if (oldAccessor.Link != null && newAccessor.Realm != null)
+                {
+                    newAccessor.Realm.Add(oldAccessor.Link, update);
+                }
+                newAccessor.Link = oldAccessor.Link;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.List, newAccessor.List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Set, newAccessor.Set, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Dictionary, newAccessor.Dictionary, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -201,25 +208,25 @@ namespace Realms.Tests
         }
 
         /// <summary>
-        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="RealmValueObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="LinksObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
         /// </summary>
         /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-        /// <returns>The <see cref="RealmValueObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-        public static explicit operator RealmValueObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RealmValueObject>();
+        /// <returns>The <see cref="LinksObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator LinksObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<LinksObject>();
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="RealmValueObject"/>.
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="LinksObject"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.RealmValue(RealmValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(LinksObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="RealmValueObject"/>.
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="LinksObject"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
         /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.QueryArgument(RealmValueObject? val) => (Realms.RealmValue)val;
+        public static implicit operator Realms.QueryArgument(LinksObject? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -258,119 +265,111 @@ namespace Realms.Tests
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class LinksObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new RealmValueObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new LinksObjectManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new RealmValueObject();
+            public Realms.IRealmObjectBase CreateInstance() => new LinksObject();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = ((IRealmValueObjectAccessor)instance.Accessor).Id;
+                value = ((ILinksObjectAccessor)instance.Accessor).Id;
                 return true;
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal interface IRealmValueObjectAccessor : Realms.IRealmAccessor
+        internal interface ILinksObjectAccessor : Realms.IRealmAccessor
         {
-            int Id { get; set; }
+            string Id { get; set; }
 
-            Realms.RealmValue RealmValueProperty { get; set; }
+            int Value { get; set; }
 
-            System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
+            Realms.Tests.LinksObject? Link { get; set; }
 
-            System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; }
+            System.Collections.Generic.IList<Realms.Tests.LinksObject> List { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; }
+            System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set { get; }
 
-            System.Collections.Generic.IDictionary<string, int> TestDict { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectManagedAccessor : Realms.ManagedAccessor, IRealmValueObjectAccessor
+        private class LinksObjectManagedAccessor : Realms.ManagedAccessor, ILinksObjectAccessor
         {
-            public int Id
+            public string Id
             {
-                get => (int)GetValue("_id");
+                get => (string)GetValue("_id")!;
                 set => SetValueUnique("_id", value);
             }
 
-            public Realms.RealmValue RealmValueProperty
+            public int Value
             {
-                get => (Realms.RealmValue)GetValue("RealmValueProperty");
-                set => SetValue("RealmValueProperty", value);
+                get => (int)GetValue("Value");
+                set => SetValue("Value", value);
             }
 
-            private System.Collections.Generic.IList<Realms.RealmValue> _realmValueList = null!;
-            public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList
+            public Realms.Tests.LinksObject? Link
+            {
+                get => (Realms.Tests.LinksObject?)GetValue("Link");
+                set => SetValue("Link", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.LinksObject> _list = null!;
+            public System.Collections.Generic.IList<Realms.Tests.LinksObject> List
             {
                 get
                 {
-                    if (_realmValueList == null)
+                    if (_list == null)
                     {
-                        _realmValueList = GetListValue<Realms.RealmValue>("RealmValueList");
+                        _list = GetListValue<Realms.Tests.LinksObject>("List");
                     }
 
-                    return _realmValueList;
+                    return _list;
                 }
             }
 
-            private System.Collections.Generic.ISet<Realms.RealmValue> _realmValueSet = null!;
-            public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet
+            private System.Collections.Generic.ISet<Realms.Tests.LinksObject> _set = null!;
+            public System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set
             {
                 get
                 {
-                    if (_realmValueSet == null)
+                    if (_set == null)
                     {
-                        _realmValueSet = GetSetValue<Realms.RealmValue>("RealmValueSet");
+                        _set = GetSetValue<Realms.Tests.LinksObject>("Set");
                     }
 
-                    return _realmValueSet;
+                    return _set;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.RealmValue> _realmValueDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> _dictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary
             {
                 get
                 {
-                    if (_realmValueDictionary == null)
+                    if (_dictionary == null)
                     {
-                        _realmValueDictionary = GetDictionaryValue<Realms.RealmValue>("RealmValueDictionary");
+                        _dictionary = GetDictionaryValue<Realms.Tests.LinksObject?>("Dictionary");
                     }
 
-                    return _realmValueDictionary;
-                }
-            }
-
-            private System.Collections.Generic.IDictionary<string, int> _testDict = null!;
-            public System.Collections.Generic.IDictionary<string, int> TestDict
-            {
-                get
-                {
-                    if (_testDict == null)
-                    {
-                        _testDict = GetDictionaryValue<int>("TestDict");
-                    }
-
-                    return _testDict;
+                    return _dictionary;
                 }
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRealmValueObjectAccessor
+        private class LinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ILinksObjectAccessor
         {
-            public override ObjectSchema ObjectSchema => RealmValueObject.RealmSchema;
+            public override ObjectSchema ObjectSchema => LinksObject.RealmSchema;
 
-            private int _id = TestHelpers.Random.Next();
-            public int Id
+            private string _id = null!;
+            public string Id
             {
                 get => _id;
                 set
@@ -380,26 +379,35 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.RealmValue _realmValueProperty;
-            public Realms.RealmValue RealmValueProperty
+            private int _value;
+            public int Value
             {
-                get => _realmValueProperty;
+                get => _value;
                 set
                 {
-                    _realmValueProperty = value;
-                    RaisePropertyChanged("RealmValueProperty");
+                    _value = value;
+                    RaisePropertyChanged("Value");
                 }
             }
 
-            public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; } = new List<Realms.RealmValue>();
+            private Realms.Tests.LinksObject? _link;
+            public Realms.Tests.LinksObject? Link
+            {
+                get => _link;
+                set
+                {
+                    _link = value;
+                    RaisePropertyChanged("Link");
+                }
+            }
 
-            public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; } = new HashSet<Realms.RealmValue>(RealmSet<Realms.RealmValue>.Comparer);
+            public System.Collections.Generic.IList<Realms.Tests.LinksObject> List { get; } = new List<Realms.Tests.LinksObject>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; } = new Dictionary<string, Realms.RealmValue>();
+            public System.Collections.Generic.ISet<Realms.Tests.LinksObject> Set { get; } = new HashSet<Realms.Tests.LinksObject>(RealmSet<Realms.Tests.LinksObject>.Comparer);
 
-            public System.Collections.Generic.IDictionary<string, int> TestDict { get; } = new Dictionary<string, int>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.LinksObject?> Dictionary { get; } = new Dictionary<string, Realms.Tests.LinksObject?>();
 
-            public RealmValueObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            public LinksObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 
@@ -408,7 +416,8 @@ namespace Realms.Tests
                 return propertyName switch
                 {
                     "_id" => _id,
-                    "RealmValueProperty" => _realmValueProperty,
+                    "Value" => _value,
+                    "Link" => _link,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -419,8 +428,11 @@ namespace Realms.Tests
                 {
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                    case "RealmValueProperty":
-                        RealmValueProperty = (Realms.RealmValue)val;
+                    case "Value":
+                        Value = (int)val;
+                        return;
+                    case "Link":
+                        Link = (Realms.Tests.LinksObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -434,14 +446,14 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (int)val;
+                Id = (string)val!;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
                 {
-                    "RealmValueList" => (IList<T>)RealmValueList,
+                    "List" => (IList<T>)List,
                     _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                 };
             }
@@ -450,7 +462,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "RealmValueSet" => (ISet<T>)RealmValueSet,
+                    "Set" => (ISet<T>)Set,
                     _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                 };
             }
@@ -459,50 +471,51 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "RealmValueDictionary" => (IDictionary<string, TValue>)RealmValueDictionary,
-                    "TestDict" => (IDictionary<string, TValue>)TestDict,
+                    "Dictionary" => (IDictionary<string, TValue>)Dictionary,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RealmValueObject>
+        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<LinksObject>
         {
-            public override string SchemaName => "RealmValueObject";
+            public override string SchemaName => "LinksObject";
 
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RealmValueObject value)
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LinksObject value)
             {
                 context.Writer.WriteStartDocument();
 
                 WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "RealmValueProperty", value.RealmValueProperty);
-                WriteList(context, args, "RealmValueList", value.RealmValueList);
-                WriteSet(context, args, "RealmValueSet", value.RealmValueSet);
-                WriteDictionary(context, args, "RealmValueDictionary", value.RealmValueDictionary);
-                WriteDictionary(context, args, "TestDict", value.TestDict);
+                WriteValue(context, args, "Value", value.Value);
+                WriteValue(context, args, "Link", value.Link);
+                WriteList(context, args, "List", value.List);
+                WriteSet(context, args, "Set", value.Set);
+                WriteDictionary(context, args, "Dictionary", value.Dictionary);
 
                 context.Writer.WriteEndDocument();
             }
 
-            protected override RealmValueObject CreateInstance() => new RealmValueObject();
+            protected override LinksObject CreateInstance() => new LinksObject();
 
-            protected override void ReadValue(RealmValueObject instance, string name, BsonDeserializationContext context)
+            protected override void ReadValue(LinksObject instance, string name, BsonDeserializationContext context)
             {
                 switch (name)
                 {
                     case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
                         break;
-                    case "RealmValueProperty":
-                        instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                    case "Value":
+                        instance.Value = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                         break;
-                    case "RealmValueList":
-                    case "RealmValueSet":
+                    case "Link":
+                        instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
+                        break;
+                    case "List":
+                    case "Set":
                         ReadArray(instance, name, context);
                         break;
-                    case "RealmValueDictionary":
-                    case "TestDict":
+                    case "Dictionary":
                         ReadDictionary(instance, name, context);
                         break;
                     default:
@@ -511,28 +524,25 @@ namespace Realms.Tests
                 }
             }
 
-            protected override void ReadArrayElement(RealmValueObject instance, string name, BsonDeserializationContext context)
+            protected override void ReadArrayElement(LinksObject instance, string name, BsonDeserializationContext context)
             {
                 switch (name)
                 {
-                    case "RealmValueList":
-                        instance.RealmValueList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                    case "List":
+                        instance.List.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
-                    case "RealmValueSet":
-                        instance.RealmValueSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                    case "Set":
+                        instance.Set.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
                         break;
                 }
             }
 
-            protected override void ReadDocumentField(RealmValueObject instance, string name, string fieldName, BsonDeserializationContext context)
+            protected override void ReadDocumentField(LinksObject instance, string name, string fieldName, BsonDeserializationContext context)
             {
                 switch (name)
                 {
-                    case "RealmValueDictionary":
-                        instance.RealmValueDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                        break;
-                    case "TestDict":
-                        instance.TestDict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                    case "Dictionary":
+                        instance.Dictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }

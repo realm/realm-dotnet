@@ -26,6 +26,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Helpers;
 using Realms.Schema;
 #if TEST_WEAVER
 using TestRealmObject = Realms.RealmObject;
@@ -288,7 +289,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_WhenSerialized_WithMongoDBBson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
-            TestSerialization(managed, obj => obj.ToJson());
+            TestSerialization(managed, obj => SerializationHelper.ToNativeJson(obj));
         }
 
         [Test]

@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedLevel3ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedLevel3 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static EmbeddedLevel3()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedLevel3Serializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedLevel3"/> class.
         /// </summary>
@@ -261,7 +269,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedLevel3ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel3Accessor
+        private class EmbeddedLevel3ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel3Accessor
         {
             public string? String
             {
@@ -271,7 +279,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedLevel3UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel3Accessor
+        private class EmbeddedLevel3UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel3Accessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;
 
@@ -329,6 +337,46 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class EmbeddedLevel3Serializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedLevel3>
+        {
+            public override string SchemaName => "EmbeddedLevel3";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedLevel3 value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "String", value.String);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override EmbeddedLevel3 CreateInstance() => new EmbeddedLevel3();
+
+            protected override void ReadValue(EmbeddedLevel3 instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "String":
+                        instance.String = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(EmbeddedLevel3 instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(EmbeddedLevel3 instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

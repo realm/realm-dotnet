@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(SyncAllTypesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SyncAllTypesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static SyncAllTypesObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new SyncAllTypesObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="SyncAllTypesObject"/> class.
         /// </summary>
@@ -375,7 +383,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class SyncAllTypesObjectManagedAccessor : Realms.ManagedAccessor, ISyncAllTypesObjectAccessor
+        private class SyncAllTypesObjectManagedAccessor : Realms.ManagedAccessor, ISyncAllTypesObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -493,7 +501,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
+        private class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;
 
@@ -825,6 +833,118 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class SyncAllTypesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<SyncAllTypesObject>
+        {
+            public override string SchemaName => "SyncAllTypesObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SyncAllTypesObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "CharProperty", value.CharProperty);
+                WriteValue(context, args, "ByteProperty", value.ByteProperty);
+                WriteValue(context, args, "Int16Property", value.Int16Property);
+                WriteValue(context, args, "Int32Property", value.Int32Property);
+                WriteValue(context, args, "Int64Property", value.Int64Property);
+                WriteValue(context, args, "FloatProperty", value.FloatProperty);
+                WriteValue(context, args, "DoubleProperty", value.DoubleProperty);
+                WriteValue(context, args, "BooleanProperty", value.BooleanProperty);
+                WriteValue(context, args, "DateTimeOffsetProperty", value.DateTimeOffsetProperty);
+                WriteValue(context, args, "DecimalProperty", value.DecimalProperty);
+                WriteValue(context, args, "Decimal128Property", value.Decimal128Property);
+                WriteValue(context, args, "ObjectIdProperty", value.ObjectIdProperty);
+                WriteValue(context, args, "GuidProperty", value.GuidProperty);
+                WriteValue(context, args, "StringProperty", value.StringProperty);
+                WriteValue(context, args, "ByteArrayProperty", value.ByteArrayProperty);
+                WriteValue(context, args, "RealmValueProperty", value.RealmValueProperty);
+                WriteValue(context, args, "ObjectProperty", value.ObjectProperty);
+                WriteValue(context, args, "EmbeddedObjectProperty", value.EmbeddedObjectProperty);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override SyncAllTypesObject CreateInstance() => new SyncAllTypesObject();
+
+            protected override void ReadValue(SyncAllTypesObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "CharProperty":
+                        instance.CharProperty = BsonSerializer.LookupSerializer<char>().Deserialize(context);
+                        break;
+                    case "ByteProperty":
+                        instance.ByteProperty = BsonSerializer.LookupSerializer<byte>().Deserialize(context);
+                        break;
+                    case "Int16Property":
+                        instance.Int16Property = BsonSerializer.LookupSerializer<short>().Deserialize(context);
+                        break;
+                    case "Int32Property":
+                        instance.Int32Property = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Int64Property":
+                        instance.Int64Property = BsonSerializer.LookupSerializer<long>().Deserialize(context);
+                        break;
+                    case "FloatProperty":
+                        instance.FloatProperty = BsonSerializer.LookupSerializer<float>().Deserialize(context);
+                        break;
+                    case "DoubleProperty":
+                        instance.DoubleProperty = BsonSerializer.LookupSerializer<double>().Deserialize(context);
+                        break;
+                    case "BooleanProperty":
+                        instance.BooleanProperty = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    case "DateTimeOffsetProperty":
+                        instance.DateTimeOffsetProperty = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    case "DecimalProperty":
+                        instance.DecimalProperty = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
+                        break;
+                    case "Decimal128Property":
+                        instance.Decimal128Property = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    case "ObjectIdProperty":
+                        instance.ObjectIdProperty = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "GuidProperty":
+                        instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "StringProperty":
+                        instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "ByteArrayProperty":
+                        instance.ByteArrayProperty = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
+                        break;
+                    case "RealmValueProperty":
+                        instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "ObjectProperty":
+                        instance.ObjectProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
+                        break;
+                    case "EmbeddedObjectProperty":
+                        instance.EmbeddedObjectProperty = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(SyncAllTypesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(SyncAllTypesObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

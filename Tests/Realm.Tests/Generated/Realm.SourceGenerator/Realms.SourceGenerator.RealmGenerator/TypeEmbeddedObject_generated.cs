@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -27,6 +28,13 @@ namespace Realms.Tests.Database
         [Woven(typeof(TypeEmbeddedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class TypeEmbeddedObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
         {
+
+            [Realms.Preserve]
+            static TypeEmbeddedObject()
+            {
+                Realms.Serialization.RealmObjectSerializer.Register(new TypeEmbeddedObjectSerializer());
+            }
+
             /// <summary>
             /// Defines the schema for the <see cref="TypeEmbeddedObject"/> class.
             /// </summary>
@@ -260,7 +268,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class TypeEmbeddedObjectManagedAccessor : Realms.ManagedAccessor, ITypeEmbeddedObjectAccessor
+            private class TypeEmbeddedObjectManagedAccessor : Realms.ManagedAccessor, ITypeEmbeddedObjectAccessor
             {
                 public string Type
                 {
@@ -270,7 +278,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class TypeEmbeddedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITypeEmbeddedObjectAccessor
+            private class TypeEmbeddedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITypeEmbeddedObjectAccessor
             {
                 public override ObjectSchema ObjectSchema => TypeEmbeddedObject.RealmSchema;
 
@@ -328,6 +336,46 @@ namespace Realms.Tests.Database
                 public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
                 {
                     throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                }
+            }
+
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+            private class TypeEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<TypeEmbeddedObject>
+            {
+                public override string SchemaName => "TypeEmbeddedObject";
+
+                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, TypeEmbeddedObject value)
+                {
+                    context.Writer.WriteStartDocument();
+
+                    WriteValue(context, args, "type", value.Type);
+
+                    context.Writer.WriteEndDocument();
+                }
+
+                protected override TypeEmbeddedObject CreateInstance() => new TypeEmbeddedObject();
+
+                protected override void ReadValue(TypeEmbeddedObject instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "type":
+                            instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
+                    }
+                }
+
+                protected override void ReadArrayElement(TypeEmbeddedObject instance, string name, BsonDeserializationContext context)
+                {
+                    // No persisted list/set properties to deserialize
+                }
+
+                protected override void ReadDocumentField(TypeEmbeddedObject instance, string name, string fieldName, BsonDeserializationContext context)
+                {
+                    // No persisted dictionary properties to deserialize
                 }
             }
         }

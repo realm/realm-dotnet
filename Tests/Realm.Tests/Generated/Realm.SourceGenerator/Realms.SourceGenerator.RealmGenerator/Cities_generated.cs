@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(CitiesObjectHelper)), Realms.Preserve(AllMembers = true)]
     internal partial class Cities : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Cities()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new CitiesSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Cities"/> class.
         /// </summary>
@@ -255,7 +263,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class CitiesManagedAccessor : Realms.ManagedAccessor, ICitiesAccessor
+        private class CitiesManagedAccessor : Realms.ManagedAccessor, ICitiesAccessor
         {
             public string? Name
             {
@@ -265,7 +273,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class CitiesUnmanagedAccessor : Realms.UnmanagedAccessor, ICitiesAccessor
+        private class CitiesUnmanagedAccessor : Realms.UnmanagedAccessor, ICitiesAccessor
         {
             public override ObjectSchema ObjectSchema => Cities.RealmSchema;
 
@@ -323,6 +331,46 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class CitiesSerializer : Realms.Serialization.RealmObjectSerializerBase<Cities>
+        {
+            public override string SchemaName => "Cities";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Cities value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Name", value.Name);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Cities CreateInstance() => new Cities();
+
+            protected override void ReadValue(Cities instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Name":
+                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Cities instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(Cities instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

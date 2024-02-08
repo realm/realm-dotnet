@@ -15,6 +15,7 @@ name: PR Build
     - '!.github/workflows/main.yml'
     - '!.github/workflows/publish-*.yml'
     - .github/actions/**
+    - 'Tests/Tests.Android/Properties/AndroidManifest.xml'
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true

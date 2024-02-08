@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(DecimalsObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DecimalsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static DecimalsObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new DecimalsObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="DecimalsObject"/> class.
         /// </summary>
@@ -264,7 +272,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DecimalsObjectManagedAccessor : Realms.ManagedAccessor, IDecimalsObjectAccessor
+        private class DecimalsObjectManagedAccessor : Realms.ManagedAccessor, IDecimalsObjectAccessor
         {
             public decimal DecimalValue
             {
@@ -280,7 +288,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DecimalsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDecimalsObjectAccessor
+        private class DecimalsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDecimalsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DecimalsObject.RealmSchema;
 
@@ -353,6 +361,50 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class DecimalsObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<DecimalsObject>
+        {
+            public override string SchemaName => "DecimalsObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DecimalsObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "DecimalValue", value.DecimalValue);
+                WriteValue(context, args, "Decimal128Value", value.Decimal128Value);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override DecimalsObject CreateInstance() => new DecimalsObject();
+
+            protected override void ReadValue(DecimalsObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DecimalValue":
+                        instance.DecimalValue = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
+                        break;
+                    case "Decimal128Value":
+                        instance.Decimal128Value = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(DecimalsObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(DecimalsObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }
