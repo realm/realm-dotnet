@@ -23,13 +23,13 @@ namespace Realms.Sync
     /// <summary>
     /// A struct containing information about the progress state at a given instant.
     /// </summary>
-    public struct SyncProgress
+    public readonly struct SyncProgress
     {
         /// <summary>
         /// Gets the number of bytes that have been transferred since subscribing for progress notifications.
         /// </summary>
         /// <value>The number of transferred bytes.</value>
-        [Obsolete("Use ProgressEstimate instead.")]
+        [Obsolete("Not accurate, use ProgressEstimate instead.")]
         public ulong TransferredBytes { get; }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Realms.Sync
         /// successfully transferred.
         /// </summary>
         /// <value>The number of transferable bytes.</value>
-        [Obsolete("Use ProgressEstimate instead.")]
+        [Obsolete("Not accurate, use ProgressEstimate instead.")]
         public ulong TransferableBytes { get; }
 
         /// <summary>

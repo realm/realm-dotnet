@@ -136,8 +136,7 @@ namespace Realms.Sync
         ///         var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
         ///         notificationToken = observable.Subscribe(progress =>
         ///         {
-        ///             // Update relevant properties by accessing
-        ///             // progress.TransferredBytes and progress.TransferableBytes
+        ///             // Update relevant properties by accessing progress.ProgressEstimate
         ///         });
         ///     }
         ///
