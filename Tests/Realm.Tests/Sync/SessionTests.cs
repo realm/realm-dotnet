@@ -805,8 +805,12 @@ namespace Realms.Tests.Sync
 
                         if (p.TransferredBytes > p.TransferableBytes)
                         {
-                            // TODO https://github.com/realm/realm-dotnet/issues/2360: this seems to be a regression in Sync.
-                            // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
+                            throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
+                        }
+
+                        if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
+                        {
+                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
                         }
 
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
@@ -825,7 +829,7 @@ namespace Realms.Tests.Sync
 
                         if (p.TransferredBytes > 0 && (p.ProgressEstimate <= 0.0 || p.ProgressEstimate > 1.0))
                         {
-                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0 TransferredBytes >= 0, but was {p.ProgressEstimate}");
+                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0 when TransferredBytes >= 0, but was {p.ProgressEstimate}");
                         }
                     }
                     catch (Exception e)
