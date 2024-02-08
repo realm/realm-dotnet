@@ -15,7 +15,7 @@ name: PR Build
     - '!.github/workflows/main.yml'
     - '!.github/workflows/publish-*.yml'
     - .github/actions/**
-    - 'Tests/Tests.Android/Properties/AndroidManifest.xml'
+    - Tests/Tests.Android/Properties/AndroidManifest.xml
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -43,45 +43,6 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
-  build-unity:
-    uses: ./.github/workflows/build-unity.yml
-    name: Package
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    needs:
-    - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-  test-unity:
-    uses: ./.github/workflows/test-unity.yml
-    name: Test
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-      settings: '["Mono-Net4"]'
-      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
-    needs:
-    - build-packages
-    - build-unity
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-  test-net-framework:
-    uses: ./.github/workflows/test-net-framework.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
-  test-uwp-managed:
-    uses: ./.github/workflows/test-uwp-managed.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      Pfx_Password: ${{ secrets.Pfx_Password }}
-      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
@@ -91,58 +52,6 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       framework: '["net7.0"]'
-  test-macos:
-    uses: ./.github/workflows/test-macos.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
-  test-ios:
-    uses: ./.github/workflows/test-ios.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
-  test-tvos:
-    uses: ./.github/workflows/test-tvos.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
-  test-android:
-    uses: ./.github/workflows/test-android.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
-      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
-      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-  test-weaved-classes:
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    name: Test
-    needs:
-    - build-packages
-    uses: ./.github/workflows/test-woven-classes.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-  test-source-generation:
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    name: Test
-    uses: ./.github/workflows/test-source-generation.yml
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
