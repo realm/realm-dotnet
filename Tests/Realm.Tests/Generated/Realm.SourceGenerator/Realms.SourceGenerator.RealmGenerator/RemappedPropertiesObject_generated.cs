@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(RemappedPropertiesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RemappedPropertiesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static RemappedPropertiesObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new RemappedPropertiesObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="RemappedPropertiesObject"/> class.
         /// </summary>
@@ -264,7 +272,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RemappedPropertiesObjectManagedAccessor : Realms.ManagedAccessor, IRemappedPropertiesObjectAccessor
+        private class RemappedPropertiesObjectManagedAccessor : Realms.ManagedAccessor, IRemappedPropertiesObjectAccessor
         {
             public int Id
             {
@@ -280,7 +288,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class RemappedPropertiesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedPropertiesObjectAccessor
+        private class RemappedPropertiesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedPropertiesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RemappedPropertiesObject.RealmSchema;
 
@@ -357,6 +365,50 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class RemappedPropertiesObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RemappedPropertiesObject>
+        {
+            public override string SchemaName => "RemappedPropertiesObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RemappedPropertiesObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "id", value.Id);
+                WriteValue(context, args, "name", value.Name);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override RemappedPropertiesObject CreateInstance() => new RemappedPropertiesObject();
+
+            protected override void ReadValue(RemappedPropertiesObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "name":
+                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(RemappedPropertiesObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(RemappedPropertiesObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

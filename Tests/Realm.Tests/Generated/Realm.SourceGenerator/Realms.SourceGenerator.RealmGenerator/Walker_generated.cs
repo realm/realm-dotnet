@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(WalkerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Walker : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Walker()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new WalkerSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Walker"/> class.
         /// </summary>
@@ -279,7 +287,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class WalkerManagedAccessor : Realms.ManagedAccessor, IWalkerAccessor
+        private class WalkerManagedAccessor : Realms.ManagedAccessor, IWalkerAccessor
         {
             public string? Name
             {
@@ -323,7 +331,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class WalkerUnmanagedAccessor : Realms.UnmanagedAccessor, IWalkerAccessor
+        private class WalkerUnmanagedAccessor : Realms.UnmanagedAccessor, IWalkerAccessor
         {
             public override ObjectSchema ObjectSchema => Walker.RealmSchema;
 
@@ -408,6 +416,64 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class WalkerSerializer : Realms.Serialization.RealmObjectSerializerBase<Walker>
+        {
+            public override string SchemaName => "Walker";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Walker value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Name", value.Name);
+                WriteValue(context, args, "TopDog", value.TopDog);
+                WriteList(context, args, "ListOfDogs", value.ListOfDogs);
+                WriteSet(context, args, "SetOfDogs", value.SetOfDogs);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Walker CreateInstance() => new Walker();
+
+            protected override void ReadValue(Walker instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Name":
+                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "TopDog":
+                        instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
+                        break;
+                    case "ListOfDogs":
+                    case "SetOfDogs":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Walker instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "ListOfDogs":
+                        instance.ListOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        break;
+                    case "SetOfDogs":
+                        instance.SetOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
+                        break;
+                }
+            }
+
+            protected override void ReadDocumentField(Walker instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

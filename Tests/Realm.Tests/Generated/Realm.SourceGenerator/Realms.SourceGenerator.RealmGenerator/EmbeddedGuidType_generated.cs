@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Logging;
@@ -26,6 +27,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(EmbeddedGuidTypeObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedGuidType : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static EmbeddedGuidType()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedGuidTypeSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedGuidType"/> class.
         /// </summary>
@@ -330,7 +338,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedGuidTypeManagedAccessor : Realms.ManagedAccessor, IEmbeddedGuidTypeAccessor
+        private class EmbeddedGuidTypeManagedAccessor : Realms.ManagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public System.Guid RegularProperty
             {
@@ -484,7 +492,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedGuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedGuidTypeAccessor
+        private class EmbeddedGuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedGuidType.RealmSchema;
 
@@ -623,6 +631,111 @@ namespace Realms.Tests.Database
                     "MixedDict" => (IDictionary<string, TValue>)MixedDict,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class EmbeddedGuidTypeSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedGuidType>
+        {
+            public override string SchemaName => "EmbeddedGuidType";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedGuidType value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "RegularProperty", value.RegularProperty);
+                WriteList(context, args, "GuidList", value.GuidList);
+                WriteSet(context, args, "GuidSet", value.GuidSet);
+                WriteDictionary(context, args, "GuidDict", value.GuidDict);
+                WriteValue(context, args, "OptionalProperty", value.OptionalProperty);
+                WriteList(context, args, "OptionalList", value.OptionalList);
+                WriteSet(context, args, "OptionalSet", value.OptionalSet);
+                WriteDictionary(context, args, "OptionalDict", value.OptionalDict);
+                WriteValue(context, args, "LinkProperty", value.LinkProperty);
+                WriteValue(context, args, "MixedProperty", value.MixedProperty);
+                WriteList(context, args, "MixedList", value.MixedList);
+                WriteSet(context, args, "MixedSet", value.MixedSet);
+                WriteDictionary(context, args, "MixedDict", value.MixedDict);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override EmbeddedGuidType CreateInstance() => new EmbeddedGuidType();
+
+            protected override void ReadValue(EmbeddedGuidType instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "RegularProperty":
+                        instance.RegularProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "OptionalProperty":
+                        instance.OptionalProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
+                        break;
+                    case "LinkProperty":
+                        instance.LinkProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GuidType?>()!.DeserializeById(context);
+                        break;
+                    case "MixedProperty":
+                        instance.MixedProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "GuidList":
+                    case "GuidSet":
+                    case "OptionalList":
+                    case "OptionalSet":
+                    case "MixedList":
+                    case "MixedSet":
+                        ReadArray(instance, name, context);
+                        break;
+                    case "GuidDict":
+                    case "OptionalDict":
+                    case "MixedDict":
+                        ReadDictionary(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(EmbeddedGuidType instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "GuidList":
+                        instance.GuidList.Add(BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context));
+                        break;
+                    case "GuidSet":
+                        instance.GuidSet.Add(BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context));
+                        break;
+                    case "OptionalList":
+                        instance.OptionalList.Add(BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context));
+                        break;
+                    case "OptionalSet":
+                        instance.OptionalSet.Add(BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context));
+                        break;
+                    case "MixedList":
+                        instance.MixedList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                        break;
+                    case "MixedSet":
+                        instance.MixedSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
+                        break;
+                }
+            }
+
+            protected override void ReadDocumentField(EmbeddedGuidType instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "GuidDict":
+                        instance.GuidDict[fieldName] = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "OptionalDict":
+                        instance.OptionalDict[fieldName] = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
+                        break;
+                    case "MixedDict":
+                        instance.MixedDict[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                }
             }
         }
     }

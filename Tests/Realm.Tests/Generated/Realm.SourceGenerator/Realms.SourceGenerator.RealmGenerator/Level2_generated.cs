@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(Level2ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Level2 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Level2()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new Level2Serializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Level2"/> class.
         /// </summary>
@@ -263,7 +271,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class Level2ManagedAccessor : Realms.ManagedAccessor, ILevel2Accessor
+        private class Level2ManagedAccessor : Realms.ManagedAccessor, ILevel2Accessor
         {
             public int IntValue
             {
@@ -279,7 +287,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class Level2UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel2Accessor
+        private class Level2UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel2Accessor
         {
             public override ObjectSchema ObjectSchema => Level2.RealmSchema;
 
@@ -352,6 +360,50 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class Level2Serializer : Realms.Serialization.RealmObjectSerializerBase<Level2>
+        {
+            public override string SchemaName => "Level2";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Level2 value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "IntValue", value.IntValue);
+                WriteValue(context, args, "Level3", value.Level3);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Level2 CreateInstance() => new Level2();
+
+            protected override void ReadValue(Level2 instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "IntValue":
+                        instance.IntValue = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "Level3":
+                        instance.Level3 = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Level3?>()!.DeserializeById(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Level2 instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(Level2 instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

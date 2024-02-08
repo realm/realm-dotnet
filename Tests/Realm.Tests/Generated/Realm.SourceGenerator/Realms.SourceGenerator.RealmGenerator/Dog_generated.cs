@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(DogObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Dog()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new DogSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Dog"/> class.
         /// </summary>
@@ -281,7 +289,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
+        private class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
             public string? Name
             {
@@ -323,7 +331,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
+        private class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
@@ -429,6 +437,58 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class DogSerializer : Realms.Serialization.RealmObjectSerializerBase<Dog>
+        {
+            public override string SchemaName => "Dog";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Dog value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Name", value.Name);
+                WriteValue(context, args, "Color", value.Color);
+                WriteValue(context, args, "Vaccinated", value.Vaccinated);
+                WriteValue(context, args, "Age", value.Age);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Dog CreateInstance() => new Dog();
+
+            protected override void ReadValue(Dog instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Name":
+                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Color":
+                        instance.Color = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Vaccinated":
+                        instance.Vaccinated = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
+                        break;
+                    case "Age":
+                        instance.Age = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Dog instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(Dog instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

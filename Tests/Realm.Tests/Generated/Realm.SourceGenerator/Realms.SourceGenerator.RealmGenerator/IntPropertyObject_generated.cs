@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(IntPropertyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IntPropertyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static IntPropertyObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new IntPropertyObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="IntPropertyObject"/> class.
         /// </summary>
@@ -271,7 +279,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
+        private class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
             {
@@ -307,7 +315,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
+        private class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
 
@@ -402,6 +410,54 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class IntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IntPropertyObject>
+        {
+            public override string SchemaName => "IntPropertyObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPropertyObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "Int", value.Int);
+                WriteValue(context, args, "GuidProperty", value.GuidProperty);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override IntPropertyObject CreateInstance() => new IntPropertyObject();
+
+            protected override void ReadValue(IntPropertyObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
+                        break;
+                    case "Int":
+                        instance.Int = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "GuidProperty":
+                        instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(IntPropertyObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(IntPropertyObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

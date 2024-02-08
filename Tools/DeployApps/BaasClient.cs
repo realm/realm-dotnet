@@ -289,6 +289,8 @@ namespace Baas
             return (client, baseUri, remaining);
         }
 
+        public string GetSyncDatabaseName(string appType = AppConfigType.Default) => $"Sync_{Differentiator}_{appType}";
+
         private async Task Authenticate(string provider, object credentials)
         {
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
@@ -402,7 +404,7 @@ namespace Baas
                 sync = new
                 {
                     state = "enabled",
-                    database_name = $"PBS_{Differentiator}_{partitionKeyType}",
+                    database_name = GetSyncDatabaseName(name),
                     partition = new
                     {
                         key = "realm_id",
@@ -461,7 +463,7 @@ namespace Baas
                 flexible_sync = new
                 {
                     state = "enabled",
-                    database_name = $"FLX_{Differentiator}",
+                    database_name = GetSyncDatabaseName(name),
                     queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
                 }
             });

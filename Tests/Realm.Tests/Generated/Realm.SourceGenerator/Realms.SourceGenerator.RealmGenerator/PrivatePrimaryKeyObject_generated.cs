@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(PrivatePrimaryKeyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrivatePrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static PrivatePrimaryKeyObject()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new PrivatePrimaryKeyObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="PrivatePrimaryKeyObject"/> class.
         /// </summary>
@@ -261,7 +269,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrivatePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, IPrivatePrimaryKeyObjectAccessor
+        private class PrivatePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
             public string Id
             {
@@ -277,7 +285,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrivatePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrivatePrimaryKeyObjectAccessor
+        private class PrivatePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrivatePrimaryKeyObject.RealmSchema;
 
@@ -354,6 +362,50 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class PrivatePrimaryKeyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrivatePrimaryKeyObject>
+        {
+            public override string SchemaName => "PrivatePrimaryKeyObject";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrivatePrimaryKeyObject value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+                WriteValue(context, args, "Value", value.Value);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override PrivatePrimaryKeyObject CreateInstance() => new PrivatePrimaryKeyObject();
+
+            protected override void ReadValue(PrivatePrimaryKeyObject instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "Value":
+                        instance.Value = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(PrivatePrimaryKeyObject instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(PrivatePrimaryKeyObject instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }
