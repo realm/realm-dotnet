@@ -155,9 +155,6 @@ namespace Realms.Sync
         /// </example>
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => new SyncProgressObservable(Handle, direction, mode);
 
-        // TODO I think the example in the documentation of GetProgressObservable never worked, we can't use a lambda instead of an IObserver
-        // We can do it only if we install the System.Reactive package. The docs are also wrong (the package is installed in their repo)
-
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
         /// </summary>

@@ -50,8 +50,10 @@ namespace Realms.Sync
 
         internal SyncProgress(ulong transferred, ulong transferable, double progressEstimate)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             TransferredBytes = transferred;
             TransferableBytes = transferable;
+#pragma warning restore CS0618 // Type or member is obsolete
             ProgressEstimate = progressEstimate;
         }
 

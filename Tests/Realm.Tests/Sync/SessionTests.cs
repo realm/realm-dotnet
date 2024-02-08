@@ -777,8 +777,6 @@ namespace Realms.Tests.Sync
                     var config = await GetFLXIntegrationConfigAsync();
                     config.PopulateInitialSubscriptions = (r) =>
                     {
-                        var query = r.All<HugeSyncObject>();
-
                         r.Subscriptions.Add(r.All<HugeSyncObject>());
                     };
                     realm = await GetRealmAsync(config);
@@ -835,7 +833,7 @@ namespace Realms.Tests.Sync
                         completionTcs.TrySetException(e);
                     }
 
-                    if (p.TransferredBytes >= p.TransferableBytes)
+                    if (p.TransferredBytes >= p.TransferableBytes && p.TransferredBytes > objectSize)
                     {
                         if (p.ProgressEstimate != 1.0)
                         {
