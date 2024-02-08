@@ -2,9 +2,11 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using Realms.Helpers;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
@@ -26,6 +28,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(ThrowsBeforeInitializerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ThrowsBeforeInitializer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ThrowsBeforeInitializer()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ThrowsBeforeInitializerSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ThrowsBeforeInitializer"/> class.
         /// </summary>
@@ -258,7 +267,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ThrowsBeforeInitializerManagedAccessor : Realms.ManagedAccessor, IThrowsBeforeInitializerAccessor
+        private class ThrowsBeforeInitializerManagedAccessor : Realms.ManagedAccessor, IThrowsBeforeInitializerAccessor
         {
             public int Id
             {
@@ -268,7 +277,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ThrowsBeforeInitializerUnmanagedAccessor : Realms.UnmanagedAccessor, IThrowsBeforeInitializerAccessor
+        private class ThrowsBeforeInitializerUnmanagedAccessor : Realms.UnmanagedAccessor, IThrowsBeforeInitializerAccessor
         {
             public override ObjectSchema ObjectSchema => ThrowsBeforeInitializer.RealmSchema;
 
@@ -330,6 +339,46 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ThrowsBeforeInitializerSerializer : Realms.Serialization.RealmObjectSerializerBase<ThrowsBeforeInitializer>
+        {
+            public override string SchemaName => "ThrowsBeforeInitializer";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ThrowsBeforeInitializer value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "Id", value.Id);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ThrowsBeforeInitializer CreateInstance() => new ThrowsBeforeInitializer();
+
+            protected override void ReadValue(ThrowsBeforeInitializer instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Id":
+                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ThrowsBeforeInitializer instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(ThrowsBeforeInitializer instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

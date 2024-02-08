@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedLevel2ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedLevel2 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static EmbeddedLevel2()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedLevel2Serializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedLevel2"/> class.
         /// </summary>
@@ -274,7 +282,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedLevel2ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel2Accessor
+        private class EmbeddedLevel2ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel2Accessor
         {
             public string? String
             {
@@ -304,7 +312,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class EmbeddedLevel2UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel2Accessor
+        private class EmbeddedLevel2UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel2Accessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel2.RealmSchema;
 
@@ -383,6 +391,59 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class EmbeddedLevel2Serializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedLevel2>
+        {
+            public override string SchemaName => "EmbeddedLevel2";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedLevel2 value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "String", value.String);
+                WriteValue(context, args, "Child", value.Child);
+                WriteList(context, args, "Children", value.Children);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override EmbeddedLevel2 CreateInstance() => new EmbeddedLevel2();
+
+            protected override void ReadValue(EmbeddedLevel2 instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "String":
+                        instance.String = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
+                        break;
+                    case "Child":
+                        instance.Child = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel3?>().Deserialize(context);
+                        break;
+                    case "Children":
+                        ReadArray(instance, name, context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(EmbeddedLevel2 instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "Children":
+                        instance.Children.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel3>().Deserialize(context));
+                        break;
+                }
+            }
+
+            protected override void ReadDocumentField(EmbeddedLevel2 instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

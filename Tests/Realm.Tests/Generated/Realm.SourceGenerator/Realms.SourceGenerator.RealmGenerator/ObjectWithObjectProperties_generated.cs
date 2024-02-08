@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithObjectPropertiesObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithObjectProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static ObjectWithObjectProperties()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithObjectPropertiesSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithObjectProperties"/> class.
         /// </summary>
@@ -262,7 +270,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
+        private class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public Realms.Tests.IntPropertyObject? StandaloneObject
             {
@@ -278,7 +286,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
+        private class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
 
@@ -351,6 +359,50 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class ObjectWithObjectPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithObjectProperties>
+        {
+            public override string SchemaName => "ObjectWithObjectProperties";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithObjectProperties value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "StandaloneObject", value.StandaloneObject);
+                WriteValue(context, args, "EmbeddedObject", value.EmbeddedObject);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override ObjectWithObjectProperties CreateInstance() => new ObjectWithObjectProperties();
+
+            protected override void ReadValue(ObjectWithObjectProperties instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "StandaloneObject":
+                        instance.StandaloneObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject?>()!.DeserializeById(context);
+                        break;
+                    case "EmbeddedObject":
+                        instance.EmbeddedObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(ObjectWithObjectProperties instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(ObjectWithObjectProperties instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

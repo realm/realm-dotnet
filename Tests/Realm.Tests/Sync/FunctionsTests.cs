@@ -322,6 +322,10 @@ namespace Realms.Tests.Sync
                 {
                     AssertDateTimeEquals(date, dateResult);
                 }
+                else if (val is DateTimeOffset dto && result is DateTimeOffset dtoResult)
+                {
+                    AssertDateTimeOffsetEquals(dto, dtoResult);
+                }
                 else
                 {
                     Assert.That(result, Is.EqualTo(val));
@@ -336,6 +340,14 @@ namespace Realms.Tests.Sync
                     for (var i = 0; i < dateArr.Length; i++)
                     {
                         AssertDateTimeEquals(dateArr[i], dateArrResult[i]);
+                    }
+                }
+                else if (arr is DateTimeOffset[] dtoArr && arrResult is DateTimeOffset[] dtoArrResult)
+                {
+                    Assert.That(dtoArr.Length, Is.EqualTo(dtoArrResult.Length));
+                    for (var i = 0; i < dtoArr.Length; i++)
+                    {
+                        AssertDateTimeOffsetEquals(dtoArr[i], dtoArrResult[i]);
                     }
                 }
                 else
@@ -505,9 +517,14 @@ namespace Realms.Tests.Sync
 
         private static void AssertDateTimeOffsetEquals(BsonValue first, DateTimeOffset second)
         {
-            Assert.That(first.IsString);
-            var firstDto = DateTimeOffset.Parse(first.AsString);
-            Assert.That(firstDto, Is.EqualTo(second));
+            Assert.That(first.IsValidDateTime);
+            DateTimeOffset firstDto = first.ToUniversalTime();
+            AssertDateTimeOffsetEquals(firstDto, second);
+        }
+
+        private static void AssertDateTimeOffsetEquals(DateTimeOffset first, DateTimeOffset second)
+        {
+            Assert.That(first.ToUnixTimeMilliseconds(), Is.EqualTo(second.ToUnixTimeMilliseconds()));
         }
 
         private void AddCamelCaseConvention()

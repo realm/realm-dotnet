@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -25,6 +26,13 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyNullableInt16ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableInt16Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static PrimaryKeyNullableInt16Object()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyNullableInt16ObjectSerializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyNullableInt16Object"/> class.
         /// </summary>
@@ -257,7 +265,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyNullableInt16ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableInt16ObjectAccessor
+        private class PrimaryKeyNullableInt16ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableInt16ObjectAccessor
         {
             public short? Id
             {
@@ -267,7 +275,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PrimaryKeyNullableInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt16ObjectAccessor
+        private class PrimaryKeyNullableInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt16ObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableInt16Object.RealmSchema;
 
@@ -329,6 +337,46 @@ namespace Realms.Tests
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class PrimaryKeyNullableInt16ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyNullableInt16Object>
+        {
+            public override string SchemaName => "PrimaryKeyNullableInt16Object";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyNullableInt16Object value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "_id", value.Id);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override PrimaryKeyNullableInt16Object CreateInstance() => new PrimaryKeyNullableInt16Object();
+
+            protected override void ReadValue(PrimaryKeyNullableInt16Object instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "_id":
+                        instance.Id = BsonSerializer.LookupSerializer<short?>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(PrimaryKeyNullableInt16Object instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(PrimaryKeyNullableInt16Object instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }
