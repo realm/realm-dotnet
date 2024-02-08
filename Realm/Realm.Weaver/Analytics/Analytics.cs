@@ -528,19 +528,19 @@ namespace RealmWeaver
 
             public string? AnalyticsLogPath { get; init; }
 
-            required public string TargetOSName { get; init; }
+            public string TargetOSName { get; }
 
-            required public string NetFrameworkTarget { get; init; }
+            public string NetFrameworkTarget { get; }
 
-            required public string NetFrameworkTargetVersion { get; init; }
+            public string NetFrameworkTargetVersion { get; }
 
-            required public string InstallationMethod { get; init; }
+            public string InstallationMethod { get; }
 
-            required public string FrameworkName { get; init; }
+            public string FrameworkName { get; }
 
-            required public string FrameworkVersion { get; init; }
+            public string FrameworkVersion { get; }
 
-            required public string Compiler { get; init; }
+            public string Compiler { get; }
 
             // These are only available on Unity for now.
             public string TargetArchitecture { get; init; } = Metric.Unknown();
@@ -550,6 +550,24 @@ namespace RealmWeaver
             public string TargetOsMinimumVersion { get; init; } = Metric.Unknown();
 
             public string? ProjectId { get; init; }
+
+            public Config(
+                string targetOSName,
+                string netFrameworkTarget,
+                string netFrameworkTargetVersion,
+                string installationMethod,
+                string frameworkName,
+                string frameworkVersion,
+                string compiler)
+            {
+                TargetOSName = targetOSName;
+                NetFrameworkTarget = netFrameworkTarget;
+                NetFrameworkTargetVersion = netFrameworkTargetVersion;
+                InstallationMethod = installationMethod;
+                FrameworkName = frameworkName;
+                FrameworkVersion = frameworkVersion;
+                Compiler = compiler;
+            }
         }
 
         public enum AnalyticsCollection
