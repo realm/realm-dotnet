@@ -170,13 +170,14 @@ extern "C" {
         delete dictionary;
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, bool shallow, NativeException::Marshallable& ex)
-    
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict,
+    key_path_collection_type type, void* managedCallback, realm_string_t* keypaths, size_t keypaths_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [dictionary, shallow](CollectionChangeCallback callback) {
-                return dictionary->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-            }, shallow);
+            auto keypath_array = build_keypath_array(dictionary, type, keypaths, keypaths_len);
+            return subscribe_for_notifications(managed_dict, [dictionary, keypath_array](CollectionChangeCallback callback) {
+                return dictionary->add_notification_callback(callback, keypath_array);
+            }, type, managedCallback);
         });
     }
 
@@ -187,7 +188,7 @@ extern "C" {
             context->managed_object = managed_dict;
             context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes) {
                 if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
-                    s_dictionary_notification_callback(context->managed_object, nullptr, false);
+                    s_dictionary_notification_callback(context->managed_object, nullptr);
                 }
                 else {
                     auto deletions = get_keys_vector(changes.deletions);
@@ -200,7 +201,7 @@ extern "C" {
                         modifications,
                     };
 
-                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes, false);
+                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
                 }
             }, KeyPathArray());
 

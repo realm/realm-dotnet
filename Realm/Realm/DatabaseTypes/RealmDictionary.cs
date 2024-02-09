@@ -243,15 +243,24 @@ namespace Realms
             }
         }
 
+        protected override bool ContainsRealmObjects()
+        {
+            return typeof(IRealmObjectBase).IsAssignableFrom(typeof(TValue));
+        }
+
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, bool shallow)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes,
+            KeyPathsCollectionType type, Delegate? callback)
         {
-            Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
+            Debug.Assert(type == KeyPathsCollectionType.Full,
+                "Notifications should always be default here as we don't expose a way to configure it.");
+
+            Debug.Assert(callback == null, "Dictionary notifications don't expose keypaths, so the callback should always be null");
 
             DictionaryChangeSet? changeset = null;
             if (changes != null)
@@ -267,9 +276,9 @@ namespace Realms
                 _deliveredInitialKeyNotification = true;
             }
 
-            foreach (var callback in _keyCallbacks.ToArray())
+            foreach (var keyCallback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset);
+                keyCallback(this, changeset);
             }
         }
     }

@@ -4,6 +4,27 @@
 * Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Enhancements
+* Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
+
+  A `KeyPathsCollection` can be obtained by:
+  - building it explicitly by using the method `KeyPathsCollection.Of`;
+  - building it implicitly with the conversion from a `List` or array of `KeyPath` or strings;
+  - getting one of the static values `Full` and `Shallow` for full and shallow notifications respectively.
+
+
+  For example:
+  ```csharp
+  var query = realm.All<Person>();
+
+  KeyPathsCollection kpc;
+
+  //Equivalent declarations
+  kpc = KeyPathsCollection.Of("Email", "Name");
+  kpc = new List<KeyPath> {"Email", "Name"};
+
+  query.SubscribeForNotifications(NotificationCallback, kpc);
+  ```
+  (PR [#3501 ](https://github.com/realm/realm-dotnet/pull/3501))
 * Added the `MongoClient.GetCollection<T>` method to get a collection of documents from MongoDB that can be deserialized in Realm objects. This methods works the same as `MongoClient.GetDatabase(dbName).GetCollection(collectionName)`, but the database name and collection name are automatically derived from the Realm object class.  [#3414](https://github.com/realm/realm-dotnet/pull/3414)
 
 ### Fixed

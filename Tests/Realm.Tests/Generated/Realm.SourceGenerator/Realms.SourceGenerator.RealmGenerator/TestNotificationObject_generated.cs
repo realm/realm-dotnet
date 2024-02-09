@@ -35,6 +35,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TestNotificationObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringProperty"),
+            Realms.Schema.Property.Primitive("IntProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntProperty"),
             Realms.Schema.Property.ObjectList("ListSameType", "TestNotificationObject", managedName: "ListSameType"),
             Realms.Schema.Property.ObjectSet("SetSameType", "TestNotificationObject", managedName: "SetSameType"),
             Realms.Schema.Property.ObjectDictionary("DictionarySameType", "TestNotificationObject", managedName: "DictionarySameType"),
@@ -42,7 +43,11 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.ObjectList("ListDifferentType", "Person", managedName: "ListDifferentType"),
             Realms.Schema.Property.ObjectSet("SetDifferentType", "Person", managedName: "SetDifferentType"),
             Realms.Schema.Property.ObjectDictionary("DictionaryDifferentType", "Person", managedName: "DictionaryDifferentType"),
+            Realms.Schema.Property.ObjectList("ListRemappedType", "__RemappedTypeObject", managedName: "ListRemappedType"),
+            Realms.Schema.Property.ObjectSet("SetRemappedType", "__RemappedTypeObject", managedName: "SetRemappedType"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryRemappedType", "__RemappedTypeObject", managedName: "DictionaryRemappedType"),
             Realms.Schema.Property.Object("LinkDifferentType", "Person", managedName: "LinkDifferentType"),
+            Realms.Schema.Property.Object("LinkAnotherType", "Owner", managedName: "LinkAnotherType"),
             Realms.Schema.Property.Backlinks("Backlink", "TestNotificationObject", "LinkSameType", managedName: "Backlink"),
         }.Build();
 
@@ -98,11 +103,18 @@ namespace Realms.Tests.Database
                     newAccessor.ListDifferentType.Clear();
                     newAccessor.SetDifferentType.Clear();
                     newAccessor.DictionaryDifferentType.Clear();
+                    newAccessor.ListRemappedType.Clear();
+                    newAccessor.SetRemappedType.Clear();
+                    newAccessor.DictionaryRemappedType.Clear();
                 }
 
                 if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
+                if (!skipDefaults || oldAccessor.IntProperty != default(int))
+                {
+                    newAccessor.IntProperty = oldAccessor.IntProperty;
                 }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListSameType, newAccessor.ListSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetSameType, newAccessor.SetSameType, update, skipDefaults);
@@ -115,11 +127,19 @@ namespace Realms.Tests.Database
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListDifferentType, newAccessor.ListDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetDifferentType, newAccessor.SetDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryDifferentType, newAccessor.DictionaryDifferentType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListRemappedType, newAccessor.ListRemappedType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetRemappedType, newAccessor.SetRemappedType, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryRemappedType, newAccessor.DictionaryRemappedType, update, skipDefaults);
                 if (oldAccessor.LinkDifferentType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
                 }
                 newAccessor.LinkDifferentType = oldAccessor.LinkDifferentType;
+                if (oldAccessor.LinkAnotherType != null && newAccessor.Realm != null)
+                {
+                    newAccessor.Realm.Add(oldAccessor.LinkAnotherType, update);
+                }
+                newAccessor.LinkAnotherType = oldAccessor.LinkAnotherType;
             }
 
             if (_propertyChanged != null)
@@ -294,6 +314,8 @@ namespace Realms.Tests.Database
         {
             string? StringProperty { get; set; }
 
+            int IntProperty { get; set; }
+
             System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; }
 
             System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; }
@@ -308,7 +330,15 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person?> DictionaryDifferentType { get; }
 
+            System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType { get; }
+
+            System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType { get; }
+
             Realms.Tests.Database.Person? LinkDifferentType { get; set; }
+
+            Realms.Tests.Owner? LinkAnotherType { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
         }
@@ -320,6 +350,12 @@ namespace Realms.Tests.Database
             {
                 get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
+            }
+
+            public int IntProperty
+            {
+                get => (int)GetValue("IntProperty");
+                set => SetValue("IntProperty", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> _listSameType = null!;
@@ -412,10 +448,58 @@ namespace Realms.Tests.Database
                 }
             }
 
+            private System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> _listRemappedType = null!;
+            public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType
+            {
+                get
+                {
+                    if (_listRemappedType == null)
+                    {
+                        _listRemappedType = GetListValue<Realms.Tests.RemappedTypeObject>("ListRemappedType");
+                    }
+
+                    return _listRemappedType;
+                }
+            }
+
+            private System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> _setRemappedType = null!;
+            public System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType
+            {
+                get
+                {
+                    if (_setRemappedType == null)
+                    {
+                        _setRemappedType = GetSetValue<Realms.Tests.RemappedTypeObject>("SetRemappedType");
+                    }
+
+                    return _setRemappedType;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> _dictionaryRemappedType = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType
+            {
+                get
+                {
+                    if (_dictionaryRemappedType == null)
+                    {
+                        _dictionaryRemappedType = GetDictionaryValue<Realms.Tests.RemappedTypeObject?>("DictionaryRemappedType");
+                    }
+
+                    return _dictionaryRemappedType;
+                }
+            }
+
             public Realms.Tests.Database.Person? LinkDifferentType
             {
                 get => (Realms.Tests.Database.Person?)GetValue("LinkDifferentType");
                 set => SetValue("LinkDifferentType", value);
+            }
+
+            public Realms.Tests.Owner? LinkAnotherType
+            {
+                get => (Realms.Tests.Owner?)GetValue("LinkAnotherType");
+                set => SetValue("LinkAnotherType", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> _backlink = null!;
@@ -449,6 +533,17 @@ namespace Realms.Tests.Database
                 }
             }
 
+            private int _intProperty;
+            public int IntProperty
+            {
+                get => _intProperty;
+                set
+                {
+                    _intProperty = value;
+                    RaisePropertyChanged("IntProperty");
+                }
+            }
+
             public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; } = new List<Realms.Tests.Database.TestNotificationObject>();
 
             public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; } = new HashSet<Realms.Tests.Database.TestNotificationObject>(RealmSet<Realms.Tests.Database.TestNotificationObject>.Comparer);
@@ -472,6 +567,12 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person?> DictionaryDifferentType { get; } = new Dictionary<string, Realms.Tests.Database.Person?>();
 
+            public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> ListRemappedType { get; } = new List<Realms.Tests.RemappedTypeObject>();
+
+            public System.Collections.Generic.ISet<Realms.Tests.RemappedTypeObject> SetRemappedType { get; } = new HashSet<Realms.Tests.RemappedTypeObject>(RealmSet<Realms.Tests.RemappedTypeObject>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.RemappedTypeObject?> DictionaryRemappedType { get; } = new Dictionary<string, Realms.Tests.RemappedTypeObject?>();
+
             private Realms.Tests.Database.Person? _linkDifferentType;
             public Realms.Tests.Database.Person? LinkDifferentType
             {
@@ -480,6 +581,17 @@ namespace Realms.Tests.Database
                 {
                     _linkDifferentType = value;
                     RaisePropertyChanged("LinkDifferentType");
+                }
+            }
+
+            private Realms.Tests.Owner? _linkAnotherType;
+            public Realms.Tests.Owner? LinkAnotherType
+            {
+                get => _linkAnotherType;
+                set
+                {
+                    _linkAnotherType = value;
+                    RaisePropertyChanged("LinkAnotherType");
                 }
             }
 
@@ -494,8 +606,10 @@ namespace Realms.Tests.Database
                 return propertyName switch
                 {
                     "StringProperty" => _stringProperty,
+                    "IntProperty" => _intProperty,
                     "LinkSameType" => _linkSameType,
                     "LinkDifferentType" => _linkDifferentType,
+                    "LinkAnotherType" => _linkAnotherType,
                     "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
@@ -508,11 +622,17 @@ namespace Realms.Tests.Database
                     case "StringProperty":
                         StringProperty = (string?)val;
                         return;
+                    case "IntProperty":
+                        IntProperty = (int)val;
+                        return;
                     case "LinkSameType":
                         LinkSameType = (Realms.Tests.Database.TestNotificationObject?)val;
                         return;
                     case "LinkDifferentType":
                         LinkDifferentType = (Realms.Tests.Database.Person?)val;
+                        return;
+                    case "LinkAnotherType":
+                        LinkAnotherType = (Realms.Tests.Owner?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -530,6 +650,7 @@ namespace Realms.Tests.Database
                 {
                     "ListSameType" => (IList<T>)ListSameType,
                     "ListDifferentType" => (IList<T>)ListDifferentType,
+                    "ListRemappedType" => (IList<T>)ListRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                 };
             }
@@ -540,6 +661,7 @@ namespace Realms.Tests.Database
                 {
                     "SetSameType" => (ISet<T>)SetSameType,
                     "SetDifferentType" => (ISet<T>)SetDifferentType,
+                    "SetRemappedType" => (ISet<T>)SetRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                 };
             }
@@ -550,6 +672,7 @@ namespace Realms.Tests.Database
                 {
                     "DictionarySameType" => (IDictionary<string, TValue>)DictionarySameType,
                     "DictionaryDifferentType" => (IDictionary<string, TValue>)DictionaryDifferentType,
+                    "DictionaryRemappedType" => (IDictionary<string, TValue>)DictionaryRemappedType,
                     _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
                 };
             }
