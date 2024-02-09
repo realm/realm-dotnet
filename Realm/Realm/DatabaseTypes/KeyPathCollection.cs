@@ -159,7 +159,7 @@ public readonly struct KeyPath
     }
 
     /// <summary>
-    /// Creates a <see cref="KeyPath"/> from a lambda expression that specifies a property path for a given <see cref="IRealmObject">realm object</see> type.
+    /// Creates a <see cref="KeyPath"/> from an <see cref="Expression"/> that specifies a property path for a given <see cref="IRealmObject">realm object</see> type.
     /// </summary>
     /// <typeparam name="T">The type of the <see cref="IRealmObject">realm object.</see>.</typeparam>
     /// <param name="expression">The expression specifying the path to the property.</param>
