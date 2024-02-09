@@ -1655,6 +1655,18 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void KeyPath_CanBeBuiltFromExpressions()
+        {
+            KeyPath keyPath;
+
+            keyPath = KeyPath.For<TestNotificationObject>(t => t.ListSameType);
+            Assert.That(keyPath.Path, Is.EqualTo("ListSameType"));
+
+            keyPath = KeyPath.For<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs);
+            Assert.That(keyPath.Path, Is.EqualTo("LinkAnotherType.DictOfDogs"));
+        }
+
+        [Test]
         public void KeyPathsCollection_CanBeBuiltInDifferentWays()
         {
             var kpString1 = "test1";
@@ -1702,6 +1714,27 @@ namespace Realms.Tests.Database
             kpc = KeyPathsCollection.Full;
             Assert.That(kpc.Type, Is.EqualTo(KeyPathsCollectionType.Full));
             Assert.That(kpc.GetStrings(), Is.Empty);
+
+            void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
+            {
+                Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
+                Assert.That(k.GetStrings(), Is.EqualTo(expected));
+            }
+        }
+
+        [Test]
+        public void KeyPathsCollection_CanBeBuiltFromExpressions()
+        {
+            KeyPathsCollection kpc;
+
+            var expected = new List<string> { "ListSameType", "LinkAnotherType.DictOfDogs" };
+
+            kpc = KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, t => t.LinkAnotherType!.DictOfDogs);
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = KeyPathsCollection.Of(KeyPath.For<TestNotificationObject>(t => t.ListSameType),
+                KeyPath.For<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs));
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
 
             void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
             {
