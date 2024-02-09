@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Realms;
 
@@ -171,6 +172,11 @@ public readonly struct KeyPath
     public static KeyPath For<T>(Expression<Func<T, object>> expression)
         where T : IRealmObject
     {
+        if (expression is null)
+        {
+            throw new ArgumentException("The input expression cannot be null");
+        }
+
         return new KeyPath(GetFullPath(expression.Body));
     }
 
@@ -178,7 +184,9 @@ public readonly struct KeyPath
 
     private static string GetFullPath(Expression expression)
     {
-        if (expression is MemberExpression memberExpression)
+        if (expression is MemberExpression memberExpression // Either field or property expression
+            && memberExpression.Expression is not null // Filtering out static members
+            && memberExpression.Member is PropertyInfo) // Filtering for property expressions only
         {
             var subPath = GetFullPath(memberExpression.Expression);
             return string.IsNullOrEmpty(subPath) ? memberExpression.Member.Name : $"{subPath}.{memberExpression.Member.Name}";
@@ -189,7 +197,7 @@ public readonly struct KeyPath
             return string.Empty;
         }
 
-        throw new Exception();
+        throw new ArgumentException("The input expression is not a path to a property");
     }
 
     /// <inheritdoc/>

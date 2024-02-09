@@ -1667,6 +1667,16 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void KeyPath_WithInvalidExpressions_ThrowsException()
+        {
+            Assert.That(() => KeyPath.For<TestNotificationObject>(t => t.Equals(this)),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression is not a path to a property"));
+
+            Assert.That(() => KeyPath.For<TestNotificationObject>(null!),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression cannot be null"));
+        }
+
+        [Test]
         public void KeyPathsCollection_CanBeBuiltInDifferentWays()
         {
             var kpString1 = "test1";
@@ -1741,6 +1751,16 @@ namespace Realms.Tests.Database
                 Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
                 Assert.That(k.GetStrings(), Is.EqualTo(expected));
             }
+        }
+
+        [Test]
+        public void KeyPathsCollection_WithInvalidExpressions_ThrowsExceptions()
+        {
+            Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, null!),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression cannot be null"));
+
+            Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.Equals(this)),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression is not a path to a property"));
         }
 
         [Test]
