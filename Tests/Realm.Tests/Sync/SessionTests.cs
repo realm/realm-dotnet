@@ -756,7 +756,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         [Test]
         public void SessionIntegrationTest_ProgressObservable(
             [ValueSource(nameof(AppTypes))] string appType,
@@ -797,6 +796,8 @@ namespace Realms.Tests.Sync
                     });
                 }
 
+                var lastReportedProgress = 0.0d;
+
                 using var token = observable.Subscribe(p =>
                 {
                     try
@@ -807,20 +808,35 @@ namespace Realms.Tests.Sync
                         {
                             throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
                         }
+
+                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        {
+                            if (p.ProgressEstimate < lastReportedProgress)
+                            {
+                                throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
+                            }
+
+                            if (p.IsComplete)
+                            {
+                                if (p.ProgressEstimate != 1.0)
+                                {
+                                    throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
+                                }
+
+                                completionTcs.TrySetResult();
+                            }
+                        }
+                        else if (mode == ProgressMode.ReportIndefinitely)
+                        {
+
+                        }
+
+
+                        lastReportedProgress = p.ProgressEstimate;
                     }
                     catch (Exception e)
                     {
                         completionTcs.TrySetException(e);
-                    }
-
-                    if (p.IsComplete)
-                    {
-                        if (p.ProgressEstimate != 1.0)
-                        {
-                            throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
-                        }
-
-                        completionTcs.TrySetResult();
                     }
                 });
 
@@ -834,7 +850,6 @@ namespace Realms.Tests.Sync
                 Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
             }, timeout: 120_000);
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         [Test]
         public void Session_Stop_StopsSession()

@@ -26,7 +26,7 @@ namespace Realms.Sync
     public readonly struct SyncProgress
     {
         /// <summary>
-        /// Gets the percentage estimate of the current progress, expressed as a float between 0.0 and 1.0.
+        /// Gets the percentage estimate of the current progress, expressed as a double between 0.0 and 1.0.
         /// </summary>
         /// <value>A percentage estimate of the progress.</value>
         public double ProgressEstimate { get; }
@@ -36,6 +36,6 @@ namespace Realms.Sync
             ProgressEstimate = progressEstimate;
         }
 
-        internal readonly bool IsComplete => ProgressEstimate >= 1.0;
+        internal bool IsComplete => ProgressEstimate >= 1.0;
     }
 }
