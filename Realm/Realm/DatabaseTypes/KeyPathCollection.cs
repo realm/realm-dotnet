@@ -184,9 +184,9 @@ public readonly struct KeyPath
 
     private static string GetFullPath(Expression expression)
     {
-        if (expression is MemberExpression memberExpression // Either field or property expression
-            && memberExpression.Expression is not null // Filtering out static members
-            && memberExpression.Member is PropertyInfo) // Filtering for property expressions only
+        if (expression is MemberExpression memberExpression //// Either field or property expression
+            && memberExpression.Expression is not null //// Filtering out static members
+            && memberExpression.Member is PropertyInfo) //// Filtering for property expressions only
         {
             var subPath = GetFullPath(memberExpression.Expression);
             return string.IsNullOrEmpty(subPath) ? memberExpression.Member.Name : $"{subPath}.{memberExpression.Member.Name}";
