@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
@@ -761,6 +762,8 @@ namespace Realms.Tests.Sync
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
         {
+            Realms.Logging.Logger.Default = Realms.Logging.Logger.Function((w) => TestContext.Out.WriteLine(w));
+            Realms.Logging.Logger.LogLevel = Logging.LogLevel.Debug;
             const int objectSize = 1_000_000;
             const int objectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -803,6 +806,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         callbacksInvoked++;
+                        TestContext.Out.WriteLine($"CALLBACK: {callbacksInvoked}");
 
                         if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
                         {
@@ -833,6 +837,9 @@ namespace Realms.Tests.Sync
 
 
                         lastReportedProgress = p.ProgressEstimate;
+
+                        Debug.WriteLine($"END: {callbacksInvoked}");
+
                     }
                     catch (Exception e)
                     {
@@ -840,12 +847,116 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                realm.Write(() =>
+                //realm.Write(() =>
+                //{
+                //    realm.Add(new HugeSyncObject(objectSize));
+                //});
+
+                await Task.Delay(15000);
+                //token.Dispose();
+
+                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
+            }, timeout: 120_000);
+        }
+
+        [Test]
+        public void SessionIntegrationTest_ProgressObservable2()
+        {
+            var appType = AppConfigType.FlexibleSync;
+            var mode = ProgressMode.ReportIndefinitely;
+
+            Realms.Logging.Logger.Default = Realms.Logging.Logger.Function((w) => TestContext.Out.WriteLine(w));
+            Realms.Logging.Logger.LogLevel = Logging.LogLevel.Debug;
+            const int objectSize = 1_000_000;
+            const int objectsToRecord = 2;
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                Realm realm;
+                if (appType == AppConfigType.Default)
                 {
-                    realm.Add(new HugeSyncObject(objectSize));
+                    var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                    realm = GetRealm(config);
+                }
+                else
+                {
+                    var config = await GetFLXIntegrationConfigAsync();
+                    config.PopulateInitialSubscriptions = (r) =>
+                    {
+                        r.Subscriptions.Add(r.All<HugeSyncObject>());
+                    };
+                    realm = await GetRealmAsync(config);
+                    await realm.SyncSession.WaitForDownloadAsync();
+                    await realm.SyncSession.WaitForUploadAsync();
+                }
+
+                var completionTcs = new TaskCompletionSource();
+                var callbacksInvoked = 0;
+
+                var session = GetSession(realm);
+
+                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
+
+                for (var i = 0; i < objectsToRecord; i++)
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new HugeSyncObject(objectSize));
+                    });
+                }
+
+                var lastReportedProgress = 0.0d;
+
+                var estimates = new List<double> { };
+
+                using var token = observable.Subscribe(p =>
+                {
+                    try
+                    {
+                        callbacksInvoked++;
+                        estimates.Add(p.ProgressEstimate);
+                        if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
+                        {
+                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
+                        }
+
+                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        {
+                            if (p.ProgressEstimate < lastReportedProgress)
+                            {
+                                throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
+                            }
+
+                            if (p.IsComplete)
+                            {
+                                if (p.ProgressEstimate != 1.0)
+                                {
+                                    throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
+                                }
+
+                                completionTcs.TrySetResult();
+                            }
+                        }
+                        else if (mode == ProgressMode.ReportIndefinitely && callbacksInvoked == 3)
+                        {
+                            completionTcs.TrySetResult();
+                        }
+
+                        lastReportedProgress = p.ProgressEstimate;
+                    }
+                    catch (Exception e)
+                    {
+                        completionTcs.TrySetException(e);
+                    }
                 });
 
+                //realm.Write(() =>
+                //{
+                //    realm.Add(new HugeSyncObject(objectSize));
+                //});
+
                 await completionTcs.Task;
+
+                TestContext.Out.WriteLine(string.Join(", ", estimates));
 
                 Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
             }, timeout: 120_000);
