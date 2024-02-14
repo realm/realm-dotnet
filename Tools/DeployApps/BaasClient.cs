@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -78,6 +79,92 @@ namespace Baas
 
                 return false;
             }
+        }
+    }
+
+    [BsonIgnoreExtraElements]
+    public class ContainerInfo
+    {
+        [BsonElement("id")]
+        public string ContainerId { get; set; }
+
+        [BsonElement("httpUrl")]
+        public string HttpUrl { get; set; }
+
+        [BsonElement("lastStatus")]
+        public string LastStatus { get; set; }
+
+        [BsonElement("tags")]
+        public List<Tag> Tags { get; set; }
+
+        [BsonElement("creatorId")]
+        public string CreatorId { get; set; }
+    }
+
+    public class Tag
+    {
+        [BsonElement("key")]
+        public string Key { get; set; }
+
+        [BsonElement("value")]
+        public string Value { get; set; }
+    }
+
+    public class BaasAuthHelper
+    {
+        private const string _baseUrl = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
+        private readonly HttpClient _client = new();
+
+        public BaasAuthHelper(string apiKey)
+        {
+            _client.BaseAddress = new Uri(_baseUrl);
+            _client.DefaultRequestHeaders.TryAddWithoutValidation("apiKey", apiKey);
+        }
+
+        public async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object payload)
+        {
+            using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
+
+            if (payload is not null)
+            {
+                var contentAsJson = GetJsonContent(payload);
+                message.Content = contentAsJson;
+            }
+
+            var response = await _client.SendAsync(message);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                return BsonSerializer.Deserialize<T>(json);
+            }
+
+            return default;
+        }
+
+        private static HttpContent GetJsonContent(object obj)
+        {
+            string jsonContent;
+            // TODO This could be written better
+            if(obj is Array arr)
+            {
+                var bsonArr = new BsonArray();
+                foreach(var elem in arr)
+                {
+                    bsonArr.Add(elem.ToBsonDocument());
+                }
+                jsonContent = bsonArr.ToJson();
+            }
+            else
+            {
+                jsonContent = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
+            }
+            var content = new StringContent(jsonContent);
+
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            return content;
         }
     }
 
@@ -143,7 +230,7 @@ namespace Baas
                         return { status: 'pending' };
                     }
 
-                    return { status: 'success' };                  
+                    return { status: 'success' };
                    }
 
                   // will not reset the password
@@ -262,6 +349,42 @@ namespace Baas
             result._groupId = groupId;
 
             return result;
+        }
+
+        public static async Task GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        {
+            var helper = new BaasAuthHelper(baaSaasApiKey);
+            // Get containers
+            var containers = await helper.CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers", null);
+
+            if(containers.Length > 0)
+            {
+                var userId = (await helper.CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo", null))!["id"].AsString;
+
+                if(containers.Any(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator)))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                var response = await helper.CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
+                {
+                    new
+                    {
+                        key = "DIFFERENTIATOR",
+                        value = differentiator,
+                    }
+                });
+
+                var id = response["id"];
+            }
+
+            Console.WriteLine(containers);
+
+            // If containers are there, return
+            // If containers are not there, create them
+            // Wait for containers to be created
         }
 
         public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)

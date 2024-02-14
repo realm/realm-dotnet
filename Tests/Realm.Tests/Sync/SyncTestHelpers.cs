@@ -41,6 +41,7 @@ namespace Realms.Tests.Sync
 
         public static Uri? BaasUri;
         private static BaasClient? _baasClient;
+        private static string? _baaSaasApiKey;
 
         static SyncTestHelpers()
         {
@@ -52,6 +53,8 @@ namespace Realms.Tests.Sync
                 {
                     BaasUri = new Uri(uri);
                 }
+
+                _baaSaasApiKey = ConfigHelpers.GetSetting("BaaSaasApiKey");
             }
             catch
             {
@@ -76,7 +79,7 @@ namespace Realms.Tests.Sync
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
-            if (BaasUri == null)
+            if (BaasUri == null && _baaSaasApiKey == null)
             {
                 Assert.Ignore("Atlas App Services are not setup.");
             }
@@ -167,9 +170,15 @@ namespace Realms.Tests.Sync
 
         private static async Task CreateBaasAppsAsync()
         {
-            if (_apps[AppConfigType.Default].AppId != string.Empty || BaasUri == null)
+            if (_apps[AppConfigType.Default].AppId != string.Empty || (BaasUri == null && _baaSaasApiKey == null))
             {
                 return;
+            }
+
+            // TODO Add correct differentiator
+            if (_baaSaasApiKey != null)
+            {
+                await BaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output);
             }
 
 #if !UNITY
