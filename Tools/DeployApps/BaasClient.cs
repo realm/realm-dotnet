@@ -18,8 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -86,28 +84,28 @@ namespace Baas
     public class ContainerInfo
     {
         [BsonElement("id")]
-        public string ContainerId { get; set; }
+        public string ContainerId { get; set; } = null!;
 
         [BsonElement("httpUrl")]
-        public string HttpUrl { get; set; }
+        public string HttpUrl { get; set; } = null!;
 
         [BsonElement("lastStatus")]
-        public string LastStatus { get; set; }
+        public string LastStatus { get; set; } = null!;
 
         [BsonElement("tags")]
-        public List<Tag> Tags { get; set; }
+        public List<Tag> Tags { get; set; } = null!;
 
         [BsonElement("creatorId")]
-        public string CreatorId { get; set; }
+        public string CreatorId { get; set; } = null!;
     }
 
     public class Tag
     {
         [BsonElement("key")]
-        public string Key { get; set; }
+        public string Key { get; set; } = null!;
 
         [BsonElement("value")]
-        public string Value { get; set; }
+        public string Value { get; set; } = null!;
     }
 
     public class BaasAuthHelper
@@ -121,7 +119,31 @@ namespace Baas
             _client.DefaultRequestHeaders.TryAddWithoutValidation("apiKey", apiKey);
         }
 
-        public async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object payload)
+        public Task<ContainerInfo[]?> GetContainers()
+        {
+            return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
+        }
+
+        public async Task<string?> GetCurrentUserId()
+        {
+            return (await CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo"))!["id"].AsString;
+        }
+
+        public async Task<string?> StartContainer(string differentiator)
+        {
+            var response = await CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
+            {
+                new
+                {
+                    key = "DIFFERENTIATOR",
+                    value = differentiator,
+                }
+            });
+
+            return response?["id"].AsString;
+        }
+
+        private async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
         {
             using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
 
@@ -146,20 +168,22 @@ namespace Baas
         private static HttpContent GetJsonContent(object obj)
         {
             string jsonContent;
-            // TODO This could be written better
+
             if(obj is Array arr)
             {
-                var bsonArr = new BsonArray();
+                var bsonArray = new BsonArray();
                 foreach(var elem in arr)
                 {
-                    bsonArr.Add(elem.ToBsonDocument());
+                    bsonArray.Add(elem.ToBsonDocument());
                 }
-                jsonContent = bsonArr.ToJson();
+
+                jsonContent = bsonArray.ToJson();
             }
             else
             {
-                jsonContent = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
+                jsonContent = obj.ToJson();
             }
+
             var content = new StringContent(jsonContent);
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -354,12 +378,12 @@ namespace Baas
         public static async Task GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
         {
             var helper = new BaasAuthHelper(baaSaasApiKey);
-            // Get containers
-            var containers = await helper.CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers", null);
 
-            if(containers.Length > 0)
+            var containers = await helper.GetContainers();
+
+            if(containers?.Length > 0)
             {
-                var userId = (await helper.CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo", null))!["id"].AsString;
+                var userId = await helper.GetCurrentUserId();
 
                 if(containers.Any(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator)))
                 {
@@ -368,16 +392,7 @@ namespace Baas
             }
             else
             {
-                var response = await helper.CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
-                {
-                    new
-                    {
-                        key = "DIFFERENTIATOR",
-                        value = differentiator,
-                    }
-                });
-
-                var id = response["id"];
+                var response = await helper.StartContainer(differentiator);
             }
 
             Console.WriteLine(containers);
@@ -851,7 +866,6 @@ namespace Baas
                 throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
             }
 
-            response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
 
             if (!string.IsNullOrWhiteSpace(json))
