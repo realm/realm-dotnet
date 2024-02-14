@@ -688,6 +688,7 @@ namespace Realms.Tests.Database
                 context.Writer.WriteStartDocument();
 
                 WriteValue(context, args, "StringProperty", value.StringProperty);
+                WriteValue(context, args, "IntProperty", value.IntProperty);
                 WriteList(context, args, "ListSameType", value.ListSameType);
                 WriteSet(context, args, "SetSameType", value.SetSameType);
                 WriteDictionary(context, args, "DictionarySameType", value.DictionarySameType);
@@ -695,7 +696,11 @@ namespace Realms.Tests.Database
                 WriteList(context, args, "ListDifferentType", value.ListDifferentType);
                 WriteSet(context, args, "SetDifferentType", value.SetDifferentType);
                 WriteDictionary(context, args, "DictionaryDifferentType", value.DictionaryDifferentType);
+                WriteList(context, args, "ListRemappedType", value.ListRemappedType);
+                WriteSet(context, args, "SetRemappedType", value.SetRemappedType);
+                WriteDictionary(context, args, "DictionaryRemappedType", value.DictionaryRemappedType);
                 WriteValue(context, args, "LinkDifferentType", value.LinkDifferentType);
+                WriteValue(context, args, "LinkAnotherType", value.LinkAnotherType);
 
                 context.Writer.WriteEndDocument();
             }
@@ -709,20 +714,29 @@ namespace Realms.Tests.Database
                     case "StringProperty":
                         instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
                         break;
+                    case "IntProperty":
+                        instance.IntProperty = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
                     case "LinkSameType":
                         instance.LinkSameType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.TestNotificationObject?>()!.DeserializeById(context);
                         break;
                     case "LinkDifferentType":
                         instance.LinkDifferentType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
                         break;
+                    case "LinkAnotherType":
+                        instance.LinkAnotherType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Owner?>()!.DeserializeById(context);
+                        break;
                     case "ListSameType":
                     case "SetSameType":
                     case "ListDifferentType":
                     case "SetDifferentType":
+                    case "ListRemappedType":
+                    case "SetRemappedType":
                         ReadArray(instance, name, context);
                         break;
                     case "DictionarySameType":
                     case "DictionaryDifferentType":
+                    case "DictionaryRemappedType":
                         ReadDictionary(instance, name, context);
                         break;
                     default:
@@ -747,6 +761,12 @@ namespace Realms.Tests.Database
                     case "SetDifferentType":
                         instance.SetDifferentType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
                         break;
+                    case "ListRemappedType":
+                        instance.ListRemappedType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        break;
+                    case "SetRemappedType":
+                        instance.SetRemappedType.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject>()!.DeserializeById(context)!);
+                        break;
                 }
             }
 
@@ -759,6 +779,9 @@ namespace Realms.Tests.Database
                         break;
                     case "DictionaryDifferentType":
                         instance.DictionaryDifferentType[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context)!;
+                        break;
+                    case "DictionaryRemappedType":
+                        instance.DictionaryRemappedType[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RemappedTypeObject?>()!.DeserializeById(context)!;
                         break;
                 }
             }
