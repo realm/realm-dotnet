@@ -175,22 +175,22 @@ namespace Realms.Tests.Sync
                 return;
             }
 
+#if !UNITY
+            var cluster = ConfigHelpers.GetSetting("Cluster")!;
+            var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
+            var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
+            var groupId = ConfigHelpers.GetSetting("GroupId")!;
+            var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
+
             if (_baaSaasApiKey != null)
             {
                 var baaSaasContainerUrl = await BaaSaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output);
                 BaasUri = new Uri(baaSaasContainerUrl);
-                _baasClient ??= await BaasClient.Docker(BaasUri, "local", TestHelpers.Output);
+                _baasClient ??= await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
             }
 
-#if !UNITY
             try
             {
-                var cluster = ConfigHelpers.GetSetting("Cluster")!;
-                var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
-                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
-                var groupId = ConfigHelpers.GetSetting("GroupId")!;
-                var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
-
                 _baasClient ??= await BaasClient.Atlas(BaasUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
