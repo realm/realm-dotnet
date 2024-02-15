@@ -30,9 +30,6 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Serializers;
-#if !NETCOREAPP2_1_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-#endif
 
 namespace Baas
 {
@@ -43,185 +40,6 @@ namespace Baas
         public const string ObjectIdPartitionKey = "pbs-oid";
         public const string UUIDPartitionKey = "pbs-uuid";
         public const string FlexibleSync = "flx";
-    }
-
-    public static class ArgumentHelper
-    {
-        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
-        {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            var extracted = new Dictionary<string, string>();
-            var remainingArgs = new List<string>();
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!toExtract.Any(name => ExtractArg(i, name)))
-                {
-                    remainingArgs.Add(args[i]);
-                }
-            }
-
-            return (extracted, remainingArgs.ToArray());
-
-            bool ExtractArg(int index, string name)
-            {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
-                {
-                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
-                    return true;
-                }
-
-                return false;
-            }
-        }
-    }
-
-    [BsonIgnoreExtraElements]
-    public class ContainerInfo
-    {
-        [BsonElement("id")]
-        public string ContainerId { get; set; } = null!;
-
-        [BsonElement("httpUrl")]
-        public string HttpUrl { get; set; } = null!;
-
-        [BsonElement("lastStatus")]
-        public string LastStatus { get; set; } = null!;
-
-        [BsonElement("tags")]
-        public List<Tag> Tags { get; set; } = null!;
-
-        [BsonElement("creatorId")]
-        public string CreatorId { get; set; } = null!;
-
-        public bool IsRunning => LastStatus == "RUNNING";
-    }
-
-    public class Tag
-    {
-        [BsonElement("key")]
-        public string Key { get; set; } = null!;
-
-        [BsonElement("value")]
-        public string Value { get; set; } = null!;
-    }
-
-    public class BaasAuthHelper
-    {
-        private const string _baseUrl = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
-        private readonly HttpClient _client = new();
-
-        public BaasAuthHelper(string apiKey)
-        {
-            _client.BaseAddress = new Uri(_baseUrl);
-            _client.DefaultRequestHeaders.TryAddWithoutValidation("apiKey", apiKey);
-        }
-
-        public Task<ContainerInfo[]?> GetContainers()
-        {
-            return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
-        }
-
-        public Task StopContainer(string id)
-        {
-            return CallEndpointAsync<BsonDocument>(HttpMethod.Post, $"stopContainer?id={id}");
-        }
-
-        public async Task<string?> GetCurrentUserId()
-        {
-            return (await CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo"))!["id"].AsString;
-        }
-
-        public async Task<string> StartContainer(string differentiator)
-        {
-            var response = await CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
-            {
-                new
-                {
-                    key = "DIFFERENTIATOR",
-                    value = differentiator,
-                }
-            });
-
-            return response?["id"].AsString!;
-        }
-
-        public async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
-        {
-            while (maxRetries > 0)
-            {
-                maxRetries -= 1;
-
-                var containers = await GetContainers();
-                var container = containers.FirstOrDefault(c => c.ContainerId == containerId);
-
-                if (container?.IsRunning == true)
-                {
-                    var response = await _client.GetAsync($"{container.HttpUrl}/api/private/v1.0/version");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return container;
-                    }
-                }
-
-                await Task.Delay(2000);
-            }
-
-            throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
-        }
-
-        //TODO Maybe merge these two methods with the ones on baasClient?
-        private async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
-        {
-            using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
-
-            if (payload is not null)
-            {
-                var contentAsJson = GetJsonContent(payload);
-                message.Content = contentAsJson;
-            }
-
-            var response = await _client.SendAsync(message);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                return BsonSerializer.Deserialize<T>(json);
-            }
-
-            return default;
-        }
-
-        private static HttpContent GetJsonContent(object obj)
-        {
-            string jsonContent;
-
-            if(obj is Array arr)
-            {
-                var bsonArray = new BsonArray();
-                foreach(var elem in arr)
-                {
-                    bsonArray.Add(elem.ToBsonDocument());
-                }
-
-                jsonContent = bsonArray.ToJson();
-            }
-            else
-            {
-                jsonContent = obj.ToJson();
-            }
-
-            var content = new StringContent(jsonContent);
-
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            return content;
-        }
     }
 
     public class BaasClient
@@ -407,44 +225,6 @@ namespace Baas
             return result;
         }
 
-        public static async Task<string> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
-        {
-            var helper = new BaasAuthHelper(baaSaasApiKey);
-
-            await helper.StopContainer("bcffa8d3e5954252b19e3c0cc4279725");
-
-            output.WriteLine("Looking for existing containers on BaaSaas.");
-            var containers = await helper.GetContainers();
-
-            if(containers?.Length > 0)
-            {
-                var userId = await helper.GetCurrentUserId();
-                var existingContainer = containers
-                    .FirstOrDefault(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
-
-                if (existingContainer is not null)
-                {
-                    output.WriteLine($"Container with id {existingContainer.ContainerId} found.");
-
-                    if (!existingContainer.IsRunning)
-                    {
-                        output.WriteLine($"Waiting for container with id {existingContainer.ContainerId} to be running.");
-                        await helper.WaitForContainer(existingContainer.ContainerId);
-                    }
-
-                    return existingContainer.HttpUrl;
-                }
-            }
-
-            output.WriteLine($"No container found, starting a new one.");
-            var containerId = await helper.StartContainer(differentiator);
-
-            output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
-            var container = await helper.WaitForContainer(containerId);
-
-            return container.HttpUrl;
-        }
-
         public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
         {
             if (args == null)
@@ -452,7 +232,7 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
+            var (extracted, remaining) = Utils.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
             if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
             {
@@ -807,16 +587,6 @@ namespace Baas
             return response!["_id"].AsString;
         }
 
-        private static HttpContent GetJsonContent(object obj)
-        {
-            var json = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
-            var content = new StringContent(json);
-
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            return content;
-        }
-
         private async Task<string> CreateMongodbService(BaasApp app, object syncConfig)
         {
             var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
@@ -893,7 +663,7 @@ namespace Baas
             using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
             if (payload != null)
             {
-                message.Content = GetJsonContent(payload);
+                message.Content = Utils.GetJsonContent(payload);
             }
 
             var response = await _client.SendAsync(message);
@@ -1044,20 +814,4 @@ namespace Baas
             GenericBaasRule(differentiator, "foos"));
         }
     }
-
-#if !NETCOREAPP2_1_OR_GREATER
-    internal static class DictionaryExtensions
-    {
-        [return: NotNullIfNotNull("defaultValue")]
-        public static T? GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T? defaultValue = default)
-        {
-            if (dictionary.TryGetValue(key, out var value))
-            {
-                return value;
-            }
-
-            return defaultValue;
-        }
-    }
-#endif
 }

@@ -153,9 +153,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
-      <Link>Sync\BaasClient.cs</Link>
+      <Link>Sync\Baas\BaasClient.cs</Link>
       <SubType></SubType>
     </Compile>
+    <Compile Include="..\..\Tools\DeployApps\BaaSaasClient.cs">
+      <Link>Sync\Baas\BaaSaasClient.cs</Link>
+      <SubType></SubType>
+    </Compile>
+    <Compile Include="..\..\Tools\DeployApps\Utils.cs">
+      <Link>Sync\Baas\Utils.cs</Link>
+      <SubType></SubType>
+    </Compile>  
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />

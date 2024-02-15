@@ -135,7 +135,7 @@ namespace Realms.Tests.Sync
 
         public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
         {
-            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
+            var (extracted, remaining) = Utils.ExtractArguments(args, "realmloglevel", "realmlogfile");
 
             if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
             {
@@ -177,7 +177,8 @@ namespace Realms.Tests.Sync
 
             if (_baaSaasApiKey != null)
             {
-                BaasUri = new Uri(await BaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output));
+                var baaSaasContainerUrl = await BaaSaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output);
+                BaasUri = new Uri(baaSaasContainerUrl);
                 _baasClient ??= await BaasClient.Docker(BaasUri, "local", TestHelpers.Output);
             }
 
