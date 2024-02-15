@@ -175,10 +175,10 @@ namespace Realms.Tests.Sync
                 return;
             }
 
-            // TODO Add correct differentiator
             if (_baaSaasApiKey != null)
             {
-                await BaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output);
+                BaasUri = new Uri(await BaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output));
+                _baasClient ??= await BaasClient.Docker(BaasUri, "local", TestHelpers.Output);
             }
 
 #if !UNITY

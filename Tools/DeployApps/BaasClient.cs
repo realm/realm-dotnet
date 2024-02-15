@@ -97,6 +97,8 @@ namespace Baas
 
         [BsonElement("creatorId")]
         public string CreatorId { get; set; } = null!;
+
+        public bool IsRunning => LastStatus == "RUNNING";
     }
 
     public class Tag
@@ -124,12 +126,17 @@ namespace Baas
             return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
         }
 
+        public Task StopContainer(string id)
+        {
+            return CallEndpointAsync<BsonDocument>(HttpMethod.Post, $"stopContainer?id={id}");
+        }
+
         public async Task<string?> GetCurrentUserId()
         {
             return (await CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo"))!["id"].AsString;
         }
 
-        public async Task<string?> StartContainer(string differentiator)
+        public async Task<string> StartContainer(string differentiator)
         {
             var response = await CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
             {
@@ -140,9 +147,34 @@ namespace Baas
                 }
             });
 
-            return response?["id"].AsString;
+            return response?["id"].AsString!;
         }
 
+        public async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
+        {
+            while (maxRetries > 0)
+            {
+                maxRetries -= 1;
+
+                var containers = await GetContainers();
+                var container = containers.FirstOrDefault(c => c.ContainerId == containerId);
+
+                if (container?.IsRunning == true)
+                {
+                    var response = await _client.GetAsync($"{container.HttpUrl}/api/private/v1.0/version");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return container;
+                    }
+                }
+
+                await Task.Delay(2000);
+            }
+
+            throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
+        }
+
+        //TODO Maybe merge these two methods with the ones on baasClient?
         private async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
         {
             using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
@@ -375,31 +407,42 @@ namespace Baas
             return result;
         }
 
-        public static async Task GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        public static async Task<string> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
         {
             var helper = new BaasAuthHelper(baaSaasApiKey);
 
+            await helper.StopContainer("bcffa8d3e5954252b19e3c0cc4279725");
+
+            output.WriteLine("Looking for existing containers on BaaSaas.");
             var containers = await helper.GetContainers();
 
             if(containers?.Length > 0)
             {
                 var userId = await helper.GetCurrentUserId();
+                var existingContainer = containers
+                    .FirstOrDefault(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
 
-                if(containers.Any(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator)))
+                if (existingContainer is not null)
                 {
-                    return;
+                    output.WriteLine($"Container with id {existingContainer.ContainerId} found.");
+
+                    if (!existingContainer.IsRunning)
+                    {
+                        output.WriteLine($"Waiting for container with id {existingContainer.ContainerId} to be running.");
+                        await helper.WaitForContainer(existingContainer.ContainerId);
+                    }
+
+                    return existingContainer.HttpUrl;
                 }
             }
-            else
-            {
-                var response = await helper.StartContainer(differentiator);
-            }
 
-            Console.WriteLine(containers);
+            output.WriteLine($"No container found, starting a new one.");
+            var containerId = await helper.StartContainer(differentiator);
 
-            // If containers are there, return
-            // If containers are not there, create them
-            // Wait for containers to be created
+            output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
+            var container = await helper.WaitForContainer(containerId);
+
+            return container.HttpUrl;
         }
 
         public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
