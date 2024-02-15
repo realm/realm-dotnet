@@ -33,23 +33,21 @@ namespace Baas
         private const string _baseUrl = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
         private readonly HttpClient _client;
 
-        private BaaSaasClient(string apiKey)
+        public BaaSaasClient(string apiKey)
         {
             _client = new();
             _client.BaseAddress = new Uri(_baseUrl);
             _client.DefaultRequestHeaders.TryAddWithoutValidation("apiKey", apiKey);
         }
 
-        public static async Task<string> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        public async Task<string> GetOrDeployContainer(string differentiator, TextWriter output)
         {
-            var baasaasClient = new BaaSaasClient(baaSaasApiKey);
-
             output.WriteLine("Looking for existing containers on BaaSaas.");
-            var containers = await baasaasClient.GetContainers();
+            var containers = await GetContainers();
 
             if (containers?.Length > 0)
             {
-                var userId = await baasaasClient.GetCurrentUserId();
+                var userId = await GetCurrentUserId();
                 var existingContainer = containers
                     .FirstOrDefault(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
 
@@ -60,7 +58,7 @@ namespace Baas
                     if (!existingContainer.IsRunning)
                     {
                         output.WriteLine($"Waiting for container with id {existingContainer.ContainerId} to be running.");
-                        await baasaasClient.WaitForContainer(existingContainer.ContainerId);
+                        await WaitForContainer(existingContainer.ContainerId);
                     }
 
                     return existingContainer.HttpUrl;
@@ -68,10 +66,10 @@ namespace Baas
             }
 
             output.WriteLine($"No container found, starting a new one.");
-            var containerId = await baasaasClient.StartContainer(differentiator);
+            var containerId = await StartContainer(differentiator);
 
             output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
-            var container = await baasaasClient.WaitForContainer(containerId);
+            var container = await WaitForContainer(containerId);
 
             return container.HttpUrl;
         }

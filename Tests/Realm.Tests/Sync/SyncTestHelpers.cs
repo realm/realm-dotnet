@@ -184,8 +184,9 @@ namespace Realms.Tests.Sync
 
             if (_baaSaasApiKey != null)
             {
-                var baaSaasContainerUrl = await BaaSaasClient.GetOrDeployContainer(_baaSaasApiKey, "local", TestHelpers.Output);
-                BaasUri = new Uri(baaSaasContainerUrl);
+                var baaSaasClient = new BaaSaasClient(_baaSaasApiKey);
+                var containerUrl = await baaSaasClient.GetOrDeployContainer("local", TestHelpers.Output);
+                BaasUri = new Uri(containerUrl);
                 _baasClient ??= await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
             }
 
