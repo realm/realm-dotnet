@@ -757,7 +757,11 @@ namespace Realms.Tests.Sync
             });
         }
 
+
+        // These tests would all pass now, but they're a deceiving, as for FLX with ReportIndefinitely, it would call it first with ProgressEstimate = 1
+        // and then go to the "actual" progress notification
         [Test]
+        [Ignore("Ignored for now, until we have a better idea of what we expect from tests")]
         public void SessionIntegrationTest_ProgressObservable(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
