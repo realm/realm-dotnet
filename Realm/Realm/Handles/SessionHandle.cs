@@ -42,7 +42,7 @@ namespace Realms.Sync
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, double progressEstimate);
+            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes, double progressEstimate);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
@@ -405,10 +405,10 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
-        private static void HandleSessionProgress(IntPtr tokenPtr, double progressEstimate)
+        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes, double progressEstimate)
         {
             var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
-            token?.Notify(progressEstimate);
+            token?.Notify(transferredBytes, transferableBytes, progressEstimate);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]

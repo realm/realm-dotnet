@@ -762,10 +762,9 @@ namespace Realms.Tests.Sync
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
         {
-            Realms.Logging.Logger.Default = Realms.Logging.Logger.Function((w) => TestContext.Out.WriteLine(w));
-            Realms.Logging.Logger.LogLevel = Logging.LogLevel.Debug;
             const int objectSize = 1_000_000;
             const int objectsToRecord = 2;
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 Realm realm;
@@ -806,40 +805,28 @@ namespace Realms.Tests.Sync
                     try
                     {
                         callbacksInvoked++;
-                        TestContext.Out.WriteLine($"CALLBACK: {callbacksInvoked}");
 
                         if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
                         {
                             throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
                         }
 
-                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        if (p.ProgressEstimate < lastReportedProgress)
                         {
-                            if (p.ProgressEstimate < lastReportedProgress)
-                            {
-                                throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
-                            }
-
-                            if (p.IsComplete)
-                            {
-                                if (p.ProgressEstimate != 1.0)
-                                {
-                                    throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
-                                }
-
-                                completionTcs.TrySetResult();
-                            }
-                        }
-                        else if (mode == ProgressMode.ReportIndefinitely)
-                        {
-
+                            throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
                         }
 
+                        if (p.IsComplete)
+                        {
+                            if (p.ProgressEstimate != 1.0)
+                            {
+                                throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
+                            }
+
+                            completionTcs.TrySetResult();
+                        }
 
                         lastReportedProgress = p.ProgressEstimate;
-
-                        Debug.WriteLine($"END: {callbacksInvoked}");
-
                     }
                     catch (Exception e)
                     {
@@ -847,13 +834,12 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                //realm.Write(() =>
-                //{
-                //    realm.Add(new HugeSyncObject(objectSize));
-                //});
+                realm.Write(() =>
+                {
+                    realm.Add(new HugeSyncObject(objectSize));
+                });
 
                 await Task.Delay(15000);
-                //token.Dispose();
 
                 Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
             }, timeout: 120_000);

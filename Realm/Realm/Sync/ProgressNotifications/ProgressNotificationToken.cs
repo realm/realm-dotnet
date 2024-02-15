@@ -48,13 +48,13 @@ namespace Realms.Sync
             }
         }
 
-        public void Notify(double progressEstimate)
+        public void Notify(ulong transferredBytes, ulong transferableBytes, double progressEstimate)
         {
             Task.Run(() =>
             {
                 try
                 {
-                    _observer(new SyncProgress(progressEstimate));
+                    _observer(new SyncProgress(transferredBytes, transferableBytes, progressEstimate));
                 }
                 catch (Exception ex)
                 {
