@@ -45,7 +45,6 @@ namespace Realms.Tests.Sync
 
         static SyncTestHelpers()
         {
-#if !UNITY
             var uri = ConfigHelpers.GetSetting("BaasUrl");
             if (uri != null)
             {
@@ -53,7 +52,6 @@ namespace Realms.Tests.Sync
             }
 
             _baaSaasApiKey = ConfigHelpers.GetSetting("BaaSaasApiKey");
-#endif
         }
 
         private static int _appCounter;
@@ -169,7 +167,6 @@ namespace Realms.Tests.Sync
                 return;
             }
 
-#if !UNITY
             var cluster = ConfigHelpers.GetSetting("Cluster")!;
             var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
             var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
@@ -181,19 +178,19 @@ namespace Realms.Tests.Sync
                 var baaSaasClient = new BaaSaasClient(_baaSaasApiKey);
                 var containerUrl = await baaSaasClient.GetOrDeployContainer(differentiator, TestHelpers.Output);
                 BaasUri = new Uri(containerUrl);
-                _baasClient ??= await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
+                _baasClient = await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
             }
-
-            if (!string.IsNullOrEmpty(cluster) &&
+            else if (!string.IsNullOrEmpty(cluster) &&
                 !string.IsNullOrEmpty(apiKey) &&
                 !string.IsNullOrEmpty(privateApiKey) &&
                 !string.IsNullOrEmpty(groupId))
             {
-                _baasClient ??= await BaasClient.Atlas(BaasUri!, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient = await BaasClient.Atlas(BaasUri!, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
-#endif
-
-            _baasClient ??= await BaasClient.Docker(BaasUri!, "local", TestHelpers.Output);
+            else
+            {
+                _baasClient ??= await BaasClient.Docker(BaasUri!, "local", TestHelpers.Output);
+            }
 
             _apps = await _baasClient.GetOrCreateApps();
         }
