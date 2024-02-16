@@ -39,7 +39,7 @@ run against cloud are located in the Scripts folder. Currently we have:
 
 ## Note on logs
 
-Methods like `Console.WriteLine`, `Debug.WriteLine`, `TestContext.WriteLine` are unreliable in `NUnit`, so it's recommended to set the default Realm logger to use a file logger, like this:
+Methods like `Console.WriteLine`, `Debug.WriteLine`, `TestContext.WriteLine` are unreliable in `NUnit`, so if you need to get logs it's recommended to set the default Realm logger to use a file logger, like this:
 ```
 Logger.Default = Logger.File(filePath);
 ```
