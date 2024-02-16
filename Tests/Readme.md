@@ -37,6 +37,13 @@ run against cloud are located in the Scripts folder. Currently we have:
 * DeployApps.ps1 - imports the apps located in TestApps and links them to the specified cluster.
 * RemoveApps.ps1 - removes all Atlas App Services apps for the specified project.
 
+## Note on logs
+
+Methods like `Console.WriteLine`, `Debug.WriteLine`, `TestContext.WriteLine` are unreliable in `NUnit`, so it's recommended to set the default Realm logger to use a file logger, like this:
+```
+Logger.Default = Logger.File(filePath);
+```
+
 ## Unity
 
 The Unity tests are somewhat special, not only because they don't use MSBuild and Visual Studio to build and run, but because they need to be run
