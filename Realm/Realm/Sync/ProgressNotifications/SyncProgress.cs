@@ -42,7 +42,6 @@ namespace Realms.Sync
         [Obsolete("Not accurate, use ProgressEstimate instead.")]
         public ulong TransferableBytes { get; }
 
-
         /// <summary>
         /// Gets the percentage estimate of the current progress, expressed as a double between 0.0 and 1.0.
         /// </summary>
