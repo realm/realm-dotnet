@@ -110,14 +110,14 @@ namespace Baas
                 maxRetries -= 1;
 
                 var containers = await GetContainers();
-                var container = containers.FirstOrDefault(c => c.ContainerId == containerId);
+                var container = containers!.FirstOrDefault(c => c.ContainerId == containerId);
 
                 if (container?.IsRunning == true)
                 {
                     return container;
                 }
 
-                await Task.Delay(2000);
+                await Task.Delay(3000);
             }
 
             throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");

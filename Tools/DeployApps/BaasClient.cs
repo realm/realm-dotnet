@@ -260,6 +260,13 @@ namespace Baas
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
+        public static async Task<Uri> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        {
+            var baaSaasClient = new BaaSaasClient(baaSaasApiKey);
+            var uriString = await baaSaasClient.GetOrDeployContainer(differentiator, output);
+            return new Uri(uriString);
+        }
+
         public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
         {
             var apps = await GetApps();
