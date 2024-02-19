@@ -67,11 +67,6 @@ cleanup-baas:
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    #@ if runSyncTests:
-    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-    realmUrl: #@ realm_BaseUrl
-    atlasUrl: #@ atlas_BaseUrl
-    #@ end
   secrets:
     #@ if runSyncTests:
     BaaSaasApiKey: #@ secret_BaaSaasApiKey

@@ -13,7 +13,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   deploy-baas:
-    name: Deploy BaaS
+    name: Deploy Baas
     runs-on: ubuntu-latest
     strategy:
       matrix:

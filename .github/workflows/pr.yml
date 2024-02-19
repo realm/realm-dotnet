@@ -151,9 +151,6 @@ jobs:
     - deploy-baas
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-      realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   cleanup-baas:
