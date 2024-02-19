@@ -20,16 +20,12 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  deploy-cluster:
+  deploy-baas:
     uses: ./.github/workflows/deploy-baas.yml
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
-      BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -296,12 +292,12 @@ jobs:
         path: ${{ github.workspace }}/dashboard.charts
         retention-days: 30
         if-no-files-found: error
-  cleanup-cluster:
+  cleanup-baas:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
     name: Cleanup
     needs:
-    - deploy-cluster
+    - deploy-baas
     - test-net-framework
     - test-code-coverage
     - test-uwp-managed
@@ -310,10 +306,5 @@ jobs:
     - test-android
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-      BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}

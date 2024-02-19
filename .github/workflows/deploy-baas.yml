@@ -5,59 +5,15 @@ name: deploy-baas
       differentiators:
         required: true
         type: string
-      BaseUrl:
-        required: true
-        type: string
-      AtlasBaseUrl:
-        required: true
-        type: string
-    outputs:
-      clusterName:
-        value: ${{ jobs.deploy-baas.outputs.clusterName }}
     secrets:
-      AtlasProjectId:
-        required: true
-      AtlasPublicKey:
-        required: true
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   deploy-baas:
-    name: Deploy Cluster
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        differentiator: ${{ fromJson(inputs.differentiators) }}
-    outputs:
-      clusterName: ${{ steps.generate-cluster-name.outputs.clusterName }}
-    timeout-minutes: 20
-    steps:
-    - name: Generate cluster name
-      id: generate-cluster-name
-      run: |
-        name=$( echo ${{ github.run_id }}-${{ github.run_attempt }} | md5sum | cut -c1-7)
-        echo "clusterName=$name" >> "$GITHUB_OUTPUT"
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-      id: deploy-cluster
-      with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.BaseUrl }}
-        atlasUrl: ${{ inputs.AtlasBaseUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ steps.generate-cluster-name.outputs.clusterName }}-${{ matrix.differentiator }}
-        clusterSize: M5
-  deploy-apps:
-    name: Deploy Apps
-    needs: deploy-baas
+    name: Deploy BaaS
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -73,5 +29,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ inputs.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }}-${{ matrix.differentiator }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps
