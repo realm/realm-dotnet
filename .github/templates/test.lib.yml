@@ -26,15 +26,6 @@ with:
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
       #@ for input in additionalInputs:
       #@yaml/text-templated-strings
       (@= input @):
@@ -42,11 +33,7 @@ with:
         type: string
       #@ end
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
       #@ for secret in additionalSecrets:
       #@yaml/text-templated-strings

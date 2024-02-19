@@ -63,7 +63,7 @@ cleanup-baas:
   needs:
     - build-packages
     #@ if runSyncTests:
-    - deploy-cluster
+    - deploy-baas
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
@@ -74,9 +74,7 @@ cleanup-baas:
     #@ end
   secrets:
     #@ if runSyncTests:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    BaaSaasApiKey: #@ secret_BaaSaasApiKey
     #@ end
     #@ for secret in additionalSecrets:
     #@yaml/text-templated-strings
