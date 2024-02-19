@@ -933,6 +933,22 @@ namespace Baas
                 return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
             }
 
+            // Useful for debugging purposes
+            private async Task StopAllContainers()
+            {
+                var containers = await GetContainers();
+
+                var userId = await GetCurrentUserId();
+
+                var existingContainers = containers!
+                    .Where(c => c.CreatorId == userId);
+
+                foreach (var container in existingContainers)
+                {
+                    await StopContainer(container.ContainerId);
+                }
+            }
+
             private Task StopContainer(string id)
             {
                 return CallEndpointAsync<BsonDocument>(HttpMethod.Post, $"stopContainer?id={id}");
