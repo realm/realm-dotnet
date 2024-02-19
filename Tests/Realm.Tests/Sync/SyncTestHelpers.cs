@@ -127,7 +127,7 @@ namespace Realms.Tests.Sync
 
         public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
         {
-            var (extracted, remaining) = Utils.ExtractArguments(args, "realmloglevel", "realmlogfile");
+            var (extracted, remaining) = BaasClient.ExtractArguments(args, "realmloglevel", "realmlogfile");
 
             if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
             {
