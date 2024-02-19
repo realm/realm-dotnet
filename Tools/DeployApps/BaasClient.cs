@@ -937,7 +937,6 @@ namespace Baas
             private async Task StopAllContainers()
             {
                 var containers = await GetContainers();
-
                 var userId = await GetCurrentUserId();
 
                 var existingContainers = containers!
@@ -979,15 +978,26 @@ namespace Baas
                 {
                     maxRetries -= 1;
 
-                    var containers = await GetContainers();
-                    var container = containers!.FirstOrDefault(c => c.ContainerId == containerId);
-
-                    if (container?.IsRunning == true)
+                    try
                     {
-                        return container;
+                        var containers = await GetContainers();
+                        var container = containers!.FirstOrDefault(c => c.ContainerId == containerId);
+
+                        if (container?.IsRunning == true)
+                        {
+                            // Checking that Baas started correctly, and not only the container
+                            var response = await _client.GetAsync($"{container.HttpUrl}/api/private/v1.0/version");
+                            if (response.IsSuccessStatusCode)
+                            {
+                                return container;
+                            }
+                        }
+                    }
+                    catch
+                    {
                     }
 
-                    await Task.Delay(3000);
+                    await Task.Delay(2000);
                 }
 
                 throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
