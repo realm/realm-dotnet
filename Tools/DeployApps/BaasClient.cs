@@ -232,7 +232,12 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = Utils.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
+            var (extracted, remaining) = Utils.ExtractArguments(args, "baasaasapikey", "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
+
+            if (extracted.TryGetValue("baasaasapikey", out var baaSaasApiKey) && string.IsNullOrEmpty(baaSaasApiKey))
+            {
+
+            }
 
             if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
             {
