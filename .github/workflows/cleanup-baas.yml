@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         differentiator: ${{ fromJson(inputs.differentiators) }}
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 5
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -28,6 +28,6 @@ jobs:
     - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
-    - name: Deploy Apps
+    - name: Terminate Baas
       run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps
