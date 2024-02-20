@@ -183,7 +183,7 @@ namespace Realms.Tests.Sync
 
         /* We need specific tests regarding datetime because of the different behaviour of the server and
          * DateTimeOffset.ToUnixUniversalTime():
-         * - DateTimeOffset.ToUnixTimeMilliseconds always rounds to the “past”.So for dates after Unix epoch it’s the same as a truncation, 
+         * - DateTimeOffset.ToUnixTimeMilliseconds always rounds to the “past”. So for dates after Unix epoch it’s the same as a truncation,
          * for dates before this means that they subtract 1 millisecond if there’s any sub-millisecond digit (https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/datetimeoffset.cs#L666C11-L666C11)
          * - The server truncates sub-milliseconds precision all times
          * This means that there is an issue when going from Realm to Atlas and then deserializing from Atlas, as there will be a difference
