@@ -5,11 +5,6 @@
 
 #@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
 
-#@ realm_BaseUrl = "https://realm-qa.mongodb.com"
-#@ atlas_BaseUrl = "https://cloud-qa.mongodb.com"
-#@ secret_AtlasPublicKey = "${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
-#@ secret_AtlasPrivateKey = "${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}"
-#@ secret_AtlasProjectId = "${{ secrets.ATLAS_QA_PROJECT_ID }}"
 #@ secret_BaaSaasApiKey = "${{ secrets.BAASAAS_API_KEY }}"
 
 #@ def getJobName(prefix, name):
