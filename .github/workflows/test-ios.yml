@@ -37,7 +37,9 @@ jobs:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Deploy Baas (alternative)
-      if: ${{ secrets.BaaSaasApiKey }}
+      env:
+        apiKey: ${{ secrets.BaaSaasApiKey }}
+      if: ${{ env.apiKey }}
       run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=ios
       working-directory: Tools/DeployApps
     - name: Add msbuild to PATH

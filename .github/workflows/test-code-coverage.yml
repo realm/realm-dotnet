@@ -127,7 +127,9 @@ jobs:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
     - name: Deploy Baas (alternative)
-      if: ${{ secrets.BaaSaasApiKey }}
+      env:
+        apiKey: ${{ secrets.BaaSaasApiKey }}
+      if: ${{ env.apiKey }}
       run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=code-coverage
       working-directory: Tools/DeployApps
     - name: Setup Coverlet & Report Generator

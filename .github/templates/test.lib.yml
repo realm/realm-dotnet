@@ -82,7 +82,10 @@ env:
 #@ if (differentiator != ""):
 #! The following is used in case we need to re-run the action and the main deploy baas job is not re-run too (because successful)
 - name: Deploy Baas (alternative)
-  if: ${{ secrets.BaaSaasApiKey }}
+  #! Secrets cannot be used directly in if
+  env:
+    apiKey: ${{ secrets.BaaSaasApiKey }}
+  if: ${{ env.apiKey }}
   run: #@ "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=" + differentiator
   working-directory: Tools/DeployApps
 #@ end
