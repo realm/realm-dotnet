@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -44,41 +43,6 @@ namespace Baas
         public const string ObjectIdPartitionKey = "pbs-oid";
         public const string UUIDPartitionKey = "pbs-uuid";
         public const string FlexibleSync = "flx";
-    }
-
-    public static class ArgumentHelper
-    {
-        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
-        {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            var extracted = new Dictionary<string, string>();
-            var remainingArgs = new List<string>();
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!toExtract.Any(name => ExtractArg(i, name)))
-                {
-                    remainingArgs.Add(args[i]);
-                }
-            }
-
-            return (extracted, remainingArgs.ToArray());
-
-            bool ExtractArg(int index, string name)
-            {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
-                {
-                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
-                    return true;
-                }
-
-                return false;
-            }
-        }
     }
 
     public class BaasClient
@@ -143,7 +107,7 @@ namespace Baas
                         return { status: 'pending' };
                     }
 
-                    return { status: 'success' };                  
+                    return { status: 'success' };
                    }
 
                   // will not reset the password
@@ -271,7 +235,7 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
+            var (extracted, remaining) = ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
             if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
             {
@@ -297,6 +261,13 @@ namespace Baas
 
             _refreshToken = authDoc!["refresh_token"].AsString;
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
+        }
+
+        public static async Task<Uri> GetOrDeployContainer(string baasaasApiKey, string differentiator, TextWriter output)
+        {
+            var baaSaasClient = new BaasaasClient(baasaasApiKey);
+            var uriString = await baaSaasClient.GetOrDeployContainer(differentiator, output);
+            return new Uri(uriString);
         }
 
         public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
@@ -626,16 +597,6 @@ namespace Baas
             return response!["_id"].AsString;
         }
 
-        private static HttpContent GetJsonContent(object obj)
-        {
-            var json = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
-            var content = new StringContent(json);
-
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            return content;
-        }
-
         private async Task<string> CreateMongodbService(BaasApp app, object syncConfig)
         {
             var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
@@ -728,7 +689,6 @@ namespace Baas
                 throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
             }
 
-            response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
 
             if (!string.IsNullOrWhiteSpace(json))
@@ -737,6 +697,64 @@ namespace Baas
             }
 
             return default;
+        }
+
+        public static HttpContent GetJsonContent(object obj)
+        {
+            string jsonContent;
+
+            if (obj is Array arr)
+            {
+                var bsonArray = new BsonArray();
+                foreach (var elem in arr)
+                {
+                    bsonArray.Add(elem.ToBsonDocument());
+                }
+
+                jsonContent = bsonArray.ToJson();
+            }
+            else
+            {
+                jsonContent = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
+            }
+
+            var content = new StringContent(jsonContent);
+
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            return content;
+        }
+
+        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            var extracted = new Dictionary<string, string>();
+            var remainingArgs = new List<string>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!toExtract.Any(name => ExtractArg(i, name)))
+                {
+                    remainingArgs.Add(args[i]);
+                }
+            }
+
+            return (extracted, remainingArgs.ToArray());
+
+            bool ExtractArg(int index, string name)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         public class BaasApp
@@ -863,6 +881,180 @@ namespace Baas
             },
             GenericBaasRule(differentiator, "foos"));
         }
+
+        private class BaasaasClient
+        {
+            private const string _baseUrl = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
+            private readonly HttpClient _client;
+
+            public BaasaasClient(string apiKey)
+            {
+                _client = new();
+                _client.BaseAddress = new Uri(_baseUrl);
+                _client.DefaultRequestHeaders.TryAddWithoutValidation("apiKey", apiKey);
+            }
+
+            public async Task<string> GetOrDeployContainer(string differentiator, TextWriter output)
+            {
+                output.WriteLine("Looking for existing containers on BaaSaas.");
+                var containers = await GetContainers();
+
+                if (containers?.Length > 0)
+                {
+                    var userId = await GetCurrentUserId();
+                    var existingContainer = containers
+                        .FirstOrDefault(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
+
+                    if (existingContainer is not null)
+                    {
+                        output.WriteLine($"Container with id {existingContainer.ContainerId} found.");
+
+                        if (!existingContainer.IsRunning)
+                        {
+                            output.WriteLine($"Waiting for container with id {existingContainer.ContainerId} to be running.");
+                            await WaitForContainer(existingContainer.ContainerId);
+                        }
+
+                        return existingContainer.HttpUrl;
+                    }
+                }
+
+                output.WriteLine($"No container found, starting a new one.");
+                var containerId = await StartContainer(differentiator);
+
+                output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
+                var container = await WaitForContainer(containerId);
+
+                return container.HttpUrl;
+            }
+
+            private Task<ContainerInfo[]> GetContainers()
+            {
+                return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
+            }
+
+            // Useful for debugging purposes
+            private async Task StopAllContainers()
+            {
+                var containers = await GetContainers();
+                var userId = await GetCurrentUserId();
+
+                var existingContainers = containers!
+                    .Where(c => c.CreatorId == userId);
+
+                foreach (var container in existingContainers)
+                {
+                    await StopContainer(container.ContainerId);
+                }
+            }
+
+            private Task StopContainer(string id)
+            {
+                return CallEndpointAsync<BsonDocument>(HttpMethod.Post, $"stopContainer?id={id}");
+            }
+
+            private async Task<string?> GetCurrentUserId()
+            {
+                return (await CallEndpointAsync<BsonDocument>(HttpMethod.Get, "userinfo"))!["id"].AsString;
+            }
+
+            private async Task<string> StartContainer(string differentiator)
+            {
+                var response = await CallEndpointAsync<BsonDocument>(HttpMethod.Post, "startContainer", new[]
+                {
+                    new
+                    {
+                        key = "DIFFERENTIATOR",
+                        value = differentiator,
+                    }
+                });
+
+                return response?["id"].AsString!;
+            }
+
+            private async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
+            {
+                while (maxRetries > 0)
+                {
+                    maxRetries -= 1;
+
+                    try
+                    {
+                        var containers = await GetContainers();
+                        var container = containers!.FirstOrDefault(c => c.ContainerId == containerId);
+
+                        if (container?.IsRunning == true)
+                        {
+                            // Checking that Baas started correctly, and not only the container
+                            var response = await _client.GetAsync($"{container.HttpUrl}/api/private/v1.0/version");
+                            if (response.IsSuccessStatusCode)
+                            {
+                                return container;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    await Task.Delay(2000);
+                }
+
+                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
+            }
+
+            private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
+            {
+                using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
+
+                if (payload is not null)
+                {
+                    message.Content = GetJsonContent(payload);
+                }
+
+                var response = await _client.SendAsync(message);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    return BsonSerializer.Deserialize<T>(json);
+                }
+
+                return default!;
+            }
+
+            [BsonIgnoreExtraElements]
+            public class ContainerInfo
+            {
+                [BsonElement("id")]
+                public string ContainerId { get; set; } = null!;
+
+                [BsonElement("httpUrl")]
+                public string HttpUrl { get; set; } = null!;
+
+                [BsonElement("lastStatus")]
+                public string LastStatus { get; set; } = null!;
+
+                [BsonElement("tags")]
+                public List<Tag> Tags { get; set; } = null!;
+
+                [BsonElement("creatorId")]
+                public string CreatorId { get; set; } = null!;
+
+                public bool IsRunning => LastStatus == "RUNNING";
+            }
+
+            public class Tag
+            {
+                [BsonElement("key")]
+                public string Key { get; set; } = null!;
+
+                [BsonElement("value")]
+                public string Value { get; set; } = null!;
+            }
+        }
     }
 
 #if !NETCOREAPP2_1_OR_GREATER
@@ -880,4 +1072,5 @@ namespace Baas
         }
     }
 #endif
+
 }
