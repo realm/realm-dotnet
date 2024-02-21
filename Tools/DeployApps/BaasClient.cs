@@ -243,9 +243,9 @@ namespace Baas
             BaasClient client;
             Uri baseUri;
 
-            if (extracted.TryGetValue("baasaas-api-key", out var baaSaasApiKey) && !string.IsNullOrEmpty(baaSaasApiKey))
+            if (extracted.TryGetValue("baasaas-api-key", out var baasaasApiKey) && !string.IsNullOrEmpty(baasaasApiKey))
             {
-                baseUri = await GetOrDeployContainer(baaSaasApiKey, differentiator, output);
+                baseUri = await GetOrDeployContainer(baasaasApiKey, differentiator, output);
                 client = await Docker(baseUri, differentiator, output);
             }
             else
@@ -297,14 +297,14 @@ namespace Baas
 
         public static async Task<Uri> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
         {
-            var baaSaasClient = new BaaSaasClient(baaSaasApiKey);
+            var baaSaasClient = new BaasaasClient(baaSaasApiKey);
             var uriString = await baaSaasClient.GetOrDeployContainer(differentiator, output);
             return new Uri(uriString);
         }
 
         public static async Task StopContainer(string baaSaasApiKey, string differentiator, TextWriter output)
         {
-            var baaSaasClient = new BaaSaasClient(baaSaasApiKey);
+            var baaSaasClient = new BaasaasClient(baaSaasApiKey);
             await baaSaasClient.StopContainersForDifferentiator(differentiator, output);
         }
 
@@ -920,12 +920,12 @@ namespace Baas
             GenericBaasRule(differentiator, "foos"));
         }
 
-        private class BaaSaasClient
+        private class BaasaasClient
         {
             private const string _baseUrl = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
             private readonly HttpClient _client;
 
-            public BaaSaasClient(string apiKey)
+            public BaasaasClient(string apiKey)
             {
                 _client = new();
                 _client.BaseAddress = new Uri(_baseUrl);
