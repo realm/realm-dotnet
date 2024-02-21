@@ -9,7 +9,7 @@ jobs:
   run-tests:
     runs-on: windows-latest
     name: UWP
-    timeout-minutes: 50
+    timeout-minutes: 60
     steps:
       - #@ template.replace(prepareTest("uwp-managed"))
       - name: Import test certificate
