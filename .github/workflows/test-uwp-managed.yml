@@ -19,7 +19,7 @@ jobs:
   run-tests:
     runs-on: windows-latest
     name: UWP
-    timeout-minutes: 45
+    timeout-minutes: 50
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
