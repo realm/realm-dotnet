@@ -295,9 +295,9 @@ namespace Baas
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
-        public static async Task<Uri> GetOrDeployContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        public static async Task<Uri> GetOrDeployContainer(string baasaasApiKey, string differentiator, TextWriter output)
         {
-            var baaSaasClient = new BaasaasClient(baaSaasApiKey);
+            var baaSaasClient = new BaasaasClient(baasaasApiKey);
             var uriString = await baaSaasClient.GetOrDeployContainer(differentiator, output);
             return new Uri(uriString);
         }
@@ -966,7 +966,7 @@ namespace Baas
                 return container.HttpUrl;
             }
 
-            private Task<ContainerInfo[]?> GetContainers()
+            private Task<ContainerInfo[]> GetContainers()
             {
                 return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
             }
@@ -1041,7 +1041,7 @@ namespace Baas
                 throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
             }
 
-            private async Task<T?> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
+            private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
             {
                 using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
 
@@ -1060,7 +1060,7 @@ namespace Baas
                     return BsonSerializer.Deserialize<T>(json);
                 }
 
-                return default;
+                return default!;
             }
 
             [BsonIgnoreExtraElements]
