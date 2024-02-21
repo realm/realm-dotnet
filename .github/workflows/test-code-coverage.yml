@@ -5,21 +5,8 @@ name: test-code-coverage
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
 env:
   REALM_DISABLE_ANALYTICS: true
@@ -139,17 +126,12 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
-    - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-      name: Deploy Cluster (alternative)
-      if: ${{ inputs.realmUrl }}
-      with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.realmUrl }}
-        atlasUrl: ${{ inputs.atlasUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ inputs.clusterName }}-code-coverage
-        clusterSize: M10
+    - name: Deploy Baas (alternative)
+      env:
+        apiKey: ${{ secrets.BaaSaasApiKey }}
+      if: ${{ env.apiKey }}
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=code-coverage
+      working-directory: Tools/DeployApps
     - name: Setup Coverlet & Report Generator
       run: |
         dotnet tool install coverlet.console --tool-path tools
@@ -165,7 +147,7 @@ jobs:
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-code-coverage --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
     - name: Archive core dump
       uses: actions/upload-artifact@v3
       if: failure()

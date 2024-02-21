@@ -235,22 +235,54 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
+            var (extracted, remaining) = ExtractArguments(args, "baasaas-api-key", "baas-url", "baas-cluster",
+                "baas-api-key", "baas-private-api-key", "baas-projectid", "baas-differentiator");
 
-            if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
+            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+
+            BaasClient client;
+            Uri baseUri;
+
+            if (extracted.TryGetValue("baasaas-api-key", out var baasaasApiKey) && !string.IsNullOrEmpty(baasaasApiKey))
             {
-                return (null, null, remaining);
+                baseUri = await GetOrDeployContainer(baasaasApiKey, differentiator, output);
+                client = await Docker(baseUri, differentiator, output);
+            }
+            else
+            {
+                if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
+                {
+                    return (null, null, remaining);
+                }
+
+                baseUri = new Uri(baseUrl);
+                var baasCluster = extracted.GetValueOrDefault("baascluster");
+
+                client = string.IsNullOrEmpty(baasCluster)
+                    ? await Docker(baseUri, differentiator, output)
+                    : await Atlas(baseUri, differentiator, output, baasCluster!, extracted["baasapikey"], extracted["baasprivateapikey"], extracted["baasprojectid"]);
             }
 
-            var baseUri = new Uri(baseUrl);
-            var baasCluster = extracted.GetValueOrDefault("baascluster");
-            var differentiator = extracted.GetValueOrDefault("baasdifferentiator", "local");
-
-            var client = string.IsNullOrEmpty(baasCluster)
-                ? await Docker(baseUri, differentiator, output)
-                : await Atlas(baseUri, differentiator, output, baasCluster!, extracted["baasapikey"], extracted["baasprivateapikey"], extracted["baasprojectid"]);
-
             return (client, baseUri, remaining);
+        }
+
+        public static async Task TerminateBaasFromArgs(string[] args, TextWriter output)
+        {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            var (extracted, _) = ExtractArguments(args, "baasaas-api-key", "baas-differentiator");
+
+            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+
+            if (!extracted.TryGetValue("baasaas-api-key", out var baaSaasApiKey) || string.IsNullOrEmpty(baaSaasApiKey))
+            {
+                throw new InvalidOperationException("Need a BaaSaas API key to terminate containers");
+            }
+
+            await StopContainer(baaSaasApiKey, differentiator, output);
         }
 
         public string GetSyncDatabaseName(string appType = AppConfigType.Default) => $"Sync_{Differentiator}_{appType}";
@@ -268,6 +300,12 @@ namespace Baas
             var baaSaasClient = new BaasaasClient(baasaasApiKey);
             var uriString = await baaSaasClient.GetOrDeployContainer(differentiator, output);
             return new Uri(uriString);
+        }
+
+        public static async Task StopContainer(string baaSaasApiKey, string differentiator, TextWriter output)
+        {
+            var baaSaasClient = new BaasaasClient(baaSaasApiKey);
+            await baaSaasClient.StopContainersForDifferentiator(differentiator, output);
         }
 
         public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
@@ -933,18 +971,18 @@ namespace Baas
                 return CallEndpointAsync<ContainerInfo[]>(HttpMethod.Get, "listContainers");
             }
 
-            // Useful for debugging purposes
-            private async Task StopAllContainers()
+            public async Task StopContainersForDifferentiator(string differentiator, TextWriter output)
             {
                 var containers = await GetContainers();
                 var userId = await GetCurrentUserId();
 
                 var existingContainers = containers!
-                    .Where(c => c.CreatorId == userId);
+                    .Where(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
 
                 foreach (var container in existingContainers)
                 {
                     await StopContainer(container.ContainerId);
+                    output.WriteLine($"Stopped container with id={container.ContainerId} and differentiator={differentiator}");
                 }
             }
 
