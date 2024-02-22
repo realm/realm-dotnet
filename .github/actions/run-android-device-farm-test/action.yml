@@ -22,6 +22,7 @@ runs:
       with:
         project_arn: ${{ inputs.project-arn}}
         device_pool_arn: ${{ inputs.device-pool-arn }}
+        timeout: 3000
         app_file: ${{ inputs.apk-path }}
         app_type: ANDROID_APP
         test_type: APPIUM_PYTHON
