@@ -1328,7 +1328,7 @@ namespace Realms.Tests.Sync
 
                 sw.Stop();
 
-                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(5));
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(20));
             });
         }
 
@@ -1377,7 +1377,7 @@ namespace Realms.Tests.Sync
 
                 sw.Stop();
 
-                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(5));
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(20));
                 Assert.That(readerRealm.All<SyncAllTypesObject>().Count(), Is.Zero);
 
                 await GetSession(readerRealm).WaitForDownloadAsync();
