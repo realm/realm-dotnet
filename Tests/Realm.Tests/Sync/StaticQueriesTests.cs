@@ -1257,7 +1257,7 @@ namespace Realms.Tests.Sync
 
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            using var realm = await GetRealmAsync(config);
+            using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
             var collection = client.GetCollection<T>();
             await collection.DeleteManyAsync(new object());
@@ -1272,7 +1272,7 @@ namespace Realms.Tests.Sync
 
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            using var realm = await GetRealmAsync(config);
+            using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
             var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(appConfigType));
 
