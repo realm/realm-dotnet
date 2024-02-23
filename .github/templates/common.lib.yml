@@ -190,7 +190,7 @@ with:
   if-no-files-found: error
 #@ end
 ---
-#@ def setupDotnet(version = "6.0.x", ifCondition = ""):
+#@ def setupDotnet(version = "8.0.x", ifCondition = ""):
 name: Configure .NET
 uses: #@ actionSetupDotnet
 #@ if (ifCondition != ""):
@@ -231,7 +231,7 @@ with:
 #@ end
 ---
 #@ def setupWorkloads(workloads = 'maui'):
-  - _: #@ template.replace(setupDotnet("7.0.x"))
+  - _: #@ template.replace(setupDotnet("8.0.x"))
   - name: Setup workloads
     run: #@ "dotnet workload install " + workloads
 #@ end

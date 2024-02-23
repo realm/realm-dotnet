@@ -34,6 +34,8 @@ namespace Realms.Tests.Sync
         public const string DefaultPassword = "123456";
         private const string DummyAppId = "myapp-123";
 
+        private static readonly string? _baaSaasApiKey;
+
         private static IDictionary<string, BaasClient.BaasApp> _apps = new Dictionary<string, BaasClient.BaasApp>
         {
             [AppConfigType.Default] = new(string.Empty, DummyAppId, AppConfigType.Default),
@@ -41,7 +43,6 @@ namespace Realms.Tests.Sync
 
         public static Uri? BaasUri;
         private static BaasClient? _baasClient;
-        private static string? _baaSaasApiKey;
 
         static SyncTestHelpers()
         {
