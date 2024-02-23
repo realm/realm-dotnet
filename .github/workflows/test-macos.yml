@@ -61,7 +61,7 @@ jobs:
         path-replace-backslashes: true
         fail-on-error: false
   test-maui:
-    runs-on: macos-12
+    runs-on: macos-latest
     name: Maui.MacCatalyst
     timeout-minutes: 60
     steps:
