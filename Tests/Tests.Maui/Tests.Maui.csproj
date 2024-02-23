@@ -25,11 +25,16 @@
     <!-- Required for C# Hot Reload -->
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
-    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">11.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">13.2</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-maccatalyst'))">13.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">21.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <!-- Enable the interpreter as that's needed for the xsl transformation of the test results -->
+    <UseIntepreter>true</UseIntepreter>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,7 +64,7 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios' AND '$(UseRealmNupkgsWithVersion)' == ''">
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) AND '$(UseRealmNupkgsWithVersion)' == ''">
     <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
@@ -70,7 +75,7 @@
     </NativeReference>
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
-    <NativeReference Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework" Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">
+    <NativeReference Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework" Condition="$(TargetFramework.Contains('-maccatalyst'))">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
@@ -82,7 +87,7 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android' AND '$(UseRealmNupkgsWithVersion)' == ''">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android')) AND '$(UseRealmNupkgsWithVersion)' == ''">
     <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
       <Link>lib\x86\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
