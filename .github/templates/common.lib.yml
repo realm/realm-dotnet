@@ -198,7 +198,6 @@ if: #@ ifCondition
 #@ end
 with:
   dotnet-version: #@ version
-  cache: true
 #@ end
 ---
 #@ def setupXcode(version = "14.0.1"):

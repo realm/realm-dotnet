@@ -68,7 +68,6 @@ jobs:
       uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
         dotnet-version: 8.0.x
-        cache: true
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
