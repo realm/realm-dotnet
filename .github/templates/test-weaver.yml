@@ -29,4 +29,4 @@ jobs:
       - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver ${{ matrix.os.runtime }}")
+      - #@ template.replace(publishTestsResults("TestResults.Weaver.xml", "Weaver ${{ matrix.os.runtime }}"))

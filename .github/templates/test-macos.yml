@@ -15,7 +15,7 @@ jobs:
       - #@ template.replace(buildTests("Tests/Tests.XamarinMac"))
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All" + baasTestArgs("xamarinmacos")
-      - #@ publishTestsResults("TestResults.XamarinMac.xml", "Xamarin.macOS")
+      - #@ template.replace(publishTestsResults("TestResults.XamarinMac.xml", "Xamarin.macOS"))
   test-maui:
     runs-on: macos-13
     name: Maui.MacCatalyst
@@ -29,4 +29,4 @@ jobs:
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests
         run: #@ "Tests/Tests.Maui/bin/" + configuration + "/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All" + baasTestArgs("maccatalyst")
-      - #@ publishTestsResults("TestResults.MacCatalyst.xml", "Maui.MacCatalyst")
+      - #@ template.replace(publishTestsResults("TestResults.MacCatalyst.xml", "Maui.MacCatalyst", run_transform=True))

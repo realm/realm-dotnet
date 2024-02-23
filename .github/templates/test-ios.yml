@@ -20,7 +20,7 @@ jobs:
           bundleId: 'io.realm.dotnettests'
           iphoneToSimulate: 'iPhone-8'
           arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs("ios")
-      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
+      - #@ template.replace(publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS"))
 
   test-maui:
     runs-on: macos-13
@@ -40,4 +40,4 @@ jobs:
           bundleId: 'io.realm.mauitests'
           iphoneToSimulate: 'iPhone-15'
           arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After"
-      - #@ publishTestsResults("TestResults.iOS.xml", "Maui.iOS")
+      - #@ template.replace(publishTestsResults("TestResults.iOS.xml", "Maui.iOS", run_transform=True))
