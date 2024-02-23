@@ -35,7 +35,7 @@ jobs:
           os:
             runner: macos-14
             runtime: osx-arm64
-        - framework: net8.0
+        - framework: net6.0
           os:
             runner: win81
             runtime: win-x64
