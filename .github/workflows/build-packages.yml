@@ -42,7 +42,6 @@ jobs:
       uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
         dotnet-version: 8.0.x
-        cache: true
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Set version suffix
@@ -232,7 +231,6 @@ jobs:
       if: inputs.build-docs
       with:
         dotnet-version: 8.0.x
-        cache: true
     - name: Build docs
       if: inputs.build-docs
       env:
