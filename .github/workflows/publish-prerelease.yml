@@ -25,9 +25,10 @@ jobs:
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
         dotnet-version: 8.0.x
+        cache: true
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
