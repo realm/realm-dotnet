@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 ---
@@ -37,6 +37,7 @@ jobs:
       - name: Clear nuget cache
         run: dotnet nuget locals all --clear
         if: ${{ matrix.os.runner == 'win81' }}
+      - _: #@ template.replace(setupDotnet())
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         env:
