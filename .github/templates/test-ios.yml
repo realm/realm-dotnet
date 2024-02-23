@@ -38,6 +38,6 @@ jobs:
         with:
           appPath: #@ "Tests/Tests.Maui/bin/" + configuration + "/net8.0-ios/iossimulator-x64/Tests.Maui.app"
           bundleId: 'io.realm.mauitests'
-          iphoneToSimulate: 'iPhone-8'
+          iphoneToSimulate: 'iPhone-15'
           arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After"
       - #@ publishTestsResults("TestResults.iOS.xml", "Maui.iOS")
