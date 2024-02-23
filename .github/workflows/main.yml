@@ -109,7 +109,7 @@ jobs:
     uses: ./.github/workflows/test-net-core.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["net6.0", "net7.0"]'
+      framework: '["net6.0", "net8.0"]'
   test-macos:
     uses: ./.github/workflows/test-macos.yml
     name: Test
