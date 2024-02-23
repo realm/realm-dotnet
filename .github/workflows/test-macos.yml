@@ -91,9 +91,9 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Build the tests
-      run: dotnet build Tests/Tests.Maui -c Release -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      run: Tests/Tests.Maui/bin/Release/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=maccatalyst
+      run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=maccatalyst
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
