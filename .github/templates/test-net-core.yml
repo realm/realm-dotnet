@@ -50,4 +50,4 @@ jobs:
         with:
           name: crash-report-net-core-${{ matrix.runner }}-${{ matrix.runtime }}
           path: /tmp/coredump*
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")
+      - #@ template.replace(publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})"))
