@@ -16,4 +16,4 @@ jobs:
       - #@ template.replace(wovenClassesBuildTests("Tests/Realm.Tests", "net8.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.WovenClasses.xml --labels=After"
-      - #@ publishTestsResults("TestResults.WovenClasses.xml", "Woven classes")
+      - #@ template.replace(publishTestsResults("TestResults.WovenClasses.xml", "Woven classes"))

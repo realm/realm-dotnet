@@ -137,12 +137,14 @@ jobs:
         app-id: io.realm.mauitests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Transform Results
+      run: xsltproc --output ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt ${{ steps.run_tests.outputs.test-results-path }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Maui.Android
-        path: ${{ steps.run_tests.outputs.test-results-path }}
+        path: ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed

@@ -5,18 +5,24 @@
 #@   return " --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=" + differentiator + "-${{ github.run_id }}-${{ github.run_attempt }}"
 #@ end
 ---
-#@ def publishTestsResults(files, test_title):
-name: Publish Unit Test Results
-uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
-if: always()
-with:
-  name: #@ "Results " + test_title
-  path: #@ files
-  reporter: java-junit
-  list-suites: failed
-  list-tests: failed
-  path-replace-backslashes: true
-  fail-on-error: false
+#@ def publishTestsResults(file, test_title, run_transform=False):
+  #@ output_file = file
+  #@ if run_transform:
+  #@ output_file = file + "_transformed.xml"
+  - name: Transform Results
+    run: #@ "xsltproc --output " + output_file + " Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt " + file
+  #@ end
+  - name: Publish Unit Test Results
+    uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+    if: always()
+    with:
+      name: #@ "Results " + test_title
+      path: #@ output_file
+      reporter: java-junit
+      list-suites: failed
+      list-tests: failed
+      path-replace-backslashes: true
+      fail-on-error: false
 #@ end
 ---
 #@ def testDefinition(additionalSecrets = [], additionalInputs = []):

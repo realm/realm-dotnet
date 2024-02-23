@@ -39,4 +39,4 @@ jobs:
           compare-sha: ${{ github.event.pull_request.base.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-      - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")
+      - #@ template.replace(publishTestsResults("TestResults.Linux.xml", "Code Coverage"))
