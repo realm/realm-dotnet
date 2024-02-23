@@ -36,6 +36,10 @@ with:
     if: #@ wrappersCacheCondition
 #@ end
 ---
+#@ def setupXcodeStep():
+  - #@ setupXcode()
+#@ end
+---
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
 #@ if cacheVariable == "":
 #@   cacheVariable = outputVar
@@ -105,7 +109,7 @@ jobs:
       matrix:
         platform: #@ applePlatforms
         target: [ 'Device', 'Simulator' ]
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}", "wrappers-${{ matrix.platform }}-${{ matrix.target }}", enableLto = False, intermediateSteps = [setupXcode()]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}", "wrappers-${{ matrix.platform }}-${{ matrix.target }}", enableLto = False, intermediateSteps = [setupXcodeStep()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-" + x + "-Device != 'true'" for x in applePlatforms ] + [ "needs.check-cache.outputs.wrappers-" + x + "-Simulator != 'true'" for x in applePlatforms ])
   linux:
