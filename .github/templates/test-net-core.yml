@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 ---

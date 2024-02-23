@@ -231,7 +231,7 @@ with:
 #@ end
 ---
 #@ def setupWorkloads(workloads = 'maui'):
-  - _: #@ template.replace(setupDotnet("8.0.x"))
+  - _: #@ template.replace(setupDotnet())
   - name: Setup workloads
     run: #@ "dotnet workload install " + workloads
 #@ end
