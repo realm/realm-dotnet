@@ -26,10 +26,10 @@ jobs:
           os:
             runner: macos-14
             runtime: osx-arm64
-        - framework: net6.0
-          os:
-            runner: win81
-            runtime: win-x64
+        #! - framework: net6.0 // Need to install net8 sdk to the win81 runner
+        #!   os:
+        #!     runner: win81
+        #!     runtime: win-x64
 
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
