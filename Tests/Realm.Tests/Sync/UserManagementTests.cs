@@ -1166,10 +1166,10 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                tcs = new();
-
                 // Unsubscribe and verify that it no longer raises user changed
                 user.Changed -= OnUserChanged;
+
+                tcs = new();
 
                 var filter = BsonDocument.Parse(@"{
                     user_id: { $eq: """ + user.Id + @""" }
