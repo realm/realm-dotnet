@@ -122,7 +122,7 @@ jobs:
         distribution: microsoft
         java-version: 11
     - name: Build the tests
-      run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
@@ -133,7 +133,7 @@ jobs:
       uses: ./.github/actions/run-android-device-farm-test
       id: run_tests
       with:
-        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net6.0-android/publish/io.realm.mauitests-Signed.apk
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
         app-id: io.realm.mauitests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
