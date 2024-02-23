@@ -797,6 +797,9 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
+                var nonexistent = await collection.FindOneAsync();
+                Assert.That(nonexistent, Is.Null);
+
                 var inserted = await InsertSomeData(collection, 3);
 
                 var result = await collection.FindOneAsync();
