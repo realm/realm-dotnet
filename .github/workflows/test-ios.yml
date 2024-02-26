@@ -48,7 +48,7 @@ jobs:
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/run-ios-simulator@fc0cd5604b46cf894ada5fbda3aa0fb6e5e01230
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
@@ -102,7 +102,7 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/run-ios-simulator@fc0cd5604b46cf894ada5fbda3aa0fb6e5e01230
       with:
         appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
@@ -110,6 +110,7 @@ jobs:
         arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After
     - name: Transform Results
       run: xsltproc --output TestResults.iOS.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.iOS.xml
+      shell: bash
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

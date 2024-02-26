@@ -11,6 +11,7 @@
   #@ output_file = file + "_transformed.xml"
   - name: Transform Results
     run: #@ "xsltproc --output " + output_file + " Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt " + file
+    shell: bash
   #@ end
   - name: Publish Unit Test Results
     uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
