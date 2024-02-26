@@ -542,7 +542,7 @@ namespace Realms.Tests.Sync
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
 
                 await realm.SyncSession.WaitForDownloadAsync();
-                await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
+                await linkObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount && realm.Find<LinksObject>(obj.Id) != null);
 
                 var linkObj = realm.Find<LinksObject>(obj.Id);
 
@@ -752,7 +752,7 @@ namespace Realms.Tests.Sync
                 var realmObjs = await realm.All<RealmValueObject>().SubscribeAsync();
 
                 await intObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
-                await realmObjs.WaitForEventAsync((sender, _) => sender.Count >= 1);
+                await realmObjs.WaitForEventAsync((sender, _) => sender.Count == 1 && realm.Find<RealmValueObject>(obj.Id) != null);
 
                 var realmValObj = realm.Find<RealmValueObject>(obj.Id);
 
@@ -1257,7 +1257,7 @@ namespace Realms.Tests.Sync
 
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            using var realm = await GetRealmAsync(config);
+            using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
             var collection = client.GetCollection<T>();
             await collection.DeleteManyAsync(new object());
@@ -1272,7 +1272,7 @@ namespace Realms.Tests.Sync
 
             SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
 
-            using var realm = await GetRealmAsync(config);
+            using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
             var db = client.GetDatabase(SyncTestHelpers.SyncMongoDBName(appConfigType));
 
