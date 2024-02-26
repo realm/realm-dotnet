@@ -1204,7 +1204,9 @@ namespace Realms.Tests.Database
             });
 
             var ex = Assert.Throws<ArgumentException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue))!;
-            Assert.That(ex.Message, Does.Contain($"Unsupported comparison"));
+            Assert.That(ex.Message, Does.Contain($"Cannot compare argument")
+                .Or.Contain("Unsupported comparison")
+                .Or.Contain("Cannot convert"));
         }
 
         [Test]

@@ -309,7 +309,7 @@ extern "C" {
         bool did_reset = false;
         while (!did_reset) {
             try {
-                app->sync_manager()->reset_for_testing();
+                app->sync_manager()->tear_down_for_testing();
                 did_reset = true;
             }
             catch (...) {
