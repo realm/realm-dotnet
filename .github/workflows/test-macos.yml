@@ -100,6 +100,7 @@ jobs:
       run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=maccatalyst
     - name: Transform Results
       run: xsltproc --output TestResults.MacCatalyst.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.MacCatalyst.xml
+      shell: bash
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
