@@ -16,17 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Sync
 {
     /// <summary>
     /// A struct containing information about the progress state at a given instant.
     /// </summary>
-    public struct SyncProgress
+    public readonly struct SyncProgress
     {
         /// <summary>
         /// Gets the number of bytes that have been transferred since subscribing for progress notifications.
         /// </summary>
         /// <value>The number of transferred bytes.</value>
+        [Obsolete("Not accurate, use ProgressEstimate instead.")]
         public ulong TransferredBytes { get; }
 
         /// <summary>
@@ -36,14 +39,24 @@ namespace Realms.Sync
         /// successfully transferred.
         /// </summary>
         /// <value>The number of transferable bytes.</value>
+        [Obsolete("Not accurate, use ProgressEstimate instead.")]
         public ulong TransferableBytes { get; }
 
-        internal SyncProgress(ulong transferred, ulong transferable)
+        /// <summary>
+        /// Gets the percentage estimate of the current progress, expressed as a double between 0.0 and 1.0.
+        /// </summary>
+        /// <value>A percentage estimate of the progress.</value>
+        public double ProgressEstimate { get; }
+
+        internal SyncProgress(ulong transferred, ulong transferable, double progressEstimate)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             TransferredBytes = transferred;
             TransferableBytes = transferable;
+#pragma warning restore CS0618 // Type or member is obsolete
+            ProgressEstimate = progressEstimate;
         }
 
-        internal bool IsComplete => TransferableBytes == TransferredBytes;
+        internal bool IsComplete => ProgressEstimate >= 1.0;
     }
 }

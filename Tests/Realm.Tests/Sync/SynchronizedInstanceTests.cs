@@ -129,11 +129,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
-
-                // We can't validate exact values because there's a reasonable chance that
-                // the last notification won't be invoked if the Realm is downloaded first.
-                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
-                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
+                Assert.That(lastProgress.ProgressEstimate, Is.GreaterThan(0.0));
             }, 60000);
         }
 
@@ -163,11 +159,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
-
-                // We can't validate exact values because there's a reasonable chance that
-                // the last notification won't be invoked if the Realm is downloaded first.
-                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
-                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
+                Assert.That(lastProgress.ProgressEstimate, Is.GreaterThan(0.0));
             }, 60000);
         }
 

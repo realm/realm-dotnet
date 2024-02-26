@@ -4,6 +4,7 @@
 using Baas;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using Realms;
 using Realms.Exceptions.Sync;
 using Realms.Schema;
