@@ -72,7 +72,7 @@
 
 
 ### Compatibility
-* Realm Studio: 13.0.0 or later ?????????? TODO NEED TO CHECK ---------------
+* Realm Studio: 15.0.0 or later !!!!!!!!TODO NEED TO CHECK ---------------
 
 ### Internal
 * Using Core 14.0.1.
