@@ -2108,7 +2108,8 @@ namespace Realms.Tests.Sync
                 var projection = BsonDocument.Parse("{ LongValue: 1 }");
 
                 var result = await collection.FindOneAndDeleteAsync(filter, sort, projection);
-                Assert.That(result.Id, Is.EqualTo(inserted[1].Id));
+                Assert.That(result, Is.Not.Null);
+                Assert.That(result!.Id, Is.EqualTo(inserted[1].Id));
                 Assert.That(result.StringValue, Is.Null);
                 Assert.That(result.LongValue, Is.EqualTo(inserted[1].LongValue));
 
@@ -2126,7 +2127,8 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertRemappedData(collection);
 
                 var result = await collection.FindOneAsync();
-                Assert.That(result.Id, Is.EqualTo(inserted[0].Id));
+                Assert.That(result, Is.Not.Null);
+                Assert.That(result!.Id, Is.EqualTo(inserted[0].Id));
                 Assert.That(result.StringValue, Is.EqualTo(inserted[0].StringValue));
                 Assert.That(result.MappedLink!.Id, Is.EqualTo(inserted[1].Id));
                 Assert.That(result.MappedList[0].Id, Is.EqualTo(inserted[2].Id));
