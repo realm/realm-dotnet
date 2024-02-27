@@ -35,6 +35,27 @@
 * Updated bundled OpenSSL version to 3.2.0. (Core 13.27.0)
 * Storage of Decimal128 properties has been optimised so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. (Core 14.0.0-beta.0)
 * Querying a specific entry in a collection (in particular 'first and 'last') is supported in RQL (`.Filter()`). (Core 14.0.0-beta.0)
+* Add support for collection indexes in RQL (`Filter()`) queries.
+  For example:
+  ```csharp
+  var people = realm.All<Person>();
+
+  //People whose first dog is called "Fluffy"
+  var query1 = people.Filter("ListOfDogs[FIRST].Name = $0", "Fluffy")
+
+  //People whose last dog is called "Fluffy"
+  var query2 = people.Filter("ListOfDogs[LAST].Name = $0", "Fluffy")
+
+  //People whose second dog is called "Fluffy"
+  var query3 = people.Filter("ListOfDogs[2].Name = $0", "Fluffy")
+
+  //People that have a dog called "Fluffy"
+  var query4 = people.Filter("ListOfDogs[*].Name = $0", "Fluffy")
+
+  //People that have 3 dogs
+  var query5 = people.Filter("ListOfDogs[SIZE] = $0", 3)
+  ```
+  (Core 14.0.0)
 
 ### Fixed
 * Fixed RQL (`.Filter()`) queries like `indexed_property == NONE {x}` which mistakenly matched on only x instead of not x. This only applies when an indexed property with equality (==, or IN) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. (Core 13.27.0)
