@@ -42,7 +42,7 @@ jobs:
     - name: Build Tests/Tests.XamarinTVOS
       run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@fc0cd5604b46cf894ada5fbda3aa0fb6e5e01230
+      uses: realm/ci-actions/run-ios-simulator@cd3efc67e2583fc5257d6a94edf29f7ccfbb9897
       with:
         appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
         bundleId: io.realm.Tests-XamarinTVOS
