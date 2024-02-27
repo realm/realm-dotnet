@@ -54,8 +54,8 @@ runs:
           Customer Artifacts.zip
     - run: |
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-        Move-Item -Path ${{ github.workspace }}/artifacts/Host_Machine_Files/`$DEVICEFARM_LOG_DIR/TestResults.Android.xml -Destination ${{ github.workspace }}/TestResults.Android.xml
-        echo "results-path=${{ github.workspace }}/TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Move-Item -Path artifacts/Host_Machine_Files/`$DEVICEFARM_LOG_DIR/TestResults.Android.xml -Destination TestResults.Android.xml
+        echo "results-path=TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
       name: Fetch test artifacts
       shell: pwsh
       id: get-test-results
