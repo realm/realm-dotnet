@@ -17,4 +17,4 @@ jobs:
       - #@ template.replace(dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
-      - #@ publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation")
+      - #@ template.replace(publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation"))

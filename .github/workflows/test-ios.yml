@@ -48,7 +48,7 @@ jobs:
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
@@ -89,32 +89,34 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Set XCode Version
-      shell: bash
-      run: |
-        sudo xcode-select -s "/Applications/Xcode_14.3.app"
-        echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
       with:
-        dotnet-version: 7.0.x
+        xcode-version: latest-stable
+    - name: Configure .NET
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
+      with:
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Build the tests
-      run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
+        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
-        iphoneToSimulate: iPhone-8
+        iphoneToSimulate: iPhone-15
         arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After
+    - name: Transform Results
+      run: xsltproc --output TestResults.iOS.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.iOS.xml
+      shell: bash
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Maui.iOS
-        path: TestResults.iOS.xml
+        path: TestResults.iOS.xml_transformed.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed

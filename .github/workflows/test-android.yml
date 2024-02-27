@@ -111,9 +111,9 @@ jobs:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Setup JDK
@@ -122,7 +122,7 @@ jobs:
         distribution: microsoft
         java-version: 11
     - name: Build the tests
-      run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
@@ -133,16 +133,19 @@ jobs:
       uses: ./.github/actions/run-android-device-farm-test
       id: run_tests
       with:
-        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net6.0-android/publish/io.realm.mauitests-Signed.apk
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
         app-id: io.realm.mauitests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Transform Results
+      run: xsltproc --output ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt ${{ steps.run_tests.outputs.test-results-path }}
+      shell: bash
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Maui.Android
-        path: ${{ steps.run_tests.outputs.test-results-path }}
+        path: ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed

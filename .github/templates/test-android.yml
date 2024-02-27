@@ -25,7 +25,7 @@ jobs:
           project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
           device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
           arguments: (@= baasTestArgs('android') @)
-      - #@ publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Xamarin.Android")
+      - #@ template.replace(publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Xamarin.Android"))
   test-maui:
     runs-on: windows-latest
     name: Maui.Android
@@ -36,14 +36,14 @@ jobs:
       - #@ template.replace(setupWorkloads())
       - #@ setupJDK()
       - name: Build the tests
-        run: #@ "dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
+        run: #@ "dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
       - name: Run the tests
         uses: ./.github/actions/run-android-device-farm-test
         id: run_tests
         with:
-          apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net6.0-android/publish/io.realm.mauitests-Signed.apk
+          apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
           app-id: io.realm.mauitests
           project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
           device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-      - #@ publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Maui.Android")
+      - #@ template.replace(publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Maui.Android", run_transform=True))

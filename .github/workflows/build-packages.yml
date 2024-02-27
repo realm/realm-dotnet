@@ -39,9 +39,9 @@ jobs:
         distribution: microsoft
         java-version: 11
     - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Set version suffix
@@ -227,10 +227,10 @@ jobs:
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       if: inputs.build-docs
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Build docs
       if: inputs.build-docs
       env:

@@ -72,7 +72,7 @@ jobs:
         run: |
           chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
-      - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
+      - #@ template.replace(publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4"))
 
   run-tests-windows:
     runs-on: windows-latest
@@ -93,4 +93,4 @@ jobs:
           Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
           cat ${{ github.workspace }}\test.log
         shell: powershell
-      - #@ publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4")
+      - #@ template.replace(publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4"))

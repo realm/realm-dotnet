@@ -286,6 +286,13 @@ namespace Realms.Tests
             return value;
         }
 
+        public static async Task<T> WaitForNonNullObjectAsync<T>(Func<Task<T?>> producer)
+        {
+            var value = await WaitForConditionAsync(producer, v => Task.FromResult(v != null));
+            Assert.That(value, Is.Not.Null);
+            return value!;
+        }
+
         public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task? errorTask = null)
         {
             AsyncContext.Run(async () =>

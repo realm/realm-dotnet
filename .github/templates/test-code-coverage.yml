@@ -17,7 +17,7 @@ jobs:
           dotnet tool install coverlet.console --tool-path tools
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net7.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
+      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net8.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
       - name: Run the tests
         env:
           DOTNET_DbgEnableMiniDump: 1
@@ -39,4 +39,4 @@ jobs:
           compare-sha: ${{ github.event.pull_request.base.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-      - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")
+      - #@ template.replace(publishTestsResults("TestResults.Linux.xml", "Code Coverage"))

@@ -345,8 +345,8 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public Task<TDocument> FindOneAsync(object? filter = null, object? sort = null, object? projection = null)
-                => InvokeOperationAsync<TDocument>("findOne", "query", filter, "project", projection, "sort", sort);
+            public Task<TDocument?> FindOneAsync(object? filter = null, object? sort = null, object? projection = null)
+                => InvokeOperationAsync<TDocument?>("findOne", "query", filter, "project", projection, "sort", sort);
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -435,8 +435,8 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
-            public Task<TDocument> FindOneAndDeleteAsync(object? filter = null, object? sort = null, object? projection = null)
-                => InvokeOperationAsync<TDocument>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
+            public Task<TDocument?> FindOneAndDeleteAsync(object? filter = null, object? sort = null, object? projection = null)
+                => InvokeOperationAsync<TDocument?>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <typeparamref name="TProjection"/> array.

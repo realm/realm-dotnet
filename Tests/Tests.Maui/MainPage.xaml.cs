@@ -93,15 +93,7 @@ public partial class MainPage : ContentPage
                         }
                     });
                 });
-                var failed = autorun.Execute(arguments.Where(a => a != "--headless").ToArray(), writer, reader);
-
-                var resultPath = TestHelpers.GetResultsPath(MauiProgram.Args); 
-                if (!string.IsNullOrEmpty(resultPath))
-                {
-                    TestHelpers.TransformTestResults(resultPath);
-                }
-
-                return failed;
+                return autorun.Execute(arguments.Where(a => a != "--headless").ToArray(), writer, reader);
             });
 
             ResultsLabel.Text = $"Test run complete. Failed: {result}";
