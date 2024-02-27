@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Wipe all clusters and apps
     steps:
-    - uses: realm/ci-actions/mdb-realm/deleteAllClusters@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+    - uses: realm/ci-actions/mdb-realm/deleteAllClusters@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
         realmUrl: https://realm-qa.mongodb.com
         atlasUrl: https://cloud-qa.mongodb.com
