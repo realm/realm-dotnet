@@ -590,6 +590,73 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ListFilter_SupportsCollectionIndexes()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe",
+                ListOfDogs =
+                {
+                    new Dog { Name = "Fluffy" },
+                    new Dog { Name = "Plumpy" },
+                }
+            };
+
+            var mark = new Owner
+            {
+                Name = "Mark",
+                ListOfDogs =
+                {
+                    new Dog { Name = "Plumpy" },
+                    new Dog { Name = "Cuddly" },
+                    new Dog { Name = "Fluffy" },
+                }
+            };
+
+            var anton = new Owner
+            {
+                Name = "Anton",
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(joe);
+                _realm.Add(mark);
+                _realm.Add(anton);
+            });
+
+            var owners = _realm.All<Owner>();
+
+            var query = owners.Filter("ListOfDogs[0].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(joe.Name));
+
+            query = owners.Filter("ListOfDogs[FIRST].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(joe.Name));
+
+            query = owners.Filter("ListOfDogs[LAST].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(mark.Name));
+
+            query = owners.Filter("ListOfDogs[LAST].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(mark.Name));
+
+            query = owners.Filter("ListOfDogs[*].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(2));
+            Assert.That(query.ToArray().Select(p => p.Name).OrderBy(p => p), Is.EqualTo(new[] { joe.Name, mark.Name }));
+
+            query = owners.Filter("ListOfDogs[SIZE] = $0", 0);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(anton.Name));
+
+            query = owners.Filter("ListOfDogs[SIZE] = $0", 3);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(mark.Name));
+        }
+
+        [Test]
         public void ListFilter_WhenNotRealmList_Throws()
         {
             var list = new List<Dog>();
@@ -901,6 +968,66 @@ namespace Realms.Tests.Database
             Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
             Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
             Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void SetFilter_SupportsCollectionIndexes()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe",
+                SetOfDogs =
+                {
+                    new Dog { Name = "Fluffy" },
+                    new Dog { Name = "Plumpy" },
+                }
+            };
+
+            var mark = new Owner
+            {
+                Name = "Mark",
+                SetOfDogs =
+                {
+                    new Dog { Name = "Plumpy" },
+                    new Dog { Name = "Cuddly" },
+                    new Dog { Name = "Fluffy" },
+                }
+            };
+
+            var anton = new Owner
+            {
+                Name = "Anton",
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(joe);
+                _realm.Add(mark);
+                _realm.Add(anton);
+            });
+
+            var owners = _realm.All<Owner>();
+
+            var query = owners.Filter("SetOfDogs[SIZE] = $0", 0);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(anton.Name));
+
+            query = owners.Filter("SetOfDogs[SIZE] = $0", 3);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(mark.Name));
+
+            query = owners.Filter("SetOfDogs[*].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(2));
+            Assert.That(query.ToArray().Select(p => p.Name).OrderBy(p => p), Is.EqualTo(new[] { joe.Name, mark.Name }));
+
+            Assert.That(() => owners.Filter("SetOfDogs[FIRST].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[FIRST] not expected"));
+
+            Assert.That(() => owners.Filter("SetOfDogs[LAST].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[LAST] not expected"));
+
+            Assert.That(() => owners.Filter("SetOfDogs[2].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[2] not expected"));
         }
 
         [Test]
