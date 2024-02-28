@@ -35,7 +35,6 @@
 * Improved performance of RQL (`.Filter()`) queries on a non-linked string property using: >, >=, <, <=, operators and fixed behaviour that a null string should be evaulated as less than everything, previously nulls were not matched. (Core 13.27.0)
 * Updated bundled OpenSSL version to 3.2.0. (Core 13.27.0)
 * Storage of Decimal128 properties has been optimised so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. (Core 14.0.0-beta.0)
-* Querying a specific entry in a collection (in particular 'first and 'last') is supported in RQL (`.Filter()`). (Core 14.0.0-beta.0)
 * Add support for collection indexes in RQL (`Filter()`) queries.
   For example:
   ```csharp
@@ -67,7 +66,7 @@
 * Fix a minor race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. (Core 13.27.0)
 * Boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared is now also raised for `IDictionary`, aligning it to `ISet` and `IList`. (Core 14.0.0-beta.0)
 * Fixed equality queries on `RealmValue` properties with an index. (Core 14.0.0-beta.0)
-* Fixed a crash that would happen when more than 8388606 were pointing to a specific object.
+* Fixed a crash that would happen when more than 8388606 links were pointing to a specific object.
 * Fixed wrong results when querying for `NULL` value in `IDictionary`. (Core 14.0.0-beta.0)
 * A Realm generated on a non-apple ARM 64 device and copied to another platform (and vice-versa) were non-portable due to a sorting order difference. This impacts strings or binaries that have their first difference at a non-ascii character. These items may not be found in a set, or in an indexed column if the strings had a long common prefix (> 200 characters). (Core 14.0.0-beta.0)
 
