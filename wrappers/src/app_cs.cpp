@@ -297,6 +297,7 @@ extern "C" {
 
     REALM_EXPORT void shared_app_reset_for_testing(SharedApp& app) {
 
+        // If the logger is empty then tear_down_for_testing has been called already
         if (!app->sync_manager()->get_logger()) {
             return;
         }
@@ -307,6 +308,7 @@ extern "C" {
             user->log_out();
         }
 
+        // This method will crash the application if called more than once for the same app.
         app->sync_manager()->tear_down_for_testing();
 
         App::clear_cached_apps();
