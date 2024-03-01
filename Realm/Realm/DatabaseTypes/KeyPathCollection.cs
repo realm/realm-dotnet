@@ -184,20 +184,16 @@ public readonly struct KeyPath
 
     private static string GetFullPath(Expression expression)
     {
-        if (expression is MemberExpression memberExpression //// Either field or property expression
-            && memberExpression.Expression is not null //// Filtering out static members
-            && memberExpression.Member is PropertyInfo) //// Filtering for property expressions only
+        return expression switch
         {
-            var subPath = GetFullPath(memberExpression.Expression);
-            return string.IsNullOrEmpty(subPath) ? memberExpression.Member.Name : $"{subPath}.{memberExpression.Member.Name}";
-        }
-        else if (expression is ParameterExpression)
-        {
-            // This is the parameter of the expression, nothing to add
-            return string.Empty;
-        }
-
-        throw new ArgumentException("The input expression is not a path to a property");
+            // MemberExpression: field or property expression;
+            // Expression == null for static members;
+            // Member: PropertyInfo to filter out field access
+            MemberExpression { Expression: { } innerExpression, Member: PropertyInfo pi } =>
+                innerExpression is ParameterExpression ? pi.Name : $"{GetFullPath(innerExpression)}.{pi.Name}",
+            ParameterExpression => string.Empty,
+            _ => throw new ArgumentException("The input expression is not a path to a property"),
+        };
     }
 
     /// <inheritdoc/>

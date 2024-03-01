@@ -1735,21 +1735,19 @@ namespace Realms.Tests.Database
         [Test]
         public void KeyPathsCollection_CanBeBuiltFromExpressions()
         {
-            KeyPathsCollection kpc;
-
             var expected = new List<string> { "ListSameType", "LinkAnotherType.DictOfDogs" };
 
-            kpc = KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, t => t.LinkAnotherType!.DictOfDogs);
+            var kpc = KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, t => t.LinkAnotherType!.DictOfDogs);
             AssertKeyPathsCollectionCorrectness(kpc, expected);
 
             kpc = KeyPathsCollection.Of(KeyPath.For<TestNotificationObject>(t => t.ListSameType),
                 KeyPath.For<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs));
             AssertKeyPathsCollectionCorrectness(kpc, expected);
 
-            void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expected)
+            void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expectedStrings)
             {
                 Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
-                Assert.That(k.GetStrings(), Is.EqualTo(expected));
+                Assert.That(k.GetStrings(), Is.EqualTo(expectedStrings));
             }
         }
 
