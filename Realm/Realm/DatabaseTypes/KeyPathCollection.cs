@@ -87,7 +87,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     /// <typeparam name="T">The <see cref="IRealmObject">realm object.</see> type.</typeparam>
     /// <param name="expressions">The array of <see cref="Expression"/> to use for the  <see cref="KeyPathsCollection"/>.</param>
     /// <returns>The <see cref="KeyPathsCollection"/> built from the input array of <see cref="Expression"/>.</returns>
-    public static KeyPathsCollection Of<T>(params Expression<Func<T, object>>[] expressions)
+    public static KeyPathsCollection Of<T>(params Expression<Func<T, object?>>[] expressions)
         where T : IRealmObject
     {
         return Of(expressions.Select(KeyPath.For).ToArray());
@@ -169,15 +169,15 @@ public readonly struct KeyPath
     /// var keyPath = KeyPath.For&lt;Person&gt;(p => p.Dog.Name);
     /// </code>
     /// </example>
-    public static KeyPath For<T>(Expression<Func<T, object>> expression)
+    public static KeyPath For<T>(Expression<Func<T, object?>> expression)
         where T : IRealmObject
     {
         if (expression is null)
         {
-            throw new ArgumentException("The input expression cannot be null");
+            throw new ArgumentException("The input expression cannot be null", nameof(expression));
         }
 
-        return new KeyPath(GetFullPath(expression.Body));
+        return new(GetFullPath(expression.Body));
     }
 
     public static implicit operator KeyPath(string s) => new(s);
