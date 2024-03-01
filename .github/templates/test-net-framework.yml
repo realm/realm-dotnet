@@ -9,7 +9,7 @@ jobs:
   run-tests:
     runs-on: windows-latest
     name: .NET Framework
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - #@ template.replace(prepareTest("net-framework"))
       - #@ template.replace(buildTests("Tests/Realm.Tests", TargetFramework="net461", RealmTestsStandaloneExe="true"))

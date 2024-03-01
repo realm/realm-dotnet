@@ -5,19 +5,7 @@
 
 #@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
 
-#! These secrets will run against cloud-dev on PRs or cloud-qa on merges to main. They're commented out
-#! because it appears cloud-dev is quite unstable at this point (Aug 2022).
-#! realm_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
-#! atlas_BaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
-#! secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
-#! secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
-#! secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
-
-#@ realm_BaseUrl = "https://realm-qa.mongodb.com"
-#@ atlas_BaseUrl = "https://cloud-qa.mongodb.com"
-#@ secret_AtlasPublicKey = "${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
-#@ secret_AtlasPrivateKey = "${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}"
-#@ secret_AtlasProjectId = "${{ secrets.ATLAS_QA_PROJECT_ID }}"
+#@ secret_BaaSaasApiKey = "${{ secrets.BAASAAS_API_KEY }}"
 
 #@ def getJobName(prefix, name):
 #@ if (prefix != ""):
@@ -31,22 +19,18 @@
 #@ for target in targets:
 #@   differentiators.append('"' + getJobName("", target) + '"')
 #@ end
-deploy-cluster:
+deploy-baas:
   uses: ./.github/workflows/deploy-baas.yml
   with:
     differentiators: #@ '[' + ", ".join(differentiators) + ']'
-    BaseUrl: #@ realm_BaseUrl
-    AtlasBaseUrl: #@ atlas_BaseUrl
   secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    BaaSaasApiKey: #@ secret_BaaSaasApiKey
 #@ end
 
 #! We need to have two input arrays because there is not a 1-to-1 correspondence between dependencies
 #! and targets, for example for macOS.
 #@ def cleanupBaas(dependencies = [], targets = []):
-#@ needs = ["deploy-cluster"]
+#@ needs = ["deploy-baas"]
 #@ differentiators = []
 #@ for dependency in dependencies:
 #@   needs.append(getJobName("test", dependency))
@@ -54,20 +38,15 @@ deploy-cluster:
 #@ for target in targets:
 #@   differentiators.append('"' + getJobName("", target) + '"')
 #@ end
-cleanup-cluster:
+cleanup-baas:
   uses: ./.github/workflows/cleanup-baas.yml
   if: always()
   name: Cleanup
   needs: #@ needs
   with:
     differentiators: #@ '[' + ", ".join(differentiators) + ']'
-    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-    BaseUrl: #@ realm_BaseUrl
-    AtlasBaseUrl: #@ atlas_BaseUrl
   secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    BaaSaasApiKey: #@ secret_BaaSaasApiKey
 #@ end
 
 #@ def runTests(name, runSyncTests = True, additionalSecrets = []):
@@ -79,20 +58,13 @@ cleanup-cluster:
   needs:
     - build-packages
     #@ if runSyncTests:
-    - deploy-cluster
+    - deploy-baas
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    #@ if runSyncTests:
-    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-    realmUrl: #@ realm_BaseUrl
-    atlasUrl: #@ atlas_BaseUrl
-    #@ end
   secrets:
     #@ if runSyncTests:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    BaaSaasApiKey: #@ secret_BaaSaasApiKey
     #@ end
     #@ for secret in additionalSecrets:
     #@yaml/text-templated-strings

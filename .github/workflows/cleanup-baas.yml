@@ -5,28 +5,15 @@ name: cleanup-baas
       differentiators:
         required: true
         type: string
-      clusterName:
-        required: true
-        type: string
-      BaseUrl:
-        required: true
-        type: string
-      AtlasBaseUrl:
-        required: true
-        type: string
     secrets:
-      AtlasProjectId:
-        required: true
-      AtlasPublicKey:
-        required: true
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   cleanup-baas:
-    name: Cleanup Cluster
+    name: Cleanup Baas
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,11 +25,9 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.BaseUrl }}
-        atlasUrl: ${{ inputs.AtlasBaseUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ inputs.clusterName }}-${{ matrix.differentiator }}
+        dotnet-version: 6.0.x
+    - name: Terminate Baas
+      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=${{ matrix.differentiator }}
+      working-directory: Tools/DeployApps

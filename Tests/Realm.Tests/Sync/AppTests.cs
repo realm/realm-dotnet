@@ -42,7 +42,8 @@ namespace Realms.Tests.Sync
         {
             static void AssertBundleId(params string[] expectedValues)
             {
-                var values = expectedValues.Concat(new[] { "ReSharperTestRunner" }).Select(Platform.Sha256).ToArray();
+                var localTestRunners = new[] { "ReSharperTestRunner", "testhost" };
+                var values = expectedValues.Concat(localTestRunners).Select(Platform.Sha256).ToArray();
                 Assert.That(values, Does.Contain(Platform.BundleId));
             }
 

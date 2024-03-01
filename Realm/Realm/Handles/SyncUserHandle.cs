@@ -241,7 +241,7 @@ namespace Realms.Sync
                 NativeMethods.call_function(this, app, name, name.IntPtrLength(), args, args.IntPtrLength(), service, service.IntPtrLength(), GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
 
-                return await tcs.Task; //.NET Host locks the dll when there's an exception here (coming from native)
+                return await tcs.Task; // .NET Host locks the dll when there's an exception here (coming from native)
             }
             finally
             {

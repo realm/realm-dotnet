@@ -41,22 +41,17 @@ namespace Realms.Tests.Sync
 
         public static Uri? BaasUri;
         private static BaasClient? _baasClient;
+        private static string? _baaSaasApiKey;
 
         static SyncTestHelpers()
         {
-#if !UNITY
-            try
+            var uri = ConfigHelpers.GetSetting("BaasUrl");
+            if (uri != null)
             {
-                var uri = ConfigHelpers.GetSetting("BaasUrl");
-                if (uri != null)
-                {
-                    BaasUri = new Uri(uri);
-                }
+                BaasUri = new Uri(uri);
             }
-            catch
-            {
-            }
-#endif
+
+            _baaSaasApiKey = ConfigHelpers.GetSetting("BaaSaasApiKey");
         }
 
         private static int _appCounter;
@@ -76,7 +71,7 @@ namespace Realms.Tests.Sync
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
-            if (BaasUri == null)
+            if (BaasUri == null && _baaSaasApiKey == null)
             {
                 Assert.Ignore("Atlas App Services are not setup.");
             }
@@ -132,7 +127,7 @@ namespace Realms.Tests.Sync
 
         public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
         {
-            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
+            var (extracted, remaining) = BaasClient.ExtractArguments(args, "realmloglevel", "realmlogfile");
 
             if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
             {
@@ -167,28 +162,33 @@ namespace Realms.Tests.Sync
 
         private static async Task CreateBaasAppsAsync()
         {
-            if (_apps[AppConfigType.Default].AppId != string.Empty || BaasUri == null)
+            if (_apps[AppConfigType.Default].AppId != string.Empty || (BaasUri == null && _baaSaasApiKey == null))
             {
                 return;
             }
 
-#if !UNITY
-            try
-            {
-                var cluster = ConfigHelpers.GetSetting("Cluster")!;
-                var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
-                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
-                var groupId = ConfigHelpers.GetSetting("GroupId")!;
-                var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
+            var cluster = ConfigHelpers.GetSetting("Cluster")!;
+            var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
+            var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
+            var groupId = ConfigHelpers.GetSetting("GroupId")!;
+            var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
 
-                _baasClient ??= await BaasClient.Atlas(BaasUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
-            }
-            catch
+            if (_baaSaasApiKey != null)
             {
+                BaasUri = await BaasClient.GetOrDeployContainer(_baaSaasApiKey, differentiator, TestHelpers.Output);
+                _baasClient = await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
             }
-#endif
-
-            _baasClient ??= await BaasClient.Docker(BaasUri, "local", TestHelpers.Output);
+            else if (!string.IsNullOrEmpty(cluster) &&
+                !string.IsNullOrEmpty(apiKey) &&
+                !string.IsNullOrEmpty(privateApiKey) &&
+                !string.IsNullOrEmpty(groupId))
+            {
+                _baasClient = await BaasClient.Atlas(BaasUri!, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+            }
+            else
+            {
+                _baasClient = await BaasClient.Docker(BaasUri!, "local", TestHelpers.Output);
+            }
 
             _apps = await _baasClient.GetOrCreateApps();
         }
