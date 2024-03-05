@@ -29015,12 +29015,14 @@ const github = __importStar(__nccwpck_require__(5438));
 async function run() {
     try {
         const context = github.context;
-        if (!context ||
-            !context.payload ||
-            !context.payload.pull_request ||
-            context.payload.pull_request.draft) {
+        if (!context || !context.payload || !context.payload.pull_request) {
             return;
         }
+        if (context.payload.pull_request.draft) {
+            core.info(`Skipping title check because PR is in draft.`);
+            return;
+        }
+        core.info(`test: ${context.payload.pull_request}`);
         const title = context.payload.pull_request.title;
         const labels = context.payload.pull_request.labels;
         const ignoreLabels = core

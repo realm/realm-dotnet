@@ -9,14 +9,16 @@ import { wait } from './wait'
 export async function run(): Promise<void> {
   try {
     const context = github.context
-    if (
-      !context ||
-      !context.payload ||
-      !context.payload.pull_request ||
-      context.payload.pull_request.draft
-    ) {
+    if (!context || !context.payload || !context.payload.pull_request) {
       return
     }
+
+    if (context.payload.pull_request.draft) {
+      core.info(`Skipping title check because PR is in draft.`)
+      return
+    }
+
+    core.info(`test: ${context.payload.pull_request}`)
 
     const title = context.payload.pull_request.title
     const labels = context.payload.pull_request.labels
