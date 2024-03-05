@@ -14,7 +14,7 @@ jobs:
         with:
           submodules: false
       - name: Enforce PR title
-        uses: realm/ci-actions/title-checker@master
+        uses: realm/ci-actions/title-checker@main
         with:
           regex: R[A-Z]{2,5}-[0-9]{1,6}
           error-hint: Invalid PR title. Make sure it's prefixed with the JIRA ticket the PR addresses or add the no-jira-ticket label.
