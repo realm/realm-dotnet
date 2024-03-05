@@ -296,26 +296,20 @@ extern "C" {
     }
 
     REALM_EXPORT void shared_app_reset_for_testing(SharedApp& app) {
+
+        // If the logger is empty then tear_down_for_testing has been called already
+        if (!app->sync_manager()->get_logger()) {
+            return;
+        }
+
         auto users = app->all_users();
         for (size_t i = 0; i < users.size(); i++) {
             auto &user = users[i];
             user->log_out();
         }
 
-        while (app->sync_manager()->has_existing_sessions()) {
-            sleep_ms(5);
-        }
-
-        bool did_reset = false;
-        while (!did_reset) {
-            try {
-                app->sync_manager()->reset_for_testing();
-                did_reset = true;
-            }
-            catch (...) {
-
-            }
-        }
+        // This method will crash the application if called more than once for the same app.
+        app->sync_manager()->tear_down_for_testing();
 
         App::clear_cached_apps();
     }
