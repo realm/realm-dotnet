@@ -70,9 +70,8 @@
 * Fixed wrong results when querying for `NULL` value in `IDictionary`. (Core 14.0.0-beta.0)
 * A Realm generated on a non-apple ARM 64 device and copied to another platform (and vice-versa) were non-portable due to a sorting order difference. This impacts strings or binaries that have their first difference at a non-ascii character. These items may not be found in a set, or in an indexed column if the strings had a long common prefix (> 200 characters). (Core 14.0.0-beta.0)
 
-
 ### Compatibility
-* Realm Studio: 15.0.0 or later !!!!!!!!TODO NEED TO CHECK ---------------
+* Realm Studio: 15.0.0 or later.
 
 ### Internal
 * Using Core 14.1.0.
