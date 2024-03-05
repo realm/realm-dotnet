@@ -1,0 +1,21 @@
+# NOTE: This is a common file that is overwritten by realm/ci-actions sync service
+# and should only be modified in that repository.
+
+name: "Check Changelog"
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled, converted_to_draft, edited]
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Enforce PR title
+        uses: realm/ci-actions/title-checker@master
+        with:
+          regex: R[A-Z]{2,5}-[0-9]{1,6}
+          error-hint: Invalid PR title. Make sure it's prefixed with the JIRA ticket the PR addresses or add the no-jira-ticket label.
+          ignore-labels: 'no-jira-ticket'
