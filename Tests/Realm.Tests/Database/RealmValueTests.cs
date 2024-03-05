@@ -1161,7 +1161,7 @@ namespace Realms.Tests.Database
                 RealmValueType.Double => "double",
                 RealmValueType.Decimal128 => "decimal",
                 RealmValueType.ObjectId => "objectid",
-                RealmValueType.Object => "object",
+                RealmValueType.Object => "objectlink",
                 RealmValueType.Guid => "uuid",
                 _ => throw new NotImplementedException(),
             };
