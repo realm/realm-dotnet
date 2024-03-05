@@ -24,7 +24,6 @@
   var retrievedList = rvo.RealmValueProperty.AsList();
   ```
   (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
-
 * Reduced memory usage of `RealmValue`. (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 * Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
 
@@ -153,10 +152,6 @@
 * Made WebSocket error logging more verbose when using `AppConfiguration.UseManagedWebSockets = true`. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
 
 ### Fixed
-* Fixed serveral smaller issues when logging into with a single user when using multiple auth providers. (Core 13.21.0)
-* Fixed an excepton when querying over a geospatial dataset that some objects with a type property set to something other than `Point` (case insensitive). Those objects are now just ignored. (Core 13.21.0)
-* Fixed an issue that would make the user in an inconstisten state if the user was logged out while an access toekn refresh was in progress. (Core 13.21.0)
-* Fixed an issue where Android.bp builds would fail with SSL certificat validation errors because the trusted CA roots bundle was not included. (Core 13.23.0)
 * Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
 * Logging into a single user using multiple auth providers created a separate SyncUser per auth provider. This mostly worked, but had some quirks:
   - Sync sessions would not necessarily be associated with the specific SyncUser used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
@@ -175,7 +170,6 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.23.0
 * Using Core 13.23.1.
 
 ## 11.5.0 (2023-09-15)
