@@ -1,0 +1,27 @@
+name: 'PR Title checker'
+description: 'GitHub Action that validates PR title against a RegEx'
+author: 'Realm'
+
+branding:
+  icon: 'check-circle'
+  color: 'orange'
+
+# Define your inputs here.
+inputs:
+  regex:
+    description: Regex to check the PR title against
+    required: true
+  ignore-labels:
+    description:
+      Labels which, when applied to the PR, will mark the check as successful,
+      regardless of the title.
+    required: false
+    default: ''
+  error-hint:
+    description:
+      Error message to fail the check with in case the PR title doesn't match
+      the supplied regex.
+    default: ''
+runs:
+  using: node20
+  main: dist/index.js
