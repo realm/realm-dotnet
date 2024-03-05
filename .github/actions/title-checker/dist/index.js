@@ -29022,7 +29022,6 @@ async function run() {
             core.info(`Skipping title check because PR is in draft.`);
             return;
         }
-        core.info(`test: ${context.payload.pull_request}`);
         const title = context.payload.pull_request.title;
         const labels = context.payload.pull_request.labels;
         const ignoreLabels = core

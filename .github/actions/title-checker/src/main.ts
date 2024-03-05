@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { wait } from './wait'
 
 /**
  * The main function for the action.
@@ -17,8 +16,6 @@ export async function run(): Promise<void> {
       core.info(`Skipping title check because PR is in draft.`)
       return
     }
-
-    core.info(`test: ${context.payload.pull_request}`)
 
     const title = context.payload.pull_request.title
     const labels = context.payload.pull_request.labels
