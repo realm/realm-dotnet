@@ -1659,20 +1659,20 @@ namespace Realms.Tests.Database
         {
             KeyPath keyPath;
 
-            keyPath = KeyPath.For<TestNotificationObject>(t => t.ListSameType);
+            keyPath = KeyPath.ForExpression<TestNotificationObject>(t => t.ListSameType);
             Assert.That(keyPath.Path, Is.EqualTo("ListSameType"));
 
-            keyPath = KeyPath.For<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs);
+            keyPath = KeyPath.ForExpression<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs);
             Assert.That(keyPath.Path, Is.EqualTo("LinkAnotherType.DictOfDogs"));
         }
 
         [Test]
         public void KeyPath_WithInvalidExpressions_ThrowsException()
         {
-            Assert.That(() => KeyPath.For<TestNotificationObject>(t => t.Equals(this)),
+            Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(t => t.Equals(this)),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression is not a path to a property"));
 
-            Assert.That(() => KeyPath.For<TestNotificationObject>(null!),
+            Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(null!),
                 Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression cannot be null (Parameter 'expression')"));
         }
 
@@ -1740,8 +1740,8 @@ namespace Realms.Tests.Database
             var kpc = KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, t => t.LinkAnotherType!.DictOfDogs);
             AssertKeyPathsCollectionCorrectness(kpc, expected);
 
-            kpc = KeyPathsCollection.Of(KeyPath.For<TestNotificationObject>(t => t.ListSameType),
-                KeyPath.For<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs));
+            kpc = KeyPathsCollection.Of(KeyPath.ForExpression<TestNotificationObject>(t => t.ListSameType),
+                KeyPath.ForExpression<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs));
             AssertKeyPathsCollectionCorrectness(kpc, expected);
 
             void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expectedStrings)

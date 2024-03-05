@@ -90,7 +90,7 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     public static KeyPathsCollection Of<T>(params Expression<Func<T, object?>>[] expressions)
         where T : IRealmObject
     {
-        return Of(expressions.Select(KeyPath.For).ToArray());
+        return Of(expressions.Select(KeyPath.ForExpression).ToArray());
     }
 
     /// <summary>
@@ -140,13 +140,11 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     }
 }
 
-//TODO Fix changelog
-
 /// <summary>
 /// Represents a key path that can be used as a part of a <see cref="KeyPathsCollection"/> when subscribing for notifications.
 /// A <see cref="KeyPath"/> can be implicitly built from a string, where the string is the name of a property (e.g "FirstName"), eventually dotted to indicated nested properties.
 /// (e.g "Dog.Name"). Wildcards can also be used in key paths to capture all properties at a given level (e.g "*", "Friends.*" or "*.FirstName").
-/// A <see cref="KeyPath"/> can also be built using the <see cref="For{T}(Expression{Func{T, object}})"/> method, that creates the <see cref="KeyPath"/> corresponding
+/// A <see cref="KeyPath"/> can also be built using the <see cref="ForExpression{T}(Expression{Func{T, object}})"/> method, that creates the <see cref="KeyPath"/> corresponding
 /// to the property path represented by the input expression.
 /// </summary>
 public readonly struct KeyPath
@@ -169,7 +167,7 @@ public readonly struct KeyPath
     /// var keyPath = KeyPath.For&lt;Person&gt;(p => p.Dog.Name);
     /// </code>
     /// </example>
-    public static KeyPath For<T>(Expression<Func<T, object?>> expression)
+    public static KeyPath ForExpression<T>(Expression<Func<T, object?>> expression)
         where T : IRealmObject
     {
         if (expression is null)

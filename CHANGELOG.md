@@ -11,9 +11,14 @@
   - building it implicitly with the conversion from a `List` or array of `KeyPath` or strings;
   - getting one of the static values `Full` and `Shallow` for full and shallow notifications respectively.
 
+  A `KeyPath` can be obtained by implicit conversion from a string or built from an expression using the `KeyPath.ForExpression<T>` method.
+
   For example:
   ```csharp
   var query = realm.All<Person>();
+
+  KeyPath kp1 = "Email";
+  KeyPath kp2 = KeyPath.ForExpression<Person>(p => p.Name);
 
   KeyPathsCollection kpc;
 
@@ -21,6 +26,7 @@
   kpc = KeyPathsCollection.Of("Email", "Name");
   kpc = KeyPathsCollection.Of<Person>(p => p.Email, p => p.Name);
   kpc = new List<KeyPath> {"Email", "Name"};
+  kpc = new List<KeyPath> {kp1, kp2};
 
   query.SubscribeForNotifications(NotificationCallback, kpc);
   ```
