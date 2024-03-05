@@ -29015,7 +29015,10 @@ const github = __importStar(__nccwpck_require__(5438));
 async function run() {
     try {
         const context = github.context;
-        if (!context || !context.payload || !context.payload.pull_request) {
+        if (!context ||
+            !context.payload ||
+            !context.payload.pull_request ||
+            context.payload.pull_request.draft) {
             return;
         }
         const title = context.payload.pull_request.title;

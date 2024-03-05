@@ -9,7 +9,12 @@ import { wait } from './wait'
 export async function run(): Promise<void> {
   try {
     const context = github.context
-    if (!context || !context.payload || !context.payload.pull_request) {
+    if (
+      !context ||
+      !context.payload ||
+      !context.payload.pull_request ||
+      context.payload.pull_request.draft
+    ) {
       return
     }
 
@@ -19,6 +24,7 @@ export async function run(): Promise<void> {
     const ignoreLabels = core
       .getInput('ignore-labels', { required: false })
       .split(',')
+
     for (let label of labels) {
       for (let ignoreLabel of ignoreLabels) {
         if (label == ignoreLabel) {
