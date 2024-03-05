@@ -89,6 +89,9 @@
 ### Compatibility
 * Realm Studio: 15.0.0 or later !!!!!!!!TODO NEED TO CHECK ---------------
 
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
 ### Internal
 * Using Core 14.1.0.
 
