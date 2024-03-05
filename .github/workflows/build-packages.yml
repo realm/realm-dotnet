@@ -33,6 +33,15 @@ jobs:
       uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
     - name: Install SDK platform 21
       run: sdkmanager --install "platforms;android-21"
+    - name: Setup JDK
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: microsoft
+        java-version: 11
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 7.0.x
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Set version suffix
@@ -210,25 +219,23 @@ jobs:
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: C:\docfx
-        key: docfx-2.62.1
+        key: docfx-2.75.2
     - name: Download docfx
       if: inputs.build-docs && steps.check-docfx-cache.outputs.cache-hit != 'true'
       run: |
-        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.62.1/docfx-win-x64-v2.62.1.zip -OutFile C:\docfx.zip
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.75.2/docfx-win-x64-v2.75.2.zip -OutFile C:\docfx.zip
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       if: inputs.build-docs
       with:
-        dotnet-version: 6.0.402
+        dotnet-version: 7.0.x
     - name: Build docs
       if: inputs.build-docs
       env:
         DOCFX_SOURCE_BRANCH_NAME: ${{ github.head_ref }}
       run: |
-        New-Item global.json
-        Set-Content global.json '{ "sdk": { "version": "6.0.402" } }'
         C:\docfx\docfx Docs/docfx.json
     - name: Update Improve this doc links
       run: |

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
@@ -321,6 +322,10 @@ namespace Realms.Tests.Sync
                 {
                     AssertDateTimeEquals(date, dateResult);
                 }
+                else if (val is DateTimeOffset dto && result is DateTimeOffset dtoResult)
+                {
+                    AssertDateTimeOffsetEquals(dto, dtoResult);
+                }
                 else
                 {
                     Assert.That(result, Is.EqualTo(val));
@@ -335,6 +340,14 @@ namespace Realms.Tests.Sync
                     for (var i = 0; i < dateArr.Length; i++)
                     {
                         AssertDateTimeEquals(dateArr[i], dateArrResult[i]);
+                    }
+                }
+                else if (arr is DateTimeOffset[] dtoArr && arrResult is DateTimeOffset[] dtoArrResult)
+                {
+                    Assert.That(dtoArr.Length, Is.EqualTo(dtoArrResult.Length));
+                    for (var i = 0; i < dtoArr.Length; i++)
+                    {
+                        AssertDateTimeOffsetEquals(dtoArr[i], dtoArrResult[i]);
                     }
                 }
                 else
@@ -382,7 +395,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
-            if (arg == decimal.MinValue || arg == decimal.MaxValue)
+            if (arg is decimal.MinValue or decimal.MaxValue)
             {
                 // MongoDB.Bson serializes MinValue/MaxValue as Decimal128.MinValue/MaxValue:
                 // https://github.com/mongodb/mongo-csharp-driver/blob/b2668fb80c8d45be58a8009e336006c9545c1581/src/MongoDB.Bson/Serialization/Options/RepresentationConverter.cs#L153-L160
@@ -438,6 +451,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
                 var user = await GetUserAsync();
 
                 var result = await user.Functions.CallAsync("mirror", val);
@@ -502,9 +517,14 @@ namespace Realms.Tests.Sync
 
         private static void AssertDateTimeOffsetEquals(BsonValue first, DateTimeOffset second)
         {
-            Assert.That(first.IsString);
-            var firstDto = DateTimeOffset.Parse(first.AsString);
-            Assert.That(firstDto, Is.EqualTo(second));
+            Assert.That(first.IsValidDateTime);
+            DateTimeOffset firstDto = first.ToUniversalTime();
+            AssertDateTimeOffsetEquals(firstDto, second);
+        }
+
+        private static void AssertDateTimeOffsetEquals(DateTimeOffset first, DateTimeOffset second)
+        {
+            Assert.That(first.ToUnixTimeMilliseconds(), Is.EqualTo(second.ToUnixTimeMilliseconds()));
         }
 
         private void AddCamelCaseConvention()

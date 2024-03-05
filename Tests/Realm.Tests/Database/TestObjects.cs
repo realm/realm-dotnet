@@ -981,13 +981,14 @@ namespace Realms.Tests
     public partial class ObjectWithEmbeddedProperties : TestRealmObject
     {
         [PrimaryKey]
-        public int PrimaryKey { get; set; }
+        [MapTo("_id")]
+        public ObjectId PrimaryKey { get; set; } = ObjectId.GenerateNewId();
 
         public EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
-        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = null!;
-
         public EmbeddedLevel1? RecursiveObject { get; set; }
+
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = null!;
 
         public IDictionary<string, EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; } = null!;
     }
@@ -1124,6 +1125,38 @@ namespace Realms.Tests
         public IDictionary<string, RealmValue> RealmValueDictionary { get; } = null!;
 
         public IDictionary<string, int> TestDict { get; } = null!;
+    }
+
+    public partial class LinksObject : TestRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+#if TEST_WEAVER
+        public string Id { get; private set; } = null!;
+#else
+        public string Id { get; private set; }
+#endif
+
+        public int Value { get; set; }
+
+        public LinksObject? Link { get; set; }
+
+        public IList<LinksObject> List { get; } = null!;
+
+        public ISet<LinksObject> Set { get; } = null!;
+
+        public IDictionary<string, LinksObject?> Dictionary { get; } = null!;
+
+        public LinksObject(string id)
+        {
+            Id = id;
+        }
+
+#if TEST_WEAVER
+        public LinksObject()
+        {
+        }
+#endif
     }
 
     public partial class ObjectWithFtsIndex : TestRealmObject

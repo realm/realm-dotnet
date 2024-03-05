@@ -264,7 +264,8 @@ namespace Realms
             GCHandle.Alloc(handleTaskCompletion);
             GCHandle.Alloc(onInitialization);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage,
+                notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
 
         public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);

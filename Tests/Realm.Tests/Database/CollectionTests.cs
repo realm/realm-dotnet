@@ -1179,10 +1179,10 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                var matchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties { PrimaryKey = 0 });
+                var matchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties());
                 propInfoObjWithEmbedded.SetValue(matchingEmbeddedObj, embeddedAllTypesMatch);
 
-                var nonMatchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties { PrimaryKey = 1 });
+                var nonMatchingEmbeddedObj = _realm.Add(new ObjectWithEmbeddedProperties());
                 propInfoObjWithEmbedded.SetValue(nonMatchingEmbeddedObj, embeddedAllTypesNonMatch);
             });
 
@@ -1897,7 +1897,7 @@ namespace Realms.Tests.Database
                 var objects = dict.Filter($"{columnName} = $0", dict["a"]!.Id);
 
                 Assert.That(objects.Count(), Is.EqualTo(1));
-                Assert.That(objects.Single().Int, Is.EqualTo(dict["a"]!.Int));
+                Assert.That(objects.Single()!.Int, Is.EqualTo(dict["a"]!.Int));
             }
         }
 

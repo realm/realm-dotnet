@@ -15,6 +15,7 @@ name: PR Build
     - '!.github/workflows/main.yml'
     - '!.github/workflows/publish-*.yml'
     - .github/actions/**
+    - Tests/Tests.Android/Properties/AndroidManifest.xml
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -25,16 +26,12 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  deploy-cluster:
+  deploy-baas:
     uses: ./.github/workflows/deploy-baas.yml
     with:
       differentiators: '["code-coverage"]'
-      BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -151,32 +148,22 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    - deploy-cluster
+    - deploy-baas
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-      realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-  cleanup-cluster:
+      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
+  cleanup-baas:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
     name: Cleanup
     needs:
-    - deploy-cluster
+    - deploy-baas
     - test-code-coverage
     with:
       differentiators: '["code-coverage"]'
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-      BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   verify-namespaces:
     runs-on: ubuntu-latest
     name: Verify Namespaces

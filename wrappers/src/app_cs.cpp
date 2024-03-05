@@ -175,9 +175,10 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            SharedApp app = app_config.use_cache
-                ? App::get_shared_app(std::move(config), std::move(sync_client_config))
-                : App::get_uncached_app(std::move(config), std::move(sync_client_config));
+            SharedApp app = App::get_app(app_config.use_cache ? 
+                realm::app::App::CacheMode::Enabled : realm::app::App::CacheMode::Disabled,
+                std::move(config), 
+                std::move(sync_client_config));
 
             return new SharedApp(app);
         });
@@ -246,10 +247,18 @@ extern "C" {
                     id,
                     refresh_token,
                     access_token,
-                    "testing",
-                    "my-device-id"));
+                    "testing"));
         });
     }
+
+    REALM_EXPORT void shared_app_set_fake_sync_route_for_testing(SharedApp& app,
+        NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->sync_manager()->set_sync_route("realm://www.test.com:1000");
+        });
+    }
+
 
     REALM_EXPORT void shared_app_remove_user(SharedApp& app, SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
     {
@@ -319,10 +328,11 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t shared_app_get_base_uri(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return to_capi(app->base_url());
+            std::string url(app->get_base_url());
+            return stringdata_to_csharpstringbuffer(url, buffer, buffer_length);
         });
     }
 
@@ -365,6 +375,14 @@ extern "C" {
         handle_errors(ex, [&]() {
             Utf16StringAccessor email(email_buf, email_len);
             app->provider_client<App::UsernamePasswordProviderClient>().resend_confirmation_email(email, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_retry_custom_confirmation(SharedApp& app, uint16_t* email_buf, size_t email_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor email(email_buf, email_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().retry_custom_confirmation(email, get_callback_handler(tcs_ptr));
         });
     }
 

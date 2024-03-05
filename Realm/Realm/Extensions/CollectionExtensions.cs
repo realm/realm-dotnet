@@ -58,14 +58,16 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
+    public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback,
+        KeyPathsCollection? keyPathsCollection = null)
         where T : IRealmObjectBase?
     {
-        return results.AsRealmCollection().SubscribeForNotifications(callback);
+        return results.AsRealmCollection().SubscribeForNotifications(callback, keyPathsCollection);
     }
 
     /// <summary>
@@ -90,11 +92,14 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the set.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback);
+    public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback,
+        KeyPathsCollection? keyPathsCollection = null)
+        => set.AsRealmCollection().SubscribeForNotifications(callback, keyPathsCollection);
 
     /// <summary>
     /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
@@ -190,11 +195,14 @@ public static class CollectionExtensions
     /// <typeparam name="T">Type of the elements in the list.</typeparam>
     /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
+    public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback,
+        KeyPathsCollection? keyPathsCollection = null)
+        => list.AsRealmCollection().SubscribeForNotifications(callback, keyPathsCollection);
 
     /// <summary>
     /// Move the specified item to a new position within the list.
@@ -260,7 +268,7 @@ public static class CollectionExtensions
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
     public static IRealmCollection<KeyValuePair<string, T>> AsRealmCollection<T>(this IDictionary<string, T> dictionary)
     {
@@ -306,27 +314,29 @@ public static class CollectionExtensions
     }
 
     /// <summary>
-    /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+    /// A convenience method that casts <see cref="IDictionary{String, T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+    /// <param name="keyPathsCollection">An optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
     /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
     /// </returns>
-    public static IDisposable SubscribeForNotifications<T>(this IDictionary<string, T> dictionary, NotificationCallbackDelegate<KeyValuePair<string, T>> callback)
+    public static IDisposable SubscribeForNotifications<T>(this IDictionary<string, T> dictionary,
+        NotificationCallbackDelegate<KeyValuePair<string, T>> callback, KeyPathsCollection? keyPathsCollection = null)
     {
-        return dictionary.AsRealmCollection().SubscribeForNotifications(callback);
+        return dictionary.AsRealmCollection().SubscribeForNotifications(callback, keyPathsCollection);
     }
 
     /// <summary>
-    /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+    /// A convenience method that casts <see cref="IDictionary{String, T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for key change notifications.
     /// </summary>
     /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
     /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
-    /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+    /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
     /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
     /// <returns>
     /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
@@ -403,10 +413,7 @@ public static class CollectionExtensions
     /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
     /// </code>
     /// </example>
-    /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
-    /// Examples of the NSPredicate syntax
-    /// </seealso>
-    /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+    /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/"/>
     public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params QueryArgument[] arguments)
         where T : IRealmObjectBase
     {

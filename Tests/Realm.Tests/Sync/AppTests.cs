@@ -42,7 +42,8 @@ namespace Realms.Tests.Sync
         {
             static void AssertBundleId(params string[] expectedValues)
             {
-                var values = expectedValues.Concat(new[] { "ReSharperTestRunner" }).Select(Platform.Sha256).ToArray();
+                var localTestRunners = new[] { "ReSharperTestRunner", "testhost" };
+                var values = expectedValues.Concat(localTestRunners).Select(Platform.Sha256).ToArray();
                 Assert.That(values, Does.Contain(Platform.BundleId));
             }
 
@@ -349,12 +350,13 @@ namespace Realms.Tests.Sync
         [Test]
         public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var handler = new TestHttpClientHandler();
 
                 var app = CreateApp(new AppConfiguration("abc")
                 {
+                    BaseUri = SyncTestHelpers.BaasUri!,
                     HttpClientHandler = handler
                 });
 

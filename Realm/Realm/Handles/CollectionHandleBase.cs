@@ -75,6 +75,7 @@ namespace Realms
 
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, KeyPathsCollection keyPathsCollection,
+            IntPtr callback = default);
     }
 }

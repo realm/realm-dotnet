@@ -209,8 +209,10 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes,
+            KeyPathsCollectionType type, Delegate? callback)
         {
+            Debug.Assert(callback == null, "Object notifications don't support keypaths, so callback should always be null");
             if (changes.HasValue)
             {
                 foreach (var propertyIndex in changes.Value.Properties)

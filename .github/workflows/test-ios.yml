@@ -5,21 +5,8 @@ name: test-ios
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
 env:
   REALM_DISABLE_ANALYTICS: true
@@ -49,17 +36,12 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-      name: Deploy Cluster (alternative)
-      if: ${{ inputs.realmUrl }}
-      with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.realmUrl }}
-        atlasUrl: ${{ inputs.atlasUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ inputs.clusterName }}-ios
-        clusterSize: M10
+    - name: Deploy Baas (alternative)
+      env:
+        apiKey: ${{ secrets.BaaSaasApiKey }}
+      if: ${{ env.apiKey }}
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=ios
+      working-directory: Tools/DeployApps
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
@@ -71,7 +53,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-ios --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=ios
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=ios
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
@@ -112,6 +94,10 @@ jobs:
       run: |
         sudo xcode-select -s "/Applications/Xcode_14.3.app"
         echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 7.0.x
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Build the tests

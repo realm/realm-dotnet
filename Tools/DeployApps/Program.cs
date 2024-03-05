@@ -25,8 +25,24 @@ namespace Baas
     {
         public static async Task Main(string[] args)
         {
-            var (client, _, _) = await BaasClient.CreateClientFromArgs(args, Console.Out);
-            await client!.GetOrCreateApps();
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            if (args[0] == "deploy-apps")
+            {
+                var (client, _, _) = await BaasClient.CreateClientFromArgs(args, Console.Out);
+                await client!.GetOrCreateApps();
+            }
+            else if (args[0] == "terminate-baas")
+            {
+                await BaasClient.TerminateBaasFromArgs(args, Console.Out);
+            }
+            else
+            {
+                throw new Exception($"Invalid command line option: {args[0]}");
+            }
         }
     }
 }

@@ -305,7 +305,7 @@ namespace Realms.Schema
                 return this;
             }
 
-            protected override string GetKey(Property item) => item.Name;
+            private protected override string GetKey(Property item) => item.Name;
         }
     }
 }

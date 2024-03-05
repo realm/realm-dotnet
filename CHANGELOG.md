@@ -1,5 +1,8 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
+
 ### Enhancements
 * Added support for list and dictionaries of `RealmValue` (`IList<RealmValue>` and `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `RealmValue[]` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList` and `AsDictionary`. For example:
 
@@ -16,6 +19,89 @@
   (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 
 * Reduced memory usage of `RealmValue`. (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
+* Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
+
+  A `KeyPathsCollection` can be obtained by:
+  - building it explicitly by using the method `KeyPathsCollection.Of`;
+  - building it implicitly with the conversion from a `List` or array of `KeyPath` or strings;
+  - getting one of the static values `Full` and `Shallow` for full and shallow notifications respectively.
+
+
+  For example:
+  ```csharp
+  var query = realm.All<Person>();
+
+  KeyPathsCollection kpc;
+
+  //Equivalent declarations
+  kpc = KeyPathsCollection.Of("Email", "Name");
+  kpc = new List<KeyPath> {"Email", "Name"};
+
+  query.SubscribeForNotifications(NotificationCallback, kpc);
+  ```
+  (PR [#3501 ](https://github.com/realm/realm-dotnet/pull/3501))
+* Added the `MongoClient.GetCollection<T>` method to get a collection of documents from MongoDB that can be deserialized in Realm objects. This methods works the same as `MongoClient.GetDatabase(dbName).GetCollection(collectionName)`, but the database name and collection name are automatically derived from the Realm object class.  [#3414](https://github.com/realm/realm-dotnet/pull/3414)
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 11.7.0 (2024-02-05)
+
+### Enhancements
+* Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. (Core 13.24.1)
+* Exceptions thrown during bootstrap application will now be surfaced to the user rather than terminating the program with an unhandled exception. (Core 13.25.0)
+* Allow the using `>`, `>=`, `<`, `<=` operators in `Realm.Filter()` queries for string constants. This is a case sensitive lexicographical comparison. Improved performance of RQL (`.Filter()`) queries on a non-linked string property using: >, >=, <, <=, operators and fixed behaviour that a null string should be evaluated as less than everything, previously nulls were not matched. (Core 13.26.0-14-gdf25f)
+
+### Fixed
+* Automatic client reset recovery would duplicate insertions in a list when recovering a write which made an unrecoverable change to a list (i.e. modifying or deleting a pre-existing entry), followed by a subscription change, followed by a write which added an entry to the list. (Core 13.24.0)
+* During a client reset recovery a Set of links could be missing items, or an exception could be thrown that prevents recovery. (Core 13.24.0)
+* During a client reset with recovery when recovering a move or set operation on a `IList<RealmObject>` or `IList<RealmValue>` that operated on indices that were not also added in the recovery, links to an object which had been deleted by another client while offline would be recreated by the recovering client. But the objects of these links would only have the primary key populated and all other fields would be default values. Now, instead of creating these zombie objects, the lists being recovered skip such deleted links. (Core 13.24.0)
+* Errors encountered while reapplying local changes for client reset recovery on partition-based sync Realms would result in the client reset attempt not being recorded, possibly resulting in an endless loop of attempting and failing to automatically recover the client reset. (Core 13.24.0)
+* Changesets have wrong timestamps if the local clock lags behind 2015-01-01T00:00:00Z. The sync client now throws an exception if that happens. (Core 13.24.1)
+* If the very first open of a flexible sync Realm triggered a client reset, the configuration had an initial subscriptions callback, both before and after reset callbacks, and the initial subscription callback began a read transaction without ending it (which is normally going to be the case), opening the frozen Realm for the after reset callback would trigger a BadVersion exception. (Core 13.24.1)
+* Automatic client reset recovery on flexible sync Realms would apply recovered changes in multiple write transactions, releasing the write lock in between. (Core 13.24.1)
+* Having a class name of length 57 would make client reset crash as a limit of 56 was wrongly enforced. (Core 13.24.1)
+* Fixed several causes of "decryption failed" exceptions that could happen when opening multiple encrypted Realm files in the same process while using Apple/linux and storing the Realms on an exFAT file system. (Core 13.24.1)
+* Fixed several errors that could cause a crash of the sync client. (Core 13.25.0)
+* Bad performance of initial Sync download involving many backlinks. (Core 13.25.1)
+* Explicitly bumped the minimum version of System.Net.Security to 4.3.2 as 4.3.0 has been marked as vulnerable (more details can be found in the deprecation notice on the [NuGet page](https://www.nuget.org/packages/System.Net.Security/4.3.0)).
+* Handle EOPNOTSUPP when using posix_fallocate() and fallback to manually consume space. This should enable android users to open a Realm on restrictive filesystems. (Core 13.26.0)
+* Application may crash with incoming_changesets.size() != 0 when a download message is mistaken for a bootstrap message. This can happen if the synchronization session is paused and resumed at a specific time. (Core 13.26.0)
+* Fixed errors complaining about missing symbols such as `__atomic_is_lock_free` on ARMv7 Linux (Core 13.26.0)
+* Uploading the changesets recovered during an automatic client reset recovery may lead to 'Bad server version' errors and a new client reset. (Core 13.26.0-14-gdf25f)
+* Fixed invalid data in error reason string when registering a subscription change notification after the subscription has already failed. (Core 13.26.0-14-gdf25f)
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core v13.26.0-14-gdf25f.
+
+## 11.6.1 (2023-11-17)
+
+### Fixed
+* Fixed FLX subscriptions not being sent to the server if the session was interrupted during bootstrapping. (Core 13.23.3)
+* Fixed FLX subscriptions not being sent to the server if an upload message was sent immediately after a subscription was committed but before the sync client checks for new subscriptions. (Core 13.23.3)
+* Fixed application crash with 'KeyNotFound' exception when subscriptions are marked complete after a client reset. (Core 13.23.3)
+* A crash at a very specific time during a DiscardLocal client reset on a FLX Realm could leave subscriptions in an invalid state. (Core 13.23.4)
+* Fixed an error "Invalid schema change (UPLOAD): cannot process AddColumn instruction for non-existent table" when using automatic client reset with recovery in dev mode to recover schema changes made locally while offline. (Core 13.23.4)
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.23.4.
+
+## 11.6.0 (2023-11-03)
+
+### Enhancements
+* Added the `App.EmailPasswordAuth.RetryCustomConfirmationAsync` method to be able to run again the confirmation function on the server for a given email. (Issue [#3463](https://github.com/realm/realm-dotnet/issues/3463))
 * Added `User.Changed` event that can be used to notify subscribers that something about the user changed - typically this would be the user state or the access token. (Issue [#3429](https://github.com/realm/realm-dotnet/issues/3429))
 * Added support for customizing the ignore attribute applied on certain generated properties of Realm models. The configuration option is called `realm.custom_ignore_attribute` and can be set in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). The Realm generator will treat this as an opaque string, that will be appended to the `IgnoreDataMember` and `XmlIgnore` attributes already applied on these members. The attributes must be fully qualified unless the namespace they reside in is added to a global usings file. For example, this is how you would add `JsonIgnore` from `System.Text.Json`:
 
@@ -32,12 +118,25 @@
 * Fixed an issue that would make the user in an inconstisten state if the user was logged out while an access toekn refresh was in progress. (Core 13.21.0)
 * Fixed an issue where Android.bp builds would fail with SSL certificat validation errors because the trusted CA roots bundle was not included. (Core 13.23.0)
 * Added an error that is raised when interface based Realm classes are used with a language version lower than 8.0. At the same time, removed the use of `not` in the generated code, so that it's compatible with a minumum C# version of 8.0. (Issue [#3265](https://github.com/realm/realm-dotnet/issues/3265))
+* Logging into a single user using multiple auth providers created a separate SyncUser per auth provider. This mostly worked, but had some quirks:
+  - Sync sessions would not necessarily be associated with the specific SyncUser used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
+  - Existing local synchronized Realm files created using version of Realm from August - November 2020 would sometimes not be opened correctly and would instead be redownloaded.
+  - Removing one of the SyncUsers would delete all local Realm files for all SyncUsers for that user.
+  - Deleting the server-side user via one of the SyncUsers left the other SyncUsers in an invalid state.
+  - A SyncUser which was originally created via anonymous login and then linked to an identity would still be treated as an anonymous users and removed entirely on logout.
+  (Core 13.21.0)
+* If a user was logged out while an access token refresh was in progress, the refresh completing would mark the user as logged in again and the user would be in an inconsistent state (Core 13.21.0).
+* If querying over a geospatial dataset that had some objects with a type property set to something other than 'Point' (case insensitive) an exception would have been thrown. Instead of disrupting the query, those objects are now just ignored. (Core 13.21.0)
+* Receiving a write_not_allowed error from the server would have led to a crash. (Core 13.22.0)
+* Updating subscriptions did not trigger Realm autorefreshes, sometimes resulting in async refresh hanging until another write was performed by something else. (Core 13.23.1)
+* Fix interprocess locking for concurrent realm file access resulting in a interprocess deadlock on FAT32/exFAT filesystems. (Core 13.23.1)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
 * Using Core 13.23.0
+* Using Core 13.23.1.
 
 ## 11.5.0 (2023-09-15)
 

@@ -5,24 +5,11 @@ name: test-net-core
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
       framework:
         required: true
         type: string
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
 env:
   REALM_DISABLE_ANALYTICS: true
@@ -46,7 +33,7 @@ jobs:
         include:
         - framework: net7.0
           os:
-            runner: macos-arm
+            runner: macos-14
             runtime: osx-arm64
         - framework: net7.0
           os:

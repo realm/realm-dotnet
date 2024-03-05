@@ -132,6 +132,11 @@ namespace Realms
         /// it will contain information about which rows in the results were added, removed or modified.
         /// </para>
         /// <para>
+        /// When the collection contains <see cref="IRealmObject">realm objects</see>, it is possible to pass an optional <see cref="KeyPathsCollection"/>, that indicates which changes in properties should raise a notification.
+        /// If no <see cref="KeyPathsCollection"/> is passed, <see cref="KeyPathsCollection.Full"/> will be used, so changes to all top-level properties and 4 nested levels will raise a notification.
+        /// See <see cref="KeyPathsCollection"/> for more information about how to build it.
+        /// </para>
+        /// <para>
         /// If a write transaction did not modify any objects in this <see cref="IRealmCollection{T}" />, the callback is not invoked at all.
         /// </para>
         /// <para>
@@ -146,15 +151,17 @@ namespace Realms
         /// </para>
         /// </remarks>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
+        /// <param name="keyPathCollection">An optional collection of key paths that indicates which changes in properties should raise a notification.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}})"/>
+        /// <seealso cref="KeyPathsCollection"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T}, KeyPathsCollection)"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T}, KeyPathsCollection)"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T}, KeyPathsCollection)"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}}, KeyPathsCollection)"/>
         /// <seealso cref="CollectionExtensions.SubscribeForKeyNotifications{T}(IDictionary{string, T}, DictionaryNotificationCallbackDelegate{T})"/>
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, KeyPathsCollection? keyPathCollection = null);
     }
 }

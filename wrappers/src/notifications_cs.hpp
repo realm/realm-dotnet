@@ -52,8 +52,8 @@ struct ManagedNotificationTokenContext {
     ObjectSchema* schema;
 };
 
-using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*, bool shallow);
-using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*, bool shallow);
+using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*, key_path_collection_type type, void* callback);
+using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*);
 
 extern std::function<ObjectNotificationCallbackT> s_object_notification_callback;
 extern std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
@@ -93,9 +93,10 @@ static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed
     return result;
 }
 
-static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, bool shallow) {
+static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, key_path_collection_type type,
+    void* callback) {
     if (changes.empty()) {
-        s_object_notification_callback(context->managed_object, nullptr, shallow);
+        s_object_notification_callback(context->managed_object, nullptr, type, callback);
     }
     else {
         auto deletions = get_indexes_vector(changes.deletions);
@@ -106,9 +107,9 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
         std::vector<int32_t> properties;
 
         for (auto& pair : changes.columns) {
-            if (!pair.second.empty()) {
-                properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
-            }
+                if (!pair.second.empty()) {
+                    properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
+                }
         }
 
         MarshallableCollectionChangeSet marshallable_changes{
@@ -121,23 +122,62 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
             properties
         };
 
-        s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);
+        s_object_notification_callback(context->managed_object, &marshallable_changes, type, callback);
     }
 }
 
-
 template<typename Subscriber>
-inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber, bool shallow, ObjectSchema* schema = nullptr)
+inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber,
+    key_path_collection_type type, void* callback = nullptr, ObjectSchema* schema = nullptr)
 {
     auto context = new ManagedNotificationTokenContext();
     context->managed_object = managed_object;
     context->schema = schema;
-    context->token = subscriber([context, shallow](CollectionChangeSet changes) {
-        handle_changes(context, changes, shallow);
+    context->token = subscriber([context, type, callback](CollectionChangeSet changes) {
+        handle_changes(context, changes, type, callback);
     });
 
     return context;
 }
+
+static inline std::optional<KeyPathArray> build_keypath_array_impl(const SharedRealm& realm, StringData class_name, key_path_collection_type type, realm_string_t* keypaths, size_t len) {
+    std::optional<KeyPathArray> keypath_array;
+
+    switch (type) {
+    case key_path_collection_type::FULL: {
+        std::vector<std::string> keypaths_vector;
+        for (size_t i = 0; i < len; i++) {
+            keypaths_vector.push_back(capi_to_std(keypaths[i]));
+        }
+        keypath_array = realm->create_key_path_array(class_name, keypaths_vector);
+        break;
+    }
+    case key_path_collection_type::SHALLOW:
+        keypath_array = std::make_optional(KeyPathArray());
+        break;
+    case key_path_collection_type::DEFAULT:
+        keypath_array = std::nullopt;
+        break;
+    default:
+        REALM_UNREACHABLE();
+        break;
+    }
+
+    return keypath_array;
+}
+
+static inline std::optional<KeyPathArray> build_keypath_array(Results* results, key_path_collection_type type,
+    realm_string_t* keypaths, size_t keypaths_len) {
+    const auto& class_name = type == key_path_collection_type::FULL ? results->get_table()->get_class_name() : "";
+    return build_keypath_array_impl(results->get_realm(), class_name, type, keypaths, keypaths_len);
+}
+
+static inline std::optional<KeyPathArray> build_keypath_array(object_store::Collection* collection, key_path_collection_type type, 
+    realm_string_t* keypaths, size_t keypaths_len) {
+    const auto& class_name = type == key_path_collection_type::FULL ? collection->get_object_schema().name : "";
+    return build_keypath_array_impl(collection->get_realm(), class_name, type, keypaths, keypaths_len);
+}
+
 }
 
 #endif // NOTIFICATIONS_CS_HPP

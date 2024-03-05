@@ -178,7 +178,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
-                Assert.That(user.Provider, Is.EqualTo(Credentials.AuthProvider.EmailPassword));
                 Assert.That(user.AccessToken, Is.Not.Empty);
                 Assert.That(user.RefreshToken, Is.Not.Empty);
 
@@ -397,6 +396,120 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.Message, Does.Contain("a user already exists with the specified provider"));
+            });
+        }
+
+        [Test]
+        public void User_RetryCustomConfirmationAsync_RerunsConfirmation()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                // Standard case
+                var unconfirmedMail = SyncTestHelpers.GetUnconfirmedUsername();
+                var credentials = Credentials.EmailPassword(unconfirmedMail, SyncTestHelpers.DefaultPassword);
+
+                // The first time the confirmation function is called we return "pending", so the user needs to be confirmed.
+                // At the same time we save the user email in a collection.
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
+
+                var ex3 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex3.Message, Does.Contain("confirmation required"));
+
+                // The second time we call the confirmation function we find the email we saved in the collection and return "success", so the user
+                // gets confirmed and can log in.
+                await DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(unconfirmedMail);
+                var user = await DefaultApp.LogInAsync(credentials);
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+
+                // Logged in user case
+                var loggedInUser = await GetUserAsync();
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(loggedInUser.Profile.Email!));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(ex.Message, Does.Contain("already confirmed"));
+
+                // Unknown user case
+                var invalidEmail = "test@gmail.com";
+                var ex2 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.EmailPasswordAuth.RetryCustomConfirmationAsync(invalidEmail));
+                Assert.That(ex2.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(ex2.Message, Does.Contain("user not found"));
+            });
+        }
+
+        [Test]
+        public void User_ConfirmUserAsync_ConfirmsUser()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var unconfirmedMail = SyncTestHelpers.GetUnconfirmedUsername();
+                var credentials = Credentials.EmailPassword(unconfirmedMail, SyncTestHelpers.DefaultPassword);
+
+                // The first time the confirmation function is called we return "pending", so the user needs to be confirmed.
+                // At the same time we save the user email, token and tokenId in a collection.
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex.Message, Does.Contain("confirmation required"));
+
+                // This retrieves the token and tokenId we saved in the confirmation function
+                var functionUser = await GetUserAsync();
+                var result = await functionUser.Functions.CallAsync("confirmationInfo", unconfirmedMail);
+                var token = result["token"].AsString;
+                var tokenId = result["tokenId"].AsString;
+
+                await DefaultApp.EmailPasswordAuth.ConfirmUserAsync(token, tokenId);
+                var user = await DefaultApp.LogInAsync(credentials);
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+            });
+        }
+
+        [Test]
+        public void User_CallResetPasswordFunctionAsync_ResetsUserPassword()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var email = user.Profile.Email!;
+
+                await user.LogOutAsync();
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
+
+                var newPassword = "realm_tests_do_reset-testPassword";
+                await DefaultApp.EmailPasswordAuth.CallResetPasswordFunctionAsync(email, newPassword);
+
+                user = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword));
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+            });
+        }
+
+        [Test]
+        public void User_ResetPasswordAsync_ConfirmsResetPassword()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var email = user.Profile.Email!;
+
+                await user.LogOutAsync();
+                Assert.That(user.State, Is.EqualTo(UserState.Removed));
+
+                // This returns "pending" the first time, so the password change is not valid yet. We save the token and tokenId
+                // passed to the reset function, to confirm the password change later.
+                var newPassword = "realm_tests_do_not_reset-testPassword";
+                await DefaultApp.EmailPasswordAuth.CallResetPasswordFunctionAsync(email, newPassword);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword)));
+                Assert.That(ex.Message, Does.Contain("invalid username/password"));
+
+                // This retrieves the token and tokenId we saved in the password reset function.
+                var functionUser = await GetUserAsync();
+                var result = await functionUser.Functions.CallAsync("resetInfo", email);
+                var token = result["token"].AsString;
+                var tokenId = result["tokenId"].AsString;
+
+                await DefaultApp.EmailPasswordAuth.ResetPasswordAsync(newPassword, token, tokenId);
+
+                user = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword));
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
             });
         }
 
@@ -756,8 +869,8 @@ namespace Realms.Tests.Sync
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
 
-                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
-                Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
+                Assert.That(apiKeyUser.Identities.Select(i => i.Provider), Does.Contain(Credentials.AuthProvider.ApiKey));
+                Assert.That(apiKeyUser.RefreshToken, Is.EqualTo(user.RefreshToken));
             });
         }
 
@@ -784,8 +897,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
 
-                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
-                Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
+                Assert.That(apiKeyUser.RefreshToken, Is.EqualTo(user.RefreshToken));
             });
         }
 
@@ -980,10 +1092,9 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             Assert.That(user.ToString(), Does.Contain(user.Id));
-            Assert.That(user.ToString(), Does.Contain(user.Provider.ToString()));
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserLogOut_RaisesChanged()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -996,7 +1107,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         Assert.That(s, Is.EqualTo(user));
-                        Assert.That(user.State, Is.EqualTo(UserState.Removed));
+                        Assert.That(user.State, Is.EqualTo(UserState.Removed).Or.EqualTo(UserState.LoggedOut));
                         tcs.TrySetResult();
                     }
                     catch (Exception ex)
@@ -1013,7 +1124,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserChanged_DoesntKeepObjectAlive()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1030,7 +1141,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("test")]
+        [Test]
         public void UserCustomDataChange_RaisesChanged()
         {
             var tcs = new TaskCompletionSource();
@@ -1040,8 +1151,6 @@ namespace Realms.Tests.Sync
                 user.Changed += OnUserChanged;
 
                 var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
-
-                var customDataId = ObjectId.GenerateNewId();
 
                 var customDataDoc = new BsonDocument
                 {
@@ -1057,10 +1166,10 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                tcs = new();
-
                 // Unsubscribe and verify that it no longer raises user changed
                 user.Changed -= OnUserChanged;
+
+                tcs = new();
 
                 var filter = BsonDocument.Parse(@"{
                     user_id: { $eq: """ + user.Id + @""" }

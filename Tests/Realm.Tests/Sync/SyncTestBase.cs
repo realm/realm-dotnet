@@ -138,6 +138,13 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
+        // This could be useful when opening a "fake" sync realm locally
+        protected void SetFakeSyncRoute(App? app)
+        {
+            app ??= DefaultApp;
+            app.Handle.SetFakeSyncRouteForTesting();
+        }
+
         protected async Task<Realm> GetIntegrationRealmAsync(string? partition = null, App? app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
@@ -231,6 +238,7 @@ namespace Realms.Tests.Sync
                 typeof(EmbeddedIntPropertyObject),
                 typeof(SyncAllTypesObject),
                 typeof(ObjectWithPartitionValue),
+                typeof(RemappedTypeObject),
             };
 
             if (config is FlexibleSyncConfiguration)
@@ -248,6 +256,10 @@ namespace Realms.Tests.Sync
                 schema.Add(typeof(AsymmetricObjectWithEmbeddedDictionaryObject));
                 schema.Add(typeof(AsymmetricObjectWithEmbeddedListObject));
                 schema.Add(typeof(PrimaryKeyInt32Object));
+                schema.Add(typeof(CounterObject));
+                schema.Add(typeof(LinksObject));
+                schema.Add(typeof(ObjectWithEmbeddedProperties));
+                schema.Add(typeof(EmbeddedAllTypesObject));
             }
 
             config.Schema = schema;
@@ -256,15 +268,29 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null, string? optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null,
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
+
+            if (setFakeSyncRoute)
+            {
+                SetFakeSyncRoute(app);
+            }
+
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null, string? optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null,
+            string? optionalPath = null, bool setFakeSyncRoute = true)
         {
             var user = GetFakeUser(app, userId);
+
+            if (setFakeSyncRoute)
+            {
+                SetFakeSyncRoute(app);
+            }
+
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 

@@ -166,6 +166,22 @@ namespace Realms
             SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
+        /// <summary>
+        /// Sets the serializer to use the legacy serialization.
+        /// </summary>
+        /// <remarks>
+        /// In version 12.0.0 it was introduced a new automatic serialization and deserialization of Realm classes when using methods
+        /// on <see cref="Realms.Sync.MongoClient.Collection{TDocument}"/>, without the need to annotate classes with <see cref="MongoDB.Bson"/> attributes.
+        /// This new serialization changed the default serializer for various types (<see cref="DateTimeOffset"/> for instance), so
+        /// if you need to call this method if you prefer to use the old serialization.
+        /// Please remember to call this method before any kind of serialization is needed, otherwise it is not guaranteed to work as expected.
+        /// </remarks>
+        [Obsolete("It is recommended to use new serialization.")]
+        public static void SetLegacySerialization()
+        {
+            SerializationHelper.SetLegacySerialization();
+        }
+
         #endregion static
 
         private WeakReference<SubscriptionSet>? _subscriptionRef;
@@ -1308,11 +1324,24 @@ namespace Realms
         /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
         ///    This is to be sure that the file can be used as a starting point for a newly installed application.
         ///    The function will throw if there are pending uploads.
+        /// 4. Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled.
+        /// 5  Changing from flexible sync sync to partition based sync is not supported.
+        /// 6. Changing the partition to synchronize on is not supported.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
+
+            if (config is FlexibleSyncConfiguration && Config is not FlexibleSyncConfiguration)
+            {
+                throw new NotSupportedException("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled");
+            }
+
+            if (config is PartitionSyncConfiguration && Config is FlexibleSyncConfiguration)
+            {
+                throw new NotSupportedException("Changing from flexible sync sync to partition based sync is not supported when writing a Realm copy.");
+            }
 
             if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
             {

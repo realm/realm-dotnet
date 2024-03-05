@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -27,6 +28,13 @@ namespace Realms.Tests.Database
         [Woven(typeof(ObjectWithInvalidGeoPointsObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class ObjectWithInvalidGeoPoints : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
+
+            [Realms.Preserve]
+            static ObjectWithInvalidGeoPoints()
+            {
+                Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithInvalidGeoPointsSerializer());
+            }
+
             /// <summary>
             /// Defines the schema for the <see cref="ObjectWithInvalidGeoPoints"/> class.
             /// </summary>
@@ -268,7 +276,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class ObjectWithInvalidGeoPointsManagedAccessor : Realms.ManagedAccessor, IObjectWithInvalidGeoPointsAccessor
+            private class ObjectWithInvalidGeoPointsManagedAccessor : Realms.ManagedAccessor, IObjectWithInvalidGeoPointsAccessor
             {
                 public Realms.Tests.Database.GeospatialTests.CoordinatesEmbeddedObject? CoordinatesEmbedded
                 {
@@ -290,7 +298,7 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class ObjectWithInvalidGeoPointsUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithInvalidGeoPointsAccessor
+            private class ObjectWithInvalidGeoPointsUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithInvalidGeoPointsAccessor
             {
                 public override ObjectSchema ObjectSchema => ObjectWithInvalidGeoPoints.RealmSchema;
 
@@ -378,6 +386,54 @@ namespace Realms.Tests.Database
                 public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
                 {
                     throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                }
+            }
+
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+            private class ObjectWithInvalidGeoPointsSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithInvalidGeoPoints>
+            {
+                public override string SchemaName => "ObjectWithInvalidGeoPoints";
+
+                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithInvalidGeoPoints value)
+                {
+                    context.Writer.WriteStartDocument();
+
+                    WriteValue(context, args, "CoordinatesEmbedded", value.CoordinatesEmbedded);
+                    WriteValue(context, args, "TypeEmbedded", value.TypeEmbedded);
+                    WriteValue(context, args, "TopLevelGeoPoint", value.TopLevelGeoPoint);
+
+                    context.Writer.WriteEndDocument();
+                }
+
+                protected override ObjectWithInvalidGeoPoints CreateInstance() => new ObjectWithInvalidGeoPoints();
+
+                protected override void ReadValue(ObjectWithInvalidGeoPoints instance, string name, BsonDeserializationContext context)
+                {
+                    switch (name)
+                    {
+                        case "CoordinatesEmbedded":
+                            instance.CoordinatesEmbedded = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CoordinatesEmbeddedObject?>().Deserialize(context);
+                            break;
+                        case "TypeEmbedded":
+                            instance.TypeEmbedded = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TypeEmbeddedObject?>().Deserialize(context);
+                            break;
+                        case "TopLevelGeoPoint":
+                            instance.TopLevelGeoPoint = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.TopLevelGeoPoint?>()!.DeserializeById(context);
+                            break;
+                        default:
+                            context.Reader.SkipValue();
+                            break;
+                    }
+                }
+
+                protected override void ReadArrayElement(ObjectWithInvalidGeoPoints instance, string name, BsonDeserializationContext context)
+                {
+                    // No persisted list/set properties to deserialize
+                }
+
+                protected override void ReadDocumentField(ObjectWithInvalidGeoPoints instance, string name, string fieldName, BsonDeserializationContext context)
+                {
+                    // No persisted dictionary properties to deserialize
                 }
             }
         }

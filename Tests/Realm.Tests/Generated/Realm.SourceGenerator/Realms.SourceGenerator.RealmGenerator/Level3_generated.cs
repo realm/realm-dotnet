@@ -2,6 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -23,6 +24,13 @@ namespace Realms.Tests.Database
     [Woven(typeof(Level3ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Level3 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+
+        [Realms.Preserve]
+        static Level3()
+        {
+            Realms.Serialization.RealmObjectSerializer.Register(new Level3Serializer());
+        }
+
         /// <summary>
         /// Defines the schema for the <see cref="Level3"/> class.
         /// </summary>
@@ -252,7 +260,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class Level3ManagedAccessor : Realms.ManagedAccessor, ILevel3Accessor
+        private class Level3ManagedAccessor : Realms.ManagedAccessor, ILevel3Accessor
         {
             public System.DateTimeOffset DateValue
             {
@@ -262,7 +270,7 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class Level3UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel3Accessor
+        private class Level3UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel3Accessor
         {
             public override ObjectSchema ObjectSchema => Level3.RealmSchema;
 
@@ -320,6 +328,46 @@ namespace Realms.Tests.Database
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
                 throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
+        private class Level3Serializer : Realms.Serialization.RealmObjectSerializerBase<Level3>
+        {
+            public override string SchemaName => "Level3";
+
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Level3 value)
+            {
+                context.Writer.WriteStartDocument();
+
+                WriteValue(context, args, "DateValue", value.DateValue);
+
+                context.Writer.WriteEndDocument();
+            }
+
+            protected override Level3 CreateInstance() => new Level3();
+
+            protected override void ReadValue(Level3 instance, string name, BsonDeserializationContext context)
+            {
+                switch (name)
+                {
+                    case "DateValue":
+                        instance.DateValue = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
+                        break;
+                    default:
+                        context.Reader.SkipValue();
+                        break;
+                }
+            }
+
+            protected override void ReadArrayElement(Level3 instance, string name, BsonDeserializationContext context)
+            {
+                // No persisted list/set properties to deserialize
+            }
+
+            protected override void ReadDocumentField(Level3 instance, string name, string fieldName, BsonDeserializationContext context)
+            {
+                // No persisted dictionary properties to deserialize
             }
         }
     }

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -34,7 +35,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes, [MarshalAs(UnmanagedType.U1)] bool shallow);
+        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes);
 
         private static class NativeMethods
         {
@@ -48,7 +49,8 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
+            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle,
+                KeyPathsCollectionType type, IntPtr callback, StringValue[] keypaths, IntPtr keypaths_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
@@ -139,12 +141,18 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
+            KeyPathsCollection keyPathsCollection, IntPtr callback)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
+            using Arena arena = new();
+            var nativeKeyPathsArray = keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray();
+
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                keyPathsCollection.Type, callback, nativeKeyPathsArray, (IntPtr)nativeKeyPathsArray.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
+
             return new NotificationTokenHandle(Root!, result);
         }
 
@@ -369,11 +377,11 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes, bool shallow)
+        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, shallow);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Full, callback: null);
             }
         }
     }

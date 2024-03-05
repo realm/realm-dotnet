@@ -71,14 +71,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Filter_InvalidPropertyType_Throws()
         {
-            PopulateCompanies();
             _realm.Write(() =>
             {
-                var company = _realm.All<Company>().First();
-
-                // We're making the point into a polygon, which is not supported
-                company.Location!.DynamicApi.Set("type", "Polygon");
-
                 _realm.Add(new ObjectWithInvalidGeoPoints
                 {
                     CoordinatesEmbedded = new()
@@ -92,8 +86,6 @@ namespace Realms.Tests.Database
                     }
                 });
             });
-
-            AssertInvalidGeoData<Company>(nameof(Company.Location), expectedError: "The only Geospatial type currently supported is 'point'");
 
             AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TopLevelGeoPoint), expectedError: "GEOWITHIN query can only operate on a link to an embedded class");
             AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TypeEmbedded));
