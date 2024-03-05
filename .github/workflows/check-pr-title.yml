@@ -1,13 +1,14 @@
 # NOTE: This is a common file that is overwritten by realm/ci-actions sync service
 # and should only be modified in that repository.
 
-name: "Check Changelog"
+name: "Check PR Title"
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled, converted_to_draft, edited]
 
 jobs:
   check-pr-title:
+    name: Check PR Title
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
