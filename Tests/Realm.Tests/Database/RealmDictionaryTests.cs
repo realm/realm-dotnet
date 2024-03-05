@@ -1313,6 +1313,66 @@ namespace Realms.Tests.Database
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
+        [Test]
+        public void DictionaryFilter_SupportsCollectionIndexes()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe",
+                DictOfDogs =
+                {
+                    { "a", new Dog { Name = "Fluffy" } },
+                    { "b", new Dog { Name = "Plumpy" } },
+                }
+            };
+
+            var mark = new Owner
+            {
+                Name = "Mark",
+                DictOfDogs =
+                {
+                    { "a", new Dog { Name = "Plumpy" } },
+                    { "b", new Dog { Name = "Cuddly" } },
+                    { "c", new Dog { Name = "Fluffy" } },
+                }
+            };
+
+            var anton = new Owner
+            {
+                Name = "Anton",
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(joe);
+                _realm.Add(mark);
+                _realm.Add(anton);
+            });
+
+            var owners = _realm.All<Owner>();
+
+            var query = owners.Filter("DictOfDogs[SIZE] = $0", 0);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(anton.Name));
+
+            query = owners.Filter("DictOfDogs[SIZE] = $0", 3);
+            Assert.That(query.Count, Is.EqualTo(1));
+            Assert.That(query.Single().Name, Is.EqualTo(mark.Name));
+
+            query = owners.Filter("DictOfDogs[*].Name = $0", "Fluffy");
+            Assert.That(query.Count, Is.EqualTo(2));
+            Assert.That(query.ToArray().Select(p => p.Name).OrderBy(p => p), Is.EqualTo(new[] { joe.Name, mark.Name }));
+
+            Assert.That(() => owners.Filter("DictOfDogs[FIRST].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[FIRST] not expected"));
+
+            Assert.That(() => owners.Filter("DictOfDogs[LAST].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[LAST] not expected"));
+
+            Assert.That(() => owners.Filter("DictOfDogs[2].Name = $0", "Fluffy"), Throws.TypeOf<ArgumentException>()
+                .And.Message.Contains("[2] not expected"));
+        }
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>

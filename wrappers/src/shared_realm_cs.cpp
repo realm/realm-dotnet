@@ -97,7 +97,7 @@ namespace binding {
 
     class DotNetLogger : public Logger {
     protected:
-        void do_log(Level level, const std::string& message) override final
+        void do_log(const LogCategory& category, Level level, const std::string& message) override final
         {
             s_log_message(to_capi(message), level);
         }
@@ -292,11 +292,11 @@ REALM_EXPORT void shared_realm_install_callbacks(
     realm::binding::s_can_call_managed = true;
 
     Logger::set_default_logger(std::make_shared<DotNetLogger>());
-    Logger::set_default_level_threshold(Logger::Level::info);
+    LogCategory::realm.set_default_level_threshold(Logger::Level::info);
 }
 
 REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
-    Logger::set_default_level_threshold(level);
+    LogCategory::realm.set_default_level_threshold(level);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
