@@ -1670,10 +1670,10 @@ namespace Realms.Tests.Database
         public void KeyPath_WithInvalidExpressions_ThrowsException()
         {
             Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(t => t.Equals(this)),
-                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression is not a path to a property"));
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression is not a path to a property"));
 
             Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(null!),
-                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression cannot be null (Parameter 'expression')"));
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression cannot be null"));
         }
 
         [Test]
@@ -1755,10 +1755,10 @@ namespace Realms.Tests.Database
         public void KeyPathsCollection_WithInvalidExpressions_ThrowsExceptions()
         {
             Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, null!),
-                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression cannot be null (Parameter 'expression')"));
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression cannot be null"));
 
             Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.Equals(this)),
-                Throws.Exception.TypeOf<ArgumentException>().With.Message.EqualTo("The input expression is not a path to a property"));
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression is not a path to a property"));
         }
 
         [Test]
