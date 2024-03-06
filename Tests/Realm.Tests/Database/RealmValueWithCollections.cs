@@ -396,7 +396,7 @@ namespace Realms.Tests.Database
         [Test]
         public void List_WhenManaged_WorksWithNotifications()
         {
-            var originalList = ListGenerator(1);
+            var originalList = new List<RealmValue> { 1, ListGenerator(1), DictGenerator(1) };
 
             var rvo = _realm.Write(() =>
             {
@@ -414,12 +414,36 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                rvo.RealmValueProperty.AsList()[1] = "mario";
+                rvo.RealmValueProperty.AsList()[0] = "mario";
             });
 
             _realm.Refresh();
-
             Assert.That(callbacks.Count, Is.EqualTo(1));
+            Assert.That(callbacks[0].ModifiedIndices, Is.EqualTo(new[] { 0 }));
+
+            callbacks.Clear();
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[1].AsList()[0] = "luigi";
+            });
+
+            _realm.Refresh();
+            Assert.That(callbacks.Count, Is.EqualTo(1));
+            Assert.That(callbacks[0].ModifiedIndices, Is.EqualTo(new[] { 1 }));
+
+            callbacks.Clear();
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[2].AsDictionary()["s1"] = "peach";
+            });
+
+            _realm.Refresh();
+            Assert.That(callbacks.Count, Is.EqualTo(1));
+            Assert.That(callbacks[0].ModifiedIndices, Is.EqualTo(new[] { 2 }));
+
+            callbacks.Clear();
         }
 
         #endregion
@@ -755,7 +779,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_WhenManaged_WorksWithNotifications()
         {
-            var dictVal = DictGenerator(1);
+            var dictVal = new Dictionary<string, RealmValue> { { "s1", 1 }, { "s2", ListGenerator(1) }, { "s3", DictGenerator(1) } };
 
             var rvo = _realm.Write(() =>
             {
@@ -773,12 +797,95 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                rvo.RealmValueProperty.AsDictionary()["s2"] = "mario";
+                rvo.RealmValueProperty.AsDictionary()["s1"] = "mario";
             });
 
             _realm.Refresh();
-
             Assert.That(callbacks.Count, Is.EqualTo(1));
+
+            callbacks.Clear();
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["s2"].AsList()[0] = "mario";
+            });
+
+            _realm.Refresh();
+            Assert.That(callbacks.Count, Is.EqualTo(1));
+
+            callbacks.Clear();
+
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["s3"].AsDictionary()["s1"] = "peach";
+            });
+
+            _realm.Refresh();
+            Assert.That(callbacks.Count, Is.EqualTo(1));
+
+            callbacks.Clear();
+        }
+
+        [Test]
+        public void MixedCollection_Filter_CountSizeType()
+        {
+            var ob1 = new RealmValueObject { RealmValueProperty = 2 };
+            var ob2 = new RealmValueObject { RealmValueProperty = new List<RealmValue> { 1, "string", 23.0 } };
+            var ob3 = new RealmValueObject { RealmValueProperty = new List<RealmValue> { 1, "string" } };
+            var ob4 = new RealmValueObject { RealmValueProperty = new Dictionary<string, RealmValue> { { "s1", 22 } } };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(ob1);
+                _realm.Add(ob2);
+                _realm.Add(ob3);
+                _realm.Add(ob4);
+            });
+
+            var rvos = _realm.All<RealmValueObject>();
+
+            var q = rvos.Filter("RealmValueProperty.@size <= 2");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob3.Id, ob4.Id }));
+
+            q = rvos.Filter("RealmValueProperty.@count > 2");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id }));
+
+            q = rvos.Filter("RealmValueProperty.@type == 'dictionary'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob4.Id }));
+
+            q = rvos.Filter("RealmValueProperty.@type == 'list'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id, ob3.Id }));
+
+            q = rvos.Filter("RealmValueProperty.@type == 'collection'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id, ob3.Id, ob4.Id }));
+        }
+
+        [Test]
+        public void MixedCollection_Filter_AnyAllNone()
+        {
+            var ob1 = new RealmValueObject { RealmValueProperty = 2 };
+            var ob2 = new RealmValueObject { RealmValueProperty = new List<RealmValue> { "a", "string" } };
+            var ob3 = new RealmValueObject { RealmValueProperty = new List<RealmValue> { 1, "string" } };
+            var ob4 = new RealmValueObject { RealmValueProperty = new List<RealmValue> { 1, 23 } };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(ob1);
+                _realm.Add(ob2);
+                _realm.Add(ob3);
+                _realm.Add(ob4);
+            });
+
+            var rvos = _realm.All<RealmValueObject>();
+
+            var q = rvos.Filter("ANY RealmValueProperty[*].@type == 'string'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id, ob3.Id }));
+
+            q = rvos.Filter("NONE RealmValueProperty[*].@type == 'string'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob1.Id, ob4.Id }));
+
+            q = rvos.Filter("ALL RealmValueProperty[*].@type == 'string'");
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id }));
         }
 
         #endregion
