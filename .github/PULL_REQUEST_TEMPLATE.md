@@ -9,4 +9,4 @@ Fixes #
 ##  TODO
 
 * [ ] Changelog entry
-* [ ] Tests (if applicable)
+* [ ] Tests
