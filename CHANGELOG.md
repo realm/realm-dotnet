@@ -77,7 +77,7 @@
   var query5 = people.Filter("ListOfDogs[SIZE] = $0", 3)
   ```
   (Core 14.0.0)
-
+* Added support for indexed `RealmValue` properties. (PR [#3544](https://github.com/realm/realm-dotnet/pull/3544))
 ### Fixed
 * Fixed RQL (`.Filter()`) queries like `indexed_property == NONE {x}` which mistakenly matched on only x instead of not x. This only applies when an indexed property with equality (==, or IN) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. (Core 13.27.0)
 * Uploading the changesets recovered during an automatic client reset recovery may lead to 'Bad server version' errors and a new client reset. (Core 13.27.0)
