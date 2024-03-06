@@ -61,6 +61,8 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Clear nuget cache
+      run: dotnet nuget locals all --clear
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
