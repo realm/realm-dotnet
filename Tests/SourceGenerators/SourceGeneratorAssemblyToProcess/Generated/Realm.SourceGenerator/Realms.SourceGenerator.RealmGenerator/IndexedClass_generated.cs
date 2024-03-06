@@ -39,6 +39,8 @@ namespace SourceGeneratorAssemblyToProcess
             Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "IntProp"),
             Realms.Schema.Property.Primitive("GuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "GuidProp"),
             Realms.Schema.Property.Primitive("GeneralGuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "GeneralGuidProp"),
+            Realms.Schema.Property.RealmValue("RealmValueProp", managedName: "RealmValueProp"),
+            Realms.Schema.Property.RealmValue("GeneralRealmValueProp", managedName: "GeneralRealmValueProp"),
         }.Build();
 
         #region IRealmObject implementation
@@ -106,6 +108,8 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.GeneralGuidProp = oldAccessor.GeneralGuidProp;
                 }
+                newAccessor.RealmValueProp = oldAccessor.RealmValueProp;
+                newAccessor.GeneralRealmValueProp = oldAccessor.GeneralRealmValueProp;
             }
 
             if (_propertyChanged != null)
@@ -289,6 +293,10 @@ namespace SourceGeneratorAssemblyToProcess
             System.Guid GuidProp { get; set; }
 
             System.Guid GeneralGuidProp { get; set; }
+
+            Realms.RealmValue RealmValueProp { get; set; }
+
+            Realms.RealmValue GeneralRealmValueProp { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -328,6 +336,18 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 get => (System.Guid)GetValue("GeneralGuidProp");
                 set => SetValue("GeneralGuidProp", value);
+            }
+
+            public Realms.RealmValue RealmValueProp
+            {
+                get => (Realms.RealmValue)GetValue("RealmValueProp");
+                set => SetValue("RealmValueProp", value);
+            }
+
+            public Realms.RealmValue GeneralRealmValueProp
+            {
+                get => (Realms.RealmValue)GetValue("GeneralRealmValueProp");
+                set => SetValue("GeneralRealmValueProp", value);
             }
         }
 
@@ -402,6 +422,28 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
+            private Realms.RealmValue _realmValueProp;
+            public Realms.RealmValue RealmValueProp
+            {
+                get => _realmValueProp;
+                set
+                {
+                    _realmValueProp = value;
+                    RaisePropertyChanged("RealmValueProp");
+                }
+            }
+
+            private Realms.RealmValue _generalRealmValueProp;
+            public Realms.RealmValue GeneralRealmValueProp
+            {
+                get => _generalRealmValueProp;
+                set
+                {
+                    _generalRealmValueProp = value;
+                    RaisePropertyChanged("GeneralRealmValueProp");
+                }
+            }
+
             public IndexedClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
@@ -416,6 +458,8 @@ namespace SourceGeneratorAssemblyToProcess
                     "IntProp" => _intProp,
                     "GuidProp" => _guidProp,
                     "GeneralGuidProp" => _generalGuidProp,
+                    "RealmValueProp" => _realmValueProp,
+                    "GeneralRealmValueProp" => _generalRealmValueProp,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -440,6 +484,12 @@ namespace SourceGeneratorAssemblyToProcess
                         return;
                     case "GeneralGuidProp":
                         GeneralGuidProp = (System.Guid)val;
+                        return;
+                    case "RealmValueProp":
+                        RealmValueProp = (Realms.RealmValue)val;
+                        return;
+                    case "GeneralRealmValueProp":
+                        GeneralRealmValueProp = (Realms.RealmValue)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -487,6 +537,8 @@ namespace SourceGeneratorAssemblyToProcess
                 WriteValue(context, args, "IntProp", value.IntProp);
                 WriteValue(context, args, "GuidProp", value.GuidProp);
                 WriteValue(context, args, "GeneralGuidProp", value.GeneralGuidProp);
+                WriteValue(context, args, "RealmValueProp", value.RealmValueProp);
+                WriteValue(context, args, "GeneralRealmValueProp", value.GeneralRealmValueProp);
 
                 context.Writer.WriteEndDocument();
             }
@@ -514,6 +566,12 @@ namespace SourceGeneratorAssemblyToProcess
                         break;
                     case "GeneralGuidProp":
                         instance.GeneralGuidProp = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
+                        break;
+                    case "RealmValueProp":
+                        instance.RealmValueProp = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
+                        break;
+                    case "GeneralRealmValueProp":
+                        instance.GeneralRealmValueProp = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
                         break;
                     default:
                         context.Reader.SkipValue();

@@ -888,6 +888,74 @@ namespace Realms.Tests.Database
             Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id }));
         }
 
+        [Test]
+        public void IndexedRealmValue_WithCollection_BasicTest()
+        {
+            var innerList = ListGenerator(1);
+            var innerDict = DictGenerator(1);
+
+            var originalList = new List<RealmValue>
+            {
+                RealmValue.Null,
+                1,
+                true,
+                "string",
+                new byte[] { 0, 1, 2 },
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
+                1f,
+                2d,
+                3m,
+                new ObjectId("5f63e882536de46d71877979"),
+                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
+                new InternalObject { IntProperty = 10, StringProperty = "brown" },
+                innerList,
+                innerDict,
+            };
+
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new IndexedRealmValueObject { RealmValueProperty = originalList });
+            });
+
+            RealmValue rv = obj.RealmValueProperty;
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
+            Assert.That(rv != RealmValue.Null);
+            Assert.That(rv.AsList(), Is.EqualTo(originalList));
+
+            var originalDict = new Dictionary<string, RealmValue>
+            {
+                { "1", RealmValue.Null },
+                { "2", 1 },
+                { "3", true },
+                { "4", "string" },
+                { "5", new byte[] { 0, 1, 2 } },
+                { "6", new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero) },
+                { "7", 1f },
+                { "8", 2d },
+                { "9", 3m },
+                { "a", new ObjectId("5f63e882536de46d71877979") },
+                { "b", Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31") },
+                { "c", new InternalObject { IntProperty = 10, StringProperty = "brown" } },
+                { "d", innerList },
+                { "e", innerDict },
+            };
+
+            _realm.Write(() =>
+            {
+                obj.RealmValueProperty = originalDict;
+            });
+
+            rv = obj.RealmValueProperty;
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Dictionary));
+            Assert.That(rv != RealmValue.Null, "Different than null");
+
+            Assert.That(rv.AsDictionary(), Is.EquivalentTo(originalDict));
+            Assert.That(rv.AsAny(), Is.EquivalentTo(originalDict));
+            Assert.That(rv.As<IDictionary<string, RealmValue>>(), Is.EquivalentTo(originalDict));
+        }
+
         #endregion
     }
 }
