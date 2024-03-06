@@ -21,6 +21,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Realms;
 
@@ -79,6 +81,19 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
     }
 
     /// <summary>
+    /// Builds a <see cref="KeyPathsCollection"/> from an array of <see cref="Expression"/>.
+    /// Each of the expressions must represent the path to a <see cref="IRealmObject">realm object</see> property, eventually chained.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="IRealmObject">realm object.</see> type.</typeparam>
+    /// <param name="expressions">The array of <see cref="Expression"/> to use for the  <see cref="KeyPathsCollection"/>.</param>
+    /// <returns>The <see cref="KeyPathsCollection"/> built from the input array of <see cref="Expression"/>.</returns>
+    public static KeyPathsCollection Of<T>(params Expression<Func<T, object?>>[] expressions)
+        where T : IRealmObject
+    {
+        return Of(expressions.Select(KeyPath.ForExpression).ToArray());
+    }
+
+    /// <summary>
     /// Gets a <see cref="KeyPathsCollection"/> value for shallow notifications, that will raise notifications only for changes to the collection itself (for example when an element is added or removed),
     /// but not for changes to any of the properties of the elements of the collection.
     /// </summary>
@@ -129,6 +144,8 @@ public class KeyPathsCollection : IEnumerable<KeyPath>
 /// Represents a key path that can be used as a part of a <see cref="KeyPathsCollection"/> when subscribing for notifications.
 /// A <see cref="KeyPath"/> can be implicitly built from a string, where the string is the name of a property (e.g "FirstName"), eventually dotted to indicated nested properties.
 /// (e.g "Dog.Name"). Wildcards can also be used in key paths to capture all properties at a given level (e.g "*", "Friends.*" or "*.FirstName").
+/// A <see cref="KeyPath"/> can also be built using the <see cref="ForExpression{T}(Expression{Func{T, object}})"/> method, that creates the <see cref="KeyPath"/> corresponding
+/// to the property path represented by the input expression.
 /// </summary>
 public readonly struct KeyPath
 {
@@ -139,7 +156,43 @@ public readonly struct KeyPath
         Path = path;
     }
 
+    /// <summary>
+    /// Creates a <see cref="KeyPath"/> from an <see cref="Expression"/> that specifies a property path for a given <see cref="IRealmObject">realm object</see> type.
+    /// </summary>
+    /// <typeparam name="T">The type of the <see cref="IRealmObject">realm object.</see>.</typeparam>
+    /// <param name="expression">The expression specifying the path to the property.</param>
+    /// <returns>A <see cref="KeyPath"/> representing the full path to the specified property.</returns>
+    /// <example>
+    /// <code>
+    /// var keyPath = KeyPath.For&lt;Person&gt;(p => p.Dog.Name);
+    /// </code>
+    /// </example>
+    public static KeyPath ForExpression<T>(Expression<Func<T, object?>> expression)
+        where T : IRealmObject
+    {
+        if (expression is null)
+        {
+            throw new ArgumentException("The input expression cannot be null", nameof(expression));
+        }
+
+        return new(GetFullPath(expression.Body));
+    }
+
     public static implicit operator KeyPath(string s) => new(s);
+
+    private static string GetFullPath(Expression expression)
+    {
+        return expression switch
+        {
+            // MemberExpression: field or property expression;
+            // Expression == null for static members;
+            // Member: PropertyInfo to filter out field access
+            MemberExpression { Expression: { } innerExpression, Member: PropertyInfo pi } =>
+                innerExpression is ParameterExpression ? pi.Name : $"{GetFullPath(innerExpression)}.{pi.Name}",
+            ParameterExpression => string.Empty,
+            _ => throw new ArgumentException("The input expression is not a path to a property"),
+        };
+    }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is KeyPath path && Path == path.Path;

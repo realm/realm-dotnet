@@ -1655,6 +1655,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void KeyPath_CanBeBuiltFromExpressions()
+        {
+            KeyPath keyPath;
+
+            keyPath = KeyPath.ForExpression<TestNotificationObject>(t => t.ListSameType);
+            Assert.That(keyPath.Path, Is.EqualTo("ListSameType"));
+
+            keyPath = KeyPath.ForExpression<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs);
+            Assert.That(keyPath.Path, Is.EqualTo("LinkAnotherType.DictOfDogs"));
+        }
+
+        [Test]
+        public void KeyPath_WithInvalidExpressions_ThrowsException()
+        {
+            Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(t => t.Equals(this)),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression is not a path to a property"));
+
+            Assert.That(() => KeyPath.ForExpression<TestNotificationObject>(null!),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression cannot be null"));
+        }
+
+        [Test]
         public void KeyPathsCollection_CanBeBuiltInDifferentWays()
         {
             var kpString1 = "test1";
@@ -1708,6 +1730,35 @@ namespace Realms.Tests.Database
                 Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
                 Assert.That(k.GetStrings(), Is.EqualTo(expected));
             }
+        }
+
+        [Test]
+        public void KeyPathsCollection_CanBeBuiltFromExpressions()
+        {
+            var expected = new List<string> { "ListSameType", "LinkAnotherType.DictOfDogs" };
+
+            var kpc = KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, t => t.LinkAnotherType!.DictOfDogs);
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            kpc = KeyPathsCollection.Of(KeyPath.ForExpression<TestNotificationObject>(t => t.ListSameType),
+                KeyPath.ForExpression<TestNotificationObject>(t => t.LinkAnotherType!.DictOfDogs));
+            AssertKeyPathsCollectionCorrectness(kpc, expected);
+
+            void AssertKeyPathsCollectionCorrectness(KeyPathsCollection k, IEnumerable<string> expectedStrings)
+            {
+                Assert.That(k.Type, Is.EqualTo(KeyPathsCollectionType.Explicit));
+                Assert.That(k.GetStrings(), Is.EqualTo(expectedStrings));
+            }
+        }
+
+        [Test]
+        public void KeyPathsCollection_WithInvalidExpressions_ThrowsExceptions()
+        {
+            Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.ListSameType, null!),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression cannot be null"));
+
+            Assert.That(() => KeyPathsCollection.Of<TestNotificationObject>(t => t.Equals(this)),
+                Throws.Exception.TypeOf<ArgumentException>().With.Message.Contains("The input expression is not a path to a property"));
         }
 
         [Test]
