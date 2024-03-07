@@ -37,9 +37,6 @@ namespace SourceGeneratorPlayground
         public RealmObj? ObjectProp { get; set; }
 
         [Indexed]
-        public RealmValue RealmvalueProp { get; set; }
-
-        [Indexed]
         public decimal DecimalProp { get; set; }
 
         [Indexed]
@@ -62,9 +59,6 @@ namespace SourceGeneratorPlayground
 
         [Indexed(IndexType.None)]
         public int NoneIndexedInt { get; set; }
-
-        [Indexed(IndexType.General)]
-        public RealmValue GeneralRealmValueProp { get; set; }
 
         [PrimaryKey]
         [Indexed]

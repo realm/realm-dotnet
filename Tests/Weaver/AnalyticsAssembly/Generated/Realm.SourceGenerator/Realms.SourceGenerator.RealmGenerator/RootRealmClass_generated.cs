@@ -36,16 +36,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
     /// </summary>
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RootRealmClass", ObjectSchema.ObjectType.RealmObject)
     {
-        Realms.Schema.Property.Object("JustForRef", "JustForObjectReference", managedName: "JustForRef"),
-        Realms.Schema.Property.ObjectList("ReferenceList", "JustForObjectReference", managedName: "ReferenceList"),
-        Realms.Schema.Property.PrimitiveList("PrimitiveList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "PrimitiveList"),
-        Realms.Schema.Property.ObjectDictionary("ReferenceDictionary", "JustForObjectReference", managedName: "ReferenceDictionary"),
         Realms.Schema.Property.PrimitiveDictionary("PrimitiveDictionary", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "PrimitiveDictionary"),
-        Realms.Schema.Property.ObjectSet("ReferenceSet", "JustForObjectReference", managedName: "ReferenceSet"),
-        Realms.Schema.Property.PrimitiveSet("PrimitiveSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "PrimitiveSet"),
-        Realms.Schema.Property.Primitive("Counter", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Counter"),
-        Realms.Schema.Property.RealmValue("RealmValue", managedName: "RealmValue"),
-        Realms.Schema.Property.Backlinks("JustBackLink", "JustForObjectReference", "UseAsBacklink", managedName: "JustBackLink"),
     }.Build();
 
     #region IRealmObject implementation
@@ -94,30 +85,10 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         {
             if (!skipDefaults)
             {
-                newAccessor.ReferenceList.Clear();
-                newAccessor.PrimitiveList.Clear();
-                newAccessor.ReferenceDictionary.Clear();
                 newAccessor.PrimitiveDictionary.Clear();
-                newAccessor.ReferenceSet.Clear();
-                newAccessor.PrimitiveSet.Clear();
             }
 
-            if (oldAccessor.JustForRef != null && newAccessor.Realm != null)
-            {
-                newAccessor.Realm.Add(oldAccessor.JustForRef, update);
-            }
-            newAccessor.JustForRef = oldAccessor.JustForRef;
-            Realms.CollectionExtensions.PopulateCollection(oldAccessor.ReferenceList, newAccessor.ReferenceList, update, skipDefaults);
-            Realms.CollectionExtensions.PopulateCollection(oldAccessor.PrimitiveList, newAccessor.PrimitiveList, update, skipDefaults);
-            Realms.CollectionExtensions.PopulateCollection(oldAccessor.ReferenceDictionary, newAccessor.ReferenceDictionary, update, skipDefaults);
             Realms.CollectionExtensions.PopulateCollection(oldAccessor.PrimitiveDictionary, newAccessor.PrimitiveDictionary, update, skipDefaults);
-            Realms.CollectionExtensions.PopulateCollection(oldAccessor.ReferenceSet, newAccessor.ReferenceSet, update, skipDefaults);
-            Realms.CollectionExtensions.PopulateCollection(oldAccessor.PrimitiveSet, newAccessor.PrimitiveSet, update, skipDefaults);
-            if (!skipDefaults || oldAccessor.Counter != default(Realms.RealmInteger<int>))
-            {
-                newAccessor.Counter = oldAccessor.Counter;
-            }
-            newAccessor.RealmValue = oldAccessor.RealmValue;
         }
 
         if (_propertyChanged != null)
@@ -290,78 +261,12 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface IRootRealmClassAccessor : Realms.IRealmAccessor
     {
-        JustForObjectReference? JustForRef { get; set; }
-
-        System.Collections.Generic.IList<JustForObjectReference> ReferenceList { get; }
-
-        System.Collections.Generic.IList<int> PrimitiveList { get; }
-
-        System.Collections.Generic.IDictionary<string, JustForObjectReference?> ReferenceDictionary { get; }
-
         System.Collections.Generic.IDictionary<string, int> PrimitiveDictionary { get; }
-
-        System.Collections.Generic.ISet<JustForObjectReference> ReferenceSet { get; }
-
-        System.Collections.Generic.ISet<int> PrimitiveSet { get; }
-
-        Realms.RealmInteger<int> Counter { get; set; }
-
-        Realms.RealmValue RealmValue { get; set; }
-
-        System.Linq.IQueryable<JustForObjectReference> JustBackLink { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class RootRealmClassManagedAccessor : Realms.ManagedAccessor, IRootRealmClassAccessor
     {
-        public JustForObjectReference? JustForRef
-        {
-            get => (JustForObjectReference?)GetValue("JustForRef");
-            set => SetValue("JustForRef", value);
-        }
-
-        private System.Collections.Generic.IList<JustForObjectReference> _referenceList = null!;
-        public System.Collections.Generic.IList<JustForObjectReference> ReferenceList
-        {
-            get
-            {
-                if (_referenceList == null)
-                {
-                    _referenceList = GetListValue<JustForObjectReference>("ReferenceList");
-                }
-
-                return _referenceList;
-            }
-        }
-
-        private System.Collections.Generic.IList<int> _primitiveList = null!;
-        public System.Collections.Generic.IList<int> PrimitiveList
-        {
-            get
-            {
-                if (_primitiveList == null)
-                {
-                    _primitiveList = GetListValue<int>("PrimitiveList");
-                }
-
-                return _primitiveList;
-            }
-        }
-
-        private System.Collections.Generic.IDictionary<string, JustForObjectReference?> _referenceDictionary = null!;
-        public System.Collections.Generic.IDictionary<string, JustForObjectReference?> ReferenceDictionary
-        {
-            get
-            {
-                if (_referenceDictionary == null)
-                {
-                    _referenceDictionary = GetDictionaryValue<JustForObjectReference?>("ReferenceDictionary");
-                }
-
-                return _referenceDictionary;
-            }
-        }
-
         private System.Collections.Generic.IDictionary<string, int> _primitiveDictionary = null!;
         public System.Collections.Generic.IDictionary<string, int> PrimitiveDictionary
         {
@@ -375,60 +280,6 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
                 return _primitiveDictionary;
             }
         }
-
-        private System.Collections.Generic.ISet<JustForObjectReference> _referenceSet = null!;
-        public System.Collections.Generic.ISet<JustForObjectReference> ReferenceSet
-        {
-            get
-            {
-                if (_referenceSet == null)
-                {
-                    _referenceSet = GetSetValue<JustForObjectReference>("ReferenceSet");
-                }
-
-                return _referenceSet;
-            }
-        }
-
-        private System.Collections.Generic.ISet<int> _primitiveSet = null!;
-        public System.Collections.Generic.ISet<int> PrimitiveSet
-        {
-            get
-            {
-                if (_primitiveSet == null)
-                {
-                    _primitiveSet = GetSetValue<int>("PrimitiveSet");
-                }
-
-                return _primitiveSet;
-            }
-        }
-
-        public Realms.RealmInteger<int> Counter
-        {
-            get => (Realms.RealmInteger<int>)GetValue("Counter");
-            set => SetValue("Counter", value);
-        }
-
-        public Realms.RealmValue RealmValue
-        {
-            get => (Realms.RealmValue)GetValue("RealmValue");
-            set => SetValue("RealmValue", value);
-        }
-
-        private System.Linq.IQueryable<JustForObjectReference> _justBackLink = null!;
-        public System.Linq.IQueryable<JustForObjectReference> JustBackLink
-        {
-            get
-            {
-                if (_justBackLink == null)
-                {
-                    _justBackLink = GetBacklinks<JustForObjectReference>("JustBackLink");
-                }
-
-                return _justBackLink;
-            }
-        }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -436,52 +287,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
     {
         public override ObjectSchema ObjectSchema => RootRealmClass.RealmSchema;
 
-        private JustForObjectReference? _justForRef;
-        public JustForObjectReference? JustForRef
-        {
-            get => _justForRef;
-            set
-            {
-                _justForRef = value;
-                RaisePropertyChanged("JustForRef");
-            }
-        }
-
-        public System.Collections.Generic.IList<JustForObjectReference> ReferenceList { get; } = new List<JustForObjectReference>();
-
-        public System.Collections.Generic.IList<int> PrimitiveList { get; } = new List<int>();
-
-        public System.Collections.Generic.IDictionary<string, JustForObjectReference?> ReferenceDictionary { get; } = new Dictionary<string, JustForObjectReference?>();
-
         public System.Collections.Generic.IDictionary<string, int> PrimitiveDictionary { get; } = new Dictionary<string, int>();
-
-        public System.Collections.Generic.ISet<JustForObjectReference> ReferenceSet { get; } = new HashSet<JustForObjectReference>(RealmSet<JustForObjectReference>.Comparer);
-
-        public System.Collections.Generic.ISet<int> PrimitiveSet { get; } = new HashSet<int>(RealmSet<int>.Comparer);
-
-        private Realms.RealmInteger<int> _counter;
-        public Realms.RealmInteger<int> Counter
-        {
-            get => _counter;
-            set
-            {
-                _counter = value;
-                RaisePropertyChanged("Counter");
-            }
-        }
-
-        private Realms.RealmValue _realmValue;
-        public Realms.RealmValue RealmValue
-        {
-            get => _realmValue;
-            set
-            {
-                _realmValue = value;
-                RaisePropertyChanged("RealmValue");
-            }
-        }
-
-        public System.Linq.IQueryable<JustForObjectReference> JustBackLink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public RootRealmClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -489,32 +295,12 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
         public override Realms.RealmValue GetValue(string propertyName)
         {
-            return propertyName switch
-            {
-                "JustForRef" => _justForRef,
-                "Counter" => _counter,
-                "RealmValue" => _realmValue,
-                "JustBackLink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
         public override void SetValue(string propertyName, Realms.RealmValue val)
         {
-            switch (propertyName)
-            {
-                case "JustForRef":
-                    JustForRef = (JustForObjectReference?)val;
-                    return;
-                case "Counter":
-                    Counter = (Realms.RealmInteger<int>)val;
-                    return;
-                case "RealmValue":
-                    RealmValue = (Realms.RealmValue)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
+            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
         public override void SetValueUnique(string propertyName, Realms.RealmValue val)
@@ -524,29 +310,18 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
         public override IList<T> GetListValue<T>(string propertyName)
         {
-            return propertyName switch
-            {
-                "ReferenceList" => (IList<T>)ReferenceList,
-                "PrimitiveList" => (IList<T>)PrimitiveList,
-                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
-            return propertyName switch
-            {
-                "ReferenceSet" => (ISet<T>)ReferenceSet,
-                "PrimitiveSet" => (ISet<T>)PrimitiveSet,
-                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return propertyName switch
             {
-                "ReferenceDictionary" => (IDictionary<string, TValue>)ReferenceDictionary,
                 "PrimitiveDictionary" => (IDictionary<string, TValue>)PrimitiveDictionary,
                 _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
             };
@@ -562,15 +337,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         {
             context.Writer.WriteStartDocument();
 
-            WriteValue(context, args, "JustForRef", value.JustForRef);
-            WriteList(context, args, "ReferenceList", value.ReferenceList);
-            WriteList(context, args, "PrimitiveList", value.PrimitiveList);
-            WriteDictionary(context, args, "ReferenceDictionary", value.ReferenceDictionary);
             WriteDictionary(context, args, "PrimitiveDictionary", value.PrimitiveDictionary);
-            WriteSet(context, args, "ReferenceSet", value.ReferenceSet);
-            WriteSet(context, args, "PrimitiveSet", value.PrimitiveSet);
-            WriteValue(context, args, "Counter", value.Counter);
-            WriteValue(context, args, "RealmValue", value.RealmValue);
 
             context.Writer.WriteEndDocument();
         }
@@ -581,22 +348,6 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         {
             switch (name)
             {
-                case "JustForRef":
-                    instance.JustForRef = Realms.Serialization.RealmObjectSerializer.LookupSerializer<JustForObjectReference?>()!.DeserializeById(context);
-                    break;
-                case "Counter":
-                    instance.Counter = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>>().Deserialize(context);
-                    break;
-                case "RealmValue":
-                    instance.RealmValue = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                    break;
-                case "ReferenceList":
-                case "PrimitiveList":
-                case "ReferenceSet":
-                case "PrimitiveSet":
-                    ReadArray(instance, name, context);
-                    break;
-                case "ReferenceDictionary":
                 case "PrimitiveDictionary":
                     ReadDictionary(instance, name, context);
                     break;
@@ -608,30 +359,13 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
         protected override void ReadArrayElement(RootRealmClass instance, string name, BsonDeserializationContext context)
         {
-            switch (name)
-            {
-                case "ReferenceList":
-                    instance.ReferenceList.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<JustForObjectReference>()!.DeserializeById(context)!);
-                    break;
-                case "PrimitiveList":
-                    instance.PrimitiveList.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
-                    break;
-                case "ReferenceSet":
-                    instance.ReferenceSet.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<JustForObjectReference>()!.DeserializeById(context)!);
-                    break;
-                case "PrimitiveSet":
-                    instance.PrimitiveSet.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
-                    break;
-            }
+            // No persisted list/set properties to deserialize
         }
 
         protected override void ReadDocumentField(RootRealmClass instance, string name, string fieldName, BsonDeserializationContext context)
         {
             switch (name)
             {
-                case "ReferenceDictionary":
-                    instance.ReferenceDictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<JustForObjectReference?>()!.DeserializeById(context)!;
-                    break;
                 case "PrimitiveDictionary":
                     instance.PrimitiveDictionary[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
                     break;
