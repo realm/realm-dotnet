@@ -33,6 +33,10 @@ jobs:
 
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
+      #! To avoid NU5037 error
+      - name: Clear nuget cache
+        run: dotnet nuget locals all --clear
+        if: runner.name == `win81`
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         env:
