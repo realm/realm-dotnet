@@ -41,6 +41,7 @@ internal static class PropertyDefinitionExtensions
         DateTimeOffsetTypeName,
         ObjectIdTypeName,
         GuidTypeName,
+        RealmValueTypeName,
     };
 
     internal static bool IsAutomatic(this PropertyDefinition property)

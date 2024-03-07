@@ -71,6 +71,30 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void* realm_dictionary_add_collection(object_store::Dictionary& dictionary, realm_value_t key, realm_value_type type, bool allow_override, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+
+            auto dict_key = from_capi(key.string);
+            if (!allow_override && dictionary.contains(dict_key))
+            {
+                throw KeyAlreadyExistsException(dict_key);
+            }
+
+            switch (type)
+            {
+            case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                dictionary.insert_collection(dict_key, CollectionType::List);
+                return new List(dictionary.get_list(dict_key));
+            case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                dictionary.insert_collection(dict_key, CollectionType::Dictionary);
+                return new object_store::Dictionary(dictionary.get_dictionary(dict_key));
+            default:
+                REALM_TERMINATE("Invalid collection type");
+            }
+        });
+    }
+
     REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
@@ -90,10 +114,11 @@ extern "C" {
     REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            auto mixed_value = dictionary.try_get_any(from_capi(key.string));
+            auto dict_key = from_capi(key.string);
+            auto mixed_value = dictionary.try_get_any(dict_key);
             if (mixed_value)
             {
-                *value = to_capi(dictionary, *mixed_value);
+                *value = to_capi(dictionary, *mixed_value, dict_key);
                 return true;
             }
 
@@ -110,7 +135,7 @@ extern "C" {
 
             auto pair = dictionary.get_pair(ndx);
             *key = to_capi(Mixed(pair.first));
-            *value = to_capi(dictionary, pair.second);
+            *value = to_capi(dictionary, pair.second, pair.first);
         });
     }
 

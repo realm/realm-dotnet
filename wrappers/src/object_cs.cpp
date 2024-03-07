@@ -100,15 +100,30 @@ extern "C" {
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
                 }
+
+                return;
             }
-            else {
-                auto val = object.get_obj().get_any(prop.column_key);
-                if (!val.is_null() && val.get_type() == type_TypedLink) {
-                    *value = to_capi(val.get<ObjLink>(), object.realm());
-                }
-                else {
-                    *value = to_capi(std::move(val));
-                }
+
+            auto val = object.get_obj().get_any(prop.column_key);
+            if (val.is_null())
+            {
+                *value = to_capi(std::move(val));
+                return;
+            }
+            
+            switch (val.get_type()) {
+            case type_TypedLink:
+                *value = to_capi(val.get<ObjLink>(), object.realm());
+                break;
+            case type_List:
+                *value = to_capi(new List(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            case type_Dictionary:
+                *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            default:
+                *value = to_capi(std::move(val));
+                break;
             }
         });
     }
@@ -155,6 +170,27 @@ extern "C" {
             }
             else {
                 object.get_obj().set_any(prop.column_key, from_capi(value));
+            }
+        });
+    }
+
+    REALM_EXPORT void* object_set_collection_value(Object& object, size_t property_ndx, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+            verify_can_set(object);
+
+            auto prop = get_property(object, property_ndx);
+
+            switch (type)
+            {
+            case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                object.get_obj().set_collection(prop.column_key, CollectionType::List);
+                return new List(object.realm(), object.get_obj(), prop.column_key);
+            case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
+                return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+            default:
+                REALM_TERMINATE("Invalid collection type");
             }
         });
     }

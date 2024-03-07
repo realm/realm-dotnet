@@ -33,17 +33,26 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_collection(ListHandle listHandle, RealmValueType type, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection(ListHandle listHandle, IntPtr targetIndex, RealmValueType type, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_value(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr insert_collection(ListHandle listHandle, IntPtr targetIndex, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_value(ListHandle listHandle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
@@ -142,6 +151,15 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
+        public CollectionHandleBase AddCollection(RealmValueType collectionType)
+        {
+            EnsureIsOpen();
+
+            var collectionPtr = NativeMethods.add_collection(this, collectionType, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return GetCollectionHandle(collectionPtr, collectionType);
+        }
+
         public void Set(int targetIndex, in RealmValue value)
         {
             EnsureIsOpen();
@@ -159,6 +177,15 @@ namespace Realms
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root!, result);
+        }
+
+        public CollectionHandleBase SetCollection(int targetIndex, RealmValueType collectionType)
+        {
+            EnsureIsOpen();
+
+            var collectionPtr = NativeMethods.set_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return GetCollectionHandle(collectionPtr, collectionType);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -180,6 +207,15 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
+        public CollectionHandleBase InsertCollection(int targetIndex, RealmValueType collectionType)
+        {
+            EnsureIsOpen();
+
+            var collectionPtr = NativeMethods.insert_collection(this, (IntPtr)targetIndex, collectionType, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return GetCollectionHandle(collectionPtr, collectionType);
+        }
+
         public int Find(in RealmValue value)
         {
             EnsureIsOpen();
@@ -191,11 +227,11 @@ namespace Realms
             return (int)result;
         }
 
-        public void Erase(IntPtr rowIndex)
+        public void Erase(int targetIndex)
         {
             EnsureIsOpen();
 
-            NativeMethods.erase(this, rowIndex, out var nativeException);
+            NativeMethods.erase(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

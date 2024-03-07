@@ -11,6 +11,20 @@
 * Opening realm with file format 23 or lower (Realm .NET versions earlier than 12.0.0) in read-only mode will crash. (Core 14.0.0)
 
 ### Enhancements
+* Added support for list and dictionaries of `RealmValue` (`IList<RealmValue>` and `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `RealmValue[]` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList` and `AsDictionary`. For example:
+
+  ```csharp
+  var list = new List<RealmValue> { 1, true, "stringVal" };
+
+  var rvo = realm.Write(() =>
+  {
+      return realm.Add(new RealmValueObject { RealmValueProperty = list});
+  });
+
+  var retrievedList = rvo.RealmValueProperty.AsList();
+  ```
+  (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
+* Reduced memory usage of `RealmValue`. (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 * Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
 
   A `KeyPathsCollection` can be obtained by:
@@ -63,6 +77,7 @@
   var query5 = people.Filter("ListOfDogs[SIZE] = $0", 3)
   ```
   (Core 14.0.0)
+* Added support for indexed `RealmValue` properties. (PR [#3544](https://github.com/realm/realm-dotnet/pull/3544))
 
 ### Fixed
 * Fixed RQL (`.Filter()`) queries like `indexed_property == NONE {x}` which mistakenly matched on only x instead of not x. This only applies when an indexed property with equality (==, or IN) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. (Core 13.27.0)

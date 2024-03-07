@@ -75,14 +75,17 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set_embedded", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_collection(DictionaryHandle handle, PrimitiveValue key, RealmValueType type, bool allowOverride, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_contains_key", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -238,6 +241,34 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public ObjectHandle SetEmbedded(string key)
+        {
+            EnsureIsOpen();
+
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.set_embedded(this, primitiveKey, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root!, result);
+        }
+
+        public CollectionHandleBase SetCollection(string key, RealmValueType collectionType)
+        {
+            EnsureIsOpen();
+
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.add_collection(this, primitiveKey, collectionType, allowOverride: true, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return GetCollectionHandle(result, collectionType);
+        }
+
         public void Add(string key, in RealmValue value)
         {
             EnsureIsOpen();
@@ -267,18 +298,18 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public ObjectHandle SetEmbedded(string key)
+        public CollectionHandleBase AddCollection(string key, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
-            var result = NativeMethods.set_embedded(this, primitiveKey, out var nativeException);
+            var result = NativeMethods.add_collection(this, primitiveKey, collectionType, allowOverride: false, out var nativeException);
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root!, result);
+            return GetCollectionHandle(result, collectionType);
         }
 
         public bool ContainsKey(string key)

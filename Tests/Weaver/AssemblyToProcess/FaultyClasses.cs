@@ -98,13 +98,16 @@ namespace AssemblyToProcess
         [Indexed]
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        [Indexed]
+        public RealmValue RealmValueProperty { get; set; }
+
         [Indexed(IndexType.General)]
         public ObjectId ObjectIdProperty { get; set; }
 
         [Indexed(IndexType.FullText)]
         public string? FullTextStringProperty { get; set; }
 
-        // This should cause an error:
+        // These should cause an error:
 
         [Indexed]
         public float SingleProperty { get; set; }

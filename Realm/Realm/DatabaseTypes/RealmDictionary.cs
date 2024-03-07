@@ -65,6 +65,12 @@ namespace Realms
                 ValidateKey(key);
                 var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
+                if (realmValue.Type.IsCollection())
+                {
+                    CollectionHelpers.PopulateCollection(Realm, _dictionaryHandle.SetCollection(key, realmValue.Type), realmValue);
+                    return;
+                }
+
                 if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
                     if (IsDynamic)
@@ -124,6 +130,12 @@ namespace Realms
             ValidateKey(key);
             var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
+            if (realmValue.Type.IsCollection())
+            {
+                CollectionHelpers.PopulateCollection(Realm, _dictionaryHandle.AddCollection(key, realmValue.Type), realmValue);
+                return;
+            }
+
             if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
                 if (IsDynamic)
@@ -159,6 +171,11 @@ namespace Realms
             var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
+            {
+                return false;
+            }
+
+            if (realmValue.Type.IsCollection())
             {
                 return false;
             }

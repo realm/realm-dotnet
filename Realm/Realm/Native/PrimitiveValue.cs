@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -66,6 +67,9 @@ namespace Realms.Native
 
         [FieldOffset(0)]
         private LinkValue link_value;
+
+        [FieldOffset(0)]
+        private IntPtr collection_ptr;
 
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
@@ -261,6 +265,18 @@ namespace Realms.Native
             }
 
             return realm.MakeObject(objectMetadata, handle);
+        }
+
+        public readonly RealmList<RealmValue> AsList(Realm realm)
+        {
+            var handle = new ListHandle(realm.SharedRealmHandle, collection_ptr);
+            return new RealmList<RealmValue>(realm, handle, null);
+        }
+
+        public readonly RealmDictionary<RealmValue> AsDictionary(Realm realm)
+        {
+            var handle = new DictionaryHandle(realm.SharedRealmHandle, collection_ptr);
+            return new RealmDictionary<RealmValue>(realm, handle, null);
         }
 
         public readonly bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)

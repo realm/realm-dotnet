@@ -46,13 +46,6 @@ namespace {
 
 extern "C" {
 
-REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Object(list.get_realm(), list.get_object_schema(), list.add_embedded());
-    });
-}
-
 REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -90,6 +83,28 @@ REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeExcept
     });
 }
 
+REALM_EXPORT void* list_set_collection(List& list, size_t list_ndx, realm_value_type type, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]()-> void*{
+
+        if (list_ndx > list.size()) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
+        }
+
+        switch (type)
+        {
+        case realm::binding::realm_value_type::RLM_TYPE_LIST:
+            list.set_collection(list_ndx, CollectionType::List);
+            return new List(list.get_list(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+            list.set_collection(list_ndx, CollectionType::Dictionary);
+            return new object_store::Dictionary(list.get_dictionary(list_ndx));
+        default:
+            REALM_TERMINATE("Invalid collection type");
+        }
+    });
+}
+
 REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -114,11 +129,6 @@ REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t v
     });
 }
 
-REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
-{
-    list_insert_value(list, list.size(), value, ex);
-}
-
 REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -131,6 +141,45 @@ REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeExc
     });
 }
 
+REALM_EXPORT void* list_insert_collection(List& list, size_t list_ndx, realm_value_type type, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]()-> void*{
+
+        if (list_ndx > list.size()) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
+        }
+
+        switch (type)
+        {
+        case realm::binding::realm_value_type::RLM_TYPE_LIST:
+            list.insert_collection(list_ndx, CollectionType::List);
+            return new List(list.get_list(list_ndx));
+        case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+            list.insert_collection(list_ndx, CollectionType::Dictionary);
+            return new object_store::Dictionary(list.get_dictionary(list_ndx));
+        default:
+            REALM_TERMINATE("Invalid collection type");
+        }
+    });
+}
+
+REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
+{
+    list_insert_value(list, list.size(), value, ex);
+}
+
+REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(list.get_realm(), list.get_object_schema(), list.add_embedded());
+    });
+}
+
+REALM_EXPORT void* list_add_collection(List& list, realm_value_type type, NativeException::Marshallable& ex)
+{
+    return list_insert_collection(list, list.size(), type, ex);
+}
+
 REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -140,15 +189,29 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
 
         if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             *value = to_capi(list.get(ndx), list.get_realm());
+            return;
         }
-        else {
-            auto val = list.get_any(ndx);
-            if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(val.get<ObjLink>(), list.get_realm());
-            }
-            else {
-                *value = to_capi(std::move(val));
-            }
+
+        auto val = list.get_any(ndx);
+
+        if (val.is_null()) {
+            *value = to_capi(std::move(val));
+            return;
+        }
+
+        switch (val.get_type()) {
+        case type_TypedLink:
+            *value = to_capi(val.get<ObjLink>(), list.get_realm());
+            break;
+        case type_List:
+            *value = to_capi(new List(list.get_list(ndx)));
+            break;
+        case type_Dictionary:
+            *value = to_capi(new object_store::Dictionary(list.get_dictionary(ndx)));
+            break;
+        default:
+            *value = to_capi(std::move(val));
+            break;
         }
     });
 }

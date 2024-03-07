@@ -313,11 +313,9 @@ namespace Realms.Tests.Database
             }
         }
 
-        public static readonly RealmValueType[] PrimitiveTypes = ReflectionExtensions.GetEnumValues<RealmValueType>();
-
         [Test]
         public void Property_Primitive_Tests(
-            [ValueSource(nameof(PrimitiveTypes))] RealmValueType type,
+            [ValueSource(typeof(TestHelpers), nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
             [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(BoolValues))] bool isNullable)
@@ -369,7 +367,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Property_PrimitiveCollection_Tests(
             [ValueSource(nameof(CollectionTypes))] PropertyType collectionType,
-            [ValueSource(nameof(PrimitiveTypes))] RealmValueType type,
+            [ValueSource(typeof(TestHelpers), nameof(TestHelpers.PrimitiveRealmValueTypes))] RealmValueType type,
             [ValueSource(nameof(BoolValues))] bool isNullable)
         {
             Property getProperty() => collectionType switch

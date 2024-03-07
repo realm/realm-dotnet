@@ -118,6 +118,7 @@ namespace Realms.SourceGenerator
             ScalarType.ObjectId,
             ScalarType.Guid,
             ScalarType.Date,
+            ScalarType.RealmValue,
         };
 
         private static readonly HashSet<ScalarType> _primaryKeyTypes = new()

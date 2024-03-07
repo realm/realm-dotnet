@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Extensions;
+using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
 
@@ -44,6 +45,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection_value(ObjectHandle handle, IntPtr propertyIndex, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -218,6 +222,25 @@ namespace Realms
                     case IAsymmetricObject:
                         throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
+            }
+            else if (value.Type.IsCollection())
+            {
+                var collectionPtr = NativeMethods.set_collection_value(this, propertyIndex, value.Type, out var collNativeException);
+                collNativeException.ThrowIfNecessary();
+
+                switch (value.Type)
+                {
+                    case RealmValueType.List:
+                        CollectionHelpers.PopulateCollection(realm, new ListHandle(Root!, collectionPtr), value);
+                        break;
+                    case RealmValueType.Dictionary:
+                        CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                        break;
+                    default:
+                        break;
+                }
+
+                return;
             }
 
             var (primitive, handles) = value.ToNative();

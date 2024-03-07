@@ -558,14 +558,21 @@ public static class CollectionExtensions
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
+        Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
     public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
+        Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
     public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
+
+    internal static bool DictionaryEquals(this IDictionary<string, RealmValue> first, IDictionary<string, RealmValue> second)
+    {
+        return first.Count == second.Count && first.All(fkv => second.TryGetValue(fkv.Key, out RealmValue sVal) && fkv.Value == sVal);
+    }
 
     private static bool ShouldWaitForSync(WaitForSyncMode mode, Subscription? oldSub, Subscription newSub)
     {
