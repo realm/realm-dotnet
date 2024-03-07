@@ -77,6 +77,9 @@ jobs:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
+      #! To avoid NU5037 error
+      - name: Clear nuget cache
+        run: dotnet nuget locals all --clear
       - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
