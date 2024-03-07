@@ -881,11 +881,12 @@ namespace Realms.Tests.Database
             var q = rvos.Filter("ANY RealmValueProperty[*].@type == 'string'");
             Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id, ob3.Id }));
 
+            // NONE and ALL match both also on "empty lists", that's why they match also on ob1
             q = rvos.Filter("NONE RealmValueProperty[*].@type == 'string'");
             Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob1.Id, ob4.Id }));
 
             q = rvos.Filter("ALL RealmValueProperty[*].@type == 'string'");
-            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id }));
+            Assert.That(q.ToList().Select(i => i.Id), Is.EquivalentTo(new[] { ob2.Id, ob1.Id }));
         }
 
         [Test]
