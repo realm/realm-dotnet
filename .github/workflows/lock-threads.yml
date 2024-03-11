@@ -20,6 +20,6 @@ jobs:
       - uses: dessant/lock-threads@v5
         with:
           issue-inactive-days: 30
-          process-only: issues
+          process-only: issue
           exclude-issue-created-before: '2024-01-01T00:00:00Z'
           log-output: true
