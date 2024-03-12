@@ -40,7 +40,7 @@ jobs:
       env:
         apiKey: ${{ secrets.BaaSaasApiKey }}
       if: ${{ env.apiKey }}
-      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=ios
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=ios-${{ github.run_id }}-${{ github.run_attempt }}
       working-directory: Tools/DeployApps
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
@@ -53,7 +53,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=ios
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=ios-${{ github.run_id }}-${{ github.run_attempt }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

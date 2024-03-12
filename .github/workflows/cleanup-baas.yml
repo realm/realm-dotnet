@@ -29,5 +29,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Terminate Baas
-      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=${{ matrix.differentiator }}
+      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
       working-directory: Tools/DeployApps

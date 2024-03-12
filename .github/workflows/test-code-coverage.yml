@@ -130,7 +130,7 @@ jobs:
       env:
         apiKey: ${{ secrets.BaaSaasApiKey }}
       if: ${{ env.apiKey }}
-      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=code-coverage
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}
       working-directory: Tools/DeployApps
     - name: Setup Coverlet & Report Generator
       run: |
@@ -147,7 +147,7 @@ jobs:
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
     - name: Archive core dump
       uses: actions/upload-artifact@v3
       if: failure()

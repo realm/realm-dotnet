@@ -47,7 +47,7 @@ jobs:
         appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
         bundleId: io.realm.Tests-XamarinTVOS
         iphoneToSimulate: Apple-TV-1080p
-        arguments: --headless --result=${{ github.workspace }}/TestResults.tvOS.xml --labels=All --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=tvos
+        arguments: --headless --result=${{ github.workspace }}/TestResults.tvOS.xml --labels=All --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=tvos-${{ github.run_id }}-${{ github.run_attempt }}
         os: tvOS
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b

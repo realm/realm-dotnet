@@ -2,7 +2,7 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode", "fetchPackageArtifacts")
 
 #@ def baasTestArgs(differentiator):
-#@   return " --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=" + differentiator
+#@   return " --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=" + differentiator + "-${{ github.run_id }}-${{ github.run_attempt }}"
 #@ end
 ---
 #@ def publishTestsResults(files, test_title):
@@ -86,7 +86,7 @@ env:
   env:
     apiKey: ${{ secrets.BaaSaasApiKey }}
   if: ${{ env.apiKey }}
-  run: #@ "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=" + differentiator
+  run: #@ "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=" + differentiator + "-${{ github.run_id }}-${{ github.run_attempt }}"
   working-directory: Tools/DeployApps
 #@ end
 #@ end
