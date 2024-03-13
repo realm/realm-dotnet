@@ -53,7 +53,7 @@ jobs:
       env:
         apiKey: ${{ secrets.BaaSaasApiKey }}
       if: ${{ env.apiKey }}
-      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=android
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=android-${{ github.run_id }}-${{ github.run_attempt }}
       working-directory: Tools/DeployApps
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
@@ -74,7 +74,7 @@ jobs:
         app-id: io.realm.xamarintests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-        arguments: ' --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=android'
+        arguments: ' --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=android-${{ github.run_id }}-${{ github.run_attempt }}'
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
