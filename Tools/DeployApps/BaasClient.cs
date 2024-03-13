@@ -148,6 +148,7 @@ namespace Baas
             };";
 
         private readonly HttpClient _client = new();
+        private readonly HttpClient _privateclient = new();
 
         private readonly string? _clusterName;
 
@@ -196,6 +197,9 @@ namespace Baas
             _clusterName = clusterName;
             Differentiator = differentiator;
             _output = output;
+
+            _privateclient.BaseAddress = new Uri(baseUri, "api/private/v1.0/");
+            _privateclient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
         }
 
         public static async Task<BaasClient> Docker(Uri baseUri, string differentiator, TextWriter output)
@@ -293,6 +297,7 @@ namespace Baas
 
             _refreshToken = authDoc!["refresh_token"].AsString;
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
+            _privateclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
         public static async Task<Uri> GetOrDeployContainer(string baasaasApiKey, string differentiator, TextWriter output)
@@ -555,6 +560,14 @@ namespace Baas
             {
                 development_mode_enabled = true,
             });
+            // Retrieve feature flags
+            // var features = await GetPrivateAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/features");
+            // ENABLE LEGACY MIXED SUPPORT
+            // await PostPrivateAsync<BsonDocument>($"features/legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "enable"} );
+            // await PostPrivateAsync<BsonDocument>($"features/bypass_legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "disable"} );
+            // DISABLE LEGACY MIXED SUPPORT - Default on latest test server - https://github.com/10gen/baas/blob/master/etc/configs/test_config.json#L303
+            // await PostPrivateAsync<BsonDocument>($"features/legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "disable"} );
+            // await PostPrivateAsync<BsonDocument>($"features/bypass_legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "enable"} );
 
             return (app, mongoServiceId);
         }
@@ -699,10 +712,13 @@ namespace Baas
         }
 
         private Task<T?> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
+        private Task<T?> PostPrivateAsync<T>(string relativePath, object obj) => SendPrivateAsync<T>(HttpMethod.Post, relativePath, obj);
 
         private Task<T?> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
+        private Task<T?> GetPrivateAsync<T>(string relativePath) => SendPrivateAsync<T>(HttpMethod.Get, relativePath);
 
         private Task<T?> PutAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Put, relativePath, obj);
+        private Task<T?> PutPrivateAsync<T>(string relativePath, object obj) => SendPrivateAsync<T>(HttpMethod.Put, relativePath, obj);
 
         private Task<T?> PatchAsync<T>(string relativePath, object obj) => SendAsync<T>(new HttpMethod("PATCH"), relativePath, obj);
 
@@ -715,6 +731,36 @@ namespace Baas
             }
 
             var response = await _client.SendAsync(message);
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized && _refreshToken != null)
+                {
+                    await RefreshAccessTokenAsync();
+                    return await SendAsync<T>(method, relativePath, payload);
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                return BsonSerializer.Deserialize<T>(json);
+            }
+
+            return default;
+        }
+        private async Task<T?> SendPrivateAsync<T>(HttpMethod method, string relativePath, object? payload = null)
+        {
+            using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
+            if (payload != null)
+            {
+                message.Content = GetJsonContent(payload);
+            }
+
+            var response = await _privateclient.SendAsync(message);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized && _refreshToken != null)

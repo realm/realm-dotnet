@@ -22,10 +22,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Baas;
 using MongoDB.Bson;
+using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Helpers;
+using Realms.Logging;
+using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
@@ -273,6 +279,40 @@ namespace Realms.Tests.Sync
             new object[] { (RealmValue)true, RealmValue.Object(new IntPropertyObject { Int = 10 }) },
             new object[] { RealmValue.Null, (RealmValue)5m },
             new object[] { (RealmValue)12.5f, (RealmValue)15d },
+            new object[] { (RealmValue)12.5f, (RealmValue)15d },
+            new object[] { (RealmValue)new List<RealmValue> {
+                RealmValue.Null,
+                1,
+                true,
+                "string",
+                new byte[] { 0, 1, 2 },
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
+                1f,
+                2d,
+                3m,
+                new ObjectId("5f63e882536de46d71877979"),
+                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
+                // new InternalObject { IntProperty = 10, StringProperty = "brown" },
+                // innerList,
+                // innerDict,
+            }, (RealmValue)15d },
+            new object[] { (RealmValue)new Dictionary<string, RealmValue> {
+                { "key1", RealmValue.Null},
+                { "key2", 1},
+                { "key3", true},
+                { "key4", "string"},
+                { "key5", new byte[] {0, 1, 2, 3}},
+                { "key6", 
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero)},
+                { "key7", 1f},
+                { "key8", 2d},
+                { "key9", 3m},
+                { "key10", new ObjectId("5f63e882536de46d71877979")},
+                { "key11", Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31")},
+                // new InternalObject { IntProperty = 10, StringProperty = "brown" },
+                // innerList,
+                // innerDict,
+            }, (RealmValue)15d },
         };
 
         [TestCaseSource(nameof(RealmTestValues))]
@@ -476,13 +516,49 @@ namespace Realms.Tests.Sync
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
+            Logger.LogLevel = LogLevel.Debug;
+
             equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var partition = Guid.NewGuid().ToString();
-                var realm1 = await GetIntegrationRealmAsync(partition);
-                var realm2 = await GetIntegrationRealmAsync(partition);
+                var errorTcs = new TaskCompletionSource<SessionException>();
+
+                // HACK To flush invalid state data from the server to be able to bootstrap new realms
+                var app = App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+                var user = await GetUserAsync(app);
+                // var client = user.GetMongoClient("BackingDB");
+                // var collection = client.GetCollection<SyncAllTypesObject>();
+                // await collection.DeleteManyAsync();
+                // await Task.Delay(5000);
+
+                var config = GetFLXIntegrationConfig(user);
+                // Alternative configuration that causes tests to succeed (green) even thought opening the realm from
+                // this config with a invalid state on the server will timeout. Haven't identified why an error here 
+                // wont propagate as the using GetFLXIntegrationConfig 
+                // var config = await GetFLXIntegrationConfigAsync();
+                // config.PopulateInitialSubscriptions = (r) =>
+                // {
+                    // var query = r.All<SyncAllTypesObject>();
+                    // r.Subscriptions.Add(query);
+                // };
+
+                config.OnSessionError = (_, error) =>
+                {
+                    Console.WriteLine("Session error: " + error);
+                    errorTcs.TrySetResult(error);
+                };
+                var realm1 = await GetRealmAsync(config);
+
+                realm1.Subscriptions.Update(() =>
+                {
+                    realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>());
+                });
+                var realm2 = await GetFLXIntegrationRealmAsync();
+                realm2.Subscriptions.Update(() =>
+                {
+                    realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>());
+                });
 
                 var obj1 = realm1.Write(() =>
                 {
@@ -501,8 +577,8 @@ namespace Realms.Tests.Sync
                 var prop1 = getter(obj1);
                 var prop2 = getter(obj2);
 
+                Assert.That(equalsOverride(prop1, item1), Is.True, "Values {0} {1}", prop1, item1);
                 Assert.That(equalsOverride(prop1, prop2), Is.True);
-                Assert.That(equalsOverride(prop1, item1), Is.True);
 
                 realm2.Write(() =>
                 {
@@ -516,8 +592,30 @@ namespace Realms.Tests.Sync
 
                 Assert.That(equalsOverride(prop1, prop2), Is.True);
                 Assert.That(equalsOverride(prop2, item2), Is.True);
+                Console.WriteLine("DONE");
             });
         }
+
+        // RealmValue sync tests
+        // - Protocol negotiation if server does not support collections in mixed
+        // - Bootstrap download a full already uploaded set of data
+        // - Properties 
+        //   - assign with list
+        //   - assign with dict
+        // - Embedded list operations
+        //   - For all types 
+        //     - insert
+        //     - set
+        //     - ?
+        //   - remove
+        //     - invalidates existing list/dictU
+        // - Embedded dict operations
+        //   - For all types
+        //     - set
+        //   - remove
+        //     - invalidates existing list/dict
+        //
+        // 
 
         private static RealmValue Clone(RealmValue original)
         {

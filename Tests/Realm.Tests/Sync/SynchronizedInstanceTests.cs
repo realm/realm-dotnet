@@ -819,6 +819,24 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Add_ThrowsWhenAddingNestedCollectionsToSyncedRealm()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                using (var realm = GetRealm(config))
+                {
+                    RealmException? ex = Assert.Throws<RealmException>(() => 
+                    {
+                        realm.Write(() => realm.Add(new RealmValueObject { RealmValueProperty = new List<RealmValue> { 1, 2, 3 } }));
+                    });
+                    Assert.That(ex.Message, Does.Contain("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled"));
+                }
+            });
+        }
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
