@@ -184,9 +184,11 @@ extern "C" {
             switch (type)
             {
             case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                object.get_obj().set_null(prop.column_key);
                 object.get_obj().set_collection(prop.column_key, CollectionType::List);
                 return new List(object.realm(), object.get_obj(), prop.column_key);
             case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                object.get_obj().set_null(prop.column_key);
                 object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
                 return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
             default:

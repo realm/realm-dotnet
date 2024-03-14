@@ -254,6 +254,33 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void List_AfterCreation_CanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialList = (RealmValue)new List<RealmValue>{ 1, 2, 3};
+            var rvo = new RealmValueObject { RealmValueProperty = initialList };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actual = rvo.RealmValueProperty.AsList();
+            Assert.AreEqual(initialList.AsList().Count, actual.Count);
+
+            var updatedList = (RealmValue)new List<RealmValue>{4, 5, 6};
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = updatedList;
+            });
+
+            actual = rvo.RealmValueProperty.AsList();
+            Assert.AreEqual(updatedList.AsList().Count, actual.Count);
+        }
+
+        [Test]
         public void List_WhenManaged_CanBeModified()
         {
             var listVal = new List<RealmValue> { 1, "string", true };
