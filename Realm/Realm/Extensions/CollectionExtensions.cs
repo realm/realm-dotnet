@@ -569,11 +569,6 @@ public static class CollectionExtensions
     public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
-    internal static bool DictionaryEquals(this IDictionary<string, RealmValue> first, IDictionary<string, RealmValue> second)
-    {
-        return first.Count == second.Count && first.All(fkv => second.TryGetValue(fkv.Key, out RealmValue sVal) && fkv.Value == sVal);
-    }
-
     private static bool ShouldWaitForSync(WaitForSyncMode mode, Subscription? oldSub, Subscription newSub)
     {
         switch (mode)
