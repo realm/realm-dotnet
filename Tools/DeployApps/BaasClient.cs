@@ -560,6 +560,7 @@ namespace Baas
             {
                 development_mode_enabled = true,
             });
+
             // Retrieve feature flags
             // var features = await GetPrivateAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/features");
             // ENABLE LEGACY MIXED SUPPORT
@@ -568,7 +569,6 @@ namespace Baas
             // DISABLE LEGACY MIXED SUPPORT - Default on latest test server - https://github.com/10gen/baas/blob/master/etc/configs/test_config.json#L303
             // await PostPrivateAsync<BsonDocument>($"features/legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "disable"} );
             // await PostPrivateAsync<BsonDocument>($"features/bypass_legacy_mixed_type", new { app_ids = new []{$"{appId}"}, action = "enable"} );
-
             return (app, mongoServiceId);
         }
 
@@ -712,12 +712,15 @@ namespace Baas
         }
 
         private Task<T?> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
+
         private Task<T?> PostPrivateAsync<T>(string relativePath, object obj) => SendPrivateAsync<T>(HttpMethod.Post, relativePath, obj);
 
         private Task<T?> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
+
         private Task<T?> GetPrivateAsync<T>(string relativePath) => SendPrivateAsync<T>(HttpMethod.Get, relativePath);
 
         private Task<T?> PutAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Put, relativePath, obj);
+
         private Task<T?> PutPrivateAsync<T>(string relativePath, object obj) => SendPrivateAsync<T>(HttpMethod.Put, relativePath, obj);
 
         private Task<T?> PatchAsync<T>(string relativePath, object obj) => SendAsync<T>(new HttpMethod("PATCH"), relativePath, obj);
@@ -752,6 +755,7 @@ namespace Baas
 
             return default;
         }
+
         private async Task<T?> SendPrivateAsync<T>(HttpMethod method, string relativePath, object? payload = null)
         {
             using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));

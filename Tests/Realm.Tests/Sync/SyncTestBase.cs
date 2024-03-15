@@ -239,7 +239,6 @@ namespace Realms.Tests.Sync
                 typeof(SyncAllTypesObject),
                 typeof(ObjectWithPartitionValue),
                 typeof(RemappedTypeObject),
-                typeof(RealmValueObject),
             };
 
             if (config is FlexibleSyncConfiguration)
