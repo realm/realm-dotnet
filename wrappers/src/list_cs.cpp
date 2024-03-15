@@ -94,9 +94,11 @@ REALM_EXPORT void* list_set_collection(List& list, size_t list_ndx, realm_value_
         switch (type)
         {
         case realm::binding::realm_value_type::RLM_TYPE_LIST:
+            list.set_any(list_ndx, Mixed{});
             list.set_collection(list_ndx, CollectionType::List);
             return new List(list.get_list(list_ndx));
         case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+            list.set_any(list_ndx, Mixed{});
             list.set_collection(list_ndx, CollectionType::Dictionary);
             return new object_store::Dictionary(list.get_dictionary(list_ndx));
         default:

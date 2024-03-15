@@ -84,9 +84,11 @@ extern "C" {
             switch (type)
             {
             case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                dictionary.insert(dict_key, Mixed{});
                 dictionary.insert_collection(dict_key, CollectionType::List);
                 return new List(dictionary.get_list(dict_key));
             case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                dictionary.insert(dict_key, Mixed{});
                 dictionary.insert_collection(dict_key, CollectionType::Dictionary);
                 return new object_store::Dictionary(dictionary.get_dictionary(dict_key));
             default:
