@@ -26,6 +26,7 @@ using Baas;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Helpers;
@@ -787,11 +788,6 @@ namespace Realms.Tests.Sync
         [Test]
         public void DictionaryManipulations()
         {
-            Logger.LogLevel = LogLevel.All;
-            Logger.Default = Logger.File("sync.log");
-
-            // equalsOverride ??= (a, b) => a?.Equals(b) == true;
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var realm1 = await GetFLXIntegrationRealmAsync();
@@ -807,59 +803,115 @@ namespace Realms.Tests.Sync
 
                 var obj1 = realm1.Write(() =>
                 {
-                    Logger.Default.Log(LogLevel.Debug, $"Writing: initial object");
                     var o = realm1.Add(new SyncAllTypesObject());
                     o.RealmValueProperty = new Dictionary<string, RealmValue>();
                     return o;
                 });
-                Logger.Default.Log(LogLevel.Debug, $"Wrote: initial object");
 
                 await WaitForObjectAsync(obj1, realm2);
                 foreach (var (index, realmTestValue) in RealmValueCollectionTestValues.Select((value, index) => (index, value)))
                 {
-                    realm1.Write(() =>
-                    {
-                        Logger.Default.Log(LogLevel.Debug, $"Writing: [{index}] = {realmTestValue}");
-                        obj1.RealmValueProperty.AsDictionary()[$"{index}"] = realmTestValue;
-                    });
-                    Logger.Default.Log(LogLevel.Debug, $"Wrote: [{index}] = {realmTestValue}");
+                    realm1.Write(() => { obj1.RealmValueProperty.AsDictionary()[$"{index}"] = realmTestValue; });
 
                     await realm1.SyncSession.WaitForUploadAsync();
-                    Logger.Default.Log(LogLevel.Debug, $"Awaiting: [{index}] = {realmTestValue}");
                     await realm2.SyncSession.WaitForDownloadAsync();
                     var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsDictionary();
                     var actualValues = obj2.RealmValueProperty.AsDictionary();
-                    Assert.AreEqual(expectedValues.Count, actualValues.Count, "Value: {0}", expectedValues);
-                    // FIXME Equals does not test elementwise
-                    // foreach (var valueTuple in expectedValues.Zip(actualValues, (x, y) => (x, y)))
-                    // {
-                    //     Assert.AreEqual(valueTuple.x, valueTuple.y);
-                    // }
+                    Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
                 }
 
                 foreach (var (index, realmTestvalue) in RealmValueCollectionTestValues.Select((value, index) => (index, value)))
                 {
-                    realm1.Write(() =>
-                    {
-                        obj1.RealmValueProperty.AsDictionary().Remove($"{index}");
-                    });
-
+                    realm1.Write(() => { obj1.RealmValueProperty.AsDictionary().Remove($"{index}"); });
                     await realm1.SyncSession.WaitForUploadAsync();
-                    Logger.Default.Log(LogLevel.Debug, $"Awaiting: remove[{index}]");
-                    // await Task.Delay(1000);
-                    await realm2.SyncSession.WaitForDownloadAsync();
 
+                    await realm2.SyncSession.WaitForDownloadAsync();
                     var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsDictionary();
                     var actualValues = obj2.RealmValueProperty.AsDictionary();
-                    Assert.AreEqual(expectedValues.Count, actualValues.Count);
-                    // FIXME Equals does not test elementwise
-                    Assert.False(obj2.RealmValueProperty.AsDictionary().ContainsKey($"{index}"));
+                    Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
                 }
             });
         }
 
+        [Test]
+        public void CollectionMerge()
+        {
+            Logger.LogLevel = LogLevel.All;
+            Logger.Default = Logger.File("sync.log");
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm1 = await GetFLXIntegrationRealmAsync();
+                realm1.Subscriptions.Update(() =>
+                {
+                    realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>());
+                });
+                var realm2 = await GetFLXIntegrationRealmAsync();
+                realm2.Subscriptions.Update(() =>
+                {
+                    realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>());
+                });
+
+                var obj1 = realm1.Write(() =>
+                {
+                    var o = realm1.Add(new SyncAllTypesObject());
+                    o.RealmValueProperty = new Dictionary<string, RealmValue>
+                    {
+                        { "list", new List<RealmValue> { 1, 2, 3 } },
+                        { "dictionary", new Dictionary<string, RealmValue>() { { "key1", 1 } } },
+                    };
+                    return o;
+                });
+
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
+
+                realm1.SyncSession.Stop();
+                realm2.SyncSession.Stop();
+
+                realm1.Write(() =>
+                {
+                    var list = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
+                    list.RemoveAt(0);
+                    list.Add(4);
+                    var dictionary = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
+                    dictionary.Remove("key1");
+                    dictionary["key2"] = 2;
+                });
+                realm2.Write(() =>
+                {
+                    var list = obj2.RealmValueProperty.AsDictionary()["list"].AsList();
+                    list.RemoveAt(0);
+                    list.Add(5);
+                    var dictionary = obj2.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
+                    dictionary.Remove("key1");
+                    dictionary["key3"] = 3;
+                });
+
+                realm1.SyncSession.Start();
+                realm2.SyncSession.Start();
+
+                await realm1.SyncSession.WaitForUploadAsync();
+                await realm2.SyncSession.WaitForUploadAsync();
+                await realm1.SyncSession.WaitForDownloadAsync();
+                await realm2.SyncSession.WaitForDownloadAsync();
+
+                var list1 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
+                var dictionary1 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
+                var list2 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
+                var dictionary2 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
+
+                Assert.That(list1, Contains.Value(2));
+                Assert.That(list1, Contains.Value(3));
+                Assert.That(list1, Contains.Value(4));
+                Assert.That(list1, Contains.Value(5));
+                Assert.That(list1, Is.EqualTo(list2).Using(_rvComparer));
+
+                Assert.That(dictionary1, Contains.Key("key2"));
+                Assert.That(dictionary1, Contains.Key("key3"));
+                Assert.That(dictionary1, Is.EqualTo(dictionary2).Using(_rvComparer));
+            });
+        }
 
         private static RealmValue Clone(RealmValue original)
         {
