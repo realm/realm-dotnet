@@ -836,6 +836,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        [Ignore("Crashes until https://github.com/realm/realm-core/issues/7488 is fixed")]
         public void CollectionMerge()
         {
             Logger.LogLevel = LogLevel.All;
