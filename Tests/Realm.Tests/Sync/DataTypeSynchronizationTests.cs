@@ -901,12 +901,14 @@ namespace Realms.Tests.Sync
                 var list2 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
                 var dictionary2 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
 
-                Assert.That(list1, Contains.Value(2));
-                Assert.That(list1, Contains.Value(3));
-                Assert.That(list1, Contains.Value(4));
-                Assert.That(list1, Contains.Value(5));
+                CollectionAssert.DoesNotContain(list1, (RealmValue)1);
+                CollectionAssert.Contains(list1, (RealmValue)2);
+                CollectionAssert.Contains(list1, (RealmValue)3);
+                CollectionAssert.Contains(list1, (RealmValue)4);
+                CollectionAssert.Contains(list1, (RealmValue)5);
                 Assert.That(list1, Is.EqualTo(list2).Using(_rvComparer));
 
+                Assert.That(dictionary1, new NotConstraint(Contains.Key("key1")));
                 Assert.That(dictionary1, Contains.Key("key2"));
                 Assert.That(dictionary1, Contains.Key("key3"));
                 Assert.That(dictionary1, Is.EqualTo(dictionary2).Using(_rvComparer));
