@@ -45,7 +45,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.publish-prerelease)"
+    if: #@ ignoreSkippedJobsCondition
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
