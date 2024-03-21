@@ -184,13 +184,19 @@ extern "C" {
             switch (type)
             {
             case realm::binding::realm_value_type::RLM_TYPE_LIST:
-                object.get_obj().set_null(prop.column_key);
+            {
                 object.get_obj().set_collection(prop.column_key, CollectionType::List);
-                return new List(object.realm(), object.get_obj(), prop.column_key);
+                auto innerList = new List(object.realm(), object.get_obj(), prop.column_key);
+                innerList->remove_all();
+                return innerList;
+            }
             case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
-                object.get_obj().set_null(prop.column_key);
+            {
                 object.get_obj().set_collection(prop.column_key, CollectionType::Dictionary);
-                return new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+                auto innerDict = new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key);
+                innerDict->remove_all();
+                return innerDict;
+            }
             default:
                 REALM_TERMINATE("Invalid collection type");
             }
