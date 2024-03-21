@@ -254,6 +254,87 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void List_AfterCreation_CanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialList = (RealmValue)new List<RealmValue> { 1, 2, 3 };
+            var rvo = new RealmValueObject { RealmValueProperty = initialList };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualList = rvo.RealmValueProperty;
+            Assert.That(initialList, Is.EqualTo(actualList).Using(_rvComparer));
+
+            var updatedList = (RealmValue)new List<RealmValue> { 4, 5 };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = updatedList;
+            });
+
+            actualList = rvo.RealmValueProperty;
+            Assert.That(updatedList, Is.EqualTo(actualList).Using(_rvComparer));
+        }
+
+        [Test]
+        public void List_AfterCreation_EmbeddedListCanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialList = (RealmValue)new List<RealmValue> { new List<RealmValue> { 1, 2, 3 } };
+            var rvo = new RealmValueObject { RealmValueProperty = new List<RealmValue> { initialList } };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualEmbeddedList = rvo.RealmValueProperty.AsList()[0];
+            Assert.That(initialList, Is.EqualTo(actualEmbeddedList).Using(_rvComparer));
+
+            var updatedList = (RealmValue)new List<RealmValue> { 4, 5, 6 };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[0] = updatedList;
+            });
+
+            actualEmbeddedList = rvo.RealmValueProperty.AsList()[0];
+            Assert.That(updatedList, Is.EqualTo(actualEmbeddedList).Using(_rvComparer));
+        }
+
+        [Test]
+        public void List_AfterCreation_EmbeddedDictionaryCanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialDictionary = (RealmValue)new Dictionary<string, RealmValue> { { "key1", 1 } };
+            var rvo = new RealmValueObject { RealmValueProperty = new List<RealmValue> { initialDictionary } };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualDictionary = rvo.RealmValueProperty.AsList()[0];
+            Assert.That(initialDictionary, Is.EqualTo(actualDictionary).Using(_rvComparer));
+
+            var updatedDictionary = (RealmValue)new Dictionary<string, RealmValue> { { "key2", 2 } };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsList()[0] = updatedDictionary;
+            });
+
+            actualDictionary = rvo.RealmValueProperty.AsList()[0];
+            Assert.That(updatedDictionary, Is.EqualTo(actualDictionary).Using(_rvComparer));
+        }
+
+        [Test]
         public void List_WhenManaged_CanBeModified()
         {
             var listVal = new List<RealmValue> { 1, "string", true };
@@ -451,7 +532,6 @@ namespace Realms.Tests.Database
 
             callbacks.Clear();
         }
-        
         #endregion
 
         #region Dictionary
@@ -649,6 +729,93 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(rvo.RealmValueProperty == newStringVal);
+        }
+
+        [Test]
+        public void Dictionary_AfterCreation_CanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialDictionary = (RealmValue)new Dictionary<string, RealmValue> { { "key1", 1 } };
+            var rvo = new RealmValueObject { RealmValueProperty = initialDictionary };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualDictionary = rvo.RealmValueProperty;
+            Assert.That(initialDictionary, Is.EqualTo(actualDictionary).Using(_rvComparer));
+
+            var updatedDictionary = (RealmValue)new Dictionary<string, RealmValue> { { "key2", 2 } };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty = updatedDictionary;
+            });
+
+            actualDictionary = rvo.RealmValueProperty;
+            Assert.That(updatedDictionary, Is.EqualTo(actualDictionary).Using(_rvComparer));
+        }
+
+        [Test]
+        public void Dictionary_AfterCreation_EmbeddedListCanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var initialList = new List<RealmValue> { new List<RealmValue> { 1, 2, 3 } };
+            var rvo = new RealmValueObject
+            {
+                RealmValueProperty = new Dictionary<string, RealmValue> { { "key", initialList } }
+            };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualEmbeddedList = rvo.RealmValueProperty.AsDictionary()["key"].AsList();
+            Assert.That(initialList, Is.EqualTo(actualEmbeddedList).Using(_rvComparer));
+
+            var updatedList = (RealmValue)new List<RealmValue> { 4, 5, 6 };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["key"] = updatedList;
+            });
+
+            actualEmbeddedList = rvo.RealmValueProperty.AsDictionary()["key"].AsList();
+            Assert.AreEqual(updatedList.AsList().Count, actualEmbeddedList.Count);
+        }
+
+        [Test]
+        public void Dict_AfterCreation_EmbeddedDictionaryCanBeReassigned([Values(true, false)] bool isManaged)
+        {
+            var embeddedDictionary = new Dictionary<string, RealmValue> { { "key1", 1 } };
+            var rvo = new RealmValueObject
+            {
+                RealmValueProperty = new Dictionary<string, RealmValue> { { "key", embeddedDictionary } }
+            };
+
+            if (isManaged)
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(rvo);
+                });
+            }
+
+            var actualEmbedded = rvo.RealmValueProperty.AsDictionary()["key"].AsDictionary();
+            Assert.That(embeddedDictionary, Is.EqualTo(actualEmbedded).Using(_rvComparer));
+
+            var updatedDictionary = new Dictionary<string, RealmValue> { { "key2", 2 } };
+            _realm.Write(() =>
+            {
+                rvo.RealmValueProperty.AsDictionary()["key"] = updatedDictionary;
+            });
+
+            actualEmbedded = rvo.RealmValueProperty.AsDictionary()["key"].AsDictionary();
+            Assert.That(updatedDictionary, Is.EqualTo(actualEmbedded).Using(_rvComparer));
         }
 
         [Test]
@@ -958,7 +1125,7 @@ namespace Realms.Tests.Database
 
         #endregion
 
-        private class RealmValueComparer : IEqualityComparer<RealmValue>
+        internal class RealmValueComparer : IEqualityComparer<RealmValue>
         {
             public bool Equals(RealmValue x, RealmValue y)
             {
