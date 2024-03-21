@@ -11,7 +11,7 @@ jobs:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@v3.1.4
+      uses: dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c
       with:
         workflow: pr.yml
         commit: ${{ github.sha }}
