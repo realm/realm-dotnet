@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchPackageArtifacts", "nugetPackages", "uploadPackagesToSleet")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "runWovenClassesTests", "runSourceGenerationTests", "buildUnity", "testUnity", "ignoreSkippedJobsCondition")
+#@ load("common.lib.yml", "checkoutCode", "fetchPackageArtifacts", "nugetPackages")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "runWovenClassesTests", "runSourceGenerationTests", "buildUnity", "testUnity")
 ---
 name: PR Build
 "on":
@@ -40,16 +40,6 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
-  publish-packages-to-sleet:
-    runs-on: ubuntu-latest
-    name: Publish package to S3
-    needs:
-    - build-packages
-    if: #@ ignoreSkippedJobsCondition
-    steps:
-    - #@ template.replace(checkoutCode(False, False))
-    - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
-    - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(testUnity('["Mono-Net4"]', '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'))
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
