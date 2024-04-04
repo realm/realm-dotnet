@@ -287,10 +287,10 @@ namespace Realms.Tests.Sync
 
         public static readonly object[] RealmTestValuesWithCollections = RealmTestPrimitiveValues.Concat(new[]
         {
-            new object[] { 12.5f, 15d },
+            new object[] { (RealmValue)12.5f, (RealmValue)15d },
             new object[]
             {
-                new List<RealmValue>
+                (RealmValue)new List<RealmValue>
                 {
                     RealmValue.Null,
                     1,
@@ -312,11 +312,11 @@ namespace Realms.Tests.Sync
                         { "key4", "string" },
                     }
                 },
-                15d
+                (RealmValue)15d
             },
             new object[]
             {
-                new Dictionary<string, RealmValue>
+                (RealmValue)new Dictionary<string, RealmValue>
                 {
                     { "key1", RealmValue.Null },
                     { "key2", 1 },
@@ -340,7 +340,7 @@ namespace Realms.Tests.Sync
                             }
                     },
                 },
-                15d
+                (RealmValue)15d
             },
         }).ToArray();
 
