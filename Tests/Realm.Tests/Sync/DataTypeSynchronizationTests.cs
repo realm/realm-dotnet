@@ -246,7 +246,7 @@ namespace Realms.Tests.Sync
         public void Dict_Binary() => TestDictionaryCore(o => o.ByteArrayDict, TestHelpers.GetBytes(10), TestHelpers.GetBytes(15), (a, b) => a.SequenceEqual(b));
 
         [Test]
-        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a!.SequenceEqual(b!));
+        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10));
 
         #endregion
 
@@ -275,7 +275,7 @@ namespace Realms.Tests.Sync
 
         #region RealmValue
 
-        public static readonly object[] RealmTestPrimitiveValues = new[]
+        public static readonly object[] RealmTestPrimitiveValues =
         {
             new object[] { (RealmValue)"abc", (RealmValue)10 },
             new object[] { (RealmValue)new ObjectId("5f63e882536de46d71877979"), (RealmValue)new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}") },
@@ -285,11 +285,12 @@ namespace Realms.Tests.Sync
             new object[] { (RealmValue)12.5f, (RealmValue)15d },
         };
 
-        public static readonly object[] RealmTestValuesWithCollections = RealmTestPrimitiveValues.Concat( new[]
+        public static readonly object[] RealmTestValuesWithCollections = RealmTestPrimitiveValues.Concat(new[]
         {
-            new object[] { (RealmValue)12.5f, (RealmValue)15d }, new object[]
+            new object[] { 12.5f, 15d },
+            new object[]
             {
-                (RealmValue)new List<RealmValue>
+                new List<RealmValue>
                 {
                     RealmValue.Null,
                     1,
@@ -302,15 +303,20 @@ namespace Realms.Tests.Sync
                     3m,
                     new ObjectId("5f63e882536de46d71877979"),
                     Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
-                    // new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                    // innerList,
-                    // innerDict,
+                    new List<RealmValue> { 1, true, "string" },
+                    new Dictionary<string, RealmValue>
+                    {
+                        { "key1", RealmValue.Null },
+                        { "key2", 1 },
+                        { "key3", true },
+                        { "key4", "string" },
+                    }
                 },
-                (RealmValue)15d
+                15d
             },
             new object[]
             {
-                (RealmValue)new Dictionary<string, RealmValue>
+                new Dictionary<string, RealmValue>
                 {
                     { "key1", RealmValue.Null },
                     { "key2", 1 },
@@ -323,11 +329,18 @@ namespace Realms.Tests.Sync
                     { "key9", 3m },
                     { "key10", new ObjectId("5f63e882536de46d71877979") },
                     { "key11", Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31") },
-                    // new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                    // innerList,
-                    // innerDict,
+                    { "key12", new List<RealmValue> { 1, true, "string" } },
+                    {
+                        "key13", new Dictionary<string, RealmValue>
+                            {
+                                { "key1", RealmValue.Null },
+                                { "key2", 1 },
+                                { "key3", true },
+                                { "key4", "string" },
+                            }
+                    },
                 },
-                (RealmValue)15d
+                15d
             },
         }).ToArray();
 
@@ -345,8 +358,7 @@ namespace Realms.Tests.Sync
 
         [TestCaseSource(nameof(RealmTestValuesWithCollections))]
         public void Property_RealmValue(RealmValue first, RealmValue second) => TestPropertyCore(
-            o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second),
-            equalsOverride: RealmValueEquals);
+            o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second));
 
         #endregion
 
@@ -537,7 +549,7 @@ namespace Realms.Tests.Sync
         }
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter,
-            T item1, T item2, Func<T, T, bool>? equalsOverride = null)
+            T item1, T item2)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -603,27 +615,31 @@ namespace Realms.Tests.Sync
                     realm1.Subscriptions.Add(realm1.All<IntPropertyObject>());
                 });
 
+                var parent = new SyncAllTypesObject();
                 var child = new IntPropertyObject();
-                var valuesValue = new List<RealmValue>()
+
+                var valuesValue = new List<RealmValue>
                 {
                     1,
-                    (RealmValue)"Realm",
-                    (RealmValue)child,
-                    (RealmValue)new List<RealmValue>() { 1, "Realm", child },
-                    (RealmValue)new Dictionary<string, RealmValue>()
+                    "Realm",
+                    child,
+                    new List<RealmValue> { 1, "Realm", child },
+                    new Dictionary<string, RealmValue>
                     {
                         { "key1", 1 }, { "key2", "Realm" }, { "key3", child },
                     }
                 };
 
-                var (parentId, childId) = realm1.Write(() =>
+                realm1.Write(() =>
                 {
-                    var parent = realm1.Add(new SyncAllTypesObject());
+                    realm1.Add(parent);
                     parent.StringProperty = "PARENT";
                     parent.ObjectProperty = child;
                     parent.RealmValueProperty = valuesValue;
-                    return (parent.Id, child.Id);
                 });
+
+                var parentId = parent.Id;
+                var childId = child.Id;
 
                 await realm1.SyncSession.WaitForUploadAsync();
                 realm1.Dispose();
@@ -662,16 +678,16 @@ namespace Realms.Tests.Sync
 
         public static readonly IList<RealmValue> RealmValueCollectionTestValues = new List<RealmValue>()
         {
-            (RealmValue)"abc",
-            (RealmValue)new ObjectId("5f63e882536de46d71877979"),
-            (RealmValue)new byte[] { 0, 1, 2 },
-            (RealmValue)DateTimeOffset.FromUnixTimeSeconds(1616137641),
-            (RealmValue)true,
+            "abc",
+            new ObjectId("5f63e882536de46d71877979"),
+            new byte[] { 0, 1, 2 },
+            DateTimeOffset.FromUnixTimeSeconds(1616137641),
+            true,
             RealmValue.Null,
-            (RealmValue)5m,
-            (RealmValue)12.5f,
-            (RealmValue)15d,
-            (RealmValue)new List<RealmValue>
+            5m,
+            12.5f,
+            15d,
+            new List<RealmValue>
             {
                 RealmValue.Null,
                 1,
@@ -684,11 +700,16 @@ namespace Realms.Tests.Sync
                 3m,
                 new ObjectId("5f63e882536de46d71877979"),
                 Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
-                // new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                // innerList,
-                // innerDict,
+                new List<RealmValue> { 1, true, "string" },
+                new Dictionary<string, RealmValue>
+                {
+                    { "key1", RealmValue.Null },
+                    { "key2", 1 },
+                    { "key3", true },
+                    { "key4", "string" },
+                }
             },
-            (RealmValue)new Dictionary<string, RealmValue>
+            new Dictionary<string, RealmValue>
             {
                 { "key1", RealmValue.Null },
                 { "key2", 1 },
@@ -701,9 +722,16 @@ namespace Realms.Tests.Sync
                 { "key9", 3m },
                 { "key10", new ObjectId("5f63e882536de46d71877979") },
                 { "key11", Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31") },
-                // new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                // innerList,
-                // innerDict,
+                { "key12", new List<RealmValue> { 1, true, "string" } },
+                {
+                    "key13", new Dictionary<string, RealmValue>
+                    {
+                        { "key1", RealmValue.Null },
+                        { "key2", 1 },
+                        { "key3", true },
+                        { "key4", "string" },
+                    }
+                },
             },
         };
 
@@ -726,7 +754,7 @@ namespace Realms.Tests.Sync
                     return o;
                 });
 
-                await WaitForObjectAsync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 // Append elements one by one and verify that they are synced
                 foreach (var realmTestValue in RealmValueCollectionTestValues)
@@ -738,14 +766,13 @@ namespace Realms.Tests.Sync
                     await realm1.SyncSession.WaitForUploadAsync();
 
                     await realm2.SyncSession.WaitForDownloadAsync();
-                    var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsList();
                     var actualValues = obj2.RealmValueProperty.AsList();
                     Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
                 }
 
                 // Remove elements one by one and verify that changes are synced
-                foreach (var realmTestValue in RealmValueCollectionTestValues)
+                for (int index = 0; index < RealmValueCollectionTestValues.Count; index++)
                 {
                     realm1.Write(() =>
                     {
@@ -754,7 +781,6 @@ namespace Realms.Tests.Sync
                     await realm1.SyncSession.WaitForUploadAsync();
 
                     await realm2.SyncSession.WaitForDownloadAsync();
-                    var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsList();
                     var actualValues = obj2.RealmValueProperty.AsList();
                     Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
@@ -777,7 +803,6 @@ namespace Realms.Tests.Sync
                     await realm1.SyncSession.WaitForUploadAsync();
 
                     await realm2.SyncSession.WaitForDownloadAsync();
-                    var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsList();
                     var actualValues = obj2.RealmValueProperty.AsList();
                     Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
@@ -795,6 +820,7 @@ namespace Realms.Tests.Sync
                 {
                     realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>());
                 });
+
                 var realm2 = await GetFLXIntegrationRealmAsync();
                 realm2.Subscriptions.Update(() =>
                 {
@@ -808,26 +834,25 @@ namespace Realms.Tests.Sync
                     return o;
                 });
 
-                await WaitForObjectAsync(obj1, realm2);
-                foreach (var (index, realmTestValue) in RealmValueCollectionTestValues.Select((value, index) => (index, value)))
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
+
+                for (int index = 0; index < RealmTestValuesWithCollections.Length; index++)
                 {
+                    var realmTestValue = RealmValueCollectionTestValues[index];
                     realm1.Write(() => { obj1.RealmValueProperty.AsDictionary()[$"{index}"] = realmTestValue; });
 
                     await realm1.SyncSession.WaitForUploadAsync();
                     await realm2.SyncSession.WaitForDownloadAsync();
-                    var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsDictionary();
                     var actualValues = obj2.RealmValueProperty.AsDictionary();
                     Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
                 }
 
-                foreach (var (index, realmTestvalue) in RealmValueCollectionTestValues.Select((value, index) => (index, value)))
+                for (int index = 0; index < RealmTestValuesWithCollections.Length; index++)
                 {
                     realm1.Write(() => { obj1.RealmValueProperty.AsDictionary().Remove($"{index}"); });
                     await realm1.SyncSession.WaitForUploadAsync();
-
                     await realm2.SyncSession.WaitForDownloadAsync();
-                    var obj2 = await WaitForObjectAsync(obj1, realm2);
                     var expectedValues = obj1.RealmValueProperty.AsDictionary();
                     var actualValues = obj2.RealmValueProperty.AsDictionary();
                     Assert.That(expectedValues, Is.EqualTo(actualValues).Using(_rvComparer));
@@ -839,8 +864,6 @@ namespace Realms.Tests.Sync
         [Ignore("Crashes until https://github.com/realm/realm-core/issues/7488 is fixed")]
         public void CollectionMerge()
         {
-            Logger.LogLevel = LogLevel.All;
-            Logger.Default = Logger.File("sync.log");
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var realm1 = await GetFLXIntegrationRealmAsync();
@@ -902,11 +925,11 @@ namespace Realms.Tests.Sync
                 var list2 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
                 var dictionary2 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
 
-                CollectionAssert.DoesNotContain(list1, (RealmValue)1);
-                CollectionAssert.Contains(list1, (RealmValue)2);
-                CollectionAssert.Contains(list1, (RealmValue)3);
-                CollectionAssert.Contains(list1, (RealmValue)4);
-                CollectionAssert.Contains(list1, (RealmValue)5);
+                Assert.That(list1, new NotConstraint(Contains.Item((RealmValue)1)));
+                Assert.That(list1, Contains.Item((RealmValue)2));
+                Assert.That(list1, Contains.Item((RealmValue)3));
+                Assert.That(list1, Contains.Item((RealmValue)4));
+                Assert.That(list1, Contains.Item((RealmValue)5));
                 Assert.That(list1, Is.EqualTo(list2).Using(_rvComparer));
 
                 Assert.That(dictionary1, new NotConstraint(Contains.Key("key1")));
