@@ -658,7 +658,7 @@ namespace Realms.Tests.Sync
                 var syncedChild =
                     await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<IntPropertyObject>(childId),
                         o => o != null);
-                var syncedValues = syncedParent.RealmValueProperty.AsList();
+                var syncedValues = syncedParent!.RealmValueProperty.AsList();
                 Assert.AreEqual(valuesValue[0], syncedValues[0]);
                 Assert.AreEqual(valuesValue[1], syncedValues[1]);
                 Assert.AreEqual(childId, syncedValues[2].AsRealmObject<IntPropertyObject>().Id);
@@ -734,7 +734,6 @@ namespace Realms.Tests.Sync
                 },
             },
         };
-
 
         [Test]
         public void ListManipulations()
