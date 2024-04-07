@@ -43,7 +43,7 @@ REALM_EXPORT void realm_asyncopentask_cancel(SharedAsyncOpenTask& task, NativeEx
 REALM_EXPORT uint64_t realm_asyncopentask_register_progress_notifier(const SharedAsyncOpenTask& task, void* managed_state, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return task->register_download_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable) {
+        return task->register_download_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable, double progress_estimate) {
             s_progress_callback(managed_state, transferred, transferable);
         });
     });

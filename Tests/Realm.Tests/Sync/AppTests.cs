@@ -391,5 +391,12 @@ namespace Realms.Tests.Sync
             config.HttpClientHandler = new HttpClientHandler();
             config.HttpClientHandler = null;
         }
+
+        [Test]
+        public void RealmConfigurationBaseUrl_ReturnsExpectedValue()
+        {
+            var config = new AppConfiguration("abc");
+            Assert.That(config.BaseUri, Is.EqualTo(new Uri("https://services.cloud.mongodb.com")));
+        }
     }
 }
