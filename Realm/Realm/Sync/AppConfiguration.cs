@@ -57,11 +57,11 @@ namespace Realms.Sync
         /// Gets or sets the base url for this Realm application.
         /// </summary>
         /// <remarks>
-        /// This only needs to be set if for some reason your application isn't hosted on realm.mongodb.com. This can be the case if you're
-        /// testing locally or are using a preproduction environment.
+        /// This only needs to be set if for some reason your application isn't hosted on services.cloud.mongodb.com.
+        /// This is typically the case when synchronizing with an edge server.
         /// </remarks>
         /// <value>The app's base url.</value>
-        public Uri BaseUri { get; set; } = new Uri("https://realm.mongodb.com");
+        public Uri BaseUri { get; set; } = AppHandle.DefaultBaseUri;
 
         /// <summary>
         /// Gets or sets the local app's name.
