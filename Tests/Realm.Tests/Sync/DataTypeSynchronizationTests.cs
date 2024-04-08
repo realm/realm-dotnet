@@ -22,17 +22,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Baas;
 using MongoDB.Bson;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Helpers;
-using Realms.Logging;
-using Realms.Sync;
-using Realms.Sync.Exceptions;
 using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
