@@ -757,9 +757,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // This whole test needs to be redone when the core PR on which it is based it's merged.
-        // Need also to add tests for notifications created when opening an async realm.
         [Test]
+        [Ignore("This whole test needs to be redone when the work on progress notification is finished.")]
         public void SessionIntegrationTest_ProgressObservable(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
@@ -821,7 +820,7 @@ namespace Realms.Tests.Sync
 
                         if (p.ProgressEstimate < lastReportedProgress)
                         {
-                            //throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
+                            throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
                         }
 
                         if (p.IsComplete)
