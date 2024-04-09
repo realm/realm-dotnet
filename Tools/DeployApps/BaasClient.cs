@@ -555,7 +555,6 @@ namespace Baas
             {
                 development_mode_enabled = true,
             });
-
             return (app, mongoServiceId);
         }
 
