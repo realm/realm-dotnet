@@ -4,9 +4,9 @@
 
 ### Breaking Changes
 * Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
-* Support for upgrading from Realm files produced by RealmCore v5.23.9 (Realm .NET v5.0.1) or earlier is no longer supported. (Core 14.0.0-beta.0)
-* `String` and `byte[]` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a `RealmValue` property, as now only strings will be returned. If searching for binary data is desired, then that type must be specified by the constant. In RQL (`.Filter()`) the new way to specify a binary constant is to use `RealmValueProp = bin('xyz')` or `RealmValueProp = binary('xyz')`. (Core 14.0.0-beta.0)
-* Sorting order of strings has changed to use standard unicode codepoint order instead of grouping similar english letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". (Core 14.0.0-beta.0)
+* Support for upgrading from Realm files produced by RealmCore v5.23.9 (Realm .NET v5.0.1) or earlier is no longer supported. (Core 14.0.0)
+* `String` and `byte[]` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a `RealmValue` property, as now only strings will be returned. If searching for binary data is desired, then that type must be specified by the constant. In RQL (`.Filter()`) the new way to specify a binary constant is to use `RealmValueProp = bin('xyz')` or `RealmValueProp = binary('xyz')`. (Core 14.0.0)
+* Sorting order of strings has changed to use standard unicode codepoint order instead of grouping similar english letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". (Core 14.0.0)
 * In RQL (`Filter()`), if you want to query using `@type` operation, you must use `objectlink` to match links to objects. `object` is reserved for dictionary types. (Core 14.0.0)
 * Opening realm with file format 23 or lower (Realm .NET versions earlier than 12.0.0) in read-only mode will crash. (Core 14.0.0)
 
@@ -55,7 +55,7 @@
 * Added the `MongoClient.GetCollection<T>` method to get a collection of documents from MongoDB that can be deserialized in Realm objects. This methods works the same as `MongoClient.GetDatabase(dbName).GetCollection(collectionName)`, but the database name and collection name are automatically derived from the Realm object class.  [#3414](https://github.com/realm/realm-dotnet/pull/3414)
 * Improved performance of RQL (`.Filter()`) queries on a non-linked string property using: >, >=, <, <=, operators and fixed behaviour that a null string should be evaulated as less than everything, previously nulls were not matched. (Core 13.27.0)
 * Updated bundled OpenSSL version to 3.2.0. (Core 13.27.0)
-* Storage of Decimal128 properties has been optimised so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. (Core 14.0.0-beta.0)
+* Storage of Decimal128 properties has been optimised so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. (Core 14.0.0)
 * Add support for collection indexes in RQL (`Filter()`) queries.
   For example:
   ```csharp
@@ -78,6 +78,10 @@
   ```
   (Core 14.0.0)
 * Added support for indexed `RealmValue` properties. (PR [#3544](https://github.com/realm/realm-dotnet/pull/3544))
+* Improve performance of object notifiers with complex schemas and very simple changes to process by as much as 20%. (Core 14.2.0)
+* Improve performance with very large number of notifiers as much as 75%. (Core 14.2.0)
+* Improve file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. (Core 14.4.0)
+* The default base url in `AppConfiguration` has been updated to point to `services.cloud.mongodb.com`. See https://www.mongodb.com/docs/atlas/app-services/domain-migration/ for more information. (Issue [#3551](https://github.com/realm/realm-dotnet/issues/3551))
 
 ### Fixed
 * Fixed RQL (`.Filter()`) queries like `indexed_property == NONE {x}` which mistakenly matched on only x instead of not x. This only applies when an indexed property with equality (==, or IN) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. (Core 13.27.0)
@@ -86,17 +90,23 @@
 * Fixed a crash with Assertion `failed: m_initiated` during sync session startup. (Core 13.27.0)
 * Fixed a TSAN violation where the user thread could race to read m_finalized with the sync event loop. (Core 13.27.0)
 * Fix a minor race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. (Core 13.27.0)
-* Boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared is now also raised for `IDictionary`, aligning it to `ISet` and `IList`. (Core 14.0.0-beta.0)
-* Fixed equality queries on `RealmValue` properties with an index. (Core 14.0.0-beta.0)
+* Boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared is now also raised for `IDictionary`, aligning it to `ISet` and `IList`. (Core 14.0.0)
+* Fixed equality queries on `RealmValue` properties with an index. (Core 14.0.0)
 * Fixed a crash that would happen when more than 8388606 links were pointing to a specific object.
-* Fixed wrong results when querying for `NULL` value in `IDictionary`. (Core 14.0.0-beta.0)
-* A Realm generated on a non-apple ARM 64 device and copied to another platform (and vice-versa) were non-portable due to a sorting order difference. This impacts strings or binaries that have their first difference at a non-ascii character. These items may not be found in a set, or in an indexed column if the strings had a long common prefix (> 200 characters). (Core 14.0.0-beta.0)
+* Fixed wrong results when querying for `NULL` value in `IDictionary`. (Core 14.0.0)
+* A Realm generated on a non-apple ARM 64 device and copied to another platform (and vice-versa) were non-portable due to a sorting order difference. This impacts strings or binaries that have their first difference at a non-ascii character. These items may not be found in a set, or in an indexed column if the strings had a long common prefix (> 200 characters). (Core 14.0.0)
+* Fixed an issue when removing items from a LnkLst that could result in invalidated links becoming visable which could cause crashes or exceptions when accessing those list items later on. This affects sync Realms where another client had previously removed a link in a linklist that has over 1000 links in it, and then further local removals from the same list caused the list to have fewer than 1000 items. (Core 14.2.0)
+* Fix a spurious crash related to opening a Realm on background thread while the process was in the middle of exiting. (Core 14.3.0)
+* Fix opening realm with cached user while offline results in fatal error and session does not retry connection. (Core 14.4.0)
+* Fix an assertion failure "m_lock_info && m_lock_info->m_file.get_path() == m_filename" that appears to be related to opening a Realm while the file is in the process of being closed on another thread. (Core 14.5.0)
+* Fixed diverging history due to a bug in the replication code when setting default null values (embedded objects included). (Core 14.5.0)
+* Null pointer exception may be triggered when logging out and async commits callbacks not executed. (Core 14.5.0)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 14.4.1.
+* Using Core 14.5.0.
 
 ## 11.7.0 (2024-02-05)
 

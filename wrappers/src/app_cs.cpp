@@ -337,6 +337,13 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT realm_string_t shared_app_get_default_url(NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return to_capi(App::default_base_url());
+        });
+    }
+
     REALM_EXPORT bool shared_app_is_same_instance(SharedApp& lhs, SharedApp& rhs, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

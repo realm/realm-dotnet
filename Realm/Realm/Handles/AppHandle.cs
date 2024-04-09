@@ -118,11 +118,25 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool is_same_instance(AppHandle lhs, AppHandle rhs, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_default_url", CallingConvention = CallingConvention.Cdecl)]
+            public static extern StringValue get_default_url(out NativeException ex);
+
         }
 
         static AppHandle()
         {
             NativeCommon.Initialize();
+        }
+
+        public static Uri DefaultBaseUri
+        {
+            get
+            {
+                var value = NativeMethods.get_default_url(out var ex);
+                ex.ThrowIfNecessary();
+                return new(value!);
+            }
         }
 
         public static void Initialize()
