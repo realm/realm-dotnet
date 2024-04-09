@@ -30,6 +30,8 @@ namespace Realms.Tests.Database
     {
         public string? StringProperty { get; set; }
 
+        public int IntProperty { get; set; }
+
         public IList<TestNotificationObject> ListSameType { get; } = null!;
 
         public ISet<TestNotificationObject> SetSameType { get; } = null!;
@@ -44,7 +46,15 @@ namespace Realms.Tests.Database
 
         public IDictionary<string, Person?> DictionaryDifferentType { get; } = null!;
 
+        public IList<RemappedTypeObject> ListRemappedType { get; } = null!;
+
+        public ISet<RemappedTypeObject> SetRemappedType { get; } = null!;
+
+        public IDictionary<string, RemappedTypeObject?> DictionaryRemappedType { get; } = null!;
+
         public Person? LinkDifferentType { get; set; }
+
+        public Owner? LinkAnotherType { get; set; }
 
         [Backlink(nameof(LinkSameType))]
         public IQueryable<TestNotificationObject> Backlink { get; } = null!;

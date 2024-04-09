@@ -348,7 +348,7 @@ namespace Realms.Tests.Database
                 }
             });
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
-            Assert.That(sortedCities, Is.EqualTo(new[] { "A-Place", "A Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney", "Åby" }));
+            Assert.That(sortedCities, Is.EqualTo(new[] { "A Place", "A-Place", "Santo Domingo", "Shanghai", "Sydney", "São Paulo", "Åby" }));
         }
 
         [TestCase(true)]

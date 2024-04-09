@@ -2,7 +2,7 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode", "fetchPackageArtifacts")
 
 #@ def baasTestArgs(differentiator):
-#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-"+ differentiator  +" --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
+#@   return " --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=" + differentiator + "-${{ github.run_id }}-${{ github.run_attempt }}"
 #@ end
 ---
 #@ def publishTestsResults(files, test_title):
@@ -26,15 +26,6 @@ with:
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
       #@ for input in additionalInputs:
       #@yaml/text-templated-strings
       (@= input @):
@@ -42,11 +33,7 @@ with:
         type: string
       #@ end
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
       #@ for secret in additionalSecrets:
       #@yaml/text-templated-strings
@@ -93,17 +80,13 @@ env:
 - #@ template.replace(fetchPackageArtifacts())
 #@ end
 #@ if (differentiator != ""):
-#! The following is used in case we need to re-run the action and the main deploy cluster job is not re-run too (because successful)
-- uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-  name: Deploy Cluster (alternative)
-  if: ${{ inputs.realmUrl }}
-  with:
-    projectId: ${{ secrets.AtlasProjectId}}
-    realmUrl: ${{ inputs.realmUrl }}
-    atlasUrl: ${{ inputs.atlasUrl}}
-    apiKey: ${{ secrets.AtlasPublicKey}}
-    privateApiKey: ${{ secrets.AtlasPrivateKey }}
-    clusterName: #@ "${{ inputs.clusterName }}-" + differentiator
-    clusterSize: M10
+#! The following is used in case we need to re-run the action and the main deploy baas job is not re-run too (because successful)
+- name: Deploy Baas (alternative)
+  #! Secrets cannot be used directly in if
+  env:
+    apiKey: ${{ secrets.BaaSaasApiKey }}
+  if: ${{ env.apiKey }}
+  run: #@ "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=" + differentiator + "-${{ github.run_id }}-${{ github.run_attempt }}"
+  working-directory: Tools/DeployApps
 #@ end
 #@ end

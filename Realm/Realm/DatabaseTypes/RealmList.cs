@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
 using Realms.Helpers;
@@ -66,6 +67,12 @@ namespace Realms
                 ValidateIndex(index);
                 var realmValue = ValidateValueToInsert(value);
 
+                if (realmValue.Type.IsCollection())
+                {
+                    CollectionHelpers.PopulateCollection(Realm, _listHandle.SetCollection(index, realmValue.Type), realmValue);
+                    return;
+                }
+
                 if (_isEmbedded)
                 {
                     if (IsDynamic)
@@ -87,6 +94,12 @@ namespace Realms
         public void Add(T value)
         {
             var realmValue = ValidateValueToInsert(value);
+
+            if (realmValue.Type.IsCollection())
+            {
+                CollectionHelpers.PopulateCollection(Realm, _listHandle.AddCollection(realmValue.Type), realmValue);
+                return;
+            }
 
             if (_isEmbedded)
             {
@@ -112,6 +125,11 @@ namespace Realms
                 return -1;
             }
 
+            if (realmValue.Type.IsCollection())
+            {
+                return -1;
+            }
+
             return _listHandle.Find(realmValue);
         }
 
@@ -119,6 +137,12 @@ namespace Realms
         {
             ValidateIndex(index);
             var realmValue = ValidateValueToInsert(value);
+
+            if (realmValue.Type.IsCollection())
+            {
+                CollectionHelpers.PopulateCollection(Realm, _listHandle.InsertCollection(index, realmValue.Type), realmValue);
+                return;
+            }
 
             if (_isEmbedded)
             {
@@ -151,7 +175,7 @@ namespace Realms
         {
             ValidateIndex(index);
 
-            _listHandle.Erase((IntPtr)index);
+            _listHandle.Erase(index);
         }
 
         #endregion

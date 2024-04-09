@@ -93,5 +93,20 @@ namespace Realms
         /// The value represents a <see cref="Guid"/>.
         /// </summary>
         Guid,
+
+        /// <summary>
+        /// The value represents a <see cref="System.Collections.Generic.IList{T}"/>.
+        /// </summary>
+        List,
+
+        /// <summary>
+        /// The value represents a <see cref="System.Collections.Generic.ISet{T}"/>.
+        /// </summary>
+        Set,
+
+        /// <summary>
+        /// The value represents a <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/>.
+        /// </summary>
+        Dictionary,
     }
 }

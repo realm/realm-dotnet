@@ -41,6 +41,7 @@ namespace Realms.Schema
             PropertyType.ObjectId,
             PropertyType.Guid,
             PropertyType.Date,
+            PropertyType.RealmValue
         };
 
         internal static readonly HashSet<PropertyType> PrimaryKeyTypes = new()

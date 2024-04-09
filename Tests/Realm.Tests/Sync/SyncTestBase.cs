@@ -275,7 +275,7 @@ namespace Realms.Tests.Sync
 
             if (setFakeSyncRoute)
             {
-                SetFakeSyncRoute(app);
+                SetFakeSyncRoute(user.App);
             }
 
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
@@ -288,7 +288,7 @@ namespace Realms.Tests.Sync
 
             if (setFakeSyncRoute)
             {
-                SetFakeSyncRoute(app);
+                SetFakeSyncRoute(user.App);
             }
 
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));

@@ -5,21 +5,8 @@ name: test-android
       version:
         required: true
         type: string
-      clusterName:
-        required: false
-        type: string
-      realmUrl:
-        required: false
-        type: string
-      atlasUrl:
-        required: false
-        type: string
     secrets:
-      AtlasProjectId:
-        required: false
-      AtlasPublicKey:
-        required: false
-      AtlasPrivateKey:
+      BaaSaasApiKey:
         required: false
       AWS_DEVICEFARM_ACCESS_KEY_ID:
         required: true
@@ -62,17 +49,12 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@fa20eb972b9f018654fdb4e2c7afb52b0532f907
-      name: Deploy Cluster (alternative)
-      if: ${{ inputs.realmUrl }}
-      with:
-        projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ inputs.realmUrl }}
-        atlasUrl: ${{ inputs.atlasUrl}}
-        apiKey: ${{ secrets.AtlasPublicKey}}
-        privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        clusterName: ${{ inputs.clusterName }}-android
-        clusterSize: M10
+    - name: Deploy Baas (alternative)
+      env:
+        apiKey: ${{ secrets.BaaSaasApiKey }}
+      if: ${{ env.apiKey }}
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BaaSaasApiKey }} --baas-differentiator=android-${{ github.run_id }}-${{ github.run_attempt }}
+      working-directory: Tools/DeployApps
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
@@ -92,7 +74,7 @@ jobs:
         app-id: io.realm.xamarintests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-        arguments: ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }}-android --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=android'
+        arguments: ' --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=android-${{ github.run_id }}-${{ github.run_attempt }}'
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()

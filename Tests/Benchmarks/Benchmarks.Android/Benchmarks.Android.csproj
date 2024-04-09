@@ -79,7 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Benchmarks\Benchmarks.csproj">
-      <Project>{BA9ED757-BBE5-486F-BE4A-8D5542504030}</Project>
+      <Project>{BECF4F60-9741-49A6-BD79-D59664C2682E}</Project>
       <Name>Benchmarks</Name>
     </ProjectReference>
   </ItemGroup>

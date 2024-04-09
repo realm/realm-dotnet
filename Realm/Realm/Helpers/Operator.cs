@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -362,6 +362,10 @@ namespace Realms.Helpers
             [(typeof(Decimal128), typeof(decimal))] = new Decimal128DecimalConverter(),
             [(typeof(RealmValue), typeof(IRealmObjectBase))] = new RealmValueIRealmObjectBaseConverter(),
             [(typeof(IRealmObjectBase), typeof(RealmValue))] = new IRealmObjectBaseRealmValueConverter(),
+            [(typeof(IList<RealmValue>), typeof(RealmValue))] = new IListRealmValueConverter(),
+            [(typeof(RealmValue), typeof(IList<RealmValue>))] = new RealmValueIListConverter(),
+            [(typeof(IDictionary<string, RealmValue>), typeof(RealmValue))] = new IDictionaryRealmValueConverter(),
+            [(typeof(RealmValue), typeof(IDictionary<string, RealmValue>))] = new RealmValueIDictionaryConverter(),
         };
 
         /// <summary>
@@ -801,6 +805,16 @@ namespace Realms.Helpers
         {
             public override RealmValue Convert(IRealmObjectBase? value) => value is null ? RealmValue.Null : RealmValue.Object(value);
         }
+
+        private class IListRealmValueConverter : SpecializedConverterBase<IList<RealmValue>, RealmValue>
+        {
+            public override RealmValue Convert(IList<RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.List(value);
+        }
+
+        private class IDictionaryRealmValueConverter : SpecializedConverterBase<IDictionary<string, RealmValue>, RealmValue>
+        {
+            public override RealmValue Convert(IDictionary<string, RealmValue>? value) => value is null ? RealmValue.Null : RealmValue.Dictionary(value);
+        }
         #endregion ToRealmValue Converters
 
         #region FromRealmValue Converters
@@ -993,6 +1007,16 @@ namespace Realms.Helpers
         private class RealmValueIRealmObjectBaseConverter : SpecializedConverterBase<RealmValue, IRealmObjectBase>
         {
             public override IRealmObjectBase Convert(RealmValue value) => value.AsIRealmObject();
+        }
+
+        private class RealmValueIListConverter : SpecializedConverterBase<RealmValue, IList<RealmValue>>
+        {
+            public override IList<RealmValue> Convert(RealmValue value) => value.AsList();
+        }
+
+        private class RealmValueIDictionaryConverter : SpecializedConverterBase<RealmValue, IDictionary<string, RealmValue>>
+        {
+            public override IDictionary<string, RealmValue> Convert(RealmValue value) => value.AsDictionary();
         }
         #endregion FromRealmValue Converters
 

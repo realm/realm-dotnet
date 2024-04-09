@@ -40,5 +40,11 @@ namespace SourceGeneratorAssemblyToProcess
 
         [Indexed(IndexType.General)]
         public Guid GeneralGuidProp { get; set; }
+
+        [Indexed]
+        public RealmValue RealmValueProp { get; set; }
+
+        [Indexed(IndexType.General)]
+        public RealmValue GeneralRealmValueProp { get; set; }
     }
 }

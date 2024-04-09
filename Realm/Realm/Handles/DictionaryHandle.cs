@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -34,7 +35,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes, [MarshalAs(UnmanagedType.U1)] bool shallow);
+        public unsafe delegate void KeyNotificationCallback(IntPtr managedHandle, DictionaryChangeSet* changes);
 
         private static class NativeMethods
         {
@@ -48,7 +49,8 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
+            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle,
+                KeyPathsCollectionType type, IntPtr callback, StringValue[] keypaths, IntPtr keypaths_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
@@ -73,14 +75,17 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set_embedded", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_collection", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_collection(DictionaryHandle handle, PrimitiveValue key, RealmValueType type, bool allowOverride, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_contains_key", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -136,12 +141,18 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle,
+            KeyPathsCollection keyPathsCollection, IntPtr callback)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
+            using Arena arena = new();
+            var nativeKeyPathsArray = keyPathsCollection.GetStrings().Select(p => StringValue.AllocateFrom(p, arena)).ToArray();
+
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle,
+                keyPathsCollection.Type, callback, nativeKeyPathsArray, (IntPtr)nativeKeyPathsArray.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
+
             return new NotificationTokenHandle(Root!, result);
         }
 
@@ -230,6 +241,34 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public ObjectHandle SetEmbedded(string key)
+        {
+            EnsureIsOpen();
+
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.set_embedded(this, primitiveKey, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root!, result);
+        }
+
+        public CollectionHandleBase SetCollection(string key, RealmValueType collectionType)
+        {
+            EnsureIsOpen();
+
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.add_collection(this, primitiveKey, collectionType, allowOverride: true, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return GetCollectionHandle(result, collectionType);
+        }
+
         public void Add(string key, in RealmValue value)
         {
             EnsureIsOpen();
@@ -259,18 +298,18 @@ namespace Realms
             return new ObjectHandle(Root!, result);
         }
 
-        public ObjectHandle SetEmbedded(string key)
+        public CollectionHandleBase AddCollection(string key, RealmValueType collectionType)
         {
             EnsureIsOpen();
 
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
-            var result = NativeMethods.set_embedded(this, primitiveKey, out var nativeException);
+            var result = NativeMethods.add_collection(this, primitiveKey, collectionType, allowOverride: false, out var nativeException);
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root!, result);
+            return GetCollectionHandle(result, collectionType);
         }
 
         public bool ContainsKey(string key)
@@ -338,11 +377,11 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes, bool shallow)
+        public static unsafe void NotifyDictionaryChanged(IntPtr managedHandle, DictionaryChangeSet* changes)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(changes == null ? null : *changes, shallow);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, KeyPathsCollectionType.Full, callback: null);
             }
         }
     }

@@ -91,12 +91,14 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, bool shallow, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results,
+    key_path_collection_type type, void* managedCallback, realm_string_t* keypaths, size_t keypaths_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-        }, shallow);
+        auto keypath_array = build_keypath_array(results, type, keypaths, keypaths_len);
+        return subscribe_for_notifications(managed_results, [results, keypath_array](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, keypath_array);
+        }, type, managedCallback);
     });
 }
 

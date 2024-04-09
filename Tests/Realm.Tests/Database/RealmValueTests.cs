@@ -1010,7 +1010,7 @@ namespace Realms.Tests.Database
                 Assert.That(f, Is.EquivalentTo(referenceResult));
             }
 
-            foreach (var type in (RealmValueType[])Enum.GetValues(typeof(RealmValueType)))
+            foreach (var type in TestHelpers.PrimitiveRealmValueTypes)
             {
                 // Equality on RealmValueType
                 var referenceResult = rvObjects.Where(r => r.RealmValueProperty.Type == type).OrderBy(r => r.Id).ToList();
@@ -1161,7 +1161,7 @@ namespace Realms.Tests.Database
                 RealmValueType.Double => "double",
                 RealmValueType.Decimal128 => "decimal",
                 RealmValueType.ObjectId => "objectid",
-                RealmValueType.Object => "object",
+                RealmValueType.Object => "objectlink",
                 RealmValueType.Guid => "uuid",
                 _ => throw new NotImplementedException(),
             };

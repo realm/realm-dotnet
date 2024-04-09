@@ -1127,6 +1127,16 @@ namespace Realms.Tests
         public IDictionary<string, int> TestDict { get; } = null!;
     }
 
+    public partial class IndexedRealmValueObject : TestRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public int Id { get; set; } = TestHelpers.Random.Next();
+
+        [Indexed]
+        public RealmValue RealmValueProperty { get; set; }
+    }
+
     public partial class LinksObject : TestRealmObject
     {
         [PrimaryKey]

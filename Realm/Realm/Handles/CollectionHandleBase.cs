@@ -54,6 +54,19 @@ namespace Realms
             return new ResultsHandle(Root!, ptr);
         }
 
+        protected CollectionHandleBase GetCollectionHandle(IntPtr collectionPtr, RealmValueType collectionType)
+        {
+            switch (collectionType)
+            {
+                case RealmValueType.List:
+                    return new ListHandle(Root!, collectionPtr);
+                case RealmValueType.Dictionary:
+                    return new DictionaryHandle(Root!, collectionPtr);
+                default:
+                    throw new InvalidOperationException("Invalid collection type");
+            }
+        }
+
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
@@ -62,6 +75,7 @@ namespace Realms
 
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, KeyPathsCollection keyPathsCollection,
+            IntPtr callback = default);
     }
 }
