@@ -36,7 +36,7 @@ REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& obje
     for (auto& prop : object.persisted_properties) {
         // We want to filter out all collection properties. By providing keypaths with just the top-level properties
         // means we won't get deep change notifications either.
-        bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
+        bool is_scalar = true;
         if (is_scalar) {
             KeyPath keyPath;
             keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
@@ -321,7 +321,7 @@ extern "C" {
         return handle_errors(ex, [&]() {
             return subscribe_for_notifications(managed_object, [&](CollectionChangeCallback callback) {
                 auto keyPaths = construct_key_path_array(object->get_object_schema());
-                return object->add_notification_callback(callback, keyPaths);
+                return object->add_notification_callback(callback, std::nullopt);
             }, key_path_collection_type::SHALLOW, nullptr, new ObjectSchema(object->get_object_schema()));
         });
     }

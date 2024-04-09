@@ -295,6 +295,8 @@ namespace Realms.Tests.Sync
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                List<RealmValue> test = new List<RealmValue> { 1, "string", new List<RealmValue> { "a" } };
+
                 var partition = Guid.NewGuid().ToString();
                 var realm1 = await GetIntegrationRealmAsync(partition);
                 var realm2 = await GetIntegrationRealmAsync(partition);

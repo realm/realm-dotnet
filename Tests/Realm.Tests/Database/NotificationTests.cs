@@ -207,6 +207,47 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ABackLinkTest()
+        {
+            var testObject = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(testObject));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            Assert.That(testObject.Backlink.Count, Is.EqualTo(0));
+
+            _realm.Write(() =>
+            {
+                var newTestOb = new TestNotificationObject();
+                newTestOb.LinkSameType = testObject;
+                _realm.Add(newTestOb);
+            });
+            _realm.Refresh();
+            Assert.That(testObject.Backlink.Count, Is.EqualTo(1));
+            Assert.That(notificationCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BCollectionTest()
+        {
+            var testObject = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(testObject));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Add(new TestNotificationObject());
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void BackLinkInObjectShouldNotFireNotificationOnChange()
         {
             var testObject = new TestNotificationObject();
