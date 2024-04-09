@@ -27,7 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
@@ -757,8 +756,8 @@ namespace Realms.Tests.Sync
             });
         }
 
+        // This test needs to be revisited when the work on progress notification is finished.
         [Test]
-        [Ignore("This whole test needs to be redone when the work on progress notification is finished.")]
         public void SessionIntegrationTest_ProgressObservable(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
@@ -803,8 +802,6 @@ namespace Realms.Tests.Sync
 
                 var progressList = new List<SyncProgress>();
 
-                bool alreadyCompleted = false;
-
                 using var token = observable.Subscribe(p =>
                 {
                     try
@@ -830,19 +827,7 @@ namespace Realms.Tests.Sync
                                 throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
                             }
 
-                            if (appType == "flx" && mode == ProgressMode.ReportIndefinitely)
-                            {
-                                if (alreadyCompleted)
-                                {
-                                    completionTcs.TrySetResult();
-                                }
-
-                                alreadyCompleted = true;
-                            }
-                            else
-                            {
-                                completionTcs.TrySetResult();
-                            }
+                            completionTcs.TrySetResult();
                         }
 
                         lastReportedProgress = p.ProgressEstimate;

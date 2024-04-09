@@ -408,7 +408,9 @@ namespace Realms.Sync
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes, double progressEstimate)
         {
             var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
-            token?.Notify(progressEstimate);
+            // This is used to provide a reasonable progress estimate until the core work is done
+            double managedProgressEstimate = transferableBytes > 0.0 ? transferredBytes / transferableBytes : 0.0;
+            token?.Notify(managedProgressEstimate);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
