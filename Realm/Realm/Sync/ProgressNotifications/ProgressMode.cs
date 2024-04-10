@@ -29,9 +29,11 @@ namespace Realms.Sync
         ReportIndefinitely,
 
         /// <summary>
-        /// The callback will be active until the current transferable bytes are transferred. When invoked, it will always report the
-        /// progress estimate as a percentage related to the initial transferable bytes. When those bytes are transfered, the callback will
-        /// be unregistered.
+        /// The callback will be active:
+        /// <list type="bullet">
+        /// <item><description>For uploads, until all the unsynced data available at the moment of the registration of the callback is sent to the server.</description></item>
+        /// <item><description>For downloads, until the client catches up to the current data (available at the moment of callback registration) or the next batch of data sent from the server.</description></item>
+        /// </list>
         /// </summary>
         ForCurrentlyOutstandingWork
     }
