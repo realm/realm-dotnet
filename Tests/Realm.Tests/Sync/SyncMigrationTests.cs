@@ -28,7 +28,7 @@ using Realms.Sync.Exceptions;
 namespace Realms.Tests.Sync
 {
     // The model must match BaasClient.Schemas.Nullables
-    [MapTo("Nullables")]
+    [MapTo("Nullables"), Explicit]
     public partial class NullablesV0 : IRealmObject
     {
         [PrimaryKey, MapTo("_id")]
@@ -55,7 +55,7 @@ namespace Realms.Tests.Sync
         public byte[]? BinaryValue { get; set; }
     }
 
-    [MapTo("Nullables")]
+    [MapTo("Nullables"), Explicit]
     public partial class NullablesV1 : IRealmObject
     {
         [PrimaryKey, MapTo("_id")]
