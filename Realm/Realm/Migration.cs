@@ -29,7 +29,7 @@ namespace Realms
     /// You can read from the <see cref="OldRealm"/> and access properties that have been removed from
     /// the classes by using the dynamic API.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/model-data/change-an-object-model/#migrate-a-schema">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
         private IntPtr _migrationSchema;

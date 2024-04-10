@@ -28,7 +28,7 @@ namespace Realms.Sync
     /// An API key's <see cref="Value"/> is only available when the key is created and cannot be obtained after that.
     /// This means that it's the caller's responsibility to safely store an API key's value upon creation.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/">API Key Authentication Docs</seealso>
     public class ApiKey
     {
         /// <summary>

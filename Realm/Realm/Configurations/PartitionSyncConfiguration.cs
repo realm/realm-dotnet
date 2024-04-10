@@ -25,7 +25,7 @@ namespace Realms.Sync
     /// <summary>
     /// A <see cref="PartitionSyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/sync/">Device Sync Docs</seealso>
     public class PartitionSyncConfiguration : SyncConfigurationBase
     {
         /// <summary>

@@ -34,7 +34,7 @@ namespace Realms.Sync
     /// <see cref="FlexibleSyncConfiguration"/> allows you to start with an empty Realm and send the server a set of queries which it will run and
     /// populate the Realm with all documents matching them.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/sync/">Device Sync Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
         private ClientResetHandlerBase _clientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler();
@@ -66,7 +66,7 @@ namespace Realms.Sync
         /// <see cref="DiscardUnsyncedChangesHandler"/> and <see cref="ManualRecoveryHandler"/>.
         /// The default <see cref="RecoverOrDiscardUnsyncedChangesHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>
-        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset/">Client reset docs</seealso>
         public virtual ClientResetHandlerBase ClientResetHandler
         {
             get => _clientResetHandler;

@@ -131,7 +131,7 @@ namespace Realms.Sync
         /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/">Custom User Data Docs</seealso>
         public BsonDocument? GetCustomData()
         {
             var serialized = Handle.GetCustomData();
@@ -151,7 +151,7 @@ namespace Realms.Sync
         /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/">Custom User Data Docs</seealso>
         public T? GetCustomData<T>()
             where T : class
         {
@@ -181,14 +181,14 @@ namespace Realms.Sync
         /// Gets a <see cref="ApiKeyClient"/> instance that exposes functionality for managing user API keys.
         /// </summary>
         /// <value>A <see cref="ApiKeyClient"/> instance scoped to this <see cref="User"/>.</value>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Keys Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/">API Keys Authentication Docs</seealso>
         public ApiKeyClient ApiKeys { get; }
 
         /// <summary>
         /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality for calling remote Atlas Functions.
         /// </summary>
         /// <value>A <see cref="FunctionsClient"/> instance scoped to this <see cref="User"/>.</value>
-        /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/functions/">Functions Docs</seealso>
         public FunctionsClient Functions { get; }
 
         internal readonly SyncUserHandle Handle;
@@ -444,7 +444,7 @@ namespace Realms.Sync
         /// <summary>
         /// A class exposing functionality for calling remote Atlas Functions.
         /// </summary>
-        /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/functions/">Functions Docs</seealso>
         public class FunctionsClient
         {
             private readonly User _user;
