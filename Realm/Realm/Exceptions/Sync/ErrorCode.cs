@@ -64,7 +64,7 @@ public enum ErrorCode
     /// <c>ManualResetFallback</c> is invoked on one of the automatic client reset handlers.
     /// </summary>
     /// <seealso cref="SyncConfigurationBase.ClientResetHandler"/>
-    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset#manual-recovery/">
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/#manual-recovery/">
     ClientReset = 1032,
 
     /// <summary>
