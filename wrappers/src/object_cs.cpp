@@ -33,15 +33,20 @@ namespace realm::binding {
 REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object)
 {
     KeyPathArray keyPathArray;
-    for (auto& prop : object.persisted_properties) {
-        // We want to filter out all collection properties. By providing keypaths with just the top-level properties
-        // means we won't get deep change notifications either.
-        bool is_scalar = true;
-        if (is_scalar) {
+    //for (auto& prop : object.persisted_properties) {
+    //    // We want to filter out all collection properties. By providing keypaths with just the top-level properties
+    //    // means we won't get deep change notifications either.
+    //    bool is_scalar = true;
+    //    if (is_scalar) {
+    //        KeyPath keyPath;
+    //        keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
+    //        keyPathArray.push_back(keyPath);
+    //    }
+    //}
+    for (auto& prop : object.computed_properties) {
             KeyPath keyPath;
             keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
             keyPathArray.push_back(keyPath);
-        }
     }
     return keyPathArray;
 }
@@ -321,7 +326,8 @@ extern "C" {
         return handle_errors(ex, [&]() {
             return subscribe_for_notifications(managed_object, [&](CollectionChangeCallback callback) {
                 auto keyPaths = construct_key_path_array(object->get_object_schema());
-                return object->add_notification_callback(callback, std::nullopt);
+                //return object->add_notification_callback(callback, std::nullopt);
+                return object->add_notification_callback(callback, keyPaths);
             }, key_path_collection_type::SHALLOW, nullptr, new ObjectSchema(object->get_object_schema()));
         });
     }

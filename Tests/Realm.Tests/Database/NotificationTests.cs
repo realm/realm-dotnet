@@ -212,6 +212,7 @@ namespace Realms.Tests.Database
             var testObject = new TestNotificationObject();
             _realm.Write(() => _realm.Add(testObject));
             var notificationCount = 0;
+
             testObject.PropertyChanged += (sender, e) =>
             {
                 notificationCount++;
@@ -230,22 +231,56 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void BCollectionTest()
+        public void AWorkingCollectionTest()
         {
             var testObject = new TestNotificationObject();
             _realm.Write(() => _realm.Add(testObject));
             var notificationCount = 0;
+
             testObject.PropertyChanged += (sender, e) =>
             {
                 notificationCount++;
             };
+
             _realm.Write(() =>
             {
-                testObject.ListSameType.Add(new TestNotificationObject());
+                testObject.ListDifferentType.Add(new Person());
             });
             _realm.Refresh();
             Assert.That(notificationCount, Is.EqualTo(1));
         }
+
+        //[Test]
+        //public void ABackLinkTest2()
+        //{
+        //    var testObject = new TestNotificationObject();
+        //    _realm.Write(() =>
+        //    {
+        //        var newTestOb = new TestNotificationObject();
+        //        newTestOb.LinkSameType = testObject;
+        //        _realm.Add(testObject);
+        //        _realm.Add(newTestOb);
+        //    });
+
+        //    var notificationCount = 0;
+        //    testObject.PropertyChanged += (sender, e) =>
+        //    {
+        //        notificationCount++;
+        //    };
+        //    Assert.That(testObject.Backlink.Count, Is.EqualTo(1));
+
+        //    var to = _realm.Write(() =>
+        //    {
+        //        var newTestOb2 = new TestNotificationObject();
+        //        newTestOb2.LinkSameType = testObject;
+        //        return _realm.Add(newTestOb2);
+        //    });
+
+        //    _realm.Refresh();
+
+        //    Assert.That(testObject.Backlink.Count, Is.EqualTo(2));
+        //    Assert.That(notificationCount, Is.EqualTo(1));
+        //}
 
         [Test]
         public void BackLinkInObjectShouldNotFireNotificationOnChange()

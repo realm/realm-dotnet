@@ -221,12 +221,6 @@ namespace Realms
                     var i = 0;
                     foreach (var property in ObjectSchema)
                     {
-                        //// Backlinks should be ignored. See Realm.CreateRealmObjectMetadata
-                        //if (property.Type.IsComputed())
-                        //{
-                        //    continue;
-                        //}
-
                         if (i == propertyIndex)
                         {
                             RaisePropertyChanged(property.ManagedName);
