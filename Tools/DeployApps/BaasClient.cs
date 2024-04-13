@@ -43,6 +43,7 @@ namespace Baas
         public const string ObjectIdPartitionKey = "pbs-oid";
         public const string UUIDPartitionKey = "pbs-uuid";
         public const string FlexibleSync = "flx";
+        public const string StaticSchema = "schema";
     }
 
     public class BaasClient
@@ -316,7 +317,8 @@ namespace Baas
 
             var result = new Dictionary<string, BaasApp>();
             await GetOrCreateApp(result, AppConfigType.Default, apps, CreateDefaultApp);
-            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateFlxApp);
+            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, name => CreateFlxApp(name, enableDevMode: true));
+            await GetOrCreateApp(result, AppConfigType.StaticSchema, apps, name => CreateFlxApp(name, enableDevMode: false));
             await GetOrCreateApp(result, AppConfigType.IntPartitionKey, apps, name => CreatePbsApp(name, "long"));
             await GetOrCreateApp(result, AppConfigType.UUIDPartitionKey, apps, name => CreatePbsApp(name, "uuid"));
             await GetOrCreateApp(result, AppConfigType.ObjectIdPartitionKey, apps, name => CreatePbsApp(name, "objectId"));
@@ -463,7 +465,7 @@ namespace Baas
             return app;
         }
 
-        private async Task<BaasApp> CreateFlxApp(string name)
+        private async Task<BaasApp> CreateFlxApp(string name, bool enableDevMode)
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
@@ -473,9 +475,9 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = GetSyncDatabaseName(name),
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike", "Differentiator" },
                 }
-            });
+            }, enableDevMode);
 
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/default_rule", new
             {
@@ -500,6 +502,20 @@ namespace Baas
 
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
+            if (!enableDevMode)
+            {
+                var schemaV0 = Schemas.Nullables(Differentiator, required: false);
+                var schemaId = await CreateSchema(app, mongoServiceId, schemaV0, null);
+
+                var schemaV1 = Schemas.Nullables(Differentiator, required: true);
+                await UpdateSchema(app, schemaId, schemaV1);
+
+                // Revert to schema_v0
+                await UpdateSchema(app, schemaId, schemaV0);
+
+                await WaitForSchemaVersion(app, 2);
+            }
+
             return app;
         }
 
@@ -523,7 +539,7 @@ namespace Baas
             await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
 
-        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
+        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig, bool enableDeveloperMode = true)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
             var appId = doc!["_id"].AsString;
@@ -551,10 +567,14 @@ namespace Baas
 
             var mongoServiceId = await CreateMongodbService(app, syncConfig);
 
-            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+            if (enableDeveloperMode)
             {
-                development_mode_enabled = true,
-            });
+                await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+                {
+                    development_mode_enabled = true,
+                });
+            }
+
             return (app, mongoServiceId);
         }
 
@@ -616,7 +636,6 @@ namespace Baas
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
                 .Where(a => a != null)
-                .Select(a => a!)
                 .ToArray();
         }
 
@@ -671,12 +690,36 @@ namespace Baas
             return mongoServiceId;
         }
 
-        private async Task CreateSchema(BaasApp app, string mongoServiceId, object schema, object rule)
+        private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema, object? rule)
         {
             _output.WriteLine($"Creating schema for {app.Name}...");
 
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
+            var createResponse = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
+            if (rule != null)
+            {
+                await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
+            }
+
+            return createResponse!["_id"].AsString;
+        }
+
+        private async Task UpdateSchema(BaasApp app, string schemaId, object schema)
+        {
+            _output.WriteLine($"Creating schema for {app.Name}...");
+
+            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas/{schemaId}?bypass_service_change=SyncSchemaVersionIncrease", schema);
+        }
+
+        private async Task WaitForSchemaVersion(BaasApp app, int expectedVersion)
+        {
+            while (true)
+            {
+                var response = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/schemas/versions");
+                if (response!["versions"].AsBsonArray.Any(version => version.AsBsonDocument["version_major"].AsInt32 >= expectedVersion))
+                {
+                    return;
+                }
+            }
         }
 
         private async Task RefreshAccessTokenAsync()
@@ -917,6 +960,51 @@ namespace Baas
                 }
             },
             GenericBaasRule(differentiator, "foos"));
+
+            public static object Nullables(string differentiator, bool required)
+            {
+                var schema = new
+                {
+                    title = "Nullables",
+                    bsonType = "object",
+                    properties = new Dictionary<string, object>
+                    {
+                        ["_id"] = new { bsonType = "objectId" },
+                        ["Differentiator"] = new { bsonType = "objectId" },
+                        ["BoolValue"] = new { bsonType = "bool" },
+                        ["IntValue"] = new { bsonType = "long" },
+                        ["FloatValue"] = new { bsonType = "float" },
+                        ["DoubleValue"] = new { bsonType = "double" },
+                        ["DecimalValue"] = new { bsonType = "decimal" },
+                        ["DateValue"] = new { bsonType = "date" },
+                        ["StringValue"] = new { bsonType = "string" },
+                        ["ObjectIdValue"] = new { bsonType = "objectId" },
+                        ["UuidValue"] = new { bsonType = "uuid" },
+                        ["BinaryValue"] = new { bsonType = "binData" },
+                    },
+                    required = new List<string>(),
+                };
+
+                if (required)
+                {
+                    // For schema v1, we add an extra property
+                    schema.properties["WillBeRemoved"] = new
+                    {
+                        bsonType = "string"
+                    };
+                }
+
+                schema.required.AddRange(required ? schema.properties.Keys : new[]
+                {
+                    "_id", "Differentiator"
+                });
+
+                return new
+                {
+                    metadata = Metadata(differentiator, "Nullables"),
+                    schema,
+                };
+            }
         }
 
         private class BaasaasClient
@@ -956,7 +1044,7 @@ namespace Baas
                     }
                 }
 
-                output.WriteLine($"No container found, starting a new one.");
+                output.WriteLine("No container found, starting a new one.");
                 var containerId = await StartContainer(differentiator);
 
                 output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
@@ -975,7 +1063,7 @@ namespace Baas
                 var containers = await GetContainers();
                 var userId = await GetCurrentUserId();
 
-                var existingContainers = containers!
+                var existingContainers = containers
                     .Where(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
 
                 foreach (var container in existingContainers)
