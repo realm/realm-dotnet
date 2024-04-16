@@ -128,6 +128,9 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
+#pragma warning disable CS1718 // Comparison made to same variable
+            Assert.That(rv == rv, Is.True);
+#pragma warning restore CS1718 // Comparison made to same variable
             Assert.That(rv == originalList, isManaged ? Is.False : Is.True);
             Assert.That(rv.Equals(originalList), isManaged ? Is.False : Is.True);
         }
@@ -599,6 +602,9 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
+#pragma warning disable CS1718 // Comparison made to same variable
+            Assert.That(rv == rv, Is.True);
+#pragma warning restore CS1718 // Comparison made to same variable
             Assert.That(rv == originalDict, isManaged ? Is.False : Is.True);
             Assert.That(rv.Equals(originalDict), isManaged ? Is.False : Is.True);
         }
