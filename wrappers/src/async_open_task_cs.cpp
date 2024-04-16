@@ -44,7 +44,7 @@ REALM_EXPORT uint64_t realm_asyncopentask_register_progress_notifier(const Share
 {
     return handle_errors(ex, [&] {
         return task->register_download_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable, double progress_estimate) {
-            s_progress_callback(managed_state, transferred, transferable);
+            s_progress_callback(managed_state, transferred, transferable, progress_estimate);
         });
     });
 }

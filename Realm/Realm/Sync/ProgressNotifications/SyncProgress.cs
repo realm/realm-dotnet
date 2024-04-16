@@ -21,29 +21,19 @@ namespace Realms.Sync
     /// <summary>
     /// A struct containing information about the progress state at a given instant.
     /// </summary>
-    public struct SyncProgress
+    public readonly struct SyncProgress
     {
         /// <summary>
-        /// Gets the number of bytes that have been transferred since subscribing for progress notifications.
+        /// Gets the percentage estimate of the current progress, expressed as a double between 0.0 and 1.0.
         /// </summary>
-        /// <value>The number of transferred bytes.</value>
-        public ulong TransferredBytes { get; }
+        /// <value>A percentage estimate of the progress.</value>
+        public double ProgressEstimate { get; }
 
-        /// <summary>
-        /// Gets the total number of bytes that have to be transferred since subscribing for progress notifications.
-        /// The difference between that number and <see cref="TransferredBytes"/> gives you the number of bytes not yet
-        /// transferred. If the difference is 0, then all changes at the instant the callback fires have been
-        /// successfully transferred.
-        /// </summary>
-        /// <value>The number of transferable bytes.</value>
-        public ulong TransferableBytes { get; }
-
-        internal SyncProgress(ulong transferred, ulong transferable)
+        internal SyncProgress(double progressEstimate)
         {
-            TransferredBytes = transferred;
-            TransferableBytes = transferable;
+            ProgressEstimate = progressEstimate;
         }
 
-        internal bool IsComplete => TransferableBytes == TransferredBytes;
+        internal bool IsComplete => ProgressEstimate >= 1.0;
     }
 }

@@ -42,7 +42,7 @@ namespace Realms.Sync
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
+            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes, double progressEstimate);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
@@ -405,10 +405,13 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
-        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
+        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes, double progressEstimate)
         {
             var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
-            token?.Notify(transferredBytes, transferableBytes);
+
+            // This is used to provide a reasonable progress estimate until the core work is done
+            double managedProgressEstimate = transferableBytes > 0.0 ? transferredBytes / transferableBytes : 1.0;
+            token?.Notify(managedProgressEstimate);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]

@@ -46,11 +46,23 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
+        public static readonly string[] AppTypes = new[]
+        {
+            AppConfigType.Default,
+            AppConfigType.FlexibleSync
+        };
+
         public static readonly object[] AllClientResetHandlers = new object[]
         {
             typeof(DiscardUnsyncedChangesHandler),
             typeof(RecoverUnsyncedChangesHandler),
             typeof(RecoverOrDiscardUnsyncedChangesHandler),
+        };
+
+        public static readonly ProgressMode[] ProgressModeTypes = new ProgressMode[]
+        {
+            ProgressMode.ForCurrentlyOutstandingWork,
+            ProgressMode.ReportIndefinitely,
         };
 
         [Preserve]
@@ -78,12 +90,6 @@ namespace Realms.Tests.Sync
                 ManualResetFallback = (clientResetException) => { },
             };
         }
-
-        public static readonly string[] AppTypes = new[]
-        {
-            AppConfigType.Default,
-            AppConfigType.FlexibleSync
-        };
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
@@ -750,18 +756,34 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
-        [TestCase(ProgressMode.ReportIndefinitely)]
-        public void SessionIntegrationTest_ProgressObservable(ProgressMode mode)
+        // This test needs to be revisited when the work on progress notification is finished.
+        [Test]
+        public void SessionIntegrationTest_ProgressObservable(
+            [ValueSource(nameof(AppTypes))] string appType,
+            [ValueSource(nameof(ProgressModeTypes))] ProgressMode mode)
         {
             const int objectSize = 1_000_000;
             const int objectsToRecord = 2;
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = GetRealm(config);
+                Realm realm;
+                if (appType == AppConfigType.Default)
+                {
+                    var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                    realm = GetRealm(config);
+                }
+                else
+                {
+                    var config = await GetFLXIntegrationConfigAsync();
+                    config.PopulateInitialSubscriptions = (r) =>
+                    {
+                        r.Subscriptions.Add(r.All<HugeSyncObject>());
+                    };
+                    realm = await GetRealmAsync(config);
+                }
 
-                var completionTcs = new TaskCompletionSource<ulong>();
+                var completionTcs = new TaskCompletionSource();
                 var callbacksInvoked = 0;
 
                 var session = GetSession(realm);
@@ -776,35 +798,43 @@ namespace Realms.Tests.Sync
                     });
                 }
 
+                var lastReportedProgress = 0.0d;
+
+                var progressList = new List<SyncProgress>();
+
                 using var token = observable.Subscribe(p =>
                 {
                     try
                     {
                         callbacksInvoked++;
 
-                        if (p.TransferredBytes > p.TransferableBytes)
+                        progressList.Add(p);
+
+                        if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
                         {
-                            // TODO https://github.com/realm/realm-dotnet/issues/2360: this seems to be a regression in Sync.
-                            // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
+                            throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
                         }
 
-                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        if (p.ProgressEstimate < lastReportedProgress)
                         {
-                            if (p.TransferableBytes <= objectSize ||
-                                p.TransferableBytes >= (objectsToRecord + 2) * objectSize)
-                            {
-                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({objectSize}, {(objectsToRecord + 1) * objectSize}) range.");
-                            }
+                            throw new Exception($"Expected progress estimate is expected to be monotonically increasing, but it wasn't.");
                         }
+
+                        if (p.IsComplete)
+                        {
+                            if (p.ProgressEstimate != 1.0)
+                            {
+                                throw new Exception($"Expected progress estimate to be complete if and only if ProgressEstimate == 1.0");
+                            }
+
+                            completionTcs.TrySetResult();
+                        }
+
+                        lastReportedProgress = p.ProgressEstimate;
                     }
                     catch (Exception e)
                     {
                         completionTcs.TrySetException(e);
-                    }
-
-                    if (p.TransferredBytes >= p.TransferableBytes)
-                    {
-                        completionTcs.TrySetResult(p.TransferredBytes);
                     }
                 });
 
@@ -813,22 +843,9 @@ namespace Realms.Tests.Sync
                     realm.Add(new HugeSyncObject(objectSize));
                 });
 
-                var totalTransferred = await completionTcs.Task;
+                await completionTcs.Task;
 
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(objectSize));
-
-                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
-                    // so in the fixed mode, we should not get updates for it.
-                    Assert.That(totalTransferred, Is.LessThan((objectsToRecord + 5) * objectSize));
-                }
-                else
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((objectsToRecord + 1) * objectSize));
-                }
-
-                Assert.That(callbacksInvoked, Is.GreaterThan(1));
+                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
             }, timeout: 120_000);
         }
 

@@ -25,16 +25,15 @@ namespace Realms.Sync
     {
         /// <summary>
         /// The callback will be called forever, or until it is unregistered by disposing the subscription token.
-        /// Notifications will always report the latest number of transferred bytes, and the most up-to-date number of
-        /// total transferable bytes.
         /// </summary>
         ReportIndefinitely,
 
         /// <summary>
-        /// The callback will, upon registration, store the total number of bytes to be transferred. When invoked, it will
-        /// always report the most up-to-date number of transferable bytes out of that original number of transferable bytes.
-        /// When the number of transferred bytes reaches or exceeds the number of transferable bytes, the callback will
-        /// be unregistered.
+        /// The callback will be active:
+        /// <list type="bullet">
+        /// <item><description>For uploads, until all the unsynced data available at the moment of the registration of the callback is sent to the server.</description></item>
+        /// <item><description>For downloads, until the client catches up to the current data (available at the moment of callback registration) or the next batch of data sent from the server.</description></item>
+        /// </list>
         /// </summary>
         ForCurrentlyOutstandingWork
     }
