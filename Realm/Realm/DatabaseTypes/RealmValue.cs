@@ -1533,6 +1533,8 @@ namespace Realms
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
+                RealmValueType.List => AsList().Equals(other.AsList()),
+                RealmValueType.Dictionary => AsDictionary().Equals(other.AsDictionary()),
                 RealmValueType.Null => true,
                 _ => false,
             };
