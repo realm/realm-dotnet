@@ -89,27 +89,6 @@ namespace Realms.Tests.Database
             Assert.That(rv.As<IList<RealmValue>>(), Is.EqualTo(originalList).Using(_rvComparer));
         }
 
-
-        [Test]
-        public void List_Equality([Values(true, false)] bool isManaged)
-        {
-            var originalList = new List<RealmValue> { 1, true, "string" };
-
-            RealmValue rv = originalList;
-
-            if (isManaged)
-            {
-                rv = PersistAndFind(rv).RealmValueProperty;
-            }
-
-            Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
-            Assert.That(rv != RealmValue.Null);
-
-            Assert.That(rv.AsList(), Is.EqualTo(originalList).Using(_rvComparer));
-            Assert.That(rv.AsAny(), Is.EqualTo(originalList).Using(_rvComparer));
-            Assert.That(rv.As<IList<RealmValue>>(), Is.EqualTo(originalList).Using(_rvComparer));
-        }
-
         [Test]
         public void List_InRealmValue_Equality([Values(true, false)] bool isManaged)
         {
@@ -588,7 +567,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Dictionary_InRealmValue_NotEqualToAnything([Values(true, false)] bool isManaged)
+        public void Dictionary_InRealmValue_Equality([Values(true, false)] bool isManaged)
         {
             var originalDict = new Dictionary<string, RealmValue>
             {
