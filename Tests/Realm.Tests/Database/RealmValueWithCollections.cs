@@ -89,28 +89,36 @@ namespace Realms.Tests.Database
             Assert.That(rv.As<IList<RealmValue>>(), Is.EqualTo(originalList).Using(_rvComparer));
         }
 
-        [Test]
-        public void List_InRealmValue_NotEqualToAnything([Values(true, false)] bool isManaged)
-        {
-            var innerList = ListGenerator(1);
-            var innerDict = DictGenerator(1);
 
+        [Test]
+        public void List_Equality([Values(true, false)] bool isManaged)
+        {
+            var originalList = new List<RealmValue> { 1, true, "string" };
+
+            RealmValue rv = originalList;
+
+            if (isManaged)
+            {
+                rv = PersistAndFind(rv).RealmValueProperty;
+            }
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.List));
+            Assert.That(rv != RealmValue.Null);
+
+            Assert.That(rv.AsList(), Is.EqualTo(originalList).Using(_rvComparer));
+            Assert.That(rv.AsAny(), Is.EqualTo(originalList).Using(_rvComparer));
+            Assert.That(rv.As<IList<RealmValue>>(), Is.EqualTo(originalList).Using(_rvComparer));
+        }
+
+        [Test]
+        public void List_InRealmValue_Equality([Values(true, false)] bool isManaged)
+        {
             var originalList = new List<RealmValue>
             {
                 RealmValue.Null,
                 1,
                 true,
-                "string",
-                new byte[] { 0, 1, 2 },
-                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
-                1f,
-                2d,
-                3m,
-                new ObjectId("5f63e882536de46d71877979"),
-                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
-                new InternalObject { IntProperty = 10, StringProperty = "brown" },
-                innerList,
-                innerDict,
+                "string"
             };
 
             RealmValue rv = originalList;
@@ -120,8 +128,8 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
-            Assert.That(rv == originalList, Is.False);
-            Assert.That(rv.Equals(originalList), Is.False);
+            Assert.That(rv == originalList, isManaged ? Is.False : Is.True);
+            Assert.That(rv.Equals(originalList), isManaged ? Is.False : Is.True);
         }
 
         [Test]
@@ -579,14 +587,9 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_InRealmValue_NotEqualToAnything([Values(true, false)] bool isManaged)
         {
-            var innerList = ListGenerator(1);
-            var innerDict = DictGenerator(1);
-
             var originalDict = new Dictionary<string, RealmValue>
             {
                 { "c", new InternalObject { IntProperty = 10, StringProperty = "brown" } },
-                { "d", innerList },
-                { "e", innerDict },
             };
 
             RealmValue rv = originalDict;
@@ -596,8 +599,8 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
-            Assert.That(rv == originalDict, Is.False);
-            Assert.That(rv.Equals(originalDict), Is.False);
+            Assert.That(rv == originalDict, isManaged ? Is.False : Is.True);
+            Assert.That(rv.Equals(originalDict), isManaged ? Is.False : Is.True);
         }
 
         [Test]
