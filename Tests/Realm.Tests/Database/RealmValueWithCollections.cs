@@ -113,7 +113,26 @@ namespace Realms.Tests.Database
                 innerDict,
             };
 
+            var copyOriginalList = new List<RealmValue>
+            {
+                RealmValue.Null,
+                1,
+                true,
+                "string",
+                new byte[] { 0, 1, 2 },
+                new DateTimeOffset(1234, 5, 6, 7, 8, 9, TimeSpan.Zero),
+                1f,
+                2d,
+                3m,
+                new ObjectId("5f63e882536de46d71877979"),
+                Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"),
+                new InternalObject { IntProperty = 10, StringProperty = "brown" },
+                innerList,
+                innerDict,
+            };
+
             RealmValue rv = originalList;
+            RealmValue rv2 = copyOriginalList;
 
             if (isManaged)
             {
@@ -123,6 +142,13 @@ namespace Realms.Tests.Database
 #pragma warning disable CS1718 // Comparison made to same variable
             Assert.That(rv == rv, Is.True);
 #pragma warning restore CS1718 // Comparison made to same variable
+            Assert.That(rv.Equals(rv), Is.True);
+
+            // They contains the same values, but the collections do not point to the same object reference
+            Assert.That(rv == rv2, Is.False);
+            Assert.That(rv.Equals(rv2), Is.False);
+
+            // If the object is unmanaged, the RealmValue just wraps the collection
             Assert.That(rv == originalList, isManaged ? Is.False : Is.True);
             Assert.That(rv.Equals(originalList), isManaged ? Is.False : Is.True);
         }
@@ -592,7 +618,15 @@ namespace Realms.Tests.Database
                 { "e", innerDict },
             };
 
+            var copyOriginalDict = new Dictionary<string, RealmValue>
+            {
+                { "c", new InternalObject { IntProperty = 10, StringProperty = "brown" } },
+                { "d", innerList },
+                { "e", innerDict },
+            };
+
             RealmValue rv = originalDict;
+            RealmValue rv2 = copyOriginalDict;
 
             if (isManaged)
             {
@@ -602,6 +636,13 @@ namespace Realms.Tests.Database
 #pragma warning disable CS1718 // Comparison made to same variable
             Assert.That(rv == rv, Is.True);
 #pragma warning restore CS1718 // Comparison made to same variable
+            Assert.That(rv.Equals(rv), Is.True);
+
+            // They contains the same values, but the collections do not point to the same object reference
+            Assert.That(rv == rv2, Is.False);
+            Assert.That(rv.Equals(rv2), Is.False);
+
+            // If the object is unmanaged, the RealmValue just wraps the collection
             Assert.That(rv == originalDict, isManaged ? Is.False : Is.True);
             Assert.That(rv.Equals(originalDict), isManaged ? Is.False : Is.True);
         }
