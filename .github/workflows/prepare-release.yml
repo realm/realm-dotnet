@@ -20,7 +20,7 @@ jobs:
         id: get-core-version
         run: |
           cd wrappers/realm-core
-          pkgVersion=$(grep "\bVERSION=" dependencies.list | cut -d= -f2)
+          pkgVersion=$(grep "\bVERSION:" dependencies.yml | cut -d: -f2)
           echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
         shell: bash
       - name: Update Analytics.cs
