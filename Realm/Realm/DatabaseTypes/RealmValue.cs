@@ -217,7 +217,7 @@ namespace Realms
         /// <returns> A new RealmValue representing the input list. </returns>
         /// <remarks> Once created, this RealmValue will just wrap the input collection.
         /// After the object containing this RealmValue gets managed this value will be a Realm list.</remarks>
-        public static RealmValue List(IList<RealmValue> value) => new(value);
+        internal static RealmValue List(IList<RealmValue> value) => new(value);
 
         /// <summary>
         /// Gets a RealmValue representing a dictionary.
@@ -226,7 +226,7 @@ namespace Realms
         /// <returns> A new RealmValue representing the input dictionary. </returns>
         /// <remarks> Once created, this RealmValue will just wrap the input collection.
         /// After the object containing this RealmValue gets managed this value will be a Realm dictionary.</remarks>
-        public static RealmValue Dictionary(IDictionary<string, RealmValue> value) => new(value);
+        internal static RealmValue Dictionary(IDictionary<string, RealmValue> value) => new(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -510,7 +510,7 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.List"/>.</exception>
         /// <returns> A list representing the value stored in the database.</returns>
-        public IList<RealmValue> AsList()
+        internal IList<RealmValue> AsList()
         {
             EnsureType("List", RealmValueType.List);
             return _listValue!;
@@ -521,7 +521,7 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Dictionary"/>.</exception>
         /// <returns> A dictionary representing the value stored in the database.</returns>
-        public IDictionary<string, RealmValue> AsDictionary()
+        internal IDictionary<string, RealmValue> AsDictionary()
         {
             EnsureType("Dictionary", RealmValueType.Dictionary);
             return _dictionaryValue!;
@@ -1448,26 +1448,26 @@ namespace Realms
         /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmObjectBase? val) => val == null ? Null : Object(val);
 
-        /// <summary>
-        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.List{T}">List&lt;RealmValue&gt;?</see>.
-        /// </summary>
-        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
-        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator RealmValue(List<RealmValue>? val) => val == null ? Null : List(val);
+        ///// <summary>
+        ///// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.List{T}">List&lt;RealmValue&gt;?</see>.
+        ///// </summary>
+        ///// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        ///// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        //public static implicit operator RealmValue(List<RealmValue>? val) => val == null ? Null : List(val);
 
-        /// <summary>
-        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmValue">RealmValue[]?</see>.
-        /// </summary>
-        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
-        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator RealmValue(RealmValue[]? val) => val == null ? Null : List(val);
+        ///// <summary>
+        ///// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmValue">RealmValue[]?</see>.
+        ///// </summary>
+        ///// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        ///// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        //public static implicit operator RealmValue(RealmValue[]? val) => val == null ? Null : List(val);
 
-        /// <summary>
-        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.Dictionary{TKey, TValue}">Dictionary&lt;string, RealmValue&gt;</see>.
-        /// </summary>
-        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
-        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator RealmValue(Dictionary<string, RealmValue>? val) => val == null ? Null : Dictionary(val);
+        ///// <summary>
+        ///// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Collections.Generic.Dictionary{TKey, TValue}">Dictionary&lt;string, RealmValue&gt;</see>.
+        ///// </summary>
+        ///// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        ///// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
+        //public static implicit operator RealmValue(Dictionary<string, RealmValue>? val) => val == null ? Null : Dictionary(val);
 
         private void EnsureType(string target, RealmValueType type)
         {
