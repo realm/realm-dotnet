@@ -510,7 +510,7 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.List"/>.</exception>
         /// <returns> A list representing the value stored in the database.</returns>
-        public IList<RealmValue> AsList()
+        internal IList<RealmValue> AsList()
         {
             EnsureType("List", RealmValueType.List);
             return _listValue!;
@@ -521,7 +521,7 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Dictionary"/>.</exception>
         /// <returns> A dictionary representing the value stored in the database.</returns>
-        public IDictionary<string, RealmValue> AsDictionary()
+        internal IDictionary<string, RealmValue> AsDictionary()
         {
             EnsureType("Dictionary", RealmValueType.Dictionary);
             return _dictionaryValue!;
