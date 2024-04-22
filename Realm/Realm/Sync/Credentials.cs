@@ -30,7 +30,7 @@ namespace Realms.Sync
         /// An enum containing the possible authentication providers. These have to manually be enabled for
         /// your app before they can be used.
         /// </summary>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/providers/">Authentication Providers Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/">Authentication Providers Docs</seealso>
         public enum AuthProvider
         {
             /// <summary>
@@ -97,7 +97,7 @@ namespace Realms.Sync
         /// a new user will be created on the server.
         /// </param>
         /// <returns>A Credentials that can be used to authenticate an anonymous user.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/anonymous/">Anonymous Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/">Anonymous Authentication Docs</seealso>
         public static Credentials Anonymous(bool reuseExisting = true) => new(AuthProvider.Anonymous, additionalInfo: reuseExisting.ToString().ToLower());
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="accessToken">The OAuth 2.0 access token representing the Facebook user.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Facebook.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/facebook/">Facebook Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/facebook/">Facebook Authentication Docs</seealso>
         public static Credentials Facebook(string accessToken)
         {
             Argument.NotNull(accessToken, nameof(accessToken));
@@ -119,7 +119,7 @@ namespace Realms.Sync
         /// <param name="credential">The credential representing the Google user.</param>
         /// <param name="type">The type of the credential.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Google.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/google/">Google Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/google/">Google Authentication Docs</seealso>
         public static Credentials Google(string credential, GoogleCredentialType type)
         {
             Argument.NotNull(credential, nameof(credential));
@@ -131,7 +131,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="accessToken">The OAuth 2.0 access token representing the user's Apple ID.</param>
         /// <returns>A Credentials that can be used to authenticate a user via an Apple ID.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/apple/">Apple ID Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/apple/">Apple ID Authentication Docs</seealso>
         public static Credentials Apple(string accessToken)
         {
             Argument.NotNull(accessToken, nameof(accessToken));
@@ -144,7 +144,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="customToken">The custom JWT token representing the user.</param>
         /// <returns>A Credentials that can be used to authenticate a user with a custom JWT Token.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/custom-jwt/">Custom JWT Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/custom-jwt/">Custom JWT Authentication Docs</seealso>
         public static Credentials JWT(string customToken)
         {
             Argument.NotNull(customToken, nameof(customToken));
@@ -165,7 +165,7 @@ namespace Realms.Sync
         /// provider can also be configured to automatically confirm users or to run a custom confirmation function upon
         /// user registration.
         /// </remarks>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/email-password/">Email/Password Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/">Email/Password Authentication Docs</seealso>
         public static Credentials EmailPassword(string email, string password)
         {
             Argument.NotNullOrEmpty(email, nameof(email));
@@ -185,7 +185,7 @@ namespace Realms.Sync
         /// Additionally, the names of the fields/properties must match exactly the names that your function
         /// expects.
         /// </remarks>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/custom-function/">Custom Function Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/custom-function/">Custom Function Authentication Docs</seealso>
         public static Credentials Function(object payload)
         {
             return new Credentials(AuthProvider.Function, payload.ToNativeJson());
@@ -196,7 +196,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="key">The API key to use for login.</param>
         /// <returns>A Credentials that can be used to authenticate user with an API key.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/">API Key Authentication Docs</seealso>
         public static Credentials ApiKey(string key)
         {
             Argument.NotNull(key, nameof(key));
@@ -209,7 +209,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="serverApiKey">The server API key to use for login.</param>
         /// <returns>A Credentials that can be used to authenticate user with an API key.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
+        /// <seealso href="https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/">API Key Authentication Docs</seealso>
         [Obsolete("Use Credentials.ApiKey instead.")]
         public static Credentials ServerApiKey(string serverApiKey)
         {

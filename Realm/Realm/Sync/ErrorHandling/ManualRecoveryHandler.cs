@@ -21,7 +21,7 @@ namespace Realms.Sync.ErrorHandling
     /// <summary>
     /// A client reset strategy where the user needs to fully take care of a client reset.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/#manual-recovery">Client Resets - .NET SDK</seealso>
     public sealed class ManualRecoveryHandler : ClientResetHandlerBase
     {
         /// <summary>

@@ -4,7 +4,7 @@
     <TargetFramework Condition="'$(LocalUnityReference)' != 'true'">netstandard2.0</TargetFramework>
     <PackageId>Realm.UnityUtils</PackageId>
     <Title>Realm.UnityUtils</Title>
-    <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
+    <ReleaseNotes>https://www.mongodb.com/docs/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <AssemblyName>Realm.UnityUtils</AssemblyName>
     <DisableFody>true</DisableFody>

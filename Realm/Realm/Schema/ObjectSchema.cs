@@ -281,7 +281,7 @@ namespace Realms.Schema
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
+                        $"No properties in {type.Name}, has linker stripped it? See https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
                 }
 
                 Type = type;

@@ -5,24 +5,24 @@
 
 Realm is a mobile database that runs directly on phones, tablets or wearables.
 
-This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Supported Platforms](https://docs.mongodb.com/realm/dotnet/#supported-platforms) sub-section in the documentation.
+This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Platform and Framework Compatibility](https://www.mongodb.com/docs/realm/sdk/dotnet/compatibility/) section in the documentation.
 
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets, and wearables.
-* **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/dotnet/objects/) and [queryable by code](https://docs.mongodb.com/realm/dotnet/query-engine/), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just a few common classes](https://docs.mongodb.com/realm-sdks/dotnet/latest/): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/model-data/object-models-and-schemas/) and [queryable by code](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/crud/filter/), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just a few common classes](https://www.mongodb.com/docs/realm-sdks/dotnet/latest/): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
 * **Fast:** Realm is faster than even raw SQLite on common operations while maintaining an extremely rich feature set.
 * **[MongoDB Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](https://github.com/mongodb/template-app-maui-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_dotnet_github).
 
 ## Getting Started
 
-Please see the detailed instructions in our [User Guide](https://docs.mongodb.com/realm/dotnet/install/) to add Realm to your solution.
+Please see the detailed instructions in our [User Guide](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/install/) to add Realm to your solution.
 
 ## Documentation
 
-The documentation can be found at [docs.mongodb.com/realm/dotnet/](https://docs.mongodb.com/realm/dotnet/).
-The API reference is located at [docs.mongodb.com/realm-sdks/dotnet/latest/](https://docs.mongodb.com/realm-sdks/dotnet/latest/).
+The documentation can be found at [mongodb.com/docs/atlas/device-sdks/sdk/dotnet/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/).
+The API reference is located at [mongodb.com/docs/realm-sdks/dotnet/latest/](https://www.mongodb.com/docs/realm-sdks/dotnet/latest/).
 
 ## Getting Help
 
@@ -38,7 +38,7 @@ Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/cons
 
 ## Building Realm
 
-We highly recommend [using our pre-built binaries via NuGet](https://docs.mongodb.com/realm/dotnet/install/#open-the-nuget-package-manager) but you can also build from source.
+We highly recommend [using our pre-built binaries via NuGet](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/install/#open-the-nuget-package-manager) but you can also build from source.
 
 Prerequisites:
 

@@ -377,7 +377,7 @@ public static class CollectionExtensions
     /// var results4 = realm.All&lt;Foo&gt;("Bar.IntValue > $0 || (Bar.String == $1 &amp;&amp; Bar.Bool == $2)", 5, "small", true);
     /// </code>
     /// </example>
-    /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
+    /// <seealso href="https://www.mongodb.com/docs/realm/realm-query-language/">
     /// Examples of the NSPredicate syntax
     /// </seealso>
     /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
