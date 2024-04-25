@@ -30,12 +30,12 @@
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
 #include "marshalling.hpp"
+#include <realm/object-store/sync/app_user.hpp>
 
 using namespace realm;
 using namespace realm::binding;
-using namespace app;
 
-using SharedSyncUser = std::shared_ptr<SyncUser>;
+using SharedSyncUser = std::shared_ptr<User>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using UserChangedCallbackT = void(void* managed_user_handle);
 
@@ -79,8 +79,10 @@ inline AuthProvider to_auth_provider(const std::string& provider) {
     return (AuthProvider)999;
 }
 }
+}
 
-void to_json(nlohmann::json& j, const SyncUserIdentity& i)
+namespace realm::app {
+void to_json(nlohmann::json& j, const UserIdentity& i)
 {
     j = nlohmann::json{
         { "Id", i.id },
@@ -107,8 +109,8 @@ extern "C" {
     REALM_EXPORT size_t realm_syncuser_get_id(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            std::string identity(user->identity());
-            return stringdata_to_csharpstringbuffer(identity, buffer, buffer_length);
+            std::string user_id(user->user_id());
+            return stringdata_to_csharpstringbuffer(user_id, buffer, buffer_length);
         });
     }
 
@@ -164,17 +166,17 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT Subscribable<realm::SyncUser>::Token* realm_syncuser_register_changed_callback(SharedSyncUser& user, void* managed_user_handle, NativeException::Marshallable& ex)
+    REALM_EXPORT Subscribable<User>::Token* realm_syncuser_register_changed_callback(SharedSyncUser& user, void* managed_user_handle, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             auto token = user->subscribe([managed_user_handle](const SyncUser&) {
                 s_user_changed_callback(managed_user_handle);
             });
-            return new Subscribable<realm::SyncUser>::Token(std::move(token));
+            return new Subscribable<User>::Token(std::move(token));
         });
     }
 
-    REALM_EXPORT void realm_syncuser_unregister_property_changed_callback(SharedSyncUser& user, Subscribable<realm::SyncUser>::Token& token, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_unregister_property_changed_callback(SharedSyncUser& user, Subscribable<User>::Token& token, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {
             user->unsubscribe(token);
@@ -252,7 +254,7 @@ extern "C" {
             // If the user is detached from the sync manager, we'll hit an assert, so this early check avoids that.
             if (user->state() != SyncUser::State::Removed)
             {
-                if (auto shared_app = user->sync_manager()->app().lock()) {
+                if (auto shared_app = user->app()) {
                     return new SharedApp(shared_app);
                 }
             }
@@ -353,11 +355,11 @@ extern "C" {
             if (partition_buf) {
                 Utf16StringAccessor partition(partition_buf, partition_len);
                 auto sync_config = SyncConfig(user, partition);
-                path = user->sync_manager()->path_for_realm(std::move(sync_config));
+                path = user->path_for_realm(std::move(sync_config));
             }
             else {
                 auto sync_config = SyncConfig(user, realm::SyncConfig::FLXSyncEnabled{});
-                path = user->sync_manager()->path_for_realm(std::move(sync_config), "default");
+                path = user->path_for_realm(std::move(sync_config), "default");
             }
 
             return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);

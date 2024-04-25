@@ -33,12 +33,13 @@
 #include <realm/sync/config.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/app_user.hpp>
 
 using namespace realm;
 using namespace realm::binding;
 using namespace app;
 
-using SharedSyncUser = std::shared_ptr<SyncUser>;
+using SharedSyncUser = std::shared_ptr<app::User>;
 
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
@@ -73,7 +74,7 @@ namespace realm {
 
             uint64_t request_timeout_ms;
 
-            realm::SyncClientConfig::MetadataMode metadata_mode;
+            app::AppConfig::MetadataMode metadata_mode;
 
             bool metadata_mode_has_value;
 
@@ -128,7 +129,7 @@ extern "C" {
     REALM_EXPORT SharedApp* shared_app_create(AppConfiguration app_config, uint8_t* encryption_key, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            App::Config config;
+            app::AppConfig config;
             config.app_id = Utf16StringAccessor(app_config.app_id, app_config.app_id_len);
 
             config.device_info.framework_name = s_framework;
@@ -147,38 +148,36 @@ extern "C" {
                 config.default_request_timeout_ms = app_config.request_timeout_ms;
             }
 
-            SyncClientConfig sync_client_config;
-            sync_client_config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
-            sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
-            sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
-            sync_client_config.timeouts.fast_reconnect_limit = app_config.sync_fast_reconnect_limit;
-            sync_client_config.timeouts.ping_keepalive_period = app_config.sync_ping_keep_alive_period_ms;
-            sync_client_config.timeouts.pong_keepalive_timeout = app_config.sync_pong_keep_alive_timeout_ms;
+            config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
+            config.sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
+            config.sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
+            config.sync_client_config.timeouts.fast_reconnect_limit = app_config.sync_fast_reconnect_limit;
+            config.sync_client_config.timeouts.ping_keepalive_period = app_config.sync_ping_keep_alive_period_ms;
+            config.sync_client_config.timeouts.pong_keepalive_timeout = app_config.sync_pong_keep_alive_timeout_ms;
 
             if (app_config.managed_websocket_provider) {
-                sync_client_config.socket_provider = make_websocket_provider(app_config.managed_websocket_provider);
+                config.sync_client_config.socket_provider = make_websocket_provider(app_config.managed_websocket_provider);
             }
 
             if (app_config.metadata_mode_has_value) {
-                sync_client_config.metadata_mode = app_config.metadata_mode;
+                config.metadata_mode = app_config.metadata_mode;
             }
             else {
 #if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR && !TARGET_OS_MACCATALYST
-                sync_client_config.metadata_mode = SyncManager::MetadataMode::Encryption;
+                config.metadata_mode = app::AppConfig::MetadataMode::Encryption;
 #else
-                sync_client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+                config.metadata_mode = app::AppConfig::MetadataMode::NoEncryption;
 #endif
             }
 
             if (encryption_key) {
                 auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
-                sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
+                config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
             SharedApp app = App::get_app(app_config.use_cache ? 
                 realm::app::App::CacheMode::Enabled : realm::app::App::CacheMode::Disabled,
-                std::move(config), 
-                std::move(sync_client_config));
+                std::move(config));
 
             return new SharedApp(app);
         });
@@ -242,12 +241,14 @@ extern "C" {
             Utf16StringAccessor id(id_buf, id_len);
             Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
             Utf16StringAccessor access_token(access_token_buf, access_token_len);
-            return new SharedSyncUser(
-                app->sync_manager()->get_user(
-                    id,
-                    refresh_token,
-                    access_token,
-                    "testing"));
+
+            auto user = app::User::make(app, id);
+            user->update_data_for_testing([&](app::UserData& data) {
+                data.access_token = RealmJWT(access_token.to_string());
+                data.refresh_token = RealmJWT(refresh_token.to_string());
+            });
+
+            return new SharedSyncUser(user);
         });
     }
 
@@ -255,7 +256,7 @@ extern "C" {
         NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            app->sync_manager()->set_sync_route("realm://www.test.com:1000");
+            app->sync_manager()->set_sync_route("realm://www.test.com:1000", true);
         });
     }
 
@@ -281,7 +282,7 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
-            return app->sync_manager()->immediately_run_file_actions(path);
+            return app->immediately_run_file_actions(path);
         });
     }
 
@@ -317,7 +318,7 @@ extern "C" {
     REALM_EXPORT size_t shared_app_get_base_file_path(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            std::string base_file_path(app->sync_manager()->config().base_file_path);
+            std::string base_file_path(app->config().base_file_path);
             return stringdata_to_csharpstringbuffer(base_file_path, buffer, buffer_length);
         });
     }

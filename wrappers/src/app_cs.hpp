@@ -24,11 +24,12 @@
 #include <realm/object-store/sync/app.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/app_user.hpp>
 
 using namespace realm;
 using namespace realm::app;
 
-using SharedSyncUser = std::shared_ptr<SyncUser>;
+using SharedSyncUser = std::shared_ptr<app::User>;
 
 namespace realm {
 namespace binding {
@@ -146,7 +147,7 @@ namespace binding {
     }
 
     inline auto get_user_callback_handler(void* tcs_ptr) {
-        return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
+        return [tcs_ptr](std::shared_ptr<app::User> user, util::Optional<AppError> err) {
             if (err) {
                 auto& err_copy = *err;
                 MarshaledAppError app_error(err_copy);
