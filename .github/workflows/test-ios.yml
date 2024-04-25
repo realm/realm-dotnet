@@ -13,7 +13,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   test-xamarin:
-    runs-on: macos-13
+    runs-on: macos-12
     name: Xamarin.iOS
     timeout-minutes: 90
     steps:

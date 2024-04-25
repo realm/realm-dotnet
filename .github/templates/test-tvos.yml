@@ -7,7 +7,7 @@ name: test-tvos
 _: #@ template.replace(testDefinition())
 jobs:
   test-xamarin:
-    runs-on: macos-13
+    runs-on: macos-12
     name: Xamarin.tvOS
     timeout-minutes: 45
     steps:

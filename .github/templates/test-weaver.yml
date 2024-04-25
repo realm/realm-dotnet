@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "setupWorkloads")
+#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "setupWorkloads", "setupDotnet")
 #@ load("test.lib.yml", "publishTestsResults")
 
 ---
@@ -26,6 +26,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupWorkloads("android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}"))
+      - _: #@ template.replace(setupDotnet())
       - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After

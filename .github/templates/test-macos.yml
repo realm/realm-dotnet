@@ -7,7 +7,7 @@ name: test-macos
 _: #@ template.replace(testDefinition())
 jobs:
   test-xamarin:
-    runs-on: macos-13
+    runs-on: macos-12
     name: Xamarin.macOS
     timeout-minutes: 60
     steps:
