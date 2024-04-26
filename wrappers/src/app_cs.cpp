@@ -242,12 +242,7 @@ extern "C" {
             Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
             Utf16StringAccessor access_token(access_token_buf, access_token_len);
 
-            auto user = app::User::make(app, id);
-            user->update_data_for_testing([&](app::UserData& data) {
-                data.access_token = RealmJWT(access_token.to_string());
-                data.refresh_token = RealmJWT(refresh_token.to_string());
-            });
-
+            auto user = app->create_fake_user_for_testing(id, access_token, refresh_token);
             return new SharedSyncUser(user);
         });
     }
