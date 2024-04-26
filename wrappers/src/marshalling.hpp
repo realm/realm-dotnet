@@ -235,6 +235,11 @@ static inline realm_string_t to_capi(StringData data)
     return realm_string_t{ data.data(), data.size() };
 }
 
+static inline realm_string_t to_capi(std::string_view data)
+{
+    return realm_string_t{ data.data(), data.size() };
+}
+
 static inline realm_string_t to_capi(const std::string& str)
 {
     return realm_string_t{ str.data(), str.length() };

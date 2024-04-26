@@ -27,7 +27,7 @@ jobs:
           runtime: win-x64
         - runner: ubuntu-latest
           runtime: linux-x64
-        - runner: macos-latest
+        - runner: macos-13
           runtime: osx-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:

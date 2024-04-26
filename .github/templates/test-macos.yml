@@ -7,7 +7,7 @@ name: test-macos
 _: #@ template.replace(testDefinition())
 jobs:
   test-xamarin:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: Xamarin.macOS
     timeout-minutes: 60
     steps:
@@ -17,7 +17,7 @@ jobs:
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All" + baasTestArgs("xamarinmacos")
       - #@ publishTestsResults("TestResults.XamarinMac.xml", "Xamarin.macOS")
   test-maui:
-    runs-on: macos-12
+    runs-on: macos-13
     name: Maui.MacCatalyst
     timeout-minutes: 60
     steps:

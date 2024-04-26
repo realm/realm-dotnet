@@ -254,7 +254,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var ex = await TestHelpers.AssertThrows<SessionException>(() => OpenRealm(ObjectId.GenerateNewId(), typeof(NullablesV0), schemaVersion: 3));
-                Assert.That(ex.Message, Does.Contain("schema version in BIND 3 is greater than latest schema version 2"));
+                Assert.That(ex.Message, Does.Contain("Client provided invalid schema version: client presented schema version \"3\" is greater than latest schema version \"2\""));
             });
         }
 
