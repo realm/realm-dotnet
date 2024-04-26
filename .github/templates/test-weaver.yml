@@ -26,7 +26,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupWorkloads("android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}"))
-      - _: #@ template.replace(setupDotnet())
+      - _: #@ template.replace(setupDotnet("6.0.x"))
       - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
