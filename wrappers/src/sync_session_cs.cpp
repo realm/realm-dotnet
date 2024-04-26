@@ -26,6 +26,7 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
 #include <realm/sync/client_base.hpp>
+#include <realm/object-store/sync/app_user.hpp>
 
 namespace realm::binding {
 enum class NotifiableProperty : uint8_t {
@@ -43,13 +44,13 @@ std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
 std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 
 extern "C" {
-REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
+REALM_EXPORT std::shared_ptr<app::User>* realm_syncsession_get_user(const SharedSyncSession& session)
 {
     if (session->user() == nullptr) {
         return nullptr;
     }
 
-    return new std::shared_ptr<SyncUser>(session->user());
+    return new std::shared_ptr<app::User>(std::dynamic_pointer_cast<app::User>(session->user()));
 }
 
 enum class CSharpSessionState : uint8_t {
