@@ -1,17 +1,13 @@
 ## vNext (TBD)
 
-### Breaking Changes
-* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
-* The returned value from `MongoClient.Collection.FindOneAsync` is now a nullable document to more explicitly convey that `null` may be returned in case no object matched the filter.
-
 ### Enhancements
 * None
 
 ### Fixed
-* None
+* The returned value from `MongoClient.Collection.FindOneAsync` is now a nullable document to more explicitly convey that `null` may be returned in case no object matched the filter. ([PR #3586](https://github.com/realm/realm-dotnet/pull/3586))
 
 ### Compatibility
-* Realm Studio: 13.0.0 or later.
+* Realm Studio: 15.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.
