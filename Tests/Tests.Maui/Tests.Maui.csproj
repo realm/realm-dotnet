@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <DisableFody>true</DisableFody>
     <Nullable>enable</Nullable>
+    <UseMaui>true</UseMaui>
 
     <!-- Display name -->
     <ApplicationTitle>Tests.Maui</ApplicationTitle>
