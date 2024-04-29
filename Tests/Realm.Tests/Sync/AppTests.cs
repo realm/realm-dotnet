@@ -26,6 +26,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Baas;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.PlatformHelpers;
@@ -397,6 +398,25 @@ namespace Realms.Tests.Sync
         {
             var config = new AppConfiguration("abc");
             Assert.That(config.BaseUri, Is.EqualTo(new Uri("https://services.cloud.mongodb.com")));
+        }
+
+        [Test]
+        public void App_ChangeBaseUri_UpdatesBaseUri()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync);
+                appConfig.BaseUri = new Uri("https://services.mongodb.com");
+                var app = App.Create(appConfig);
+
+                Assert.That(app.BaseUri, Is.EqualTo(new Uri("https://services.mongodb.com")));
+
+#pragma warning disable RLM001
+                await app.UpdateBaseUriAsync(SyncTestHelpers.BaasUri!);
+#pragma warning restore RLM001
+
+                Assert.That(app.BaseUri, Is.EqualTo(SyncTestHelpers.BaasUri));
+            });
         }
     }
 }
