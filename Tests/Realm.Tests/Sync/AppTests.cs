@@ -401,7 +401,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void App_ChangeBaseUri_UpdatesBaseUri()
+        public void App_UpdateBaseUri_UpdatesBaseUri()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -411,11 +411,31 @@ namespace Realms.Tests.Sync
 
                 Assert.That(app.BaseUri, Is.EqualTo(new Uri("https://services.mongodb.com")));
 
-#pragma warning disable RLM001
+#pragma warning disable Rlm001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
                 await app.UpdateBaseUriAsync(SyncTestHelpers.BaasUri!);
-#pragma warning restore RLM001
+#pragma warning restore Rlm001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
                 Assert.That(app.BaseUri, Is.EqualTo(SyncTestHelpers.BaasUri));
+            });
+        }
+
+        [Test]
+        public void App_UpdateBaseUri_WhenUnreachable_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync);
+                appConfig.BaseUri = new Uri("https://services.mongodb.com");
+                var app = App.Create(appConfig);
+
+                Assert.That(app.BaseUri, Is.EqualTo(new Uri("https://services.mongodb.com")));
+
+#pragma warning disable Rlm001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                var ex = await TestHelpers.AssertThrows<AppException>(() => app.UpdateBaseUriAsync(new Uri("https://google.com")));
+#pragma warning restore Rlm001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+                Assert.That(ex.Message, Does.Contain("404"));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             });
         }
     }

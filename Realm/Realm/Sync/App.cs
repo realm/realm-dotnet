@@ -275,7 +275,10 @@ namespace Realms.Sync
         /// Temporarily overrides the <see cref="AppConfiguration.BaseUri"/> value from <see cref="AppConfiguration"/>
         /// with a new <paramref name="newUri"/> value used for communicating with the server.
         /// </summary>
-        /// <param name="newUri">The new uri that will be used for communicating with the server.</param>
+        /// <param name="newUri">
+        /// The new uri that will be used for communicating with the server. If set to <c>null</c>, the base uri will
+        /// be reset to its default value.
+        /// </param>
         /// <returns>An awaitable <see cref="Task"/> that represents the asynchronous operation.</returns>
         /// <remarks>
         /// The App will revert to using the value in [AppConfiguration] when it is restarted.
@@ -287,7 +290,7 @@ namespace Realms.Sync
         /// This API is experimental and subject to change without a major version increase.
         /// </remarks>
         [Experimental("Rlm001", UrlFormat = "www.mongodb.com/docs/atlas/app-services/edge-server/connect/#roaming-between-edge-servers")]
-        public Task UpdateBaseUriAsync(Uri newUri) => Handle.UpdateBaseUriAsync(newUri);
+        public Task UpdateBaseUriAsync(Uri? newUri) => Handle.UpdateBaseUriAsync(newUri);
 
         /// <inheritdoc />
         public override bool Equals(object? obj)

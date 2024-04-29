@@ -349,13 +349,13 @@ namespace Realms.Sync
             return new Uri(uriString);
         }
 
-        public async Task UpdateBaseUriAsync(Uri newUri)
+        public async Task UpdateBaseUriAsync(Uri? newUri)
         {
             var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
-                var url = newUri.ToString();
+                var url = newUri?.ToString().TrimEnd('/') ?? string.Empty;
                 NativeMethods.update_base_uri(this, url, (IntPtr)url.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
                 await tcs.Task;
