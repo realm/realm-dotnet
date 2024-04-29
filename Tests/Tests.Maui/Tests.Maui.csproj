@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
