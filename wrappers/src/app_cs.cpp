@@ -347,6 +347,25 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void shared_app_update_base_url(SharedApp& app, uint16_t* url_buf, size_t url_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            std::string url(Utf16StringAccessor(url_buf, url_len));
+
+            app->update_base_url(url, [tcs_ptr](util::Optional<AppError> err) {
+                if (err) {
+                    auto& err_copy = *err;
+                    MarshaledAppError app_error(err_copy);
+
+                    s_void_callback(tcs_ptr, app_error);
+                }
+                else {
+                    s_void_callback(tcs_ptr, MarshaledAppError());
+                }
+            });
+        });
+    }
+
 #pragma region EmailPassword
 
     REALM_EXPORT void shared_app_email_register_user(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, void* tcs_ptr, NativeException::Marshallable& ex)

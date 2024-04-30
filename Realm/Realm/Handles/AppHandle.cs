@@ -121,6 +121,12 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_default_url", CallingConvention = CallingConvention.Cdecl)]
             public static extern StringValue get_default_url(out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_update_base_url", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void update_base_uri(AppHandle appHandle,
+                [MarshalAs(UnmanagedType.LPWStr)] string url_buf, IntPtr url_len,
+                IntPtr tcs_ptr,
+                out NativeException ex);
         }
 
         static AppHandle()
@@ -341,6 +347,23 @@ namespace Realms.Sync
             })!;
 
             return new Uri(uriString);
+        }
+
+        public async Task UpdateBaseUriAsync(Uri? newUri)
+        {
+            var tcs = new TaskCompletionSource();
+            var tcsHandle = GCHandle.Alloc(tcs);
+            try
+            {
+                var url = newUri?.ToString().TrimEnd('/') ?? string.Empty;
+                NativeMethods.update_base_uri(this, url, (IntPtr)url.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public string GetId()
