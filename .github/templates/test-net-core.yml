@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 ---
@@ -22,14 +22,14 @@ jobs:
           runtime: osx-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net7.0
+        - framework: net8.0
           os:
             runner: macos-14
             runtime: osx-arm64
-        - framework: net7.0
-          os:
-            runner: win81
-            runtime: win-x64
+        #! - framework: net6.0 // Need to install net8 sdk to the win81 runner
+        #!   os:
+        #!     runner: win81
+        #!     runtime: win-x64
 
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
@@ -37,6 +37,7 @@ jobs:
       - name: Clear nuget cache
         run: dotnet nuget locals all --clear
         if: ${{ matrix.os.runner == 'win81' }}
+      - _: #@ template.replace(setupDotnet())
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         env:
@@ -49,4 +50,4 @@ jobs:
         with:
           name: crash-report-net-core-${{ matrix.runner }}-${{ matrix.runtime }}
           path: /tmp/coredump*
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")
+      - #@ template.replace(publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})"))

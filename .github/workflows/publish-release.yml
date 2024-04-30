@@ -82,7 +82,7 @@ jobs:
         * None
 
         ### Compatibility
-        * Realm Studio: 13.0.0 or later.
+        * Realm Studio: 15.0.0 or later.
 
         ### Internal
         * Using Core x.y.z.
@@ -106,7 +106,7 @@ jobs:
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/release-to-slack@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
         changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET

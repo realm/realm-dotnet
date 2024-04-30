@@ -4,10 +4,10 @@
 * None
 
 ### Fixed
-* None
+* The returned value from `MongoClient.Collection.FindOneAsync` is now a nullable document to more explicitly convey that `null` may be returned in case no object matched the filter. ([PR #3586](https://github.com/realm/realm-dotnet/pull/3586))
 
 ### Compatibility
-* Realm Studio: 13.0.0 or later.
+* Realm Studio: 15.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.

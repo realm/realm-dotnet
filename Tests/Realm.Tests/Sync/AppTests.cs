@@ -40,7 +40,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void DeviceInfo_OutputsMeaningfulInfo()
         {
-            static void AssertBundleId(params string[] expectedValues)
+            static void AssertBundleId(params string?[] expectedValues)
             {
                 var localTestRunners = new[] { "ReSharperTestRunner", "testhost" };
                 var values = expectedValues.Concat(localTestRunners).Select(Platform.Sha256).ToArray();
@@ -90,7 +90,7 @@ namespace Realms.Tests.Sync
                 case "Android":
                     Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
-                    AssertBundleId("Tests.Android", "Tests.Maui");
+                    AssertBundleId("Tests.Android", "Tests.Maui", null); // On MAUI, we may not be able to detect the bundle id
                     break;
                 case "UWP":
                     if (TestHelpers.IsUWP)

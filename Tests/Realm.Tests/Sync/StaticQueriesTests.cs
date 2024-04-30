@@ -28,7 +28,6 @@ using NUnit.Framework;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-
 using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
@@ -63,15 +62,15 @@ namespace Realms.Tests.Sync
 
                 var syncObj1 = syncObjects.Single();
 
-                AssertProps(obj1, syncObj1);
+                AssertCollectionProps(obj1, syncObj1);
 
                 realm.Write(() => realm.Add(syncObj2));
 
                 var filter = new { _id = syncObj2.Id };
 
-                var obj2 = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var obj2 = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
-                AssertProps(syncObj2, obj2);
+                AssertCollectionProps(syncObj2, obj2);
 
                 void FillCollectionProps(SyncCollectionsObject obj)
                 {
@@ -81,7 +80,7 @@ namespace Realms.Tests.Sync
                     }
                 }
 
-                void AssertProps(SyncCollectionsObject expected, SyncCollectionsObject actual)
+                void AssertCollectionProps(SyncCollectionsObject expected, SyncCollectionsObject actual)
                 {
                     foreach (var prop in props)
                     {
@@ -94,7 +93,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] PrimitiveTestCases = new[]
+        public static readonly object[] PrimitiveTestCases =
         {
             new object[] { CreateTestCase("Empty object", new SyncAllTypesObject()) },
             new object[]
@@ -175,7 +174,7 @@ namespace Realms.Tests.Sync
 
                 var filter = new { _id = obj.Id };
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
                 AssertProps(props, obj, syncObj);
             }, timeout: 120000);
@@ -189,7 +188,7 @@ namespace Realms.Tests.Sync
          * This means that there is an issue when going from Realm to Atlas and then deserializing from Atlas, as there will be a difference
          * of 1 millisecond when the original DateTimeOffset has sub-millisecond precision.
          */
-        public static readonly object[] DateTimeTestCasesAtlasToRealm = new[]
+        public static readonly object[] DateTimeTestCasesAtlasToRealm =
         {
             new object[] { CreateTestCase("PostEpoch", new DateTimeOffset(638404890727190000, TimeSpan.Zero)) },
             new object[] { CreateTestCase("PostEpoch-subprecision", new DateTimeOffset(638404890727196472, TimeSpan.Zero)) },
@@ -217,7 +216,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] DateTimeTestCasesRealmToAtlas = new[]
+        public static readonly object[] DateTimeTestCasesRealmToAtlas =
         {
             new object[] { CreateTestCase("PostEpoch", new DateTimeOffset(638404890727190000, TimeSpan.Zero)) },
             new object[] { CreateTestCase("PostEpoch-subprecision", new DateTimeOffset(638404890727196472, TimeSpan.Zero)) },
@@ -238,7 +237,7 @@ namespace Realms.Tests.Sync
 
                 var filter = new { _id = obj.Id };
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
                 AssertAreEqual(syncObj.DateTimeOffsetProperty, obj.DateTimeOffsetProperty);
             }, timeout: 120000);
@@ -261,7 +260,7 @@ namespace Realms.Tests.Sync
 
                 var filter = new { _id = obj.Id };
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
                 var originalUnixMs = obj.DateTimeOffsetProperty.ToUnixTimeMilliseconds();
                 var expectedUnixMs = syncObj.DateTimeOffsetProperty.ToUnixTimeMilliseconds();
@@ -270,7 +269,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] CounterTestCases = new[]
+        public static readonly object[] CounterTestCases =
         {
             new object[]
             {
@@ -342,13 +341,13 @@ namespace Realms.Tests.Sync
 
                 var filter = new { _id = obj.Id };
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
                 AssertProps(props, obj, syncObj);
             }, timeout: 120000);
         }
 
-        public static readonly object[] AsymmetricTestCases = new[]
+        public static readonly object[] AsymmetricTestCases =
         {
             new object[]
             {
@@ -370,13 +369,13 @@ namespace Realms.Tests.Sync
                 using var realm = await GetFLXIntegrationRealmAsync();
                 realm.Write(() => realm.Add(obj));
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(filter), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
 
                 Assert.That(stringProperty, Is.EqualTo(syncObj.PartitionLike));
             }, timeout: 120000);
         }
 
-        public static readonly object[] ObjectTestCases = new[]
+        public static readonly object[] ObjectTestCases =
         {
             new object[]
             {
@@ -433,8 +432,8 @@ namespace Realms.Tests.Sync
                 await realm.All<IntPropertyObject>().Where(o => o.Id == obj.ObjectProperty!.Id).SubscribeAsync();
                 realm.Write(() => realm.Add(obj));
 
-                var syncAllTypeObj = await WaitForConditionAsync(() => syncAllTypesCollection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
-                var intPropertyObj = await WaitForConditionAsync(() => intPropertyCollection.FindOneAsync(new { _id = obj.ObjectProperty!.Id }), item => Task.FromResult(item != null));
+                var syncAllTypeObj = await WaitForNonNullObjectAsync(() => syncAllTypesCollection.FindOneAsync(new { _id = obj.Id }));
+                var intPropertyObj = await WaitForNonNullObjectAsync(() => intPropertyCollection.FindOneAsync(new { _id = obj.ObjectProperty!.Id }));
 
                 Assert.That(syncAllTypeObj.ObjectProperty!.Id, Is.EqualTo(obj.ObjectProperty!.Id));
                 Assert.That(syncAllTypeObj.ObjectProperty!.Int, Is.Not.EqualTo(obj.ObjectProperty!.Int));
@@ -444,7 +443,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] LinksTestCases = new[]
+        public static readonly object[] LinksTestCases =
         {
             new object[]
             {
@@ -536,7 +535,7 @@ namespace Realms.Tests.Sync
                 await collection.InsertManyAsync(elementsToInsert!);
 
                 // How many objects we expect
-                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Where(d => d.Value != null).Count() + 1 + (obj.Link is null ? 0 : 1);
+                var totalCount = obj.List.Count + obj.Set.Count + obj.Dictionary.Count(d => d.Value != null) + 1 + (obj.Link is null ? 0 : 1);
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var linkObjs = await realm.All<LinksObject>().SubscribeAsync();
@@ -582,8 +581,8 @@ namespace Realms.Tests.Sync
                     else
                     {
                         Assert.That(retrieved, Is.Not.Null);
-                        Assert.That(retrieved!.Id, Is.EqualTo(original!.Id));
-                        Assert.That(retrieved!.Value, Is.EqualTo(original!.Value));
+                        Assert.That(retrieved!.Id, Is.EqualTo(original.Id));
+                        Assert.That(retrieved.Value, Is.EqualTo(original.Value));
                     }
                 }
             }, timeout: 120000);
@@ -606,7 +605,7 @@ namespace Realms.Tests.Sync
                 realm.Write(() => realm.Add(obj));
                 await WaitForUploadAsync(realm);
 
-                var linkObj = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
+                var linkObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(new { _id = obj.Id }));
 
                 await AssertEqual(collection, linkObj.Link, obj.Link);
 
@@ -646,7 +645,7 @@ namespace Realms.Tests.Sync
                     Assert.That(partiallyRetrieved!.Id, Is.EqualTo(original.Id));
                     Assert.That(partiallyRetrieved.Value, Is.Not.EqualTo(original.Value));
 
-                    var fullyRetrieved = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = original.Id }), item => Task.FromResult(item != null));
+                    var fullyRetrieved = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(new { _id = original.Id }));
 
                     Assert.That(fullyRetrieved.Id, Is.EqualTo(original.Id));
                     Assert.That(fullyRetrieved.Value, Is.EqualTo(original.Value));
@@ -654,7 +653,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] RealmValueLinkTestCases = new[]
+        public static readonly object[] RealmValueLinkTestCases =
         {
             new object[]
             {
@@ -734,18 +733,18 @@ namespace Realms.Tests.Sync
                 await realmValCollection.InsertOneAsync(obj);
 
                 var elementsToInsert = obj.RealmValueList.Select(o => o.As<IntPropertyObject>())
-                .Concat(obj.RealmValueSet.Select(o => o.As<IntPropertyObject>())
-                .Concat(obj.RealmValueDictionary.Values.Select(o => o.As<IntPropertyObject>()).Where(v => v is not null)));
+                    .Concat(obj.RealmValueSet.Select(o => o.As<IntPropertyObject>())
+                    .Concat(obj.RealmValueDictionary.Values.Select(o => o.As<IntPropertyObject>()).Where(v => v is not null)));
 
                 if (obj.RealmValueProperty != RealmValue.Null)
                 {
                     elementsToInsert = elementsToInsert.Concat(new[] { obj.RealmValueProperty.As<IntPropertyObject>() });
                 }
 
-                await intCollection.InsertManyAsync(elementsToInsert!);
+                await intCollection.InsertManyAsync(elementsToInsert);
 
                 // How many objects we expect
-                var totalCount = obj.RealmValueList.Count + obj.RealmValueSet.Count + obj.RealmValueDictionary.Where(d => d.Value != RealmValue.Null).Count();
+                var totalCount = obj.RealmValueList.Count + obj.RealmValueSet.Count + obj.RealmValueDictionary.Count(d => d.Value != RealmValue.Null);
 
                 using var realm = await GetFLXIntegrationRealmAsync();
                 var intObjs = await realm.All<IntPropertyObject>().SubscribeAsync();
@@ -820,7 +819,7 @@ namespace Realms.Tests.Sync
                 realm.Write(() => realm.Add(obj));
                 await WaitForUploadAsync(realm);
 
-                var realmValObj = await WaitForConditionAsync(() => realmValCollection.FindOneAsync(new { _id = obj.Id }), item => Task.FromResult(item != null));
+                var realmValObj = await WaitForNonNullObjectAsync(() => realmValCollection.FindOneAsync(new { _id = obj.Id }));
 
                 await AssertEqual(intCollection, realmValObj.RealmValueProperty, obj.RealmValueProperty);
 
@@ -864,7 +863,7 @@ namespace Realms.Tests.Sync
                     Assert.That(retrievedAsObj.Id, Is.EqualTo(originalAsObj.Id));
                     Assert.That(retrievedAsObj.Int, Is.Not.EqualTo(originalAsObj.Int));
 
-                    var fullyRetrieved = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = originalAsObj.Id }), item => Task.FromResult(item != null));
+                    var fullyRetrieved = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(new { _id = originalAsObj.Id }));
 
                     Assert.That(fullyRetrieved.Id, Is.EqualTo(originalAsObj.Id));
                     Assert.That(fullyRetrieved.Int, Is.EqualTo(originalAsObj.Int));
@@ -1059,7 +1058,7 @@ namespace Realms.Tests.Sync
                 realm.Write(() => realm.Add(obj));
                 await WaitForUploadAsync(realm);
 
-                var syncObj = await WaitForConditionAsync(() => collection.FindOneAsync(new { _id = obj.PrimaryKey }), item => Task.FromResult(item != null));
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(new { _id = obj.PrimaryKey }));
 
                 AssertEmbedded(syncObj, obj);
             }, timeout: 120000);
@@ -1132,7 +1131,7 @@ namespace Realms.Tests.Sync
                 var retrieved = await typedCollection.FindOneAsync(new { _id = primaryKey });
 
                 Assert.That(retrieved, Is.Not.Null);
-                Assert.That(retrieved.Value, Is.EqualTo(doc["Value"].AsString));
+                Assert.That(retrieved!.Value, Is.EqualTo(doc["Value"].AsString));
             }, timeout: 120000);
         }
 
@@ -1151,7 +1150,7 @@ namespace Realms.Tests.Sync
                     { "Value", ObjectId.GenerateNewId() }, // Wrong type
                 };
 
-                var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
+                var ex = await AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
             }, timeout: 120000);
         }
@@ -1206,7 +1205,7 @@ namespace Realms.Tests.Sync
                     { "Int", 23 }, // Missing the GuidProperty field
                 };
 
-                var ex = await TestHelpers.AssertThrows<Realms.Sync.Exceptions.AppException>(() => collection.InsertOneAsync(doc));
+                var ex = await AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
             }, timeout: 120000);
         }
@@ -1242,7 +1241,8 @@ namespace Realms.Tests.Sync
                 var typedCollection = db.GetCollection<IntPropertyObject>(collectionName);
                 var retrieved = await typedCollection.FindOneAsync(new { _id = primaryKey });
 
-                Assert.That(retrieved.Id, Is.EqualTo(primaryKey));
+                Assert.That(retrieved, Is.Not.Null);
+                Assert.That(retrieved!.Id, Is.EqualTo(primaryKey));
                 Assert.That(retrieved.Int, Is.EqualTo(doc["Int"].AsInt32));
                 Assert.That(retrieved.GuidProperty, Is.EqualTo(default(Guid)));
             }, timeout: 120000);

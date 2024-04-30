@@ -54,9 +54,9 @@ jobs:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      uses: actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
@@ -109,7 +109,7 @@ jobs:
     uses: ./.github/workflows/test-net-core.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["net6.0", "net7.0"]'
+      framework: '["net6.0", "net8.0"]'
   test-macos:
     uses: ./.github/workflows/test-macos.yml
     name: Test

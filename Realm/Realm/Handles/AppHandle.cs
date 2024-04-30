@@ -121,7 +121,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_default_url", CallingConvention = CallingConvention.Cdecl)]
             public static extern StringValue get_default_url(out NativeException ex);
-
         }
 
         static AppHandle()
