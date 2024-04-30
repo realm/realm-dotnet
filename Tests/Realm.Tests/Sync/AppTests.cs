@@ -407,7 +407,7 @@ namespace Realms.Tests.Sync
             {
                 var appConfig = SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync);
                 appConfig.BaseUri = new Uri("https://services.mongodb.com");
-                var app = App.Create(appConfig);
+                var app = CreateApp(appConfig);
 
                 Assert.That(app.BaseUri, Is.EqualTo(new Uri("https://services.mongodb.com")));
 
@@ -426,7 +426,7 @@ namespace Realms.Tests.Sync
             {
                 var appConfig = SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync);
                 appConfig.BaseUri = new Uri("https://services.mongodb.com");
-                var app = App.Create(appConfig);
+                var app = CreateApp(appConfig);
 
                 Assert.That(app.BaseUri, Is.EqualTo(new Uri("https://services.mongodb.com")));
 
