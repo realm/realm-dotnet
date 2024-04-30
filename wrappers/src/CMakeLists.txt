@@ -38,13 +38,17 @@ set(HEADERS
     websocket_cs.hpp
 )
 
+set(MANIFESTS
+    PrivacyInfo.xcprivacy
+)
+
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wno-missing-prototypes)
 endif()
 
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 
-add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
+add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS} ${MANIFESTS})
 
 if(BUILD_APPLE_FRAMEWORK)
     set_target_properties(realm-wrappers PROPERTIES
@@ -53,6 +57,12 @@ if(BUILD_APPLE_FRAMEWORK)
         MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
         MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
     )
+
+    if(TARGETING_CATALYST)
+        set_source_files_properties(${MANIFESTS} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    else()
+        set_source_files_properties(${MANIFESTS} PROPERTIES MACOSX_PACKAGE_LOCATION "")
+    endif()
 
     add_custom_command(TARGET realm-wrappers POST_BUILD
         COMMENT Compress the build products in case they contain symlinks which NuGet can't handle
