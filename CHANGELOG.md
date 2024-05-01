@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.1.0 (2024-05-01)
 
 ### Enhancements
 * Added an experimental API to update the base url for an application at runtime - `App.UpdateBaseUriAsync()`. This intended to be used for roaming between edge server and cloud. (Issue [#3521](https://github.com/realm/realm-dotnet/issues/3521))
