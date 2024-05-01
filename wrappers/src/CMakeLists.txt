@@ -58,11 +58,7 @@ if(BUILD_APPLE_FRAMEWORK)
         MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
     )
 
-    if(TARGETING_CATALYST)
-        set_source_files_properties(${MANIFESTS} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    else()
-        set_source_files_properties(${MANIFESTS} PROPERTIES MACOSX_PACKAGE_LOCATION "")
-    endif()
+    set_source_files_properties(${MANIFESTS} PROPERTIES MACOSX_PACKAGE_LOCATION "")
 
     add_custom_command(TARGET realm-wrappers POST_BUILD
         COMMENT Compress the build products in case they contain symlinks which NuGet can't handle
