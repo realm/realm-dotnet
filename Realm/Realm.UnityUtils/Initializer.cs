@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Reflection;
 using System.Threading;
 using Realms;
 using Realms.PlatformHelpers;
@@ -23,6 +24,7 @@ using UnityEngine;
 
 namespace UnityUtils
 {
+    [Obfuscation(ApplyToMembers = true, Exclude = true)]
     internal static class Initializer
     {
         private static int _isInitialized;

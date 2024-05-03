@@ -37,6 +37,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="DeepObject2"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DeepObject2", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringValue"),

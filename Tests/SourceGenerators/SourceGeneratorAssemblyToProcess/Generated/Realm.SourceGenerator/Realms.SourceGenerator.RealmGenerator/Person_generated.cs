@@ -31,6 +31,7 @@ namespace SourceGeneratorPlayground
         /// <summary>
         /// Defines the schema for the <see cref="Person"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Guid, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),

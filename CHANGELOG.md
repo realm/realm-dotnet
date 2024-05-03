@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added `[System.Reflection.Obfuscation]` on the generated `RealmSchema` field to improve compatibility with obfuscation tools that change field and property names of generated classes. (Issue [#3574](https://github.com/realm/realm-dotnet/issues/3574))
 
 ### Fixed
 * None

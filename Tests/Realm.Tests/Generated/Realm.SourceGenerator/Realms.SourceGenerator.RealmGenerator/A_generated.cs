@@ -36,6 +36,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="A"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("A", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
