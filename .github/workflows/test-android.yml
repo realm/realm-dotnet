@@ -85,7 +85,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
-        fail-on-error: false
+        fail-on-error: true
   test-maui:
     runs-on: windows-latest
     name: Maui.Android
@@ -150,4 +150,4 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
-        fail-on-error: false
+        fail-on-error: true

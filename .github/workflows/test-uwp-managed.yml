@@ -71,4 +71,4 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
-        fail-on-error: false
+        fail-on-error: true

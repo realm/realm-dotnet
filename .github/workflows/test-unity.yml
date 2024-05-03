@@ -96,7 +96,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
-        fail-on-error: false
+        fail-on-error: true
   run-tests-windows:
     runs-on: windows-latest
     name: Unity Windows
@@ -134,4 +134,4 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
-        fail-on-error: false
+        fail-on-error: true
