@@ -12,6 +12,7 @@ env:
 jobs:
   run-tests-weaver:
     strategy:
+      fail-fast: false
       matrix:
         os:
         - runner: windows-latest
