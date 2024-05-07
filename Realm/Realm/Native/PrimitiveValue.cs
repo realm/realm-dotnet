@@ -353,7 +353,12 @@ namespace Realms.Native
 
         public static implicit operator bool(in StringValue value) => value.data != null;
 
-        public static implicit operator string?(in StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+        public static implicit operator string?(in StringValue value) => value.ToDotnetString();
+
+        public readonly string? ToDotnetString(bool treatEmptyAsNull = false)
+            => data == null || (size == 0 && treatEmptyAsNull)
+            ? null
+            : Encoding.UTF8.GetString(data, (int)size);
     }
 
     [StructLayout(LayoutKind.Sequential)]

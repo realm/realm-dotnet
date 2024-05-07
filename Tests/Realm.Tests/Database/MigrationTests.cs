@@ -834,6 +834,63 @@ namespace Realms.Tests.Database
             Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Count(), Is.EqualTo(1));
             Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Any(e => e.Value == "bar"), Is.False);
         }
+
+        // Test for https://github.com/realm/realm-dotnet/issues/3597
+        [Test]
+        public void Migration_MigratesListOfFloats()
+        {
+            var oldConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597_Old)
+                }
+            };
+
+            using (var oldRealm = GetRealm(oldConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new Dotnet_3597_Old
+                    {
+                        FloatProp = 3.14f,
+                        FloatList =
+                        {
+                            1,
+                            2,
+                            -1.23f
+                        }
+                    });
+                });
+            }
+
+            var newConfig = new RealmConfiguration(oldConfig.DatabasePath)
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597)
+                },
+                SchemaVersion = 2,
+                MigrationCallback = (migration, version) =>
+                {
+                    foreach (var item in migration.OldRealm.DynamicApi.All(nameof(Dotnet_3597)))
+                    {
+                        var newItem = migration.FindInNewRealm<Dotnet_3597>(item)!;
+                        newItem.FloatProp = item.DynamicApi.Get<float?>("FloatProp").ToString()!;
+                        foreach (var floatValue in item.DynamicApi.GetList<float?>("FloatList"))
+                        {
+                            newItem.FloatList.Add(floatValue.ToString()!);
+                        }
+                    }
+                }
+            };
+
+            var newRealm = GetRealm(newConfig);
+
+            var obj = newRealm.All<Dotnet_3597>().Single();
+            Assert.That(obj.FloatProp, Is.EqualTo("3.14"));
+            CollectionAssert.AreEqual(obj.FloatList, new[] { "1", "2", "-1.23" });
+        }
     }
 
     [Explicit]
@@ -883,5 +940,23 @@ namespace Realms.Tests.Database
     public partial class ObjectEmbedded : TestEmbeddedObject
     {
         public string? Value { get; set; }
+    }
+
+    [Explicit]
+    [MapTo("Dotnet_3597")]
+    public partial class Dotnet_3597_Old : TestRealmObject
+    {
+        public float? FloatProp { get; set; }
+
+        public IList<float?> FloatList { get; }
+    }
+
+    [Explicit]
+    [MapTo("Dotnet_3597")]
+    public partial class Dotnet_3597 : TestRealmObject
+    {
+        public string FloatProp { get; set; }
+
+        public IList<string> FloatList { get; }
     }
 }

@@ -1111,6 +1111,21 @@ namespace Realms
             return default;
         }
 
+        // This is only used during migrations. obj here is the object in the old realm and we're trying to find
+        // its counterpart post-migration.
+        internal T? FindExisting<T>(IRealmObject obj)
+        {
+            ThrowIfDisposed();
+            Argument.Ensure(obj.IsManaged, "Only managed objects can be used in FindExisting", nameof(obj));
+            var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
+            if (SharedRealmHandle.TryFindObject(obj.GetObjectHandle()!, out var objectHandle))
+            {
+                return (T)MakeObject(metadata, objectHandle);
+            }
+
+            return default;
+        }
+
         #endregion Quick Find using primary key
 
         #region Thread Handover
@@ -1589,7 +1604,7 @@ namespace Realms
             public IRealmObjectBase CreateObject(string className) => CreateObjectCore(className, primaryKey: null);
 
             /// <summary>
-            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Factory for a managed object with a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
             /// </summary>
             /// <returns>A dynamically-accessed Realm object.</returns>
             /// <param name="className">The type of object to create as defined in the schema.</param>
@@ -1609,7 +1624,7 @@ namespace Realms
             public IRealmObjectBase CreateObject(string className, long? primaryKey) => CreateObjectCore(className, primaryKey);
 
             /// <summary>
-            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Factory for a managed object with a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
             /// </summary>
             /// <returns>A dynamically-accessed Realm object.</returns>
             /// <param name="className">The type of object to create as defined in the schema.</param>
@@ -1629,7 +1644,7 @@ namespace Realms
             public IRealmObjectBase CreateObject(string className, string? primaryKey) => CreateObjectCore(className, primaryKey);
 
             /// <summary>
-            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Factory for a managed object with a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
             /// </summary>
             /// <returns>A dynamically-accessed Realm object.</returns>
             /// <param name="className">The type of object to create as defined in the schema.</param>
@@ -1649,7 +1664,7 @@ namespace Realms
             public IRealmObjectBase CreateObject(string className, ObjectId? primaryKey) => CreateObjectCore(className, primaryKey);
 
             /// <summary>
-            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Factory for a managed object with a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
             /// </summary>
             /// <returns>A dynamically-accessed Realm object.</returns>
             /// <param name="className">The type of object to create as defined in the schema.</param>
