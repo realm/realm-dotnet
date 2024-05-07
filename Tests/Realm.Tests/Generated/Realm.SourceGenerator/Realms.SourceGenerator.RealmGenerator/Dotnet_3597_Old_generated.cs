@@ -38,6 +38,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dotnet_3597", ObjectSchema.ObjectType.RealmObject)
         {
+            Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntProp"),
             Realms.Schema.Property.Primitive("FloatProp", Realms.RealmValueType.Float, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "FloatProp"),
             Realms.Schema.Property.PrimitiveList("FloatList", Realms.RealmValueType.Float, areElementsNullable: true, managedName: "FloatList"),
         }.Build();
@@ -91,6 +92,10 @@ namespace Realms.Tests.Database
                     newAccessor.FloatList.Clear();
                 }
 
+                if (!skipDefaults || oldAccessor.IntProp != default(int))
+                {
+                    newAccessor.IntProp = oldAccessor.IntProp;
+                }
                 if (!skipDefaults || oldAccessor.FloatProp != default(float?))
                 {
                     newAccessor.FloatProp = oldAccessor.FloatProp;
@@ -268,6 +273,8 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDotnet_3597_OldAccessor : Realms.IRealmAccessor
         {
+            int IntProp { get; set; }
+
             float? FloatProp { get; set; }
 
             System.Collections.Generic.IList<float?> FloatList { get; }
@@ -276,6 +283,12 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class Dotnet_3597_OldManagedAccessor : Realms.ManagedAccessor, IDotnet_3597_OldAccessor
         {
+            public int IntProp
+            {
+                get => (int)GetValue("IntProp");
+                set => SetValue("IntProp", value);
+            }
+
             public float? FloatProp
             {
                 get => (float?)GetValue("FloatProp");
@@ -302,6 +315,17 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Dotnet_3597_Old.RealmSchema;
 
+            private int _intProp;
+            public int IntProp
+            {
+                get => _intProp;
+                set
+                {
+                    _intProp = value;
+                    RaisePropertyChanged("IntProp");
+                }
+            }
+
             private float? _floatProp;
             public float? FloatProp
             {
@@ -323,6 +347,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
+                    "IntProp" => _intProp,
                     "FloatProp" => _floatProp,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
@@ -332,6 +357,9 @@ namespace Realms.Tests.Database
             {
                 switch (propertyName)
                 {
+                    case "IntProp":
+                        IntProp = (int)val;
+                        return;
                     case "FloatProp":
                         FloatProp = (float?)val;
                         return;
@@ -374,6 +402,7 @@ namespace Realms.Tests.Database
             {
                 context.Writer.WriteStartDocument();
 
+                WriteValue(context, args, "IntProp", value.IntProp);
                 WriteValue(context, args, "FloatProp", value.FloatProp);
                 WriteList(context, args, "FloatList", value.FloatList);
 
@@ -386,6 +415,9 @@ namespace Realms.Tests.Database
             {
                 switch (name)
                 {
+                    case "IntProp":
+                        instance.IntProp = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
                     case "FloatProp":
                         instance.FloatProp = BsonSerializer.LookupSerializer<float?>().Deserialize(context);
                         break;

@@ -835,6 +835,56 @@ namespace Realms.Tests.Database
             Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Any(e => e.Value == "bar"), Is.False);
         }
 
+        [Test]
+        public void Migration_FindInNewRealm_WhenObjectIsDeleted_ReturnsNull()
+        {
+            var oldConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597_Old)
+                }
+            };
+
+            using (var oldRealm = GetRealm(oldConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new Dotnet_3597_Old { FloatProp = 1, IntProp = 1 });
+                    oldRealm.Add(new Dotnet_3597_Old { FloatProp = 2, IntProp = 2 });
+                });
+            }
+
+            var newConfig = new RealmConfiguration(oldConfig.DatabasePath)
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597)
+                },
+                SchemaVersion = 2,
+                MigrationCallback = (migration, version) =>
+                {
+                    var oldObjects = migration.OldRealm.DynamicApi.All(nameof(Dotnet_3597)).ToArray();
+                    var old1 = oldObjects.First(o => o.DynamicApi.Get<int>("IntProp") == 1);
+                    var old2 = oldObjects.First(o => o.DynamicApi.Get<int>("IntProp") == 2);
+
+                    var newObjects = migration.NewRealm.All<Dotnet_3597>().ToArray();
+                    var new1 = newObjects.First(o => o.IntProp == 1);
+                    var new2 = newObjects.First(o => o.IntProp == 2);
+
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old1), Is.EqualTo(new1));
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old2), Is.EqualTo(new2));
+
+                    migration.NewRealm.Remove(new1);
+
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old1), Is.Null);
+                }
+            };
+
+            var newRealm = GetRealm(newConfig);
+            Assert.That(newRealm.All<Dotnet_3597>().Count(), Is.EqualTo(1));
+        }
+
         // Test for https://github.com/realm/realm-dotnet/issues/3597
         [Test]
         public void Migration_MigratesListOfFloats()
@@ -946,6 +996,8 @@ namespace Realms.Tests.Database
     [MapTo("Dotnet_3597")]
     public partial class Dotnet_3597_Old : TestRealmObject
     {
+        public int IntProp { get; set; }
+
         public float? FloatProp { get; set; }
 
         public IList<float?> FloatList { get; }
@@ -955,6 +1007,8 @@ namespace Realms.Tests.Database
     [MapTo("Dotnet_3597")]
     public partial class Dotnet_3597 : TestRealmObject
     {
+        public int IntProp { get; set; }
+
         public string FloatProp { get; set; }
 
         public IList<string> FloatList { get; }
