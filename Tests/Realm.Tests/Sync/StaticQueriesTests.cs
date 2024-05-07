@@ -547,6 +547,7 @@ namespace Realms.Tests.Sync
 
                 AssertEqual(linkObj!.Link, obj.Link);
 
+                await WaitForConditionAsync(() => { return linkObj.List.Count == obj.List.Count; });
                 Assert.That(linkObj.List.Count, Is.EqualTo(obj.List.Count));
 
                 for (int i = 0; i < linkObj.List.Count; i++)
@@ -554,6 +555,7 @@ namespace Realms.Tests.Sync
                     AssertEqual(linkObj.List[i], obj.List[i]);
                 }
 
+                await WaitForConditionAsync(() => { return linkObj.Dictionary.Count == obj.Dictionary.Count; });
                 Assert.That(linkObj.Dictionary.Count, Is.EqualTo(obj.Dictionary.Count));
 
                 foreach (var key in obj.Dictionary.Keys)
@@ -562,6 +564,7 @@ namespace Realms.Tests.Sync
                     AssertEqual(linkObj.Dictionary[key], obj.Dictionary[key]);
                 }
 
+                await WaitForConditionAsync(() => { return linkObj.Set.Count == obj.Set.Count; });
                 Assert.That(linkObj.Set.Count, Is.EqualTo(obj.Set.Count));
 
                 var orderedOriginalSet = obj.Set.OrderBy(a => a.Id).ToList();
@@ -757,6 +760,7 @@ namespace Realms.Tests.Sync
 
                 AssertEqual(realmValObj!.RealmValueProperty, obj.RealmValueProperty);
 
+                await WaitForConditionAsync(() => { return realmValObj.RealmValueList.Count == obj.RealmValueList.Count; });
                 Assert.That(realmValObj.RealmValueList.Count, Is.EqualTo(obj.RealmValueList.Count));
 
                 for (int i = 0; i < realmValObj.RealmValueList.Count; i++)
@@ -764,6 +768,7 @@ namespace Realms.Tests.Sync
                     AssertEqual(realmValObj.RealmValueList[i], obj.RealmValueList[i]);
                 }
 
+                await WaitForConditionAsync(() => { return realmValObj.RealmValueDictionary.Count == obj.RealmValueDictionary.Count; });
                 Assert.That(realmValObj.RealmValueDictionary.Count, Is.EqualTo(obj.RealmValueDictionary.Count));
 
                 foreach (var key in obj.RealmValueDictionary.Keys)
@@ -772,6 +777,7 @@ namespace Realms.Tests.Sync
                     AssertEqual(realmValObj.RealmValueDictionary[key], obj.RealmValueDictionary[key]);
                 }
 
+                await WaitForConditionAsync(() => { return realmValObj.RealmValueSet.Count == obj.RealmValueSet.Count; });
                 Assert.That(realmValObj.RealmValueSet.Count, Is.EqualTo(obj.RealmValueSet.Count));
 
                 var orderedOriginalSet = obj.RealmValueSet.OrderBy(a => a.As<IntPropertyObject>().Id).ToList();
