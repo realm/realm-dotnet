@@ -561,6 +561,8 @@ namespace Realms.Tests.Sync
                 foreach (var key in obj.Dictionary.Keys)
                 {
                     Assert.That(linkObj.Dictionary.ContainsKey(key));
+
+                    await WaitForConditionAsync(() => { return (linkObj.Dictionary[key] == null) == (obj.Dictionary[key] == null); });
                     AssertEqual(linkObj.Dictionary[key], obj.Dictionary[key]);
                 }
 
