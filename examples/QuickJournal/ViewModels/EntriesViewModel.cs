@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,18 +16,12 @@ namespace QuickJournal.ViewModels
         private readonly Realm realm;
 
         [ObservableProperty]
-        private IQueryable<JournalEntry>? entries;
+        private IEnumerable<JournalEntryViewModel>? entries;
 
         public EntriesViewModel()
         {
             realm = Realm.GetInstance();
-            Entries = realm.All<JournalEntry>();
-
-            // We are using a WeakReferenceManager here to get notified when JournalEntriesDetailPage is closed.
-            // This could have been implemeted hooking up on the back button behaviour
-            // (with Shell.BackButtonBehaviour), but there is a current bug in MAUI
-            // that would make the application crash (https://github.com/dotnet/maui/pull/11438)
-            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);
+            Entries = new WrapperCollection<JournalEntry, JournalEntryViewModel>(realm.All<JournalEntry>(), i => new JournalEntryViewModel(i));
         }
 
         [RelayCommand]
@@ -45,17 +42,17 @@ namespace QuickJournal.ViewModels
         }
 
         [RelayCommand]
-        public async Task EditEntry(JournalEntry entry)
+        public async Task EditEntry(JournalEntryViewModel entry)
         {
-            await GoToEntry(entry);
+            await GoToEntry(entry.Entry);
         }
 
         [RelayCommand]
-        public async Task DeleteEntry(JournalEntry entry)
+        public async Task DeleteEntry(JournalEntryViewModel entry)
         {
             await realm.WriteAsync(() =>
             {
-                realm.Remove(entry);
+                realm.Remove(entry.Entry);
             });
         }
 
@@ -67,14 +64,63 @@ namespace QuickJournal.ViewModels
             };
             await Shell.Current.GoToAsync($"entryDetail", navigationParameter);
         }
+    }
 
-        private async void EntryModifiedHandler(object recipient, EntryModifiedMessage message)
+    public class WrapperCollection<T, TViewModel> : INotifyCollectionChanged, IEnumerable<TViewModel>
+        where T : IRealmObject
+        where TViewModel : class
+    {
+        private IRealmCollection<T> _results;
+        private Func<T, TViewModel> _viewModelFactory;
+
+        public int Count => _results.Count;
+
+        public TViewModel this[int index] => _viewModelFactory(_results[index]);
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
-            var newEntry = message.Value;
-            if (string.IsNullOrEmpty(newEntry.Body + newEntry.Title))
+            add { _results.CollectionChanged += value; }
+            remove { _results.CollectionChanged -= value; }
+        }
+
+        public WrapperCollection(IQueryable<T> query, Func<T, TViewModel> viewModelFactory)
+        {
+            _results = query.AsRealmCollection();
+            _viewModelFactory = viewModelFactory;
+        }
+
+        public IEnumerator<TViewModel> GetEnumerator()
+        {
+            foreach (var item in _results)
             {
-                await DeleteEntry(newEntry);
-                await Toast.Make("Empty note discarded").Show();
+                yield return _viewModelFactory(item);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    public class JournalEntryViewModel : INotifyPropertyChanged
+    {
+        private JournalEntry _entry;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public JournalEntry Entry => _entry;
+
+        public string Summary => _entry.Title + _entry.Body;
+
+        public JournalEntryViewModel(JournalEntry entry)
+        {
+            _entry = entry;
+            _entry.PropertyChanged += Inner_PropertyChanged;
+        }
+
+        private void Inner_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(JournalEntry.Title) || e.PropertyName == nameof(JournalEntry.Body))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
             }
         }
     }

@@ -28,8 +28,8 @@
             </ListView.Behaviors>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding Title}"
-                              Detail="{Binding Metadata.CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
+                    <TextCell Text="{Binding Summary}"
+                              Detail="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
                         <TextCell.ContextActions>
                             <MenuItem Text="Delete" IsDestructive="true" 
                                        Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference entriesPage}}" 
