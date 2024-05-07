@@ -758,8 +758,12 @@ namespace Realms.Tests.Sync
                 await intObjs.WaitForEventAsync((sender, _) => sender.Count >= totalCount);
                 await realmObjs.WaitForEventAsync((sender, _) => sender.Count == 1 && realm.Find<RealmValueObject>(obj.Id) != null);
 
-                var realmValObj = realm.Find<RealmValueObject>(obj.Id);
+                var realmValObj = realm.Find<RealmValueObject>(obj.Id)!;
 
+                await WaitForConditionAsync(() => {
+                    return realmValObj.RealmValueProperty.Type == RealmValueType.Null ==
+                    (obj.RealmValueProperty.Type == RealmValueType.Null);
+                });
                 AssertEqual(realmValObj!.RealmValueProperty, obj.RealmValueProperty);
 
                 await WaitForConditionAsync(() => { return realmValObj.RealmValueList.Count == obj.RealmValueList.Count; });
@@ -776,6 +780,10 @@ namespace Realms.Tests.Sync
                 foreach (var key in obj.RealmValueDictionary.Keys)
                 {
                     Assert.That(realmValObj.RealmValueDictionary.ContainsKey(key));
+                    await WaitForConditionAsync(() => { return realmValObj.RealmValueDictionary[key].Type == RealmValueType.Null
+                        == (obj.RealmValueDictionary[key].Type == RealmValueType.Null);
+                    });
+
                     AssertEqual(realmValObj.RealmValueDictionary[key], obj.RealmValueDictionary[key]);
                 }
 
