@@ -1,11 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using QuickJournal.Messages;
 using QuickJournal.Models;
 using Realms;
 
@@ -75,8 +72,6 @@ namespace QuickJournal.ViewModels
 
         public int Count => _results.Count;
 
-        public TViewModel this[int index] => _viewModelFactory(_results[index]);
-
         public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add { _results.CollectionChanged += value; }
@@ -102,18 +97,16 @@ namespace QuickJournal.ViewModels
 
     public class JournalEntryViewModel : INotifyPropertyChanged
     {
-        private JournalEntry _entry;
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public JournalEntry Entry => _entry;
+        public JournalEntry Entry { get; private set; }
 
-        public string Summary => _entry.Title + _entry.Body;
+        public string Summary => Entry.Title + Entry.Body;
 
         public JournalEntryViewModel(JournalEntry entry)
         {
-            _entry = entry;
-            _entry.PropertyChanged += Inner_PropertyChanged;
+            Entry = entry;
+            Entry.PropertyChanged += Inner_PropertyChanged;
         }
 
         private void Inner_PropertyChanged(object? sender, PropertyChangedEventArgs e)
