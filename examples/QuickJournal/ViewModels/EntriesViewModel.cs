@@ -35,13 +35,13 @@ namespace QuickJournal.ViewModels
                 });
             });
 
-            await GoToEntry(entry);
+            await GoToEntry(new JournalEntryViewModel(entry));
         }
 
         [RelayCommand]
         public async Task EditEntry(JournalEntryViewModel entry)
         {
-            await GoToEntry(entry.Entry);
+            await GoToEntry(entry);
         }
 
         [RelayCommand]
@@ -53,17 +53,17 @@ namespace QuickJournal.ViewModels
             });
         }
 
-        private async Task GoToEntry(JournalEntry entry)
+        private async Task GoToEntry(JournalEntryViewModel entry)
         {
             var navigationParameter = new Dictionary<string, object>
             {
-                { "Entry", entry },
+                { "Entry", entry.Entry },
             };
             await Shell.Current.GoToAsync($"entryDetail", navigationParameter);
         }
     }
 
-    public class WrapperCollection<T, TViewModel> : INotifyCollectionChanged, IEnumerable<TViewModel>
+    public class WrapperCollection<T, TViewModel> : INotifyCollectionChanged, IReadOnlyList<TViewModel>
         where T : IRealmObject
         where TViewModel : class
     {
@@ -71,6 +71,8 @@ namespace QuickJournal.ViewModels
         private Func<T, TViewModel> _viewModelFactory;
 
         public int Count => _results.Count;
+
+        public TViewModel this[int index] => _viewModelFactory(_results[index]);
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
