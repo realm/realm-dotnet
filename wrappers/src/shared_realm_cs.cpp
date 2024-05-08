@@ -698,8 +698,8 @@ REALM_EXPORT Object* shared_realm_get_object_for_object(SharedRealm& realm, Obje
     return handle_errors(ex, [&]() -> Object* {
         realm->verify_thread();
 
-        auto table = realm->read_group().get_table(object.obj().get_table()->get_key());
-        auto obj = table->try_get_object(object.obj().get_key());
+        auto table = realm->read_group().get_table(object.get_object_schema().table_key);
+        auto obj = table->try_get_object(object.get_obj().get_key());
         if (!obj) {
             return nullptr;
         }
