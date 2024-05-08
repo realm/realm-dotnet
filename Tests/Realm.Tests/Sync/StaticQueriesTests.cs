@@ -93,10 +93,10 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] PrimitiveTestCases =
+        public static IEnumerable<object[]> PrimitiveTestCases()
         {
-            new object[] { CreateTestCase("Empty object", new SyncAllTypesObject()) },
-            new object[]
+            yield return new object[] { CreateTestCase("Empty object", new SyncAllTypesObject()) };
+            yield return new object[]
             {
                 CreateTestCase("All values", new SyncAllTypesObject
                 {
@@ -116,21 +116,21 @@ namespace Realms.Tests.Sync
                     RealmValueProperty = "this is a string",
                     StringProperty = "foo bar"
                 })
-            },
-            new object[] { CreateTestCase("Bool RealmValue", new SyncAllTypesObject { RealmValueProperty = true }) },
-            new object[] { CreateTestCase("Int RealmValue", new SyncAllTypesObject { RealmValueProperty = 123 }) },
-            new object[] { CreateTestCase("Long RealmValue", new SyncAllTypesObject { RealmValueProperty = 9999999999 }) },
-            new object[] { CreateTestCase("Null RealmValue", new SyncAllTypesObject { RealmValueProperty = RealmValue.Null }) },
-            new object[] { CreateTestCase("String RealmValue", new SyncAllTypesObject { RealmValueProperty = "abc" }) },
-            new object[] { CreateTestCase("Data RealmValue", new SyncAllTypesObject { RealmValueProperty = GetBytes(10) }) },
-            new object[] { CreateTestCase("Float RealmValue", new SyncAllTypesObject { RealmValueProperty = 15.2f }) },
-            new object[] { CreateTestCase("Double RealmValue", new SyncAllTypesObject { RealmValueProperty = -123.45678909876 }) },
-            new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
-            new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) },
-            new object[] { CreateTestCase("Decimal128 RealmValue", new SyncAllTypesObject { RealmValueProperty = new Decimal128(2.1111111111111111111M) }) },
-            new object[] { CreateTestCase("ObjectId RealmValue", new SyncAllTypesObject { RealmValueProperty = ObjectId.GenerateNewId() }) },
-            new object[] { CreateTestCase("Guid RealmValue", new SyncAllTypesObject { RealmValueProperty = Guid.NewGuid() }) },
-        };
+            };
+            yield return new object[] { CreateTestCase("Bool RealmValue", new SyncAllTypesObject { RealmValueProperty = true }) };
+            yield return new object[] { CreateTestCase("Int RealmValue", new SyncAllTypesObject { RealmValueProperty = 123 }) };
+            yield return new object[] { CreateTestCase("Long RealmValue", new SyncAllTypesObject { RealmValueProperty = 9999999999 }) };
+            yield return new object[] { CreateTestCase("Null RealmValue", new SyncAllTypesObject { RealmValueProperty = RealmValue.Null }) };
+            yield return new object[] { CreateTestCase("String RealmValue", new SyncAllTypesObject { RealmValueProperty = "abc" }) };
+            yield return new object[] { CreateTestCase("Data RealmValue", new SyncAllTypesObject { RealmValueProperty = GetBytes(10) }) };
+            yield return new object[] { CreateTestCase("Float RealmValue", new SyncAllTypesObject { RealmValueProperty = 15.2f }) };
+            yield return new object[] { CreateTestCase("Double RealmValue", new SyncAllTypesObject { RealmValueProperty = -123.45678909876 }) };
+            yield return new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) };
+            yield return new object[] { CreateTestCase("Decimal RealmValue", new SyncAllTypesObject { RealmValueProperty = 1.1111111111111111111M }) };
+            yield return new object[] { CreateTestCase("Decimal128 RealmValue", new SyncAllTypesObject { RealmValueProperty = new Decimal128(2.1111111111111111111M) }) };
+            yield return new object[] { CreateTestCase("ObjectId RealmValue", new SyncAllTypesObject { RealmValueProperty = ObjectId.GenerateNewId() }) };
+            yield return new object[] { CreateTestCase("Guid RealmValue", new SyncAllTypesObject { RealmValueProperty = Guid.NewGuid() }) };
+        }
 
         [TestCaseSource(nameof(PrimitiveTestCases))]
         public void RealmObjectAPI_Primitive_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
@@ -269,9 +269,9 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] CounterTestCases =
+        public static IEnumerable<object[]> CounterTestCases()
         {
-            new object[]
+            yield return new object[]
             {
                 CreateTestCase("All values", new CounterObject
                 {
@@ -285,8 +285,8 @@ namespace Realms.Tests.Sync
                     NullableInt32Property = 49394939,
                     NullableInt64Property = 889898965342443
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Nullable values", new CounterObject
                 {
@@ -300,8 +300,8 @@ namespace Realms.Tests.Sync
                     NullableInt32Property = null,
                     NullableInt64Property = null,
                 })
-            },
-        };
+            };
+        }
 
         [TestCaseSource(nameof(CounterTestCases))]
         public void RealmObjectAPI_Counter_AtlasToRealm(TestCaseData<CounterObject> testCase)
@@ -347,44 +347,44 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] AsymmetricTestCases =
+        public static IEnumerable<object[]> AsymmetricTestCases()
         {
-            new object[]
+            yield return new object[]
             {
                 CreateTestCase("Base", new BasicAsymmetricObject { PartitionLike = "testString" })
-            },
-        };
+            };
+        }
 
-        //[TestCaseSource(nameof(AsymmetricTestCases))]
-        //public void RealmObjectAPI_Asymmetric_RealmToAtlas(TestCaseData<BasicAsymmetricObject> testCase)
-        //{
-        //    SyncTestHelpers.RunBaasTestAsync(async () =>
-        //    {
-        //        var collection = await GetCollection<BasicAsymmetricObject>(AppConfigType.FlexibleSync);
-        //        var obj = testCase.Value;
-        //        var stringProperty = obj.PartitionLike;
-
-        //        var filter = new { _id = obj.Id };
-
-        //        using var realm = await GetFLXIntegrationRealmAsync();
-        //        realm.Write(() => realm.Add(obj));
-
-        //        var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
-
-        //        Assert.That(stringProperty, Is.EqualTo(syncObj.PartitionLike));
-        //    }, timeout: 120000);
-        //}
-
-        public static readonly object[] ObjectTestCases =
+        [TestCaseSource(nameof(AsymmetricTestCases))]
+        public void RealmObjectAPI_Asymmetric_RealmToAtlas(TestCaseData<BasicAsymmetricObject> testCase)
         {
-            new object[]
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var collection = await GetCollection<BasicAsymmetricObject>(AppConfigType.FlexibleSync);
+                var obj = testCase.Value;
+                var stringProperty = obj.PartitionLike;
+
+                var filter = new { _id = obj.Id };
+
+                using var realm = await GetFLXIntegrationRealmAsync();
+                realm.Write(() => realm.Add(obj));
+
+                var syncObj = await WaitForNonNullObjectAsync(() => collection.FindOneAsync(filter));
+
+                Assert.That(stringProperty, Is.EqualTo(syncObj.PartitionLike));
+            }, timeout: 120000);
+        }
+
+        public static IEnumerable<object[]> ObjectTestCases()
+        {
+            yield return new object[]
             {
                 CreateTestCase("All values", new SyncAllTypesObject
                 {
                     ObjectProperty = new IntPropertyObject { Int = 23 },
                 })
-            },
-        };
+            };
+        }
 
         [TestCaseSource(nameof(ObjectTestCases))]
         public void RealmObjectAPI_Object_AtlasToRealm(TestCaseData<SyncAllTypesObject> testCase)
@@ -443,17 +443,17 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] LinksTestCases =
+        public static IEnumerable<object[]> LinksTestCases()
         {
-            new object[]
+            yield return new object[]
             {
                 CreateTestCase("Single link", new LinksObject("singleLink")
                 {
                     Link = new("second") { Value = 2 },
                     Value = 1,
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("List", new LinksObject("listLink")
                 {
@@ -464,8 +464,8 @@ namespace Realms.Tests.Sync
                     },
                     Value = 987
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Dictionary", new LinksObject("dictLink")
                 {
@@ -477,8 +477,8 @@ namespace Realms.Tests.Sync
                     },
                     Value = 999
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Set", new LinksObject("setLink")
                 {
@@ -489,8 +489,8 @@ namespace Realms.Tests.Sync
                     },
                     Value = 123
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("All types", new LinksObject("parent")
                 {
@@ -513,8 +513,8 @@ namespace Realms.Tests.Sync
                         ["dict_null"] = null
                     }
                 }),
-            }
-        };
+            };
+        }
 
         [TestCaseSource(nameof(LinksTestCases))]
         public void RealmObjectAPI_Links_AtlasToRealm(TestCaseData<LinksObject> testCase)
@@ -658,16 +658,16 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] RealmValueLinkTestCases =
+        public static IEnumerable<object[]> RealmValueLinkTestCases()
         {
-            new object[]
+            yield return new object[]
             {
                 CreateTestCase("Single link", new RealmValueObject
                 {
                     RealmValueProperty = new IntPropertyObject { Int = 2 },
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("List", new RealmValueObject
                 {
@@ -677,8 +677,8 @@ namespace Realms.Tests.Sync
                         new IntPropertyObject { Int = 200 },
                     },
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Dictionary", new RealmValueObject
                 {
@@ -689,8 +689,8 @@ namespace Realms.Tests.Sync
                         ["key_2"] = new IntPropertyObject { Int = 200 },
                     },
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Set", new RealmValueObject
                 {
@@ -700,8 +700,8 @@ namespace Realms.Tests.Sync
                         new IntPropertyObject { Int = 200 },
                     },
                 }),
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("All types", new RealmValueObject
                 {
@@ -723,8 +723,8 @@ namespace Realms.Tests.Sync
                         ["dict_null"] = RealmValue.Null
                     }
                 }),
-            }
-        };
+            };
+        }
 
         [TestCaseSource(nameof(RealmValueLinkTestCases))]
         public void RealmObjectAPI_RealmValueLinks_AtlasToRealm(TestCaseData<RealmValueObject> testCase)
@@ -887,9 +887,9 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        public static readonly object[] EmbeddedTestCases =
+        public static IEnumerable<object[]> EmbeddedTestCases()
         {
-            new object[]
+            yield return new object[]
             {
                 CreateTestCase("Single", new ObjectWithEmbeddedProperties
                 {
@@ -902,8 +902,8 @@ namespace Realms.Tests.Sync
                         StringProperty = "bla bla"
                     }
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Recursive", new ObjectWithEmbeddedProperties
                 {
@@ -920,9 +920,8 @@ namespace Realms.Tests.Sync
                         }
                     }
                 })
-            },
-
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("List", new ObjectWithEmbeddedProperties
                 {
@@ -946,8 +945,8 @@ namespace Realms.Tests.Sync
                         }
                     },
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("Dictionary", new ObjectWithEmbeddedProperties
                 {
@@ -972,8 +971,8 @@ namespace Realms.Tests.Sync
                         ["key3"] = null,
                     },
                 })
-            },
-            new object[]
+            };
+            yield return new object[]
             {
                 CreateTestCase("All types", new ObjectWithEmbeddedProperties
                 {
@@ -1037,8 +1036,8 @@ namespace Realms.Tests.Sync
                         ["key3"] = null,
                     },
                 })
-            }
-        };
+            };
+        }
 
         [TestCaseSource(nameof(EmbeddedTestCases))]
         public void RealmObjectAPI_Embedded_AtlasToRealm(TestCaseData<ObjectWithEmbeddedProperties> testCase)
@@ -1266,30 +1265,26 @@ namespace Realms.Tests.Sync
 
         // Retrieves the MongoClient.Collection for a specific object type and removes everything that's eventually there already
         private async Task<MongoClient.Collection<T>> GetCollection<T>(string appConfigType = AppConfigType.Default)
-            where T : class, IRealmObject
+            where T : class, IRealmObjectBase
         {
-            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
-            var user = await GetUserAsync(app);
-
-            SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
+            var config = await GetConfig(appConfigType);
+            var user = config.User;
 
             using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
             var collection = client.GetCollection<T>();
             await collection.DeleteManyAsync(new object());
 
-            var syncObjects = realm.All<T>();
-            await syncObjects.WaitForEventAsync((sender, _) => sender.Count == 0);
+            //var syncObjects = realm.All<T>();
+            //await syncObjects.WaitForEventAsync((sender, _) => sender.Count == 0);
 
             return collection;
         }
 
         private async Task<MongoClient.Collection<BsonDocument>> GetCollectionAsBson(string collectionName, string appConfigType = AppConfigType.Default)
         {
-            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
-            var user = await GetUserAsync(app);
-
-            SyncConfigurationBase config = appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
+            var config = await GetConfig(appConfigType);
+            var user = config.User;
 
             using var realm = await GetRealmAsync(config, true);
             var client = user.GetMongoClient(ServiceName);
@@ -1299,6 +1294,14 @@ namespace Realms.Tests.Sync
             await collection.DeleteManyAsync(new object());
 
             return collection;
+        }
+
+        private async Task<SyncConfigurationBase> GetConfig(string appConfigType = AppConfigType.Default)
+        {
+            var app = App.Create(SyncTestHelpers.GetAppConfig(appConfigType));
+            var user = await GetUserAsync(app);
+
+            return appConfigType == AppConfigType.FlexibleSync ? GetFLXIntegrationConfig(user) : GetIntegrationConfig(user);
         }
 
         private static void AssertEmbedded(ObjectWithEmbeddedProperties syncObj, ObjectWithEmbeddedProperties obj)
