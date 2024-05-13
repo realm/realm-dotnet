@@ -1,0 +1,42 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/apple/pkl
+
+name: wrappers
+'on':
+  workflow_call: {}
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  check-cache:
+    name: Check Cache
+    env:
+      CACHE_SKIP_SAVE: true
+    outputs:
+      wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
+      wrappers-catalyst: ${{ steps.check-cache-catalyst.outputs.cache-hit }}
+      wrappers-linux-x86_64: ${{ steps.check-cache-linux-x86_64.outputs.cache-hit }}
+      wrappers-linux-armhf: ${{ steps.check-cache-linux-armhf.outputs.cache-hit }}
+      wrappers-linux-aarch64: ${{ steps.check-cache-linux-aarch64.outputs.cache-hit }}
+      wrappers-android-armeabi-v7a: ${{ steps.check-cache-android-armeabi-v7a.outputs.cache-hit }}
+      wrappers-android-arm64-v8a: ${{ steps.check-cache-android-arm64-v8a.outputs.cache-hit }}
+      wrappers-android-x86: ${{ steps.check-cache-android-x86.outputs.cache-hit }}
+      wrappers-android-x86_64: ${{ steps.check-cache-android-x86_64.outputs.cache-hit }}
+      wrappers-windows-Win32: ${{ steps.check-cache-windows-Win32.outputs.cache-hit }}
+      wrappers-windows-x64: ${{ steps.check-cache-windows-x64.outputs.cache-hit }}
+      wrappers-windows-ARM64: ${{ steps.check-cache-windows-ARM64.outputs.cache-hit }}
+      wrappers-windows-upw-Win32: ${{ steps.check-cache-windows-upw-Win32.outputs.cache-hit }}
+      wrappers-windows-upw-x64: ${{ steps.check-cache-windows-upw-x64.outputs.cache-hit }}
+      wrappers-windows-upw-ARM: ${{ steps.check-cache-windows-upw-ARM.outputs.cache-hit }}
+      wrappers-windows-upw-ARM64: ${{ steps.check-cache-windows-upw-ARM64.outputs.cache-hit }}
+      wrappers-iOS-Device: ${{ steps.check-cache-iOS-Device.outputs.cache-hit }}
+      wrappers-tvOS-Device: ${{ steps.check-cache-tvOS-Device.outputs.cache-hit }}
+      wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
+      wrappers-tvOS-Simulator: ${{ steps.check-cache-tvOS-Simulator.outputs.cache-hit }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu
+        - windows
+    runs-on: ${{ matrix.os }}-latest
+    steps: []

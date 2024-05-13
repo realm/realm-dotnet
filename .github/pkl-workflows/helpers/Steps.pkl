@@ -1,0 +1,39 @@
+import "../GithubAction/GithubAction.pkl" as gha
+
+const function checkout(): gha.Step = new {
+  name = "Checkout Code"
+  uses = "actions/checkout@v4"
+  with {
+    ["submodules"] = "recursive"
+    ["ref"] = "${{ github.event.pull_request.head.sha }}"
+  }
+}
+
+const function restoreCache(): gha.Step = new {
+
+}
+
+const function uploadArtifacts(artifactName: String, relPath: String): gha.Step = new {
+  name = "Store artifacts for \(artifactName)"
+  uses = "actions/upload-artifact@v4"
+  with {
+    ["name"] = artifactName
+    ["path"] = "${{ github.workspace }}/\(relPath)"
+    ["retention-days"] = "${{ github.event_name != 'pull_request' && 30 || 1 }}"
+    ["if-no-files-found"] = "error"
+  }
+}
+
+const function setupXcode(): gha.Step = new {
+  name = "Setup Xcode"
+  uses = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
+  with {
+    ["xcode-version"] = "14"
+  }
+}
+
+const function setupMSVC(edition: String): gha.Step = new {
+  name = "Setup MSVC"
+  run = "Start-Process \"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vs_installer.exe\" -ArgumentList 'modify --installPath \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.\(edition)' -Wait -PassThru"
+  shell = "pwsh"
+}

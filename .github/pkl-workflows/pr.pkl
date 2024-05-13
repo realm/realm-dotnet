@@ -1,0 +1,227 @@
+module pr
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/common.pkl"
+
+local class JobNamesDefition {
+  const wrappers: String = "build-wrappers"
+  const packages: String = "build-packages"
+  const unity: String = "build-unity"
+  const baas: String = "deploy-baas"
+  const coverage: String = "test-code-coverage"
+}
+
+local function createTestJob(workflow: String): ReusableWorkflowJob = new ReusableWorkflowJob {
+  uses = "./.github/workflows/\(workflow).yml"
+  name = "Test"
+  `if` = ifNotCanceledCondition
+  needs {
+    JobNames.packages
+  }
+  with {
+    ["version"] = "${{ needs.\(JobNames.packages).outputs.package_version }}"
+  }
+}
+
+local function checkoutCode(): Step = new {
+  name = "Checkout Code"
+  uses = "actions/checkout@v3"
+  with {
+    ["submodules"] = "recursive"
+    ["ref"] = "${{ github.event.pull_request.head.sha }}"
+  }
+}
+
+local JobNames = new JobNamesDefition{}
+local ifNotCanceledCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
+local packages = List("Realm", "Realm.PlatformHelpers", "Realm.UnityUtils", "Realm.UnityWeaver")
+
+name = "PR Build"
+on {
+  pull_request {
+    paths {
+      "**.cs"
+      "**.cpp"
+      "**.hpp"
+      "**.csproj"
+      "**CMakeLists.txt"
+      "**.ps1"
+      "**.sh"
+      "**.props"
+      "wrappers/realm-core"
+      ".github/workflows/*.yml"
+      "!.github/workflows/main.yml"
+      "!.github/workflows/publish-*.yml"
+      ".github/actions/**"
+      "Tests/Tests.Android/Properties/AndroidManifest.xml"
+    }
+  }
+}
+
+env = common.defaultEnv
+
+concurrency {
+  group = "${{ github.head_ref || github.run_id }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  [JobNames.wrappers] = new ReusableWorkflowJob {
+    uses = "./.github/workflows/wrappers.yml"
+    name = "Wrappers"
+  }
+  [JobNames.baas] = new ReusableWorkflowJob {
+    uses = "./.github/workflows/deploy-baas.yml"
+    with {
+      ["differentiators"] = "[\"code-coverage\"]"
+    }
+    secrets {
+      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
+    }
+  }
+  [JobNames.packages] = new ReusableWorkflowJob {
+    uses = "./.github/workflows/build-packages.yml"
+    name = "Package"
+    needs {
+      JobNames.wrappers
+    }
+    with {
+      ["build-docs"] = "${{ contains(github.head_ref, 'release') }}"
+    }
+  }
+  [JobNames.unity] = new ReusableWorkflowJob {
+    uses = "./.github/workflows/build-unity.yml"
+    name = "Package"
+    with {
+      ["version"] = "${{ needs.build-packages.outputs.package_version }}"
+    }
+    needs {
+      JobNames.packages
+    }
+    `if` = ifNotCanceledCondition
+  }
+  ["test-unity"] = new ReusableWorkflowJob {
+    uses = "./.github/workflows/test-unity.yml"
+    name = "Test"
+    with {
+      ["version"] = "${{ needs.build-packages.outputs.package_version }}"
+      ["settings"] = "[\"Mono-Net4\"]"
+      ["platform"] = "[{ \"os\": \"windows\", \"testPlatform\": \"Windows64\" }, { \"os\": \"linux\", \"testPlatform\": \"Linux64\" }]"
+    }
+    needs {
+      JobNames.unity
+    }
+    `if` = ifNotCanceledCondition
+  }
+  ["test-net-framework"] = createTestJob("test-net-framework")
+  ["test-uwp-managed"] = (createTestJob("test-uwp-managed")) {
+    secrets {
+      ["Pfx_Password"] = "${{ secrets.Pfx_Password }}"
+      ["Base64_Encoded_Pfx"] = "${{ secrets.Base64_Encoded_Pfx }}"
+    }
+  }
+  ["test-net-core"] = (createTestJob("test-net-core")) {
+    with {
+      ["framework"] = "[\"net8.0\"]"
+    }
+  }
+  ["test-macos"] = createTestJob("test-macos")
+  ["test-ios"] = createTestJob("test-ios")
+  ["test-tvos"] = createTestJob("test-tvos")
+  ["test-android"] = (createTestJob("test-android")) {
+    secrets {
+      ["AWS_DEVICEFARM_ACCESS_KEY_ID"] = "${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}"
+      ["AWS_DEVICEFARM_SECRET_ACCESS_KEY"] = "${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}"
+      ["DEVICEFARM_PROJECT_ARN"] = "${{ secrets.DEVICEFARM_PROJECT_ARN }}"
+      ["DEVICEFARM_ANDROID_POOL_ARN"] = "${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}"
+    }
+  }
+  ["test-woven-classes"] = createTestJob("test-woven-classes")
+  ["test-source-generation"] = new ReusableWorkflowJob {
+    `if` = ifNotCanceledCondition
+    name = "Test"
+    uses = "./.github/workflows/test-source-generation.yml"
+  }
+  ["test-weaver"] = new ReusableWorkflowJob {
+    `if` = ifNotCanceledCondition
+    name = "Test"
+    uses = "./.github/workflows/test-weaver.yml"
+  }
+  ["test-code-coverage"] = (createTestJob("test-code-coverage")) {
+    needs {
+      JobNames.baas
+    }
+    secrets {
+      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
+    }
+  }
+  ["cleanup-baas"] = new ReusableWorkflowJob {
+    name = "Cleanup"
+    uses = "./.github/workflows/cleanup-baas.yml"
+    `if` = "always()"
+    needs {
+      JobNames.coverage
+    }
+    with {
+      ["differentiators"] = "[\"code-coverage\"]"
+    }
+    secrets {
+      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
+    }
+  }
+  ["verify-namespaces"] = new Job {
+    `runs-on` = new UbuntuLatest{}
+    name = "Verify Namespaces"
+    needs {
+      JobNames.packages
+    }
+    steps {
+      checkoutCode()
+      for (_package in packages) {
+        new {
+          name = "Fetch \(_package)"
+          uses = "actions/download-artifact@v3"
+          with {
+            ["name"] = "\(_package).${{ needs.\(JobNames.packages).outputs.package_version }}"
+            ["path"] = "${{ github.workspace }}/Realm/packages/"
+          }
+        }
+      }
+      new {
+        run = "dotnet tool install ilspycmd -g --version 8.0.0.7345"
+      }
+      new {
+        name = "Verify Namespaces"
+        run = """
+          $isFailure = $false
+          Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
+            $targetPath = Join-Path ./Realm/packages $_.BaseName
+            Expand-Archive $_.FullName -DestinationPath $targetPath
+
+            Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
+              if (-not ($_.FullName -match "runtimes")) {
+                $ilspyOutput = ilspycmd $_.FullName
+
+                $parentDll = $_.FullName
+
+                $ilspyOutput | ForEach-Object {
+                  if ($_ -match "namespace.*Realm(\\.|$)") {
+                    Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                    Set-Variable "isFailure" -Value $true
+                  }
+                }
+              }
+            }
+          }
+
+          if ($isFailure) {
+            exit 1
+          }
+          """
+        shell = "pwsh"
+      }
+    }
+  }
+}

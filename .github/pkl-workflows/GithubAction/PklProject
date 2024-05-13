@@ -1,0 +1,8 @@
+amends "pkl:Project"
+
+package {
+  name = "realm-pkl-gha"
+  version = "1.0.0"
+  baseUri = "package://realm.io/realm-pkl-gha"
+  packageZipUrl = "https://realm.io/realm-pkl-gha@\(version).zip"
+}

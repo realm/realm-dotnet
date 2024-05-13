@@ -1,0 +1,204 @@
+module wrappers
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+
+local class JobNamesDefition {
+  const checkCache: String = "check-cache"
+}
+local JobNames = new JobNamesDefition{}
+
+local WrappersBuildTimeout = 90
+local WrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
+
+name = "wrappers"
+on {
+  workflow_call {}
+}
+env = Common.defaultEnv
+
+jobs {
+  [JobNames.checkCache] = new MatrixJob {
+    strategy {
+      matrix {
+        ["os"] {
+          "ubuntu"
+          "windows"
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.os }}-latest"
+    name = "Check Cache"
+    env {
+      ["CACHE_SKIP_SAVE"] = true
+    }
+    outputs = Common.wrapperBinaryNames
+      .toMap((platform) -> "wrappers-\(platform)",(platform) -> "${{ steps.check-cache-\(platform).outputs.cache-hit }}")
+      .toMapping()
+    steps {
+      Steps.checkout()
+      for (platform in Common.wrapperBinaryNames) {
+        restoreCache(platform) |> withCondition(platform, null)
+        Steps.uploadArtifacts("wrappers-\(platform)", "wrappers/build/**") |> withCondition(platform, "steps.check-cache-\(platform).outputs.cache-hit == 'true'")
+        new Step {
+          run = "git clean -fdx"
+        } |> withCondition(platform, null)
+      }
+    }
+  }
+  ["macos"] = new Job {
+    `runs-on` = "macos-12"
+    name = "MacOS"
+  } |> wrappersJob(new JobConfig {
+      cmd = "./wrappers/build-macos.sh"
+      platform = "macos"
+    })
+  ["catalyst"] = new Job {
+    `runs-on` = "macos-12"
+    name = "Catalyst"
+  } |> wrappersJob(new JobConfig {
+      cmd = "pwsh ./wrappers/build-apple-platform.ps1 Catalyst"
+      platform = "catalyst"
+    })
+  ["apple-platform"] = new MatrixJob {
+    strategy {
+      matrix {
+        ["platform"] = Common.applePlatforms.toListing()
+        ["target"] { "Device" "Simulator"}
+      }
+    }
+    `runs-on` = "macos-12"
+    name = "Apple Platform"
+  } |> wrappersJob(new JobConfig {
+      cmd = "pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}"
+      enableLTO = false
+      platform = "${{ matrix.platform }}-${{ matrix.target }}"
+      intermediateSteps {
+        Steps.setupXcode()
+      }
+      ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(JobNames.checkCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
+    })
+  ["linux"] = new MatrixJob {
+    `runs-on` = new UbuntuLatest {}
+    name = "Linux"
+    strategy {
+      matrix {
+        ["arch"] = Common.linuxArchs.toListing()
+      }
+    }
+  } |> wrappersJob(new JobConfig {
+      cmd = "./wrappers/build-linux.sh -a=${{ matrix.arch }}"
+      ifCondition = "\(Common.linuxArchs.map((arch) -> "needs.check-cache.outputs.wrappers-linux-\(arch) != 'true'").join(" || "))"
+      platform = "linux-${{ matrix.arch }}"
+      intermediateSteps {
+        new Step {
+          name = "Install Ninja"
+          run = "sudo apt install ninja-build"
+          `if` = WrappersCacheCondition
+        }
+      }
+    })
+  ["android"] = new MatrixJob {
+    `runs-on` = "ubuntu-20.04"
+    name = "Android"
+    strategy {
+      matrix {
+        ["arch"] = Common.androidABIs.toListing()
+      }
+    }
+  } |> wrappersJob(new JobConfig {
+      cmd = "./wrappers/build-android.sh --ARCH=${{ matrix.arch }}"
+      platform = "android-${{ matrix.arch }}"
+      enableLTO = false
+      ifCondition = "\(Common.androidABIs.map((abi) -> "needs.check-cache.outputs.wrappers-android-\(abi) != 'true'").join(" || "))"
+    })
+  ["windows"] = new MatrixJob {
+    `runs-on` = new WindowsLatest{}
+    name = "Windows"
+    strategy {
+      matrix {
+        ["arch"] = Common.windowsArchs.toListing()
+      }
+    }
+  } |> wrappersJob(new JobConfig {
+      cmd = "pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\""
+      platform = "windows-${{ matrix.arch }}"
+      intermediateSteps {
+        Steps.setupMSVC("${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}")
+      }
+      ifCondition = "\(Common.windowsArchs.map((arch) -> "needs.check-cache.outputs.wrappers-windows-\(arch) != 'true'").join(" || "))"
+    })
+  ["uwp"] = new MatrixJob {
+    `runs-on` = new WindowsLatest{}
+    name = "UWP"
+    strategy {
+      matrix {
+        ["arch"] = Common.uwpArchs.toListing()
+      }
+    }
+  } |> wrappersJob(new JobConfig {
+      cmd = "pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\""
+      platform = "windows-${{ matrix.arch }}"
+      intermediateSteps {
+        Steps.setupMSVC("${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}")
+      }
+      ifCondition = "\(Common.uwpArchs.map((arch) -> "needs.check-cache.outputs.wrappers-windows-uwp-\(arch) != 'true'").join(" || "))"
+    })
+}
+
+local function withCondition(platform: String, _conditionToAppend: String?) = new Mixin<Step> {
+  `if` = "matrix.os == \(if (platform.contains("windows")) "'windows'" else "'ubuntu'")\(if (_conditionToAppend == null) "" else " && \(_conditionToAppend)")"
+}
+
+local function restoreCache(platform: String): Step = new Step {
+  uses = "actions/cache/restore@v4"
+} |> cacheStep(platform, platform)
+
+local function checkCache(platform: String): Step = new Step {
+  uses = "actions/cache@v4"
+} |> cacheStep(platform, null)
+
+local function cacheStep(platform: String, idSuffix: String?) = new Mixin<Step> {
+  name = "Check Cache for \(platform)"
+  id = "check-cache\(if (idSuffix == null) "" else "-\(idSuffix)")"
+  with {
+    ["path"] = "./wrappers/build/**"
+    ["key"] = "wrappers-\(platform)-\(Common.configuration)-${{hashFiles('./wrappers/**')}}"
+  }
+}
+
+local function wrappersJob(config: JobConfig) = new Mixin<StepJobBase> {
+  `timeout-minutes` = WrappersBuildTimeout
+  needs {
+    JobNames.checkCache
+  }
+  `if` = config.ifCondition
+  steps {
+    Steps.checkout()
+    checkCache(config.platform)
+    ...config.intermediateSteps.toList().map((step) -> (step) {
+      `if` = WrappersCacheCondition
+    })
+    new Step {
+      name = "Build Wrappers"
+      run = config.toString()
+      `if` = WrappersCacheCondition
+    }
+    Steps.uploadArtifacts("wrappers-\(config.platform)", "wrappers/build/**")
+  }
+}
+
+local class JobConfig {
+  cmd: String
+  enableLTO: Boolean = true
+  platform: String
+  intermediateSteps: Listing<Step>
+  ifCondition: String = "needs.check-cache.outputs.wrappers-\(platform) != 'true'"
+
+  function toString(): String = "\(cmd) \(configParam) \(ltoParam)"
+
+  hidden configParam = "\(if (cmd.startsWith("pwsh")) "-Configuration" else "--configuration=")\(Common.configuration)"
+  hidden ltoParam = if (!enableLTO) "" else (if (cmd.startsWith("pwsh")) "-EnableLTO" else "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'")
+}

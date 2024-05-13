@@ -1,0 +1,26 @@
+module common
+
+const configuration: String = "Release"
+
+const linuxArchs: List<String> = List("x86_64", "armhf", "aarch64")
+const applePlatforms: List<String> = List("iOS", "tvOS")
+const androidABIs: List<String> = List("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+const windowsArchs: List<String> = List("Win32", "x64", "ARM64")
+const uwpArchs: List<String> = List("Win32", "x64", "ARM", "ARM64")
+
+const appleTargets: List<String> = List("Device", "Simulator")
+
+const wrapperBinaryNames: List<String> =
+  List("macos", "catalyst")
+  + linuxArchs.map((arch) -> "linux-\(arch)")
+  + androidABIs.map((abi) -> "android-\(abi)")
+  + windowsArchs.map((arch) -> "windows-\(arch)")
+  + uwpArchs.map((arch) -> "windows-uwp-\(arch)")
+  + applePlatformTargets((platform, target) -> "\(platform)-\(target)")
+
+const defaultEnv: Mapping<String, String | Boolean> = new {
+  ["REALM_DISABLE_ANALYTICS"] = true
+  ["DOTNET_NOLOGO"] = true
+}
+
+const function applePlatformTargets(_transform: (String, String) -> String): List<String> = applePlatforms.map((platform) -> appleTargets.map((target) -> _transform.apply(platform, target))).flatten()
