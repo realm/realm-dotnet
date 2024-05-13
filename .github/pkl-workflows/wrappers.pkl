@@ -140,7 +140,7 @@ jobs {
     }
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\""
-      platform = "windows-${{ matrix.arch }}"
+      platform = "windows-uwp-${{ matrix.arch }}"
       intermediateSteps {
         Steps.setupMSVC("${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}")
       }

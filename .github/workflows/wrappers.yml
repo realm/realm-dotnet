@@ -611,12 +611,12 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Check Cache for windows-${{ matrix.arch }}
+    - name: Check Cache for windows-uwp-${{ matrix.arch }}
       id: check-cache
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Setup MSVC
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
@@ -624,10 +624,10 @@ jobs:
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
-    - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
+    - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
-        name: wrappers-windows-${{ matrix.arch }}
+        name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
