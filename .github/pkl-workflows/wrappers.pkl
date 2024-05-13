@@ -199,6 +199,6 @@ local class JobConfig {
 
   function toString(): String = "\(cmd) \(configParam) \(ltoParam)"
 
-  hidden configParam = "\(if (cmd.startsWith("pwsh")) "-Configuration" else "--configuration=")\(Common.configuration)"
+  hidden configParam = "\(if (cmd.startsWith("pwsh")) "-Configuration " else "--configuration=")\(Common.configuration)"
   hidden ltoParam = if (!enableLTO) "" else (if (cmd.startsWith("pwsh")) "-EnableLTO" else "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'")
 }

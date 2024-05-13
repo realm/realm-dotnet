@@ -435,7 +435,7 @@ jobs:
         key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -ConfigurationRelease -EnableLTO
+      run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -Configuration Release -EnableLTO
     - name: Store artifacts for wrappers-catalyst
       uses: actions/upload-artifact@v4
       with:
@@ -469,7 +469,7 @@ jobs:
         xcode-version: '14'
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: 'pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -ConfigurationRelease '
+      run: 'pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -Configuration Release '
     - name: Store artifacts for wrappers-${{ matrix.platform }}-${{ matrix.target }}
       uses: actions/upload-artifact@v4
       with:
@@ -584,7 +584,7 @@ jobs:
       shell: pwsh
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -ConfigurationRelease -EnableLTO
+      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
@@ -623,7 +623,7 @@ jobs:
       shell: pwsh
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -ConfigurationRelease -EnableLTO
+      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
