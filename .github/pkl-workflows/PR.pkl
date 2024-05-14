@@ -2,7 +2,9 @@ module pr
 
 amends "GithubAction/GithubAction.pkl"
 
-import "helpers/common.pkl"
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+import "helpers/BaaS.pkl"
 
 local class JobNamesDefition {
   const wrappers: String = "build-wrappers"
@@ -15,7 +17,7 @@ local class JobNamesDefition {
 local function createTestJob(workflow: String): ReusableWorkflowJob = new ReusableWorkflowJob {
   uses = "./.github/workflows/\(workflow).yml"
   name = "Test"
-  `if` = ifNotCanceledCondition
+  `if` = Common.ifNotCanceledCondition
   needs {
     JobNames.packages
   }
@@ -24,17 +26,7 @@ local function createTestJob(workflow: String): ReusableWorkflowJob = new Reusab
   }
 }
 
-local function checkoutCode(): Step = new {
-  name = "Checkout Code"
-  uses = "actions/checkout@v3"
-  with {
-    ["submodules"] = "recursive"
-    ["ref"] = "${{ github.event.pull_request.head.sha }}"
-  }
-}
-
 local JobNames = new JobNamesDefition{}
-local ifNotCanceledCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
 
 local packages = List("Realm", "Realm.PlatformHelpers", "Realm.UnityUtils", "Realm.UnityWeaver")
 
@@ -60,7 +52,7 @@ on {
   }
 }
 
-env = common.defaultEnv
+env = Common.defaultEnv
 
 concurrency {
   group = "${{ github.head_ref || github.run_id }}"
@@ -72,15 +64,7 @@ jobs {
     uses = "./.github/workflows/wrappers.yml"
     name = "Wrappers"
   }
-  [JobNames.baas] = new ReusableWorkflowJob {
-    uses = "./.github/workflows/deploy-baas.yml"
-    with {
-      ["differentiators"] = "[\"code-coverage\"]"
-    }
-    secrets {
-      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
-    }
-  }
+  [JobNames.baas] = BaaS.deploy(new Listing { "code-coverage"}) // TODO: run baasaas tests for more targets
   [JobNames.packages] = new ReusableWorkflowJob {
     uses = "./.github/workflows/build-packages.yml"
     name = "Package"
@@ -100,7 +84,7 @@ jobs {
     needs {
       JobNames.packages
     }
-    `if` = ifNotCanceledCondition
+    `if` = Common.ifNotCanceledCondition
   }
   ["test-unity"] = new ReusableWorkflowJob {
     uses = "./.github/workflows/test-unity.yml"
@@ -113,7 +97,7 @@ jobs {
     needs {
       JobNames.unity
     }
-    `if` = ifNotCanceledCondition
+    `if` = Common.ifNotCanceledCondition
   }
   ["test-net-framework"] = createTestJob("test-net-framework")
   ["test-uwp-managed"] = (createTestJob("test-uwp-managed")) {
@@ -140,12 +124,12 @@ jobs {
   }
   ["test-woven-classes"] = createTestJob("test-woven-classes")
   ["test-source-generation"] = new ReusableWorkflowJob {
-    `if` = ifNotCanceledCondition
+    `if` = Common.ifNotCanceledCondition
     name = "Test"
     uses = "./.github/workflows/test-source-generation.yml"
   }
   ["test-weaver"] = new ReusableWorkflowJob {
-    `if` = ifNotCanceledCondition
+    `if` = Common.ifNotCanceledCondition
     name = "Test"
     uses = "./.github/workflows/test-weaver.yml"
   }
@@ -178,7 +162,7 @@ jobs {
       JobNames.packages
     }
     steps {
-      checkoutCode()
+      Steps.checkout()
       for (_package in packages) {
         new {
           name = "Fetch \(_package)"

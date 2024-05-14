@@ -9,10 +9,6 @@ const function checkout(): gha.Step = new {
   }
 }
 
-const function restoreCache(): gha.Step = new {
-
-}
-
 const function uploadArtifacts(artifactName: String, relPath: String): gha.Step = new {
   name = "Store artifacts for \(artifactName)"
   uses = "actions/upload-artifact@v4"
@@ -36,4 +32,11 @@ const function setupMSVC(edition: String): gha.Step = new {
   name = "Setup MSVC"
   run = "Start-Process \"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vs_installer.exe\" -ArgumentList 'modify --installPath \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.\(edition)' -Wait -PassThru"
   shell = "pwsh"
+}
+
+const function setupDotnet(): gha.Step = new {
+  uses = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
+  with {
+    ["dotnet-version"] = "6.0.x"
+  }
 }
