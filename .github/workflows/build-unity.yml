@@ -24,22 +24,22 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.UnityUtils.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/

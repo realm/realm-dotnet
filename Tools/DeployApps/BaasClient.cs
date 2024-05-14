@@ -1125,7 +1125,7 @@ namespace Baas
                     await Task.Delay(2000);
                 }
 
-                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
+                throw new Exception($"Container with id={containerId} was not found or ready after 100 retries");
             }
 
             private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)

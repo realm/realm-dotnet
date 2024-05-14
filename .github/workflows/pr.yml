@@ -88,12 +88,12 @@ jobs:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
@@ -230,22 +230,22 @@ jobs:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/

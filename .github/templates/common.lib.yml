@@ -6,7 +6,7 @@
 #@ actionCheckout = "actions/checkout@v3"
 #@ actionCache = "nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8"
 #@ actionUploadArtifact = "actions/upload-artifact@v3"
-#@ actionDownloadArtifact = "actions/download-artifact@v3"
+#@ actionDownloadArtifact = "actions/download-artifact@v4"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
 #@ actionSetupDotnet = "actions/setup-dotnet@3e6b9fe3930cac7c59c651af5de1514b47a805b9" #! 4.0.0
 #@ actionCodeQLInit = "github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31"

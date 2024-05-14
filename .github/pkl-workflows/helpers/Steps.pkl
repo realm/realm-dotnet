@@ -52,7 +52,7 @@ const function registerProblemMatchers(): gha.Step = new {
 
 const function fetchPackages(packageJob: String, _packages: List<String>?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
   name = "Fetch \(package)"
-  uses = "actions/download-artifact@v3"
+  uses = "actions/download-artifact@v4"
   with {
     ["name"] = "\(package).${{ needs.\(packageJob).outputs.package_version }}"
     ["path"] = "${{ github.workspace }}/Realm/packages/"

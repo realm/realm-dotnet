@@ -39,12 +39,12 @@ jobs:
     - name: Cleanup Workspace
       run: git clean -fdx
     - name: Fetch Unity Package
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: io.realm.unity-${{ inputs.version }}.tgz
         path: Realm/Realm.Unity
     - name: Fetch Unity Tests
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: UnityTests
         path: Tests/Tests.Unity
@@ -76,7 +76,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Download Test Runner
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: UnityTestsRunner.linux
         path: TestRunner
@@ -115,7 +115,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Download Test Runner
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: UnityTestsRunner.windows
         path: TestRunner

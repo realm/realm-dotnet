@@ -44,12 +44,12 @@ jobs:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
@@ -174,12 +174,12 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
@@ -224,12 +224,12 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
