@@ -16,13 +16,15 @@ function deploy(differentiators: Listing<String>): gha.MatrixJob = new {
   steps {
     Steps.checkout()
     Steps.setupDotnet()
-    new gha.Step {
-      name = "Deploy Apps"
-      run = "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}"
-      `working-directory` = "Tools/DeployApps"
-    }
+    ...deployStep("${{ matrix.differentiator }}", true)
   }
 }
+
+function deployStep(differentiator: String, shouldDeploy: Boolean): List<gha.Step> = if (shouldDeploy) List(new gha.Step {
+  name = "Deploy Apps"
+  run = "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=\(differentiator)-${{ github.run_id }}-${{ github.run_attempt }}"
+  `working-directory` = "Tools/DeployApps"
+}) else List()
 
 function cleanup(differentiators: Listing<String>): gha.MatrixJob = new {
   name = "Cleanup BaaS"

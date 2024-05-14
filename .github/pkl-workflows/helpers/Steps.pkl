@@ -1,4 +1,5 @@
 import "../GithubAction/GithubAction.pkl" as gha
+import "Common.pkl"
 
 const function checkout(): gha.Step = new {
   name = "Checkout Code"
@@ -39,4 +40,32 @@ const function setupDotnet(): gha.Step = new {
   with {
     ["dotnet-version"] = "6.0.x"
   }
+}
+
+const function registerProblemMatchers(): gha.Step = new {
+  name = "Register csc problem matcher"
+  run = """
+    echo "::add-matcher::.github/problem-matchers/csc.json"
+    echo "::add-matcher::.github/problem-matchers/msvc.json"
+    """
+}
+
+const function fetchPackages(packageJob: String, _packages: List<String>?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
+  name = "Fetch \(package)"
+  uses = "actions/download-artifact@v3"
+  with {
+    ["name"] = "\(package).${{ needs.\(packageJob).outputs.package_version }}"
+    ["path"] = "${{ github.workspace }}/Realm/packages/"
+  }
+})
+
+const function addMSBuildToPath(): gha.Step = new {
+  name = "Add msbuild to PATH"
+  uses = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
+  `if` = "${{ runner.os == 'Windows' }}"
+}
+
+const function msbuild(project: String, properties: Mapping<String, String>): gha.Step = new {
+  name = "Build \(project)"
+  run = "msbuild \(project) -p:Configuration=\(Common.configuration) -restore \(properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" "))"
 }

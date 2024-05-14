@@ -1,0 +1,90 @@
+module test
+
+import "../GithubAction/GithubAction.pkl" as gha
+import "Common.pkl"
+import "Steps.pkl"
+import "BaaS.pkl"
+
+local const outputFile = "TestResults.xml"
+
+function netFramework(_packageJob: String, syncDifferentiators: Listing<String>): gha.Job = new {
+  local testConfig = new TestConfig {
+    packageJob = _packageJob
+    runSyncTests = syncDifferentiators.toList().contains("net-framework")
+    syncDifferentiator = "net-framework"
+    title = ".NET Framework"
+
+  }
+  name = "Test \(testConfig.title)"
+  needs {
+    _packageJob
+  }
+  `if` = Common.ifNotCanceledCondition
+  `runs-on` = new gha.WindowsLatest{}
+  `timeout-minutes` = Common.testTimeout
+  steps {
+    ...prepareTests(testConfig)
+    Steps.addMSBuildToPath()
+    buildTests(_packageJob, "Tests/Realm.Tests", new Mapping{})
+    new gha.Step {
+      name = "Run the tests"
+      run = "./Tests/Realm/Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(testConfig))"
+    }
+    ...reportTestResults(testConfig)
+  }
+}
+
+local function prepareTests(config: TestConfig): Listing<gha.Step> = new Listing {
+  Steps.checkout()
+  ...cleanWorkspace(config.shouldCleanWorkspace)
+  ...fetchTestArtifacts(config.packageJob, config.useWrappers)
+  ...BaaS.deployStep(config.syncDifferentiator, config.runSyncTests)
+}
+
+local function cleanWorkspace(shouldClean: Boolean): List<gha.Step> = if (shouldClean) List(new gha.Step {
+  name = "Cleanup Workspace"
+  run = "git clean -fdx"
+}) else List()
+
+local function fetchTestArtifacts(packageJob: String, useWrappers: Boolean): List<gha.Step> = if (useWrappers)
+  Steps.fetchPackages(packageJob, Common.nugetPackages)
+  else Steps.fetchPackages(packageJob, Common.nugetPackages)
+
+local function buildTests(packageJob: String, projectPath: String, properties: Mapping<String, String>): gha.Step = Steps.msbuild(projectPath, new Mapping{
+  ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
+  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(packageJob).outputs.package_version }}"
+  ...properties
+})
+
+local function baasTestArgs(config: TestConfig): String = if (config.runSyncTests) " --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=\(config.syncDifferentiator)-${{ github.run_id }}-${{ github.run_attempt }}" else ""
+
+local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
+  local _outputFile = if (config.transformResults) "\(outputFile)_transformed.xml" else outputFile
+  ...(if (config.transformResults) List(new gha.Step {
+    name = "Transform Results"
+    run = "xsltproc --output \(_outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(outputFile)"
+  }) else List())
+  new gha.Step {
+    name = "Publish Unit Test Results"
+    uses = "LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b"
+    `if` = "always()"
+    with {
+      ["name"] = "Results \(config.title)"
+      ["path"] = _outputFile
+      ["reporter"] = "java-junit"
+      ["list-suites"] = "failed"
+      ["path-replace-backslashes"] = true
+      ["fail-on-error"] = true
+    }
+  }
+}
+
+local class TestConfig {
+  packageJob: String
+  useWrappers: Boolean = false
+  shouldCleanWorkspace: Boolean = false
+  runSyncTests: Boolean = false
+  syncDifferentiator: String
+  transformResults: Boolean = false
+  title: String
+}

@@ -26,3 +26,8 @@ const defaultEnv: Mapping<String, String | Boolean> = new {
 const function applePlatformTargets(_transform: (String, String) -> String): List<String> = applePlatforms.map((platform) -> appleTargets.map((target) -> _transform.apply(platform, target))).flatten()
 
 const ifNotCanceledCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
+const nugetPackages: List<String> = List("Realm", "Realm.PlatformHelpers")
+const packages: List<String> = nugetPackages + List("Realm.UnityUtils", "Realm.UnityWeaver")
+
+const testTimeout = 60

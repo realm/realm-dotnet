@@ -75,13 +75,45 @@ jobs:
       settings: '["Mono-Net4"]'
       platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
   test-net-framework:
-    name: Test
+    name: Test .NET Framework
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-net-framework.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Fetch Realm
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+    - name: Build Tests/Realm.Tests
+      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      run: './Tests/Realm/Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results .NET Framework
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-uwp-managed:
     name: Test
     needs:
@@ -245,3 +277,18 @@ jobs:
           exit 1
         }
       shell: pwsh
+  lint:
+    name: Verify TODOs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: nirinchev/verify-todo@9be6f76daddad71433e5deb1b58c517490e5c66e
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        include: '**/*.+(cs|cpp|hpp)'
+        exclude: wrappers/realm-core/**
+        pattern: \\WR[A-Z]+-[0-9]+
