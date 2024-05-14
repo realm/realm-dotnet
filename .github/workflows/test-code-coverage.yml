@@ -149,7 +149,7 @@ jobs:
         DOTNET_EnableCrashReport: 1
       run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasaas-api-key=${{ secrets.BaaSaasApiKey}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
     - name: Archive core dump
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: crash-report-net-core-code-coverage

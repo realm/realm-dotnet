@@ -76,7 +76,7 @@ jobs:
         DOTNET_EnableCrashReport: 1
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Archive core dump
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: crash-report-net-core-${{ matrix.runner }}-${{ matrix.runtime }}

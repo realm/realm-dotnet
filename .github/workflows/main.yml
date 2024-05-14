@@ -258,7 +258,7 @@ jobs:
         dashboard-path: dashboard.charts
         nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
     - name: Store artifacts for dashboard.charts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
