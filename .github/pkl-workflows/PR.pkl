@@ -30,6 +30,10 @@ local JobNames = new JobNamesDefition{}
 
 local packages = List("Realm", "Realm.PlatformHelpers", "Realm.UnityUtils", "Realm.UnityWeaver")
 
+local baasDifferentiators: Listing = new {
+  "code-coverage"
+}
+
 name = "PR Build"
 on {
   pull_request {
@@ -64,7 +68,7 @@ jobs {
     uses = "./.github/workflows/wrappers.yml"
     name = "Wrappers"
   }
-  [JobNames.baas] = BaaS.deploy(new Listing { "code-coverage"}) // TODO: run baasaas tests for more targets
+  [JobNames.baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
   [JobNames.packages] = new ReusableWorkflowJob {
     uses = "./.github/workflows/build-packages.yml"
     name = "Package"
@@ -141,20 +145,7 @@ jobs {
       ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
     }
   }
-  ["cleanup-baas"] = new ReusableWorkflowJob {
-    name = "Cleanup"
-    uses = "./.github/workflows/cleanup-baas.yml"
-    `if` = "always()"
-    needs {
-      JobNames.coverage
-    }
-    with {
-      ["differentiators"] = "[\"code-coverage\"]"
-    }
-    secrets {
-      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
-    }
-  }
+  ["cleanup-baas"] = BaaS.cleanup(baasDifferentiators)
   ["verify-namespaces"] = new Job {
     `runs-on` = new UbuntuLatest{}
     name = "Verify Namespaces"

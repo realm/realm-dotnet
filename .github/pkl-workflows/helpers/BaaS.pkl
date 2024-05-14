@@ -23,3 +23,23 @@ function deploy(differentiators: Listing<String>): gha.MatrixJob = new {
     }
   }
 }
+
+function cleanup(differentiators: Listing<String>): gha.MatrixJob = new {
+  name = "Cleanup BaaS"
+  `runs-on` = new gha.UbuntuLatest{}
+  strategy {
+    matrix {
+      ["differentiator"] = differentiators
+    }
+  }
+  `if` = Common.ifNotCanceledCondition
+  steps {
+    Steps.checkout()
+    Steps.setupDotnet()
+    new gha.Step {
+      name = "Terminate Baas"
+      run = "dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}"
+      `working-directory` = "Tools/DeployApps"
+    }
+  }
+}
