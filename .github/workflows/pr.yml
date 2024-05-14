@@ -167,15 +167,25 @@ jobs:
     secrets:
       BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   cleanup-baas:
-    name: Cleanup
-    needs:
-    - test-code-coverage
-    if: always()
-    uses: ./.github/workflows/cleanup-baas.yml
-    with:
-      differentiators: '["code-coverage"]'
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
+    name: Cleanup BaaS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.x
+    - name: Terminate Baas
+      working-directory: Tools/DeployApps
+      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
+    strategy:
+      matrix:
+        differentiator:
+        - code-coverage
   verify-namespaces:
     name: Verify Namespaces
     needs:
