@@ -76,7 +76,7 @@ jobs {
       enableLTO = false
       platform = "${{ matrix.platform }}-${{ matrix.target }}"
       intermediateSteps {
-        Steps.setupXcode()
+        Steps.setupXcode("14")
       }
       ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(JobNames.checkCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
     })

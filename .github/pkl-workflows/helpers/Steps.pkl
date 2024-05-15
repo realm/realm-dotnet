@@ -2,6 +2,8 @@ import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
 
 const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
+const actionSetupJDK = "actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0"
+const actionAWSConfigureCredentials = ""
 
 const function checkout(): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers()
@@ -28,11 +30,11 @@ const function uploadArtifacts(artifactName: String, relPath: String): gha.Step 
   }
 }
 
-const function setupXcode(): gha.Step = new {
+const function setupXcode(version: String): gha.Step = new gha.Step {
   name = "Setup Xcode"
   uses = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
   with {
-    ["xcode-version"] = "14"
+    ["xcode-version"] = version
   }
 }
 
@@ -74,6 +76,25 @@ const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listi
   }
 }
 
+const function setupJDK(): gha.Step = new {
+  name = "Setup JDK"
+  uses = actionSetupJDK
+  with {
+    ["distribution"] = "microsoft"
+    ["java-version"] = 11
+  }
+}
+
+const function configureAWSCredentials(accessKey: String, secretKey: String, region: String): gha.Step = new {
+  name = "Configure AWS Credentials"
+  uses = actionAWSConfigureCredentials
+  with {
+    ["aws-access-key-id"] = "${{ secrets.\(accessKey) }}"
+    ["aws-secret-access-key"] = "${{ secrets.\(secretKey) }}"
+    ["aws-region"] = region
+  }
+}
+
 const function msbuild(project: String, properties: Mapping<String, String>): List<gha.Step> = List(
   addMSBuildToPath(),
   new gha.Step {
@@ -82,10 +103,10 @@ const function msbuild(project: String, properties: Mapping<String, String>): Li
   }
 )
 
-const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
+const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
   new gha.Step {
     name = "Publish \(project)"
-    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) -r \(runtime) \(propertiesToString(properties)) --no-self-contained"
+    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) \(if (runtime != null) "-r \(runtime)" else "") \(propertiesToString(properties)) --no-self-contained"
   }
   new gha.Step {
     name = "Output executable path"
@@ -106,12 +127,32 @@ const function runSimulator(config: SimulatorConfig): gha.Step = new {
   with = config.toMap().toMapping()
 }
 
+const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new Listing<gha.Step> {
+  configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2")
+  new gha.Step {
+    name = "Run the tests"
+    uses = "./.github/actions/run-android-device-farm-test"
+    id = "run_tests"
+    with {
+      ["apk-path"] = config.apkPath
+      ["app-id"] = config.appId
+      ["project-arn"] = "${{ secrets.DEVICEFARM_PROJECT_ARN }}"
+      ["device-pool-arn"] = "${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}"
+    }
+  }
+}
+
 class SimulatorConfig {
   appPath: String
   bundleId: String
   iphoneToSimulate: "Apple-TV-1080p" | "iPhone-8" | "iPhone-15"
   arguments: String
   os: "tvOS" | "iOS"
+}
+
+class DeviceFarmConfig {
+  apkPath: String
+  appId: String
 }
 
 local const function addMSBuildToPath(): gha.Step = new {

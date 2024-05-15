@@ -104,12 +104,7 @@ jobs {
     `if` = Common.ifNotCanceledCondition
   }
   ["test-net-framework"] = TestJobs.netFramework(JobNames.packages, baasDifferentiators)
-  ["test-uwp-managed"] = (createTestJob("test-uwp-managed")) {
-    secrets {
-      ["Pfx_Password"] = "${{ secrets.Pfx_Password }}"
-      ["Base64_Encoded_Pfx"] = "${{ secrets.Base64_Encoded_Pfx }}"
-    }
-  }
+  ["test-uwp"] = TestJobs.uwp(JobNames.packages, baasDifferentiators)
   ["test-net-core"] = TestJobs.netCore(JobNames.packages, new Listing { "net8.0" })
   ["test-macos-xamarin"] = TestJobs.macOS_Xamarin(JobNames.packages)
   ["test-macos-maui"] = TestJobs.macOS_Maui(JobNames.packages, baasDifferentiators)

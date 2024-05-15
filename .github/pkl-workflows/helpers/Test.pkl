@@ -182,12 +182,14 @@ function iOS_Maui(_packageJob: String, _syncDifferentiators: Listing<Common.Sync
     title = "Maui.iOS"
     syncDifferentiator = "ios"
     syncDifferentiators = _syncDifferentiators
+    transformResults = true
   },
   "macos-14",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
+    Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", getTestProps(config))
     Steps.runSimulator(new Steps.SimulatorConfig{
       appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
@@ -222,6 +224,7 @@ function macOS_Maui(_packageJob: String, _syncDifferentiators: Listing<Common.Sy
     title = "Maui.MacCatalyst"
     syncDifferentiator = "catalyst"
     syncDifferentiators = _syncDifferentiators
+    transformResults = true
   },
   "macos-14",
   null,
@@ -234,6 +237,85 @@ function macOS_Maui(_packageJob: String, _syncDifferentiators: Listing<Common.Sy
       run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
     }
     ...reportTestResults(config)
+  })
+
+function uwp(_packageJob: String, _syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.StepJobBase = testJob(
+  new TestConfig {
+    packageJob = _packageJob
+    title = "UWP"
+    syncDifferentiators = _syncDifferentiators
+    syncDifferentiator = "uwp"
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
+    new {
+      name = "Import test certificate"
+      run = """
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $currentDirectory = Get-Location
+        [IO.File]::WriteAllBytes("${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx
+        """
+      shell = "powershell"
+    }
+    ...buildTests(config, "Tests/Tests.UWP", new Mapping {
+      ["AppxBundle"] = "Always"
+      ["PackageCertificateKeyFile"] = "${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx"
+      ["PackageCertificatePassword"] = "${{ secrets.Pfx_Password }}"
+      ["UseDotNetNativeToolchain"] = "false"
+      ["AppxBundlePlatforms"] = "x64"
+    })
+    new {
+      name = "Run the tests"
+      run = "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '\(baasTestArgs(config))"
+      shell = "powershell"
+    }
+    ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
+  })
+
+function android_Xamarin(_packageJob: String): gha.StepJobBase = testJob(
+  new TestConfig {
+    packageJob = _packageJob
+    title = "Xamarin.Android"
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    Steps.setupJDK()
+    ...prepareTests(config)
+    ...buildTests(config, "Tests/Tests.Android", new Mapping {
+      ["AndroidUseSharedRuntime"] = "False"
+      ["EmbedAssembliesIntoApk"] = "True"
+    })
+    ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
+      apkPath = "${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk"
+      appId = "io.realm.xamarintests"
+    })
+    ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
+  })
+
+function android_Maui(_packageJob: String, _syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.StepJobBase = testJob(
+  new TestConfig {
+    packageJob = _packageJob
+    title = "Maui.Android"
+    syncDifferentiator = "android"
+    syncDifferentiators = _syncDifferentiators
+    transformResults = true
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    Steps.setupJDK()
+    ...prepareTests(config)
+    ...Steps.setupWorkloads("maui", null)
+    ...Steps.dotnetPublish("Tests/Tests.Maui", "net8.0-android", /* runtime */ null, getTestProps(config))
+    ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
+      apkPath = "${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk"
+      appId = "io.realm.mauitests"
+    })
+    ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
   })
 
 // Private helpers
@@ -279,12 +361,14 @@ local function buildTests(config: TestConfig, projectPath: String, properties: M
 
 local function baasTestArgs(config: TestConfig): String = if (config.runSyncTests) " --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=\(config.syncDifferentiator)-${{ github.run_id }}-${{ github.run_attempt }}" else ""
 
-local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
-  local _outputFile = if (config.transformResults) "\(outputFile)_transformed.xml" else outputFile
+local function reportTestResults(config: TestConfig): Listing<gha.Step> = reportTestResultsWithCustomFile(outputFile, config)
+
+local function reportTestResultsWithCustomFile(_outputFile: String, config: TestConfig): Listing<gha.Step> = new {
+  local __outputFile = if (config.transformResults) "\(_outputFile)_transformed.xml" else _outputFile
   when (config.transformResults) {
     new gha.Step {
       name = "Transform Results"
-      run = "xsltproc --output \(_outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(outputFile)"
+      run = "xsltproc --output \(__outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(_outputFile)"
     }
   }
   new gha.Step {
@@ -293,7 +377,7 @@ local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
     `if` = "always()"
     with {
       ["name"] = "Results \(config.title)"
-      ["path"] = _outputFile
+      ["path"] = __outputFile
       ["reporter"] = "java-junit"
       ["list-suites"] = "failed"
       ["path-replace-backslashes"] = true

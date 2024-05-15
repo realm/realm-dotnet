@@ -124,17 +124,58 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-  test-uwp-managed:
-    name: Test
+  test-uwp:
+    name: Test UWP
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-uwp-managed.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      Pfx_Password: ${{ secrets.Pfx_Password }}
-      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Import test certificate
+      run: |-
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $currentDirectory = Get-Location
+        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+      shell: powershell
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+    - name: Build Tests/Tests.UWP
+      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+    - name: Run the tests
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '
+      shell: powershell
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results UWP
+        path: ${{ env.TEST_RESULTS }}
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-net-core:
     name: Test ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     needs:
@@ -300,12 +341,14 @@ jobs:
       run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
       run: 'Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+    - name: Transform Results
+      run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
       if: always()
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       with:
         name: Results Maui.MacCatalyst
-        path: TestResults.xml
+        path: TestResults.xml_transformed.xml
         reporter: java-junit
         list-suites: failed
         path-replace-backslashes: true
@@ -392,6 +435,10 @@ jobs:
         dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install maui
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
+      with:
+        xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
       run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run on Simulator
@@ -402,12 +449,14 @@ jobs:
         iphoneToSimulate: iPhone-15
         arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
         os: iOS
+    - name: Transform Results
+      run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
       if: always()
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       with:
         name: Results Maui.iOS
-        path: TestResults.xml
+        path: TestResults.xml_transformed.xml
         reporter: java-junit
         list-suites: failed
         path-replace-backslashes: true

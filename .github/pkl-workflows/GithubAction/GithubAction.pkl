@@ -601,7 +601,7 @@ class WindowsLatest extends Machine {
   name = "windows-latest"
 }
 
-typealias Shell = "pwsh" | "bash" | "sh" | "cmd" | "PowerShell" | "python"
+typealias Shell = "pwsh" | "bash" | "sh" | "cmd" | "powershell" | "python"
 
 // Step, part of Jobs
 class Step {

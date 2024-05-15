@@ -118,7 +118,7 @@ namespace Realms.Tests.Sync
                     break;
                 case "Mac Catalyst":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPad"), "Name");
-                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64"), "Version");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64").Or.EqualTo("arm64"), "Version");
                     AssertBundleId("Tests.Maui");
                     break;
                 default:
