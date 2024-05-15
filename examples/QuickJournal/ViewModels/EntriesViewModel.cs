@@ -18,6 +18,24 @@ namespace QuickJournal.ViewModels
         public EntriesViewModel()
         {
             realm = Realm.GetInstance();
+
+            realm.Write(() =>
+            {
+                realm.RemoveAll();
+                for (int i = 0; i < 200; i++)
+                {
+                    realm.Add(new JournalEntry
+                    {
+                        Title = $"Title-{i}",
+                        Body = $"Body-{i}",
+                        Metadata = new EntryMetadata
+                        {
+                            CreatedDate = DateTimeOffset.Now,
+                        }
+                    });
+                }
+            });
+
             Entries = new WrapperCollection<JournalEntry, JournalEntryViewModel>(realm.All<JournalEntry>(), i => new JournalEntryViewModel(i));
         }
 
@@ -72,7 +90,15 @@ namespace QuickJournal.ViewModels
 
         public int Count => _results.Count;
 
-        public TViewModel this[int index] => _viewModelFactory(_results[index]);
+        public TViewModel this[int index]
+        {
+            get
+            {
+                var item = _viewModelFactory(_results[index]);
+                Console.WriteLine($"Indexer: {item}");
+                return item;
+            }
+        }
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
@@ -90,6 +116,7 @@ namespace QuickJournal.ViewModels
         {
             foreach (var item in _results)
             {
+                Console.WriteLine($"Enumerator: {item}");
                 yield return _viewModelFactory(item);
             }
         }
@@ -109,6 +136,11 @@ namespace QuickJournal.ViewModels
         {
             Entry = entry;
             Entry.PropertyChanged += Inner_PropertyChanged;
+        }
+
+        public override string ToString()
+        {
+            return Entry.ToString();
         }
 
         private void Inner_PropertyChanged(object? sender, PropertyChangedEventArgs e)

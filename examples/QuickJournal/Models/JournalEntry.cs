@@ -9,5 +9,10 @@ namespace QuickJournal.Models
         public string? Body { get; set; }
 
         public EntryMetadata? Metadata { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Title} - {Body}";
+        }
     }
 }
