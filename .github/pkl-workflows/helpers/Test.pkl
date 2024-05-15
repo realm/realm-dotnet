@@ -48,10 +48,11 @@ function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>):
   }
   `runs-on` = "${{ matrix.os.runner }}"
   `timeout-minutes` = Common.testTimeout
+  `if` = Common.ifNotCanceledCondition
   strategy {
     matrix {
       ["framework"] = frameworks
-      ["os"] = new Listing<NetCoreOS> {
+      ["os"] = new Listing<MatrixOS> {
         new { runner = "windows-latest" runtime = "win-x64" }
         new { runner = "ubuntu-latest" runtime = "linux-x64" }
         new { runner = "macos-13" runtime = "osx-x64" }
@@ -59,7 +60,7 @@ function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>):
       ["include"] = new Listing {
         new Mapping {
           ["framework"] = "net8.0"
-          ["os"] = new NetCoreOS { runner = "macos-14" runtime = "osx-arm64" }
+          ["os"] = new MatrixOS { runner = "macos-14" runtime = "osx-arm64" }
         }
       }
     }
@@ -99,6 +100,36 @@ function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>):
         ["name"] = "crash-report-net-core-${{ matrix.os.runner }}-${{ matrix.os.runtime }}"
         ["path"] = "/tmp/coredump*"
       }
+    }
+    ...reportTestResults(testConfig)
+  }
+}
+
+function weaver(): gha.MatrixJob = new {
+  local testConfig = new TestConfig {
+    title = "Weaver"
+    shouldCleanWorkspace = true
+  }
+
+  name = "Test \(testConfig.title)"
+  strategy {
+    matrix {
+      ["os"] = new Listing<MatrixOS> {
+        new { runner = "windows-latest" runtime = "win-x64" }
+        new { runner = "ubuntu-latest" runtime = "linux-x64" }
+        new { runner = "macos-14" runtime = "osx-arm64" }
+      }
+    }
+  }
+  `runs-on` = "${{ matrix.os.runner }}"
+  `timeout-minutes` = Common.testTimeout
+  steps {
+    Steps.checkout()
+    ...Steps.setupWorkloads("android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}", "6.0.x").toList()
+    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
+    new gha.Step {
+      name = "Run the tests"
+      run = "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=\(outputFile) --labels=After"
     }
     ...reportTestResults(testConfig)
   }
@@ -157,7 +188,7 @@ local function getTestProps(packageJob: String): Mapping<String, String> = new M
   ["RealmTestsStandaloneExe"] = "true"
 }
 
-local class NetCoreOS {
+local class MatrixOS {
   runner: "windows-latest" | "ubuntu-latest" | "macos-13" | "macos-14"
   runtime: Common.NetRuntime
 }

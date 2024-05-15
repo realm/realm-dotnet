@@ -59,6 +59,14 @@ const function fetchPackages(packageJob: String, _packages: List<String>?): List
   }
 })
 
+const function setupWorkloads(workloads: String, dotnetVersion: String): Listing<gha.Step> = new Listing<gha.Step> {
+  setupDotnet(dotnetVersion)
+  new {
+    name = "Setup workloads"
+    run = "dotnet workload install \(workloads)"
+  }
+}
+
 const function msbuild(project: String, properties: Mapping<String, String>): List<gha.Step> = List(
   addMSBuildToPath(),
   new gha.Step {
@@ -70,7 +78,7 @@ const function msbuild(project: String, properties: Mapping<String, String>): Li
 const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
   new gha.Step {
     name = "Publish \(project)"
-    run = "dotnet publish \(project) -c \(Common.configuration) -restore \(propertiesToString(properties))"
+    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) -r \(runtime) -restore \(propertiesToString(properties))"
   }
   new gha.Step {
     name = "Output executable path"

@@ -128,11 +128,7 @@ jobs {
     name = "Test"
     uses = "./.github/workflows/test-source-generation.yml"
   }
-  ["test-weaver"] = new ReusableWorkflowJob {
-    `if` = Common.ifNotCanceledCondition
-    name = "Test"
-    uses = "./.github/workflows/test-weaver.yml"
-  }
+  ["test-weaver"] = TestJobs.weaver()
   ["test-code-coverage"] = (createTestJob("test-code-coverage")) {
     needs {
       JobNames.baas
@@ -141,7 +137,11 @@ jobs {
       ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
     }
   }
-  ["cleanup-baas"] = BaaS.cleanup(baasDifferentiators)
+  ["cleanup-baas"] = (BaaS.cleanup(baasDifferentiators)) {
+    needs {
+      JobNames.coverage
+    }
+  }
   ["verify-namespaces"] = Lint.verifyNamespaces(JobNames.packages)
   ["lint"] = Lint.lint()
 }

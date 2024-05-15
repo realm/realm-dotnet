@@ -131,6 +131,7 @@ jobs:
     name: Test ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     needs:
     - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
     runs-on: ${{ matrix.os.runner }}
     steps:
@@ -164,7 +165,7 @@ jobs:
       with:
         dotnet-version: ${{ steps.get-net-version.outputs.version }}
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
@@ -257,9 +258,48 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/test-source-generation.yml
   test-weaver:
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-weaver.yml
+    name: Test Weaver
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os.runner }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+    - name: Publish Tests/Weaver/Realm.Fody.Tests
+      run: 'dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} -restore '
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Weaver
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+    strategy:
+      matrix:
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-14
+          runtime: osx-arm64
+      fail-fast: false
   test-code-coverage:
     name: Test
     needs:
@@ -273,6 +313,8 @@ jobs:
       BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
   cleanup-baas:
     name: Cleanup BaaS
+    needs:
+    - test-code-coverage
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
     steps:
