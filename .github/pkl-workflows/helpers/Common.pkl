@@ -12,6 +12,7 @@ const appleTargets: List<String> = List("Device", "Simulator")
 
 typealias NetFramework = "net6.0" | "net8.0" | String
 typealias NetRuntime = "win-x64" | "linux-x64" | "osx-x64" | "osx-arm64" | String
+typealias SyncDifferentiator = "ios" | "tvos" | "catalyst" | "code-coverage" | String
 
 const wrapperBinaryNames: List<String> =
   List("macos", "catalyst")

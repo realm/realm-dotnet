@@ -29,7 +29,7 @@ local function createTestJob(workflow: String): ReusableWorkflowJob = new Reusab
 
 local JobNames = new JobNamesDefition{}
 
-local baasDifferentiators: Listing = new {
+local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
   "code-coverage"
 }
 
@@ -111,8 +111,10 @@ jobs {
     }
   }
   ["test-net-core"] = TestJobs.netCore(JobNames.packages, new Listing { "net8.0" })
-  ["test-macos"] = createTestJob("test-macos")
-  ["test-ios"] = createTestJob("test-ios")
+  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin(JobNames.packages)
+  ["test-macos-maui"] = TestJobs.macOS_Maui(JobNames.packages, baasDifferentiators)
+  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin(JobNames.packages)
+  ["test-ios-maui"] = TestJobs.iOS_Maui(JobNames.packages, baasDifferentiators)
   ["test-tvos"] = TestJobs.tvOS(JobNames.packages, baasDifferentiators)
   ["test-android"] = (createTestJob("test-android")) {
     secrets {

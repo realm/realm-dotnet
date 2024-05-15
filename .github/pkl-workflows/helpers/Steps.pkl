@@ -66,11 +66,11 @@ const function fetchPackages(packageJob: String, _packages: List<String>?): List
   }
 })
 
-const function setupWorkloads(workloads: String, dotnetVersion: String): Listing<gha.Step> = new Listing<gha.Step> {
+const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new Listing<gha.Step> {
   setupDotnet(dotnetVersion)
   new {
     name = "Setup workloads"
-    run = "dotnet workload install \(workloads)"
+    run = "dotnet workload install \(workloads ?? "android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}")"
   }
 }
 
@@ -95,6 +95,11 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
   }
 }
 
+const function dotnetBuild(project: String, framework: Common.NetFramework, properties: Mapping<String, String>): gha.Step = new gha.Step {
+  name = "Build \(project)"
+  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework) \(propertiesToString(properties))"
+}
+
 const function runSimulator(config: SimulatorConfig): gha.Step = new {
   name = "Run on Simulator"
   uses = actionRunSimulator
@@ -104,9 +109,9 @@ const function runSimulator(config: SimulatorConfig): gha.Step = new {
 class SimulatorConfig {
   appPath: String
   bundleId: String
-  iphoneToSimulate: "Apple-TV-1080p"
+  iphoneToSimulate: "Apple-TV-1080p" | "iPhone-8" | "iPhone-15"
   arguments: String
-  os: "tvOS"
+  os: "tvOS" | "iOS"
 }
 
 local const function addMSBuildToPath(): gha.Step = new {

@@ -4,7 +4,7 @@ import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
 import "Steps.pkl"
 
-function deploy(differentiators: Listing<String>): gha.MatrixJob = new {
+function deploy(differentiators: Listing<Common.SyncDifferentiator>): gha.MatrixJob = new {
   name = "Deploy BaaS"
   `runs-on` = new gha.UbuntuLatest{}
   strategy {
@@ -20,13 +20,13 @@ function deploy(differentiators: Listing<String>): gha.MatrixJob = new {
   }
 }
 
-function deployStep(differentiator: String?, shouldDeploy: Boolean): List<gha.Step> = if (shouldDeploy && differentiator != null) List(new gha.Step {
+function deployStep(differentiator: Common.SyncDifferentiator?, shouldDeploy: Boolean): List<gha.Step> = if (shouldDeploy && differentiator != null) List(new gha.Step {
   name = "Deploy Apps"
   run = "dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=\(differentiator)-${{ github.run_id }}-${{ github.run_attempt }}"
   `working-directory` = "Tools/DeployApps"
 }) else List()
 
-function cleanup(differentiators: Listing<String>): gha.MatrixJob = new {
+function cleanup(differentiators: Listing<Common.SyncDifferentiator>): gha.MatrixJob = new {
   name = "Cleanup BaaS"
   `runs-on` = new gha.UbuntuLatest{}
   strategy {
