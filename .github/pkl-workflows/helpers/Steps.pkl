@@ -3,7 +3,7 @@ import "Common.pkl"
 
 const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
 const actionSetupJDK = "actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0"
-const actionAWSConfigureCredentials = ""
+const actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v4.0.2"
 
 const function checkout(): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers()

@@ -511,19 +511,136 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-  test-android:
-    name: Test
+  test-android-xamarin:
+    name: Test Xamarin.Android
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-android.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
-      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
-      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Setup JDK
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: microsoft
+        java-version: 11
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+    - name: Build Tests/Tests.Android
+      run: msbuild Tests/Tests.Android -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      id: run_tests
+      uses: ./.github/actions/run-android-device-farm-test
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+        app-id: io.realm.xamarintests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Xamarin.Android
+        path: ${{ steps.run_tests.outputs.test-results-path }}
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-android-maui:
+    name: Test Maui.Android
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Setup JDK
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: microsoft
+        java-version: 11
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install maui
+    - name: Publish Tests/Tests.Maui
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android  -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      id: run_tests
+      uses: ./.github/actions/run-android-device-farm-test
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
+        app-id: io.realm.mauitests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Transform Results
+      run: xsltproc --output ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt ${{ steps.run_tests.outputs.test-results-path }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Maui.Android
+        path: ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-woven-classes:
     name: Test Woven Classes
     needs:

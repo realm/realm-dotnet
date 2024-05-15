@@ -111,14 +111,8 @@ jobs {
   ["test-ios-xamarin"] = TestJobs.iOS_Xamarin(JobNames.packages)
   ["test-ios-maui"] = TestJobs.iOS_Maui(JobNames.packages, baasDifferentiators)
   ["test-tvos"] = TestJobs.tvOS(JobNames.packages, baasDifferentiators)
-  ["test-android"] = (createTestJob("test-android")) {
-    secrets {
-      ["AWS_DEVICEFARM_ACCESS_KEY_ID"] = "${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}"
-      ["AWS_DEVICEFARM_SECRET_ACCESS_KEY"] = "${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}"
-      ["DEVICEFARM_PROJECT_ARN"] = "${{ secrets.DEVICEFARM_PROJECT_ARN }}"
-      ["DEVICEFARM_ANDROID_POOL_ARN"] = "${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}"
-    }
-  }
+  ["test-android-xamarin"] = TestJobs.android_Xamarin(JobNames.packages)
+  ["test-android-maui"] = TestJobs.android_Maui(JobNames.packages, baasDifferentiators)
   ["test-woven-classes"] = TestJobs.wovenClasses(JobNames.packages)
   ["test-source-generation"] = TestJobs.sourceGeneration()
   ["test-weaver"] = TestJobs.weaver()
