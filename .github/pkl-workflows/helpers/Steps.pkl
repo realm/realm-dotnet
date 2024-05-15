@@ -69,6 +69,15 @@ const function fetchPackages(packageJob: String, _packages: List<String>?): List
   }
 })
 
+const function fetchWrappers(): List<gha.Step> = Common.wrapperBinaryNames.map((wrapper) -> new gha.Step {
+  name = "Fetch wrappers for \(wrapper)"
+  uses = "actions/download-artifact@v4"
+  with {
+    ["name"] = "wrappers-\(wrapper)"
+    ["path"] = "wrappers/build"
+  }
+})
+
 const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new Listing<gha.Step> {
   setupDotnet(dotnetVersion)
   new {
@@ -101,7 +110,7 @@ class MSBuildConfig {
   target: String?
   properties: Mapping<String, String> = new Mapping{}
 
-  function getTargetForInvocation(): String = if (target != null) " -t \(target)" else ""
+  function getTargetForInvocation(): String = if (target != null) " -t:\(target)" else ""
   function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
 }
 
@@ -126,9 +135,9 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
   }
 }
 
-const function dotnetBuild(project: String, framework: Common.NetFramework, properties: Mapping<String, String>): gha.Step = new gha.Step {
+const function dotnetBuild(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): gha.Step = new gha.Step {
   name = "Build \(project)"
-  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework)\(propertiesToString(properties))"
+  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties))"
 }
 
 const function runSimulator(config: SimulatorConfig): gha.Step = new {

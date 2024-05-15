@@ -102,7 +102,7 @@ jobs {
   ["test-woven-classes"] = TestJobs.wovenClasses()
   ["test-source-generation"] = TestJobs.sourceGeneration()
   ["test-weaver"] = TestJobs.weaver()
-  ["test-code-coverage"] = TestJobs.codeCoverage(baasDifferentiators)
+  ["test-code-coverage"] = TestJobs.codeCoverage(JobNames.wrappers, baasDifferentiators)
   ["cleanup-baas"] = (BaaS.cleanup(baasDifferentiators)) {
     needs = baasDifferentiators.toList().map((d) -> "test-\(d)").toListing()
   }

@@ -199,7 +199,7 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", getTestProps())
+    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps())
     Steps.runSimulator(new Steps.SimulatorConfig{
       appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
@@ -243,7 +243,7 @@ function macOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): g
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", getTestProps())
+    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", "osx-arm64", getTestProps())
     new {
       name = "Run the tests"
       run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
@@ -337,9 +337,8 @@ function android_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>):
     ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
   })
 
-function codeCoverage(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.StepJobBase = testJob(
+function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.StepJobBase = (testJob(
   new TestConfig {
-    needsPackages = true
     title = "Code Coverage"
     syncDifferentiator = "code-coverage"
     syncDifferentiators = _syncDifferentiators
@@ -365,7 +364,11 @@ function codeCoverage(_syncDifferentiators: Listing<Common.SyncDifferentiator>):
     archiveCoreDump()
     ...Steps.publishCoverage("./report.lcov")
     ...reportTestResults(config)
-  })
+  })) {
+    needs {
+      wrappersJob
+    }
+  }
 
 // Private helpers
 local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strategy: gha.MatrixStrategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.StepJobBase = (if (_strategy != null) new gha.MatrixJob{
@@ -386,7 +389,7 @@ local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strate
   steps = _steps.apply(config)
 }
 
-local function prepareTests(config: TestConfig(needsPackages == true)): Listing<gha.Step> = new Listing {
+local function prepareTests(config: TestConfig(needsPackages == true || useWrappers == true)): Listing<gha.Step> = new Listing {
   ...Steps.checkout()
   ...cleanWorkspace(config.shouldCleanWorkspace)
   ...fetchTestArtifacts(Common.job_Packages, config.useWrappers)
@@ -403,7 +406,7 @@ local function cleanWorkspace(shouldClean: Boolean): Listing<gha.Step> = new Lis
 }
 
 local function fetchTestArtifacts(packageJob: String, useWrappers: Boolean): List<gha.Step> = if (useWrappers)
-  Steps.fetchPackages(packageJob, Common.nugetPackages)
+  Steps.fetchWrappers()
   else Steps.fetchPackages(packageJob, Common.nugetPackages)
 
 local function buildTests(config: Steps.MSBuildConfig): List<gha.Step> = Steps.msbuild((config) {
