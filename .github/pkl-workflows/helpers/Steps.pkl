@@ -78,7 +78,7 @@ const function msbuild(project: String, properties: Mapping<String, String>): Li
 const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
   new gha.Step {
     name = "Publish \(project)"
-    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) -r \(runtime) -restore \(propertiesToString(properties))"
+    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) -r \(runtime) -restore \(propertiesToString(properties)) --no-self-contained"
   }
   new gha.Step {
     name = "Output executable path"
