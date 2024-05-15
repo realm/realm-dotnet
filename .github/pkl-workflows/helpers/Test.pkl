@@ -29,7 +29,7 @@ function netFramework(_packageJob: String, syncDifferentiators: Listing<String>)
     })
     new gha.Step {
       name = "Run the tests"
-      run = "./Tests/Realm/Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(testConfig))"
+      run = "./Tests/Realm.Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(testConfig))"
     }
     ...reportTestResults(testConfig)
   }
