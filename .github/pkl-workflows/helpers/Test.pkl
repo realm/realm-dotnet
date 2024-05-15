@@ -8,48 +8,34 @@ import "BaaS.pkl"
 local const outputFile = "TestResults.xml"
 
 // Public test targets
-function netFramework(_packageJob: String, syncDifferentiators: Listing<String>): gha.Job = new {
-  local testConfig = new TestConfig {
+function netFramework(_packageJob: String, syncDifferentiators: Listing<String>): gha.StepJobBase = testJob(new TestConfig {
     packageJob = _packageJob
     runSyncTests = syncDifferentiators.toList().contains("net-framework")
     syncDifferentiator = "net-framework"
     title = ".NET Framework"
-  }
-  name = "Test \(testConfig.title)"
-  needs {
-    _packageJob
-  }
-  `if` = Common.ifNotCanceledCondition
-  `runs-on` = new gha.WindowsLatest{}
-  `timeout-minutes` = Common.testTimeout
-  steps {
-    ...prepareTests(testConfig)
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
     ...buildTests(_packageJob, "Tests/Realm.Tests", new Mapping {
       ["TargetFramework"] = "net461"
     })
     new gha.Step {
       name = "Run the tests"
-      run = "./Tests/Realm.Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(testConfig))"
+      run = "./Tests/Realm.Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(config))"
     }
-    ...reportTestResults(testConfig)
-  }
-}
+    ...reportTestResults(config)
+  })
 
-function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>): gha.MatrixJob = new {
-  local testConfig = new TestConfig {
+function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>): gha.StepJobBase = testJob(
+  new TestConfig {
     packageJob = _packageJob
     title = "${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}"
     shouldCleanWorkspace = true
-  }
-
-  name = "Test \(testConfig.title)"
-  needs {
-    _packageJob
-  }
-  `runs-on` = "${{ matrix.os.runner }}"
-  `timeout-minutes` = Common.testTimeout
-  `if` = Common.ifNotCanceledCondition
-  strategy {
+  },
+  "${{ matrix.os.runner }}",
+  new gha.MatrixStrategy {
     matrix {
       ["framework"] = frameworks
       ["os"] = new Listing<MatrixOS> {
@@ -64,9 +50,9 @@ function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>):
         }
       }
     }
-  }
-  steps {
-    ...prepareTests(testConfig)
+  },
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
     // To avoid NU5037 error
     new gha.Step {
       name = "Clear nuget cache"
@@ -77,42 +63,24 @@ function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>):
       id = "get-net-version"
       name = "Extract .NET version"
       run = """
-        NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
-        echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
-      """
+          NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
+          echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
+        """
       shell = "bash"
     }
     Steps.setupDotnet("${{ steps.get-net-version.outputs.version }}")
-    ...dotnetPublishNetCoreTests(_packageJob, "Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}")
-    new gha.Step {
-      name = "Run the tests"
-      env {
-        ["DOTNET_DbgEnableMiniDump"] = 1
-        ["DOTNET_EnableCrashReport"] = 1
-      }
-      run = "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=\(outputFile) --labels=After"
-    }
-    new gha.Step {
-      name = "Archive core dump"
-      uses = "actions/upload-artifact@v4"
-      `if` = "failure()"
-      with {
-        ["name"] = "crash-report-net-core-${{ matrix.os.runner }}-${{ matrix.os.runtime }}"
-        ["path"] = "/tmp/coredump*"
-      }
-    }
-    ...reportTestResults(testConfig)
-  }
-}
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}", getTestProps(_packageJob))
+    ...dotnetRunTests(true)
+    ...reportTestResults(config)
+  })
 
-function weaver(): gha.MatrixJob = new {
-  local testConfig = new TestConfig {
+function weaver(): gha.StepJobBase = testJob(
+  new TestConfig {
     title = "Weaver"
     shouldCleanWorkspace = true
-  }
-
-  name = "Test \(testConfig.title)"
-  strategy {
+  },
+  "${{ matrix.os.runner }}",
+  new gha.MatrixStrategy {
     matrix {
       ["os"] = new Listing<MatrixOS> {
         new { runner = "windows-latest" runtime = "win-x64" }
@@ -120,33 +88,61 @@ function weaver(): gha.MatrixJob = new {
         new { runner = "macos-14" runtime = "osx-arm64" }
       }
     }
-  }
-  `runs-on` = "${{ matrix.os.runner }}"
-  `timeout-minutes` = Common.testTimeout
-  steps {
-    Steps.checkout()
+  },
+  (config) -> new Listing<gha.Step> {
+    ...Steps.checkout()
     ...Steps.setupWorkloads("android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}", "6.0.x").toList()
     ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
-    new gha.Step {
-      name = "Run the tests"
-      run = "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=\(outputFile) --labels=After"
-    }
-    ...reportTestResults(testConfig)
+    ...dotnetRunTests(false)
+    ...reportTestResults(config)
   }
-}
+)
+
+function sourceGeneration(): gha.StepJobBase = testJob(
+  new TestConfig {
+    title = "Source Generation"
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...Steps.checkout()
+    ...Steps.setupWorkloads("tvos ios maccatalyst android", "6.0.x").toList()
+    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping{}).toList()
+    ...dotnetRunTests(false)
+    ...reportTestResults(config)
+  })
 
 // Private helpers
+local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strategy: gha.MatrixStrategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.StepJobBase = (if (_strategy != null) new gha.MatrixJob{
+  strategy = _strategy
+} else new gha.Job{}) {
+  name = "Test \(config.title)"
+  `runs-on` = runsOn
+  when (config.packageJob != null) {
+    needs {
+      config.packageJob!!
+    }
+  }
+  `if` = Common.ifNotCanceledCondition
+  `timeout-minutes` = Common.testTimeout
+  steps = _steps.apply(config)
+}
+
 local function prepareTests(config: TestConfig): Listing<gha.Step> = new Listing {
-  Steps.checkout()
+  ...Steps.checkout()
   ...cleanWorkspace(config.shouldCleanWorkspace)
-  ...fetchTestArtifacts(config.packageJob, config.useWrappers)
+  ...fetchTestArtifacts(config.packageJob!!, config.useWrappers)
   ...BaaS.deployStep(config.syncDifferentiator, config.runSyncTests)
 }
 
-local function cleanWorkspace(shouldClean: Boolean): List<gha.Step> = if (shouldClean) List(new gha.Step {
-  name = "Cleanup Workspace"
-  run = "git clean -fdx"
-}) else List()
+local function cleanWorkspace(shouldClean: Boolean): Listing<gha.Step> = new Listing {
+  when (shouldClean) {
+    new gha.Step {
+      name = "Cleanup Workspace"
+      run = "git clean -fdx"
+    }
+  }
+}
 
 local function fetchTestArtifacts(packageJob: String, useWrappers: Boolean): List<gha.Step> = if (useWrappers)
   Steps.fetchPackages(packageJob, Common.nugetPackages)
@@ -161,10 +157,12 @@ local function baasTestArgs(config: TestConfig): String = if (config.runSyncTest
 
 local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
   local _outputFile = if (config.transformResults) "\(outputFile)_transformed.xml" else outputFile
-  ...(if (config.transformResults) List(new gha.Step {
-    name = "Transform Results"
-    run = "xsltproc --output \(_outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(outputFile)"
-  }) else List())
+  when (config.transformResults) {
+    new gha.Step {
+      name = "Transform Results"
+      run = "xsltproc --output \(_outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(outputFile)"
+    }
+  }
   new gha.Step {
     name = "Publish Unit Test Results"
     uses = "LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b"
@@ -180,12 +178,38 @@ local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
   }
 }
 
-local function dotnetPublishNetCoreTests(packageJob: String, project: String, framework: Common.NetFramework, runtime: Common.NetRuntime): Listing<gha.Step> = Steps.dotnetPublish(project, framework, runtime, getTestProps(packageJob))
-
 local function getTestProps(packageJob: String): Mapping<String, String> = new Mapping {
   ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
   ["UseRealmNupkgsWithVersion"] = "${{ needs.\(packageJob).outputs.package_version }}"
   ["RealmTestsStandaloneExe"] = "true"
+}
+
+local function dotnetRunTests(enableCoreDumps: Boolean): Listing<gha.Step> = new Listing {
+  new gha.Step {
+    name = "Run the tests"
+    run = "${{ steps.dotnet-publish.outputs.executable-path }} --result=\(outputFile) --labels=After"
+    when (enableCoreDumps) {
+      env {
+        ["DOTNET_DbgEnableMiniDump"] = 1
+        ["DOTNET_EnableCrashReport"] = 1
+      }
+    }
+  }
+  when (enableCoreDumps) {
+    new gha.Step {
+      name = "Archive core dump"
+      uses = "actions/upload-artifact@v4"
+      `if` = "${{ failure() && runner.os != 'Windows' }}"
+      with {
+        ["name"] = "crash-report-net-core-${{ runner.os }}-${{ runner.arch }}"
+        ["path"] = "/tmp/coredump*"
+      }
+    }
+  }
+}
+
+local function applyTestProps(config: TestConfig): Mixin<gha.JobBase> = new Mixin {
+
 }
 
 local class MatrixOS {
@@ -194,11 +218,11 @@ local class MatrixOS {
 }
 
 local class TestConfig {
-  packageJob: String
+  title: String
+  packageJob: String? = null
   useWrappers: Boolean = false
   shouldCleanWorkspace: Boolean = false
   runSyncTests: Boolean = false
-  syncDifferentiator: String?
+  syncDifferentiator: String? = null
   transformResults: Boolean = false
-  title: String
 }

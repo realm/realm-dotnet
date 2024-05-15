@@ -39,6 +39,10 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
@@ -89,6 +93,10 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v4
       with:
@@ -140,6 +148,10 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Cleanup Workspace
       run: git clean -fdx
     - name: Fetch Realm
@@ -168,18 +180,18 @@ jobs:
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Archive core dump
-      if: failure()
+      if: ${{ failure() && runner.os != 'Windows' }}
       uses: actions/upload-artifact@v4
       with:
-        name: crash-report-net-core-${{ matrix.os.runner }}-${{ matrix.os.runtime }}
+        name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
         path: /tmp/coredump*
     - name: Publish Unit Test Results
       if: always()
@@ -254,11 +266,46 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
   test-source-generation:
-    name: Test
+    name: Test Source Generation
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-source-generation.yml
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
+    - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Source Generation
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-weaver:
     name: Test Weaver
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
     runs-on: ${{ matrix.os.runner }}
     steps:
@@ -267,6 +314,10 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
@@ -276,10 +327,10 @@ jobs:
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.xml --labels=After
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       if: always()
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
@@ -323,6 +374,10 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x

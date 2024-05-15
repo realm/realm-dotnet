@@ -1,7 +1,12 @@
 import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
 
-const function checkout(): gha.Step = new {
+const function checkout(): Listing<gha.Step> = new Listing {
+  checkoutWithoutMatchers()
+  registerProblemMatchers()
+}
+
+const function checkoutWithoutMatchers(): gha.Step = new {
   name = "Checkout Code"
   uses = "actions/checkout@v4"
   with {
@@ -83,7 +88,7 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
   new gha.Step {
     name = "Output executable path"
     id = "dotnet-publish"
-    run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)' >> $GITHUB_OUTPUT"
+    run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)/\(project.split("/").last)' >> $GITHUB_OUTPUT"
     shell = "bash"
   }
 }

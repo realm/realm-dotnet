@@ -14,7 +14,7 @@ function deploy(differentiators: Listing<String>): gha.MatrixJob = new {
   }
   `if` = Common.ifNotCanceledCondition
   steps {
-    Steps.checkout()
+    ...Steps.checkout()
     Steps.setupDotnet("6.0.x")
     ...deployStep("${{ matrix.differentiator }}", true)
   }
@@ -36,7 +36,7 @@ function cleanup(differentiators: Listing<String>): gha.MatrixJob = new {
   }
   `if` = Common.ifNotCanceledCondition
   steps {
-    Steps.checkout()
+    ...Steps.checkout()
     Steps.setupDotnet("6.0.x")
     new gha.Step {
       name = "Terminate Baas"

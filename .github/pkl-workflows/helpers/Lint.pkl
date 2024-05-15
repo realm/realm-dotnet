@@ -7,7 +7,7 @@ function lint(): gha.Job = new {
   name = "Verify TODOs"
   `runs-on` = new gha.UbuntuLatest{}
   steps {
-    Steps.checkout()
+    Steps.checkoutWithoutMatchers()
     new gha.Step {
       uses = "nirinchev/verify-todo@9be6f76daddad71433e5deb1b58c517490e5c66e"
       with {
@@ -27,7 +27,7 @@ function verifyNamespaces(packageJob: String): gha.Job = new {
     packageJob
   }
   steps {
-    Steps.checkout()
+    Steps.checkoutWithoutMatchers()
     ...Steps.fetchPackages(packageJob, null)
     new {
       run = "dotnet tool install ilspycmd -g --version 8.0.0.7345"

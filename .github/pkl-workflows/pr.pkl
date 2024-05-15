@@ -123,11 +123,7 @@ jobs {
     }
   }
   ["test-woven-classes"] = createTestJob("test-woven-classes")
-  ["test-source-generation"] = new ReusableWorkflowJob {
-    `if` = Common.ifNotCanceledCondition
-    name = "Test"
-    uses = "./.github/workflows/test-source-generation.yml"
-  }
+  ["test-source-generation"] = TestJobs.sourceGeneration()
   ["test-weaver"] = TestJobs.weaver()
   ["test-code-coverage"] = (createTestJob("test-code-coverage")) {
     needs {
