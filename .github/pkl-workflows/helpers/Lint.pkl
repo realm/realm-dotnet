@@ -2,6 +2,7 @@ module lint
 
 import "../GithubAction/GithubAction.pkl" as gha
 import "Steps.pkl"
+import "Common.pkl"
 
 function lint(): gha.Job = new {
   name = "Verify TODOs"
@@ -20,15 +21,15 @@ function lint(): gha.Job = new {
   }
 }
 
-function verifyNamespaces(packageJob: String): gha.Job = new {
+function verifyNamespaces(): gha.Job = new {
   `runs-on` = new gha.UbuntuLatest{}
   name = "Verify Namespaces"
   needs {
-    packageJob
+    Common.job_Packages
   }
   steps {
     Steps.checkoutWithoutMatchers()
-    ...Steps.fetchPackages(packageJob, null)
+    ...Steps.fetchPackages(Common.job_Packages, null)
     new {
       run = "dotnet tool install ilspycmd -g --version 8.0.0.7345"
     }

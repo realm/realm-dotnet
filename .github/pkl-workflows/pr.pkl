@@ -9,22 +9,8 @@ import "helpers/Test.pkl" as TestJobs
 
 local class JobNamesDefition {
   const wrappers: String = "build-wrappers"
-  const packages: String = "build-packages"
   const unity: String = "build-unity"
-  const baas: String = "deploy-baas"
   const coverage: String = "test-code-coverage"
-}
-
-local function createTestJob(workflow: String): ReusableWorkflowJob = new ReusableWorkflowJob {
-  uses = "./.github/workflows/\(workflow).yml"
-  name = "Test"
-  `if` = Common.ifNotCanceledCondition
-  needs {
-    JobNames.packages
-  }
-  with {
-    ["version"] = "${{ needs.\(JobNames.packages).outputs.package_version }}"
-  }
 }
 
 local JobNames = new JobNamesDefition{}
@@ -67,8 +53,8 @@ jobs {
     uses = "./.github/workflows/wrappers.yml"
     name = "Wrappers"
   }
-  [JobNames.baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
-  [JobNames.packages] = new ReusableWorkflowJob {
+  [Common.job_Baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
+  [Common.job_Packages] = new ReusableWorkflowJob {
     uses = "./.github/workflows/build-packages.yml"
     name = "Package"
     needs {
@@ -85,7 +71,7 @@ jobs {
       ["version"] = "${{ needs.build-packages.outputs.package_version }}"
     }
     needs {
-      JobNames.packages
+      Common.job_Packages
     }
     `if` = Common.ifNotCanceledCondition
   }
@@ -99,36 +85,27 @@ jobs {
     }
     needs {
       JobNames.unity
-      JobNames.packages
+      Common.job_Packages
     }
     `if` = Common.ifNotCanceledCondition
   }
-  ["test-net-framework"] = TestJobs.netFramework(JobNames.packages, baasDifferentiators)
-  ["test-uwp"] = TestJobs.uwp(JobNames.packages, baasDifferentiators)
-  ["test-net-core"] = TestJobs.netCore(JobNames.packages, new Listing { "net8.0" })
-  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin(JobNames.packages)
-  ["test-macos-maui"] = TestJobs.macOS_Maui(JobNames.packages, baasDifferentiators)
-  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin(JobNames.packages)
-  ["test-ios-maui"] = TestJobs.iOS_Maui(JobNames.packages, baasDifferentiators)
-  ["test-tvos"] = TestJobs.tvOS(JobNames.packages, baasDifferentiators)
-  ["test-android-xamarin"] = TestJobs.android_Xamarin(JobNames.packages)
-  ["test-android-maui"] = TestJobs.android_Maui(JobNames.packages, baasDifferentiators)
-  ["test-woven-classes"] = TestJobs.wovenClasses(JobNames.packages)
+  ["test-net-framework"] = TestJobs.netFramework(baasDifferentiators)
+  ["test-uwp"] = TestJobs.uwp(baasDifferentiators)
+  ["test-net-core"] = TestJobs.netCore(new Listing { "net8.0" })
+  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin()
+  ["test-macos-maui"] = TestJobs.macOS_Maui(baasDifferentiators)
+  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin()
+  ["test-ios-maui"] = TestJobs.iOS_Maui(baasDifferentiators)
+  ["test-tvos"] = TestJobs.tvOS(baasDifferentiators)
+  ["test-android-xamarin"] = TestJobs.android_Xamarin()
+  ["test-android-maui"] = TestJobs.android_Maui(baasDifferentiators)
+  ["test-woven-classes"] = TestJobs.wovenClasses()
   ["test-source-generation"] = TestJobs.sourceGeneration()
   ["test-weaver"] = TestJobs.weaver()
-  ["test-code-coverage"] = (createTestJob("test-code-coverage")) {
-    needs {
-      JobNames.baas
-    }
-    secrets {
-      ["BaaSaasApiKey"] = "${{ secrets.BAASAAS_API_KEY }}"
-    }
-  }
+  ["test-code-coverage"] = TestJobs.codeCoverage(baasDifferentiators)
   ["cleanup-baas"] = (BaaS.cleanup(baasDifferentiators)) {
-    needs {
-      JobNames.coverage
-    }
+    needs = baasDifferentiators.toList().map((d) -> "test-\(d)").toListing()
   }
-  ["verify-namespaces"] = Lint.verifyNamespaces(JobNames.packages)
+  ["verify-namespaces"] = Lint.verifyNamespaces()
   ["lint"] = Lint.lint()
 }

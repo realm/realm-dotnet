@@ -111,7 +111,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TargetFramework=net461
+      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
       run: './Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
     - name: Publish Unit Test Results
@@ -162,9 +162,9 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ''
       shell: powershell
     - name: Publish Unit Test Results
       if: always()
@@ -292,7 +292,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.XamarinMac
-      run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Publish Unit Test Results
@@ -337,6 +337,10 @@ jobs:
         dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install maui
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
+      with:
+        xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
       run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
@@ -384,7 +388,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:Platform=iPhoneSimulator
+      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
@@ -492,7 +496,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.XamarinTVOS
-      run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:Platform=iPhoneSimulator
+      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
@@ -547,7 +551,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+      run: msbuild Tests/Tests.Android -t SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -610,7 +614,7 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Publish Tests/Tests.Maui
-      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android  -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
@@ -773,16 +777,78 @@ jobs:
           runtime: osx-arm64
       fail-fast: false
   test-code-coverage:
-    name: Test
+    name: Test Code Coverage
     needs:
     - build-packages
     - deploy-baas
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-code-coverage.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Setup Coverlet & Report Generator
+      run: |-
+        dotnet tool install coverlet.console --tool-path tools
+        dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.xml --labels=After --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+    - name: Archive core dump
+      if: ${{ failure() && runner.os != 'Windows' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
+        path: /tmp/coredump*
+    - name: Publish Coverage
+      id: publish-coveralls
+      uses: coverallsapp/github-action@v2.3.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./report.lcov
+        git-commit: ${{ github.event.pull_request.head.sha }}
+        compare-sha: ${{ github.event.pull_request.base.sha }}
+    - name: Output Coveralls response
+      run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Code Coverage
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   cleanup-baas:
     name: Cleanup BaaS
     needs:

@@ -4,6 +4,7 @@ import "Common.pkl"
 const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
 const actionSetupJDK = "actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0"
 const actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v4.0.2"
+const actionCoveralls = "coverallsapp/github-action@v2.3.0"
 
 const function checkout(): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers()
@@ -95,18 +96,27 @@ const function configureAWSCredentials(accessKey: String, secretKey: String, reg
   }
 }
 
-const function msbuild(project: String, properties: Mapping<String, String>): List<gha.Step> = List(
+class MSBuildConfig {
+  project: String
+  target: String?
+  properties: Mapping<String, String> = new Mapping{}
+
+  function getTargetForInvocation(): String = if (target != null) " -t \(target)" else ""
+  function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
+}
+
+const function msbuild(config: MSBuildConfig): List<gha.Step> = List(
   addMSBuildToPath(),
   new gha.Step {
-    name = "Build \(project)"
-    run = "msbuild \(project) -p:Configuration=\(Common.configuration) -restore \(propertiesToString(properties))"
+    name = "Build \(config.project)"
+    run = "msbuild \(config.project)\(config.getTargetForInvocation()) -restore \(config.getPropertiesForInvocation())"
   }
 )
 
 const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
   new gha.Step {
     name = "Publish \(project)"
-    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework) \(if (runtime != null) "-r \(runtime)" else "") \(propertiesToString(properties)) --no-self-contained"
+    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties)) --no-self-contained"
   }
   new gha.Step {
     name = "Output executable path"
@@ -118,7 +128,7 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
 
 const function dotnetBuild(project: String, framework: Common.NetFramework, properties: Mapping<String, String>): gha.Step = new gha.Step {
   name = "Build \(project)"
-  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework) \(propertiesToString(properties))"
+  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework)\(propertiesToString(properties))"
 }
 
 const function runSimulator(config: SimulatorConfig): gha.Step = new {
@@ -142,6 +152,24 @@ const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new 
   }
 }
 
+const function publishCoverage(file: String): Listing<gha.Step> = new Listing<gha.Step> {
+  new gha.Step {
+    name = "Publish Coverage"
+    id = "publish-coveralls"
+    uses = actionCoveralls
+    with {
+      ["github-token"] = "${{ secrets.GITHUB_TOKEN }}"
+      ["file"] = file
+      ["git-commit"] = "${{ github.event.pull_request.head.sha }}"
+      ["compare-sha"] = "${{ github.event.pull_request.base.sha }}"
+    }
+  }
+  new gha.Step {
+    name = "Output Coveralls response"
+    run = "echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}"
+  }
+}
+
 class SimulatorConfig {
   appPath: String
   bundleId: String
@@ -161,4 +189,4 @@ local const function addMSBuildToPath(): gha.Step = new {
   `if` = "${{ runner.os == 'Windows' }}"
 }
 
-local const function propertiesToString(properties: Mapping<String, String>): String = properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" ")
+local const function propertiesToString(properties: Mapping<String, String>): String = " " + properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" ")
