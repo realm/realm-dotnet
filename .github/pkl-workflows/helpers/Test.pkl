@@ -7,13 +7,13 @@ import "BaaS.pkl"
 
 local const outputFile = "TestResults.xml"
 
+// Public test targets
 function netFramework(_packageJob: String, syncDifferentiators: Listing<String>): gha.Job = new {
   local testConfig = new TestConfig {
     packageJob = _packageJob
     runSyncTests = syncDifferentiators.toList().contains("net-framework")
     syncDifferentiator = "net-framework"
     title = ".NET Framework"
-
   }
   name = "Test \(testConfig.title)"
   needs {
@@ -24,8 +24,9 @@ function netFramework(_packageJob: String, syncDifferentiators: Listing<String>)
   `timeout-minutes` = Common.testTimeout
   steps {
     ...prepareTests(testConfig)
-    Steps.addMSBuildToPath()
-    buildTests(_packageJob, "Tests/Realm.Tests", new Mapping{})
+    ...buildTests(_packageJob, "Tests/Realm.Tests", new Mapping {
+      ["TargetFramework"] = "net461"
+    })
     new gha.Step {
       name = "Run the tests"
       run = "./Tests/Realm/Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(testConfig))"
@@ -34,6 +35,76 @@ function netFramework(_packageJob: String, syncDifferentiators: Listing<String>)
   }
 }
 
+function netCore(_packageJob: String, frameworks: Listing<Common.NetFramework>): gha.MatrixJob = new {
+  local testConfig = new TestConfig {
+    packageJob = _packageJob
+    title = "${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}"
+    shouldCleanWorkspace = true
+  }
+
+  name = "Test \(testConfig.title)"
+  needs {
+    _packageJob
+  }
+  `runs-on` = "${{ matrix.os.runner }}"
+  `timeout-minutes` = Common.testTimeout
+  strategy {
+    matrix {
+      ["framework"] = frameworks
+      ["os"] = new Listing<NetCoreOS> {
+        new { runner = "windows-latest" runtime = "win-x64" }
+        new { runner = "ubuntu-latest" runtime = "linux-x64" }
+        new { runner = "macos-13" runtime = "osx-x64" }
+      }
+      ["include"] = new Listing {
+        new Mapping {
+          ["framework"] = "net8.0"
+          ["os"] = new NetCoreOS { runner = "macos-14" runtime = "osx-arm64" }
+        }
+      }
+    }
+  }
+  steps {
+    ...prepareTests(testConfig)
+    // To avoid NU5037 error
+    new gha.Step {
+      name = "Clear nuget cache"
+      run = "dotnet nuget locals all --clear"
+      `if` = "${{ matrix.os.runner == 'win81' }}"
+    }
+    new gha.Step {
+      id = "get-net-version"
+      name = "Extract .NET version"
+      run = """
+        NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
+        echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
+      """
+      shell = "bash"
+    }
+    Steps.setupDotnet("${{ steps.get-net-version.outputs.version }}")
+    ...dotnetPublishNetCoreTests(_packageJob, "Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}")
+    new gha.Step {
+      name = "Run the tests"
+      env {
+        ["DOTNET_DbgEnableMiniDump"] = 1
+        ["DOTNET_EnableCrashReport"] = 1
+      }
+      run = "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=\(outputFile) --labels=After"
+    }
+    new gha.Step {
+      name = "Archive core dump"
+      uses = "actions/upload-artifact@v4"
+      `if` = "failure()"
+      with {
+        ["name"] = "crash-report-net-core-${{ matrix.os.runner }}-${{ matrix.os.runtime }}"
+        ["path"] = "/tmp/coredump*"
+      }
+    }
+    ...reportTestResults(testConfig)
+  }
+}
+
+// Private helpers
 local function prepareTests(config: TestConfig): Listing<gha.Step> = new Listing {
   Steps.checkout()
   ...cleanWorkspace(config.shouldCleanWorkspace)
@@ -50,9 +121,8 @@ local function fetchTestArtifacts(packageJob: String, useWrappers: Boolean): Lis
   Steps.fetchPackages(packageJob, Common.nugetPackages)
   else Steps.fetchPackages(packageJob, Common.nugetPackages)
 
-local function buildTests(packageJob: String, projectPath: String, properties: Mapping<String, String>): gha.Step = Steps.msbuild(projectPath, new Mapping{
-  ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
-  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(packageJob).outputs.package_version }}"
+local function buildTests(packageJob: String, projectPath: String, properties: Mapping<String, String>): List<gha.Step> = Steps.msbuild(projectPath, new Mapping{
+  ...getTestProps(packageJob)
   ...properties
 })
 
@@ -79,12 +149,25 @@ local function reportTestResults(config: TestConfig): Listing<gha.Step> = new {
   }
 }
 
+local function dotnetPublishNetCoreTests(packageJob: String, project: String, framework: Common.NetFramework, runtime: Common.NetRuntime): Listing<gha.Step> = Steps.dotnetPublish(project, framework, runtime, getTestProps(packageJob))
+
+local function getTestProps(packageJob: String): Mapping<String, String> = new Mapping {
+  ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
+  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(packageJob).outputs.package_version }}"
+  ["RealmTestsStandaloneExe"] = "true"
+}
+
+local class NetCoreOS {
+  runner: "windows-latest" | "ubuntu-latest" | "macos-13" | "macos-14"
+  runtime: Common.NetRuntime
+}
+
 local class TestConfig {
   packageJob: String
   useWrappers: Boolean = false
   shouldCleanWorkspace: Boolean = false
   runSyncTests: Boolean = false
-  syncDifferentiator: String
+  syncDifferentiator: String?
   transformResults: Boolean = false
   title: String
 }

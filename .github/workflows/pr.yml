@@ -49,6 +49,7 @@ jobs:
       matrix:
         differentiator:
         - code-coverage
+      fail-fast: false
   build-packages:
     name: Package
     needs:
@@ -68,6 +69,7 @@ jobs:
     name: Test
     needs:
     - build-unity
+    - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/test-unity.yml
     with:
@@ -101,7 +103,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TargetFramework=net461
     - name: Run the tests
       run: './Tests/Realm/Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
     - name: Publish Unit Test Results
@@ -126,14 +128,85 @@ jobs:
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
-    name: Test
+    name: Test ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-net-core.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["net8.0"]'
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os.runner }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Clear nuget cache
+      if: ${{ matrix.os.runner == 'win81' }}
+      run: dotnet nuget locals all --clear
+    - name: Extract .NET version
+      id: get-net-version
+      run: |2-
+          NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
+          echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
+      shell: bash
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: ${{ steps.get-net-version.outputs.version }}
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
+    - name: Archive core dump
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: crash-report-net-core-${{ matrix.os.runner }}-${{ matrix.os.runtime }}
+        path: /tmp/coredump*
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+    strategy:
+      matrix:
+        framework:
+        - net8.0
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-13
+          runtime: osx-x64
+        include:
+        - framework: net8.0
+          os:
+            runner: macos-14
+            runtime: osx-arm64
+      fail-fast: false
   test-macos:
     name: Test
     needs:
@@ -218,6 +291,7 @@ jobs:
       matrix:
         differentiator:
         - code-coverage
+      fail-fast: false
   verify-namespaces:
     name: Verify Namespaces
     needs:

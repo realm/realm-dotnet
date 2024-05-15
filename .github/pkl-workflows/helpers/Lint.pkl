@@ -1,7 +1,6 @@
 module lint
 
 import "../GithubAction/GithubAction.pkl" as gha
-import "Common.pkl"
 import "Steps.pkl"
 
 function lint(): gha.Job = new {

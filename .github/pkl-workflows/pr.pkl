@@ -99,6 +99,7 @@ jobs {
     }
     needs {
       JobNames.unity
+      JobNames.packages
     }
     `if` = Common.ifNotCanceledCondition
   }
@@ -109,11 +110,7 @@ jobs {
       ["Base64_Encoded_Pfx"] = "${{ secrets.Base64_Encoded_Pfx }}"
     }
   }
-  ["test-net-core"] = (createTestJob("test-net-core")) {
-    with {
-      ["framework"] = "[\"net8.0\"]"
-    }
-  }
+  ["test-net-core"] = TestJobs.netCore(JobNames.packages, new Listing { "net8.0" })
   ["test-macos"] = createTestJob("test-macos")
   ["test-ios"] = createTestJob("test-ios")
   ["test-tvos"] = createTestJob("test-tvos")

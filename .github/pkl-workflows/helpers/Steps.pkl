@@ -35,10 +35,10 @@ const function setupMSVC(edition: String): gha.Step = new {
   shell = "pwsh"
 }
 
-const function setupDotnet(): gha.Step = new {
+const function setupDotnet(version: String?): gha.Step = new {
   uses = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
   with {
-    ["dotnet-version"] = "6.0.x"
+    ["dotnet-version"] = version ?? "8.0.x"
   }
 }
 
@@ -59,13 +59,31 @@ const function fetchPackages(packageJob: String, _packages: List<String>?): List
   }
 })
 
-const function addMSBuildToPath(): gha.Step = new {
+const function msbuild(project: String, properties: Mapping<String, String>): List<gha.Step> = List(
+  addMSBuildToPath(),
+  new gha.Step {
+    name = "Build \(project)"
+    run = "msbuild \(project) -p:Configuration=\(Common.configuration) -restore \(propertiesToString(properties))"
+  }
+)
+
+const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
+  new gha.Step {
+    name = "Publish \(project)"
+    run = "dotnet publish \(project) -c \(Common.configuration) -restore \(propertiesToString(properties))"
+  }
+  new gha.Step {
+    name = "Output executable path"
+    id = "dotnet-publish"
+    run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)' >> $GITHUB_OUTPUT"
+    shell = "bash"
+  }
+}
+
+local const function addMSBuildToPath(): gha.Step = new {
   name = "Add msbuild to PATH"
   uses = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
   `if` = "${{ runner.os == 'Windows' }}"
 }
 
-const function msbuild(project: String, properties: Mapping<String, String>): gha.Step = new {
-  name = "Build \(project)"
-  run = "msbuild \(project) -p:Configuration=\(Common.configuration) -restore \(properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" "))"
-}
+local const function propertiesToString(properties: Mapping<String, String>): String = properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" ")

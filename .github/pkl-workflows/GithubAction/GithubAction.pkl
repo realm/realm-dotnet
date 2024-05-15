@@ -525,7 +525,7 @@ class On {
 }
 
 // Environment Variables
-typealias EnvironmentVariables = Mapping<String, String | Boolean>
+typealias EnvironmentVariables = Mapping<String, String | Boolean | Int>
 
 // Permissions
 class Permissions {
@@ -556,6 +556,7 @@ abstract class Strategy
 
 class MatrixStrategy extends Strategy {
   matrix: Mapping<String, Listing>
+  `fail-fast`: Boolean = false
 }
 
 // Jobs
