@@ -8,11 +8,12 @@ import "BaaS.pkl"
 local const outputFile = "TestResults.xml"
 
 // Public test targets
-function netFramework(_packageJob: String, syncDifferentiators: Listing<String>): gha.StepJobBase = testJob(new TestConfig {
-    packageJob = _packageJob
-    runSyncTests = syncDifferentiators.toList().contains("net-framework")
-    syncDifferentiator = "net-framework"
+function netFramework(_packageJob: String, _syncDifferentiators: Listing<String>): gha.StepJobBase = testJob(
+  new TestConfig {
     title = ".NET Framework"
+    packageJob = _packageJob
+    syncDifferentiator = "net-framework"
+    syncDifferentiators = _syncDifferentiators
   },
   new gha.WindowsLatest{},
   null,
@@ -112,6 +113,48 @@ function sourceGeneration(): gha.StepJobBase = testJob(
     ...reportTestResults(config)
   })
 
+function wovenClasses(_packageJob: String): gha.StepJobBase = testJob(
+  new TestConfig {
+    packageJob = _packageJob
+    title = "Woven Classes"
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "win-x64", (getTestProps(_packageJob)) {
+      ["TestWeavedClasses"] = "true"
+    })
+    ...dotnetRunTests(false)
+    ...reportTestResults(config)
+  }
+)
+
+function tvOS(_packageJob: String, _syncDifferentiators: Listing<String>): gha.StepJobBase = testJob(
+  new TestConfig {
+    packageJob = _packageJob
+    title = "Xamarin.tvOS"
+    syncDifferentiator = "tvos"
+    syncDifferentiators = _syncDifferentiators
+  },
+  "macos-12",
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
+    ...buildTests(_packageJob, "Tests/Tests.XamarinTVOS", new Mapping {
+      ["Platform"] = "iPhoneSimulator"
+    })
+    Steps.runSimulator(new Steps.SimulatorConfig{
+      appPath = "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.XamarinTVOS.app"
+      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
+      bundleId = "io.realm.Tests-XamarinTVOS"
+      iphoneToSimulate = "Apple-TV-1080p"
+      os = "tvOS"
+    })
+    ...reportTestResults(config)
+  }
+)
+
 // Private helpers
 local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strategy: gha.MatrixStrategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.StepJobBase = (if (_strategy != null) new gha.MatrixJob{
   strategy = _strategy
@@ -208,10 +251,6 @@ local function dotnetRunTests(enableCoreDumps: Boolean): Listing<gha.Step> = new
   }
 }
 
-local function applyTestProps(config: TestConfig): Mixin<gha.JobBase> = new Mixin {
-
-}
-
 local class MatrixOS {
   runner: "windows-latest" | "ubuntu-latest" | "macos-13" | "macos-14"
   runtime: Common.NetRuntime
@@ -222,7 +261,8 @@ local class TestConfig {
   packageJob: String? = null
   useWrappers: Boolean = false
   shouldCleanWorkspace: Boolean = false
-  runSyncTests: Boolean = false
   syncDifferentiator: String? = null
   transformResults: Boolean = false
+  syncDifferentiators: Listing<String>?
+  runSyncTests: Boolean = syncDifferentiators?.toList()?.contains(syncDifferentiator) ?? false
 }

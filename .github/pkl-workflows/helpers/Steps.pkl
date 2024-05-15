@@ -1,6 +1,8 @@
 import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
 
+const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
+
 const function checkout(): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers()
   registerProblemMatchers()
@@ -91,6 +93,20 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
     run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)/\(project.split("/").last)' >> $GITHUB_OUTPUT"
     shell = "bash"
   }
+}
+
+const function runSimulator(config: SimulatorConfig): gha.Step = new {
+  name = "Run on Simulator"
+  uses = actionRunSimulator
+  with = config.toMap().toMapping()
+}
+
+class SimulatorConfig {
+  appPath: String
+  bundleId: String
+  iphoneToSimulate: "Apple-TV-1080p"
+  arguments: String
+  os: "tvOS"
 }
 
 local const function addMSBuildToPath(): gha.Step = new {

@@ -237,13 +237,55 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
   test-tvos:
-    name: Test
+    name: Test Xamarin.tvOS
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-tvos.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
+    timeout-minutes: 60
+    runs-on: macos-12
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+    - name: Build Tests/Tests.XamarinTVOS
+      run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:Platform=iPhoneSimulator
+    - name: Run on Simulator
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
+      with:
+        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
+        bundleId: io.realm.Tests-XamarinTVOS
+        iphoneToSimulate: Apple-TV-1080p
+        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+        os: tvOS
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Xamarin.tvOS
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-android:
     name: Test
     needs:
@@ -258,13 +300,50 @@ jobs:
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
       DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
   test-woven-classes:
-    name: Test
+    name: Test Woven Classes
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-woven-classes.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      with:
+        name: Results Woven Classes
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-source-generation:
     name: Test Source Generation
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
