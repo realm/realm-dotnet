@@ -243,7 +243,7 @@ function macOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): g
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", "osx-arm64", getTestProps())
+    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", null, getTestProps())
     new {
       name = "Run the tests"
       run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
@@ -359,7 +359,7 @@ function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.
     ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "linux-x64", new Mapping { ["RealmTestsStandaloneExe"] = "true" })
     new gha.Step {
       name = "Run the tests"
-      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=\(outputFile) --labels=After\(baasTestArgs(config))' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
+      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=\(outputFile) --labels=After\(baasTestArgs(config))' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
     } |> enableCoreDumps(true)
     archiveCoreDump()
     ...Steps.publishCoverage("./report.lcov")

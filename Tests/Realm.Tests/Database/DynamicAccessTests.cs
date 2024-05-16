@@ -62,14 +62,7 @@ namespace Realms.Tests.Database
                 var allTypesObject = realm.Write(() =>
                 {
                     var ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-                    if (isDynamic)
-                    {
-                        Assert.That(ato, Is.InstanceOf<DynamicRealmObject>());
-                    }
-                    else
-                    {
-                        Assert.That(ato, Is.InstanceOf<AllTypesObject>());
-                    }
+                    Assert.That(ato, isDynamic ? Is.InstanceOf<DynamicRealmObject>() : Is.InstanceOf<AllTypesObject>());
 
                     ato.DynamicApi.Set(nameof(AllTypesObject.CharProperty), 'F');
                     ato.DynamicApi.Set(nameof(AllTypesObject.NullableCharProperty), 'o');
@@ -82,18 +75,16 @@ namespace Realms.Tests.Database
                 Assert.That(allTypesObject.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
                 Assert.That(allTypesObject.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
 
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
+
 #if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
                     dynamic ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-                    if (isDynamic)
-                    {
-                        Assert.That(ato, Is.InstanceOf<DynamicRealmObject>());
-                    }
-                    else
-                    {
-                        Assert.That(ato, Is.InstanceOf<AllTypesObject>());
-                    }
+                    Assert.That(ato, isDynamic ? Is.InstanceOf<DynamicRealmObject>() : Is.InstanceOf<AllTypesObject>());
 
                     ato.CharProperty = 'F';
                     ato.NullableCharProperty = 'o';
@@ -241,6 +232,10 @@ namespace Realms.Tests.Database
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
 
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
 #if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
@@ -273,6 +268,11 @@ namespace Realms.Tests.Database
 
                 Assert.That(ato.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
 
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
+
 #if !UNITY
                 var (dynamicAto, dynamicRV) = realm.Write(() =>
                 {
@@ -297,10 +297,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(AllTypesObject)));
 
                 Assert.Throws<InvalidCastException>(() => allTypesObject.DynamicApi.Get<string>(nameof(AllTypesObject.Int32Property)));
             });
@@ -494,10 +491,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(AllTypesObject)));
 
                 Assert.Throws<MissingMemberException>(() => allTypesObject.DynamicApi.Get<string>("idontexist"));
             });
@@ -508,10 +502,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(IntPropertyObject.ContainingCollections)))!;
                 Assert.That(ex.Message, Does.Contain("IQueryable<SyncCollectionsObject>").And.Contains("GetBacklinks"));
@@ -523,10 +514,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.ObjectIdList)))!;
                 Assert.That(ex.Message, Does.Contain("IList<ObjectId>").And.Contains("GetList"));
@@ -538,10 +526,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.BooleanSet)))!;
                 Assert.That(ex.Message, Does.Contain("ISet<Boolean>").And.Contains("GetSet"));
@@ -553,10 +538,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var allTypesObject = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.DecimalDict)))!;
                 Assert.That(ex.Message, Does.Contain("IDictionary<string, Decimal128>").And.Contains("GetDictionary"));
@@ -690,10 +672,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId()));
 
                 Assert.Throws<MissingMemberException>(() => obj.DynamicApi.GetBacklinks("idontexist"));
             });
@@ -704,10 +683,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetBacklinks(nameof(IntPropertyObject.Int)))!;
                 Assert.That(ex.Message, Does.Contain("Int64").And.Contains(nameof(DynamicObjectApi.GetBacklinks)));
@@ -745,10 +721,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetBacklinksFromType("idontexist", "someprop"))!;
                 Assert.That(ex.Message, Does.Contain("idontexist"));
@@ -760,10 +733,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<MissingMemberException>(() => obj.DynamicApi.GetBacklinksFromType(nameof(SyncCollectionsObject), "someprop"))!;
                 Assert.That(ex.Message, Does.Contain("someprop"));
@@ -804,10 +774,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentNullException>(() => obj.DynamicApi.GetList<RealmValue>(null!))!;
                 Assert.That(ex.ParamName, Is.EqualTo("propertyName"));
@@ -819,10 +786,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<MissingMemberException>(() => obj.DynamicApi.GetList<RealmValue>("someprop"))!;
                 Assert.That(ex.Message, Does.Contain("someprop"));
@@ -834,10 +798,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetList<RealmValue>(nameof(SyncCollectionsObject.BooleanSet)))!;
                 Assert.That(ex.Message, Does.Contain("ISet<Boolean>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetList)}"));
@@ -849,10 +810,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringList = obj.DynamicApi.GetList<RealmValue>(nameof(SyncCollectionsObject.StringList));
 
@@ -878,10 +836,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringList = obj.DynamicApi.GetList<int>(nameof(SyncCollectionsObject.StringList));
 
@@ -902,10 +857,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentNullException>(() => obj.DynamicApi.GetSet<RealmValue>(null!))!;
                 Assert.That(ex.ParamName, Is.EqualTo("propertyName"));
@@ -917,10 +869,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<MissingMemberException>(() => obj.DynamicApi.GetSet<RealmValue>("someprop"))!;
                 Assert.That(ex.Message, Does.Contain("someprop"));
@@ -932,10 +881,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetSet<RealmValue>(nameof(SyncCollectionsObject.StringList)))!;
                 Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetSet)}"));
@@ -947,10 +893,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringSet = obj.DynamicApi.GetSet<RealmValue>(nameof(SyncCollectionsObject.StringSet));
 
@@ -976,10 +919,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringSet = obj.DynamicApi.GetSet<int>(nameof(SyncCollectionsObject.StringSet));
 
@@ -1000,10 +940,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentNullException>(() => obj.DynamicApi.GetDictionary<RealmValue>(null!))!;
                 Assert.That(ex.ParamName, Is.EqualTo("propertyName"));
@@ -1015,10 +952,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<MissingMemberException>(() => obj.DynamicApi.GetDictionary<RealmValue>("someprop"))!;
                 Assert.That(ex.Message, Does.Contain("someprop"));
@@ -1030,10 +964,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetDictionary<RealmValue>(nameof(SyncCollectionsObject.StringList)))!;
                 Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetDictionary)}"));
@@ -1045,10 +976,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringDictionary = obj.DynamicApi.GetDictionary<RealmValue>(nameof(SyncCollectionsObject.StringDict));
 
@@ -1075,10 +1003,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes((realm, _) =>
             {
-                var obj = realm.Write(() =>
-                {
-                    return realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId());
-                });
+                var obj = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
 
                 var stringDictionary = obj.DynamicApi.GetDictionary<int>(nameof(SyncCollectionsObject.StringDict));
 

@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
                     break;
                 case "iOS":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPhone"), "Name");
-                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64"), "Version");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64").Or.EqualTo("arm64"), "Version");
                     AssertBundleId("Tests.iOS", "Tests.Maui");
                     break;
                 case "Android":

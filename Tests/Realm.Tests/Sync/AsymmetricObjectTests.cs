@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +28,9 @@ using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
-#if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-#else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-#endif
 
 namespace Realms.Tests.Sync
 {
@@ -607,6 +606,11 @@ namespace Realms.Tests.Sync
                     Assert.That(asymmetricObj.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
                     Assert.That(asymmetricObj.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
                 });
+
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
 
 #if !UNITY
                 realm.Write(() =>

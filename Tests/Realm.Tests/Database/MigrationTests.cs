@@ -16,13 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using Realms.Exceptions;
-using Realms.Extensions;
-using Realms.Schema;
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
@@ -30,6 +23,13 @@ using TestRealmObject = Realms.RealmObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using Realms.Exceptions;
+using Realms.Extensions;
+using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
@@ -90,9 +90,12 @@ namespace Realms.Tests.Database
                         newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
 
 #if !UNITY
-                        // Ensure we can still use the dynamic API during migrations
-                        dynamic dynamicOldPerson = oldPeople.ElementAt(i);
-                        Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        if (!TestHelpers.IsAOTTarget)
+                        {
+                            // Ensure we can still use the dynamic API during migrations
+                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
+                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        }
 #endif
                     }
                 }
