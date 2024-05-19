@@ -22,7 +22,7 @@ namespace QuickJournal.ViewModels
             realm.Write(() =>
             {
                 realm.RemoveAll();
-                for (int i = 0; i < 200; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     realm.Add(new JournalEntry
                     {
@@ -88,6 +88,83 @@ namespace QuickJournal.ViewModels
         private IRealmCollection<T> _results;
         private Func<T, TViewModel> _viewModelFactory;
 
+        private NotifyCollectionChangedEventHandler _collectionChanged;
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged
+        {
+            add
+            {
+                if (_collectionChanged == null)
+                {
+                    SubscribeToChanges();
+                }
+                _collectionChanged += value;
+            }
+
+            remove
+            {
+                _collectionChanged -= value;
+                if (_collectionChanged == null)
+                {
+                    UnsubscribeFromChanges();
+                }
+            }
+        }
+
+        void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            _collectionChanged?.Invoke(this, e);
+        }
+
+        public void SubscribeToChanges()
+        {
+            _results.CollectionChanged += SubscribeInternal;
+        }
+
+        public void UnsubscribeFromChanges()
+        {
+            _results.CollectionChanged -= SubscribeInternal;
+        }
+
+        private void SubscribeInternal(object? sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (args.Action == NotifyCollectionChangedAction.Reset)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                return;
+            }
+
+            var newItems = args.NewItems?.Cast<T>().Select(t => _viewModelFactory(t)).ToList();
+
+            List<TViewModel> oldItems = null;
+
+            if (args.Action != NotifyCollectionChangedAction.Remove)
+            {
+                oldItems = args.OldItems?.Cast<T>().Select(t => _viewModelFactory(t)).ToList();
+            }
+            else
+            {
+                oldItems = Enumerable.Repeat(default(TViewModel), args.OldItems.Count).ToList();
+            }
+
+            if (args.Action == NotifyCollectionChangedAction.Add)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems, args.NewStartingIndex));
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Remove)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItems, args.OldStartingIndex));
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Replace)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItems, oldItems, args.OldStartingIndex));
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Move)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, newItems, args.NewStartingIndex, args.OldStartingIndex));
+            }
+        }
+
         public int Count => _results.Count;
 
         public TViewModel this[int index]
@@ -98,12 +175,6 @@ namespace QuickJournal.ViewModels
                 Console.WriteLine($"Indexer: {item}");
                 return item;
             }
-        }
-
-        public event NotifyCollectionChangedEventHandler? CollectionChanged
-        {
-            add { _results.CollectionChanged += value; }
-            remove { _results.CollectionChanged -= value; }
         }
 
         public WrapperCollection(IQueryable<T> query, Func<T, TViewModel> viewModelFactory)
