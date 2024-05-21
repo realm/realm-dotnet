@@ -1,11 +1,12 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added support for `Migration.FindInNewRealm` which is a helper that allows you to lookup the object in the post-migration Realm that corresponds to an object from the pre-migration Realm. (Issue [#3600](https://github.com/realm/realm-dotnet/issues/3600))
 
 ### Fixed
 * Accessing `App.CurrentUser` from within a `User.Changed` notification would deadlock. (Core 14.7.0)
 * Inserting the same link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affected the value returned by `RealmObject.BacklinksCount` and queries involving backlinks counts. (Core 14.7.0)
+* Fixed an issue that would cause `RealmObject.DynamicApi.GetList/Set/Dictionary` to fail when the collection contains primitive values. (Issue [#3597](https://github.com/realm/realm-dotnet/issues/3597))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

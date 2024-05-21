@@ -229,6 +229,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_object_for_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object_for_object(SharedRealmHandle realmHandle, ObjectHandle handle, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -665,6 +668,21 @@ namespace Realms
             var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primary_key(this, tableKey.Value, primitiveValue, out var ex);
             handles?.Dispose();
+            ex.ThrowIfNecessary();
+
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(this, result);
+            return true;
+        }
+
+        public bool TryFindObject(ObjectHandle handle, [MaybeNullWhen(false)] out ObjectHandle objectHandle)
+        {
+            var result = NativeMethods.get_object_for_object(this, handle, out var ex);
             ex.ThrowIfNecessary();
 
             if (result == IntPtr.Zero)
