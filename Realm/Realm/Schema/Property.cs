@@ -170,11 +170,10 @@ namespace Realms.Schema
         internal Property(in SchemaProperty nativeProperty)
         {
             Name = nativeProperty.name!;
-            string? managedName = nativeProperty.managed_name;
-            ManagedName = !string.IsNullOrEmpty(managedName) ? managedName! : Name;
+            ManagedName = nativeProperty.managed_name.ToDotnetString(treatEmptyAsNull: true) ?? Name;
             Type = nativeProperty.type;
-            ObjectType = nativeProperty.object_type;
-            LinkOriginPropertyName = nativeProperty.link_origin_property_name;
+            ObjectType = nativeProperty.object_type.ToDotnetString(treatEmptyAsNull: true);
+            LinkOriginPropertyName = nativeProperty.link_origin_property_name.ToDotnetString(treatEmptyAsNull: true);
             IsPrimaryKey = nativeProperty.is_primary;
             IndexType = nativeProperty.index;
         }

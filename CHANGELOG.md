@@ -1,10 +1,11 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added support for `Migration.FindInNewRealm` which is a helper that allows you to lookup the object in the post-migration Realm that corresponds to an object from the pre-migration Realm. (Issue [#3600](https://github.com/realm/realm-dotnet/issues/3600))
 * Added `[System.Reflection.Obfuscation]` on the generated `RealmSchema` field to improve compatibility with obfuscation tools that change field and property names of generated classes. (Issue [#3574](https://github.com/realm/realm-dotnet/issues/3574))
 
 ### Fixed
-* None
+* Fixed an issue that would cause `RealmObject.DynamicApi.GetList/Set/Dictionary` to fail when the collection contains primitive values. (Issue [#3597](https://github.com/realm/realm-dotnet/issues/3597))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

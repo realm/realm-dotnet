@@ -693,6 +693,21 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
     });
 }
 
+REALM_EXPORT Object* shared_realm_get_object_for_object(SharedRealm& realm, Object& object, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> Object* {
+        realm->verify_thread();
+
+        auto table = realm->read_group().get_table(object.get_object_schema().table_key);
+        auto obj = table->try_get_object(object.get_obj().get_key());
+        if (!obj) {
+            return nullptr;
+        }
+
+        return new Object(realm, std::move(obj));
+    });
+}
+
 REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey table_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
