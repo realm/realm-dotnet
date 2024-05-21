@@ -38,6 +38,7 @@ namespace Realms.Tests.Database
             /// <summary>
             /// Defines the schema for the <see cref="TopLevelGeoPoint"/> class.
             /// </summary>
+            [System.Reflection.Obfuscation]
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TopLevelGeoPoint", ObjectSchema.ObjectType.RealmObject)
             {
                 Realms.Schema.Property.PrimitiveList("coordinates", Realms.RealmValueType.Double, areElementsNullable: false, managedName: "Coordinates"),

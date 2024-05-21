@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="ListsObject"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ListsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.PrimitiveList("CharList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),

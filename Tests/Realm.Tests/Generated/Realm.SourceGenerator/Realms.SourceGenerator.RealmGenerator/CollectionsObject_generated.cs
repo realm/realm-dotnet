@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="CollectionsObject"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CollectionsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.PrimitiveSet("CharSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharSet"),

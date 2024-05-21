@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithRequiredStringList"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.PrimitiveList("Strings", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Strings"),

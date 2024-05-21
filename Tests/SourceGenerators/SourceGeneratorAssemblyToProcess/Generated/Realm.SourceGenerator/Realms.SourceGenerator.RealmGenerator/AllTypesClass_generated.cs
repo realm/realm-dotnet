@@ -32,6 +32,7 @@ namespace SourceGeneratorAssemblyToProcess
         /// <summary>
         /// Defines the schema for the <see cref="AllTypesClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("CharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "CharProperty"),
