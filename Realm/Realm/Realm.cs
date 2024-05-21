@@ -1111,15 +1111,15 @@ namespace Realms
             return default;
         }
 
-        // This is only used during migrations. obj here is the object in the old realm and we're trying to find
+        // This is only used during migrations. obj here is the object in the old realm, and we're trying to find
         // its counterpart post-migration.
         internal T? FindExisting<T>(IRealmObject obj)
         {
             ThrowIfDisposed();
             Argument.Ensure(obj.IsManaged, "Only managed objects can be used in FindExisting", nameof(obj));
-            var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
             if (SharedRealmHandle.TryFindObject(obj.GetObjectHandle()!, out var objectHandle))
             {
+                var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
                 return (T)MakeObject(metadata, objectHandle);
             }
 
