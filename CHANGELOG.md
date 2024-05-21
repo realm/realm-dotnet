@@ -2,6 +2,19 @@
 
 ### Enhancements
 * Added support for `Migration.FindInNewRealm` which is a helper that allows you to lookup the object in the post-migration Realm that corresponds to an object from the pre-migration Realm. (Issue [#3600](https://github.com/realm/realm-dotnet/issues/3600))
+* Added support for list and dictionaries of `RealmValue` (`IList<RealmValue>` and `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `RealmValue[]` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList` and `AsDictionary`. For example:
+
+  ```csharp
+  var list = new List<RealmValue> { 1, true, "stringVal" };
+
+  var rvo = realm.Write(() =>
+  {
+      return realm.Add(new RealmValueObject { RealmValueProperty = list});
+  });
+
+  var retrievedList = rvo.RealmValueProperty.AsList();
+  ```
+  (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 
 ### Fixed
 * Accessing `App.CurrentUser` from within a `User.Changed` notification would deadlock. (Core 14.7.0)
