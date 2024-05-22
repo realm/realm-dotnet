@@ -24,6 +24,7 @@ function netFramework(_syncDifferentiators: Listing<String>): gha.StepJobBase = 
       properties {
         ["TargetFramework"] = "net461"
       }
+      standaloneExe = true
     })
     new gha.Step {
       name = "Run the tests"

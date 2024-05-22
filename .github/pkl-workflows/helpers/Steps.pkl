@@ -9,7 +9,7 @@ const actionCheckout = "actions/checkout@v4"
 const actionUploadArtifact = "actions/upload-artifact@v4"
 const actionDownloadArtifact = "actions/download-artifact@v4"
 const actionSetupXcode = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
-const actionSetupDotnet = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
+const actionSetupDotnet = "actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59"
 const actionSetupMsBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
 
 const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {

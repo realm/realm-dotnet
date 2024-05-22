@@ -43,7 +43,7 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
@@ -111,7 +111,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
       run: './Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
     - name: Publish Unit Test Results
@@ -214,7 +214,7 @@ jobs:
           NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
           echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
       shell: bash
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: ${{ steps.get-net-version.outputs.version }}
     - name: Publish Tests/Realm.Tests
@@ -332,7 +332,7 @@ jobs:
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
     - name: Setup workloads
@@ -434,7 +434,7 @@ jobs:
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
     - name: Setup workloads
@@ -608,7 +608,7 @@ jobs:
       with:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
     - name: Setup workloads
@@ -705,7 +705,7 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
     - name: Setup workloads
@@ -743,7 +743,7 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
     - name: Setup workloads
@@ -859,7 +859,7 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
     - name: Terminate Baas
@@ -938,7 +938,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: nirinchev/verify-todo@9be6f76daddad71433e5deb1b58c517490e5c66e
+    - uses: nirinchev/verify-todo@ffa352ac028b4cdc8bc626471d33aa341b3ab7c9
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         include: '**/*.+(cs|cpp|hpp)'

@@ -390,6 +390,11 @@ namespace Realms.Tests.Database
                 Assert.That(addedDict.Count, Is.EqualTo(2));
                 Assert.That(addedDict["bar"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("This is a second subtask level 1"));
 
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
+
 #if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
@@ -609,6 +614,11 @@ namespace Realms.Tests.Database
                 Assert.That(subTasks["a"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("initial at a"));
                 Assert.That(subTasks["b"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("new at b"));
                 Assert.That(subTasks["c"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("initial at c"));
+
+                if (TestHelpers.IsAOTTarget)
+                {
+                    return;
+                }
 
 #if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();

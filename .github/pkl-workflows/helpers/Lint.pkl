@@ -4,13 +4,15 @@ import "../GithubAction/GithubAction.pkl" as gha
 import "Steps.pkl"
 import "Common.pkl"
 
+const actionVerifyTODO = "nirinchev/verify-todo@ffa352ac028b4cdc8bc626471d33aa341b3ab7c9"
+
 function lint(): gha.Job = new {
   name = "Verify TODOs"
   `runs-on` = new gha.UbuntuLatest{}
   steps {
     Steps.checkoutWithoutMatchers(false)
     new gha.Step {
-      uses = "nirinchev/verify-todo@9be6f76daddad71433e5deb1b58c517490e5c66e"
+      uses = actionVerifyTODO
       with {
         ["token"] = "${{ secrets.GITHUB_TOKEN }}"
         ["include"] = "**/*.+(cs|cpp|hpp)"
