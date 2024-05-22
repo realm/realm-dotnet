@@ -5,6 +5,8 @@ import "Common.pkl"
 import "Steps.pkl"
 import "BaaS.pkl"
 
+local const actionReportTestResults = "dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5"
+
 local const outputFile = "TestResults.xml"
 
 // Public test targets
@@ -430,7 +432,7 @@ local function reportTestResultsWithCustomFile(_outputFile: String, config: Test
   }
   new gha.Step {
     name = "Publish Unit Test Results"
-    uses = "LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b"
+    uses = actionReportTestResults
     `if` = "always()"
     with {
       ["name"] = "Results \(config.title)"
@@ -470,13 +472,12 @@ local function enableCoreDumps(enable: Boolean): Mixin<gha.Step> = new Mixin<gha
   }
 }
 
-local function archiveCoreDump(): gha.Step = new {
+local function archiveCoreDump(): gha.Step = (Steps.uploadArtifacts("crash-report-net-core-${{ runner.os }}-${{ runner.arch }}", "/tmp/coredump*")) {
   name = "Archive core dump"
-  uses = "actions/upload-artifact@v4"
   `if` = "${{ failure() && runner.os != 'Windows' }}"
   with {
-    ["name"] = "crash-report-net-core-${{ runner.os }}-${{ runner.arch }}"
-    ["path"] = "/tmp/coredump*"
+    ["retention-days"] = 30 
+    ["if-no-files-found"] = "warn"
   }
 }
 

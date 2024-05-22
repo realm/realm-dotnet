@@ -116,7 +116,7 @@ jobs:
       run: './Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results .NET Framework
         path: TestResults.xml
@@ -168,7 +168,7 @@ jobs:
       shell: powershell
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results UWP
         path: ${{ env.TEST_RESULTS }}
@@ -234,9 +234,11 @@ jobs:
       with:
         name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
         path: /tmp/coredump*
+        retention-days: 30
+        if-no-files-found: warn
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
         path: TestResults.xml
@@ -297,7 +299,7 @@ jobs:
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Xamarin.macOS
         path: TestResults.xml
@@ -349,7 +351,7 @@ jobs:
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Maui.MacCatalyst
         path: TestResults.xml_transformed.xml
@@ -399,7 +401,7 @@ jobs:
         os: iOS
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Xamarin.iOS
         path: TestResults.xml
@@ -457,7 +459,7 @@ jobs:
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Maui.iOS
         path: TestResults.xml_transformed.xml
@@ -507,7 +509,7 @@ jobs:
         os: tvOS
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Xamarin.tvOS
         path: TestResults.xml
@@ -568,7 +570,7 @@ jobs:
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Xamarin.Android
         path: ${{ steps.run_tests.outputs.test-results-path }}
@@ -637,7 +639,7 @@ jobs:
       run: xsltproc --output ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt ${{ steps.run_tests.outputs.test-results-path }}
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Maui.Android
         path: ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml
@@ -682,7 +684,7 @@ jobs:
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Woven Classes
         path: TestResults.xml
@@ -720,7 +722,7 @@ jobs:
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Source Generation
         path: TestResults.xml
@@ -758,7 +760,7 @@ jobs:
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Weaver
         path: TestResults.xml
@@ -823,6 +825,8 @@ jobs:
       with:
         name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
         path: /tmp/coredump*
+        retention-days: 30
+        if-no-files-found: warn
     - name: Publish Coverage
       id: publish-coveralls
       uses: coverallsapp/github-action@v2.3.0
@@ -835,7 +839,7 @@ jobs:
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
     - name: Publish Unit Test Results
       if: always()
-      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
       with:
         name: Results Code Coverage
         path: TestResults.xml

@@ -52,7 +52,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-macos
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -69,7 +69,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-catalyst
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -86,7 +86,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-linux-x86_64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -103,7 +103,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-linux-armhf
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -120,7 +120,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-linux-aarch64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -137,7 +137,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-android-armeabi-v7a
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -154,7 +154,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-android-arm64-v8a
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -171,7 +171,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-android-x86
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -188,7 +188,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-android-x86_64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -205,7 +205,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-Win32
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -222,7 +222,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-x64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -239,7 +239,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-ARM64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -256,7 +256,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-uwp-Win32
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -273,7 +273,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-uwp-x64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -290,7 +290,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-uwp-ARM
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -307,7 +307,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-uwp-ARM64
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'windows'
@@ -324,7 +324,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-iOS-Device
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -341,7 +341,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-iOS-Simulator
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -358,7 +358,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-tvOS-Device
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -375,7 +375,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-tvOS-Simulator
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
@@ -412,7 +412,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-macos
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
   catalyst:
@@ -441,7 +441,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-catalyst
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
   apple-platform:
@@ -475,7 +475,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-${{ matrix.platform }}-${{ matrix.target }}
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     strategy:
@@ -516,7 +516,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-linux-${{ matrix.arch }}
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     strategy:
@@ -552,7 +552,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-android-${{ matrix.arch }}
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     strategy:
@@ -593,7 +593,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-${{ matrix.arch }}
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     strategy:
@@ -633,7 +633,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-uwp-${{ matrix.arch }}
-        path: ${{ github.workspace }}/wrappers/build/**
+        path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     strategy:
