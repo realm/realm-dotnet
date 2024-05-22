@@ -2,10 +2,13 @@
 #nullable enable
 
 using MongoDB.Bson.Serialization;
+using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Schema;
+using Realms.Tests.Database;
 using Realms.Weaving;
-using SourceGeneratorAssemblyToProcess;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,36 +17,39 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
-namespace SourceGeneratorAssemblyToProcess
+namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(AutomaticPropertiesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
-    public partial class AutomaticPropertiesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(Dotnet_3597ObjectHelper)), Realms.Preserve(AllMembers = true)]
+    public partial class Dotnet_3597 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
 
         [Realms.Preserve]
-        static AutomaticPropertiesClass()
+        static Dotnet_3597()
         {
-            Realms.Serialization.RealmObjectSerializer.Register(new AutomaticPropertiesClassSerializer());
+            Realms.Serialization.RealmObjectSerializer.Register(new Dotnet_3597Serializer());
         }
 
         /// <summary>
-        /// Defines the schema for the <see cref="AutomaticPropertiesClass"/> class.
+        /// Defines the schema for the <see cref="Dotnet_3597"/> class.
         /// </summary>
-        [System.Reflection.Obfuscation]
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AutomaticPropertiesClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dotnet_3597", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntProp"),
+            Realms.Schema.Property.Primitive("FloatProp", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "FloatProp"),
+            Realms.Schema.Property.PrimitiveList("FloatList", Realms.RealmValueType.String, areElementsNullable: false, managedName: "FloatList"),
         }.Build();
 
         #region IRealmObject implementation
 
-        private IAutomaticPropertiesClassAccessor? _accessor;
+        private IDotnet_3597Accessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        private IAutomaticPropertiesClassAccessor Accessor => _accessor ??= new AutomaticPropertiesClassUnmanagedAccessor(typeof(AutomaticPropertiesClass));
+        private IDotnet_3597Accessor Accessor => _accessor ??= new Dotnet_3597UnmanagedAccessor(typeof(Dotnet_3597));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
@@ -75,16 +81,23 @@ namespace SourceGeneratorAssemblyToProcess
 
         void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
-            var newAccessor = (IAutomaticPropertiesClassAccessor)managedAccessor;
+            var newAccessor = (IDotnet_3597Accessor)managedAccessor;
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults)
                 {
-                    newAccessor.Id = oldAccessor.Id;
+                    newAccessor.FloatList.Clear();
                 }
+
+                if (!skipDefaults || oldAccessor.IntProp != default(int))
+                {
+                    newAccessor.IntProp = oldAccessor.IntProp;
+                }
+                newAccessor.FloatProp = oldAccessor.FloatProp;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.FloatList, newAccessor.FloatList, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -179,25 +192,25 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         /// <summary>
-        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="AutomaticPropertiesClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="Dotnet_3597"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
         /// </summary>
         /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-        /// <returns>The <see cref="AutomaticPropertiesClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-        public static explicit operator AutomaticPropertiesClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AutomaticPropertiesClass>();
+        /// <returns>The <see cref="Dotnet_3597"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator Dotnet_3597?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Dotnet_3597>();
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="AutomaticPropertiesClass"/>.
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="Dotnet_3597"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.RealmValue(AutomaticPropertiesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dotnet_3597? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="AutomaticPropertiesClass"/>.
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="Dotnet_3597"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
         /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.QueryArgument(AutomaticPropertiesClass? val) => (Realms.RealmValue)val;
+        public static implicit operator Realms.QueryArgument(Dotnet_3597? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -236,16 +249,16 @@ namespace SourceGeneratorAssemblyToProcess
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AutomaticPropertiesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class Dotnet_3597ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new AutomaticPropertiesClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new Dotnet_3597ManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new AutomaticPropertiesClass();
+            public Realms.IRealmObjectBase CreateInstance() => new Dotnet_3597();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
@@ -255,38 +268,75 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal interface IAutomaticPropertiesClassAccessor : Realms.IRealmAccessor
+        internal interface IDotnet_3597Accessor : Realms.IRealmAccessor
         {
-            int Id { get; set; }
+            int IntProp { get; set; }
+
+            string FloatProp { get; set; }
+
+            System.Collections.Generic.IList<string> FloatList { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AutomaticPropertiesClassManagedAccessor : Realms.ManagedAccessor, IAutomaticPropertiesClassAccessor
+        private class Dotnet_3597ManagedAccessor : Realms.ManagedAccessor, IDotnet_3597Accessor
         {
-            public int Id
+            public int IntProp
             {
-                get => (int)GetValue("Id");
-                set => SetValue("Id", value);
+                get => (int)GetValue("IntProp");
+                set => SetValue("IntProp", value);
+            }
+
+            public string FloatProp
+            {
+                get => (string)GetValue("FloatProp")!;
+                set => SetValue("FloatProp", value);
+            }
+
+            private System.Collections.Generic.IList<string> _floatList = null!;
+            public System.Collections.Generic.IList<string> FloatList
+            {
+                get
+                {
+                    if (_floatList == null)
+                    {
+                        _floatList = GetListValue<string>("FloatList");
+                    }
+
+                    return _floatList;
+                }
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AutomaticPropertiesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAutomaticPropertiesClassAccessor
+        private class Dotnet_3597UnmanagedAccessor : Realms.UnmanagedAccessor, IDotnet_3597Accessor
         {
-            public override ObjectSchema ObjectSchema => AutomaticPropertiesClass.RealmSchema;
+            public override ObjectSchema ObjectSchema => Dotnet_3597.RealmSchema;
 
-            private int _id;
-            public int Id
+            private int _intProp;
+            public int IntProp
             {
-                get => _id;
+                get => _intProp;
                 set
                 {
-                    _id = value;
-                    RaisePropertyChanged("Id");
+                    _intProp = value;
+                    RaisePropertyChanged("IntProp");
                 }
             }
 
-            public AutomaticPropertiesClassUnmanagedAccessor(Type objectType) : base(objectType)
+            private string _floatProp = null!;
+            public string FloatProp
+            {
+                get => _floatProp;
+                set
+                {
+                    _floatProp = value;
+                    RaisePropertyChanged("FloatProp");
+                }
+            }
+
+            public System.Collections.Generic.IList<string> FloatList { get; } = new List<string>();
+
+            public Dotnet_3597UnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 
@@ -294,7 +344,8 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
+                    "IntProp" => _intProp,
+                    "FloatProp" => _floatProp,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -303,8 +354,11 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 switch (propertyName)
                 {
-                    case "Id":
-                        Id = (int)val;
+                    case "IntProp":
+                        IntProp = (int)val;
+                        return;
+                    case "FloatProp":
+                        FloatProp = (string)val!;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -318,7 +372,11 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override IList<T> GetListValue<T>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+                return propertyName switch
+                {
+                    "FloatList" => (IList<T>)FloatList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
@@ -333,27 +391,35 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AutomaticPropertiesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<AutomaticPropertiesClass>
+        private class Dotnet_3597Serializer : Realms.Serialization.RealmObjectSerializerBase<Dotnet_3597>
         {
-            public override string SchemaName => "AutomaticPropertiesClass";
+            public override string SchemaName => "Dotnet_3597";
 
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AutomaticPropertiesClass value)
+            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Dotnet_3597 value)
             {
                 context.Writer.WriteStartDocument();
 
-                WriteValue(context, args, "Id", value.Id);
+                WriteValue(context, args, "IntProp", value.IntProp);
+                WriteValue(context, args, "FloatProp", value.FloatProp);
+                WriteList(context, args, "FloatList", value.FloatList);
 
                 context.Writer.WriteEndDocument();
             }
 
-            protected override AutomaticPropertiesClass CreateInstance() => new AutomaticPropertiesClass();
+            protected override Dotnet_3597 CreateInstance() => new Dotnet_3597();
 
-            protected override void ReadValue(AutomaticPropertiesClass instance, string name, BsonDeserializationContext context)
+            protected override void ReadValue(Dotnet_3597 instance, string name, BsonDeserializationContext context)
             {
                 switch (name)
                 {
-                    case "Id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                    case "IntProp":
+                        instance.IntProp = BsonSerializer.LookupSerializer<int>().Deserialize(context);
+                        break;
+                    case "FloatProp":
+                        instance.FloatProp = BsonSerializer.LookupSerializer<string>().Deserialize(context);
+                        break;
+                    case "FloatList":
+                        ReadArray(instance, name, context);
                         break;
                     default:
                         context.Reader.SkipValue();
@@ -361,12 +427,17 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            protected override void ReadArrayElement(AutomaticPropertiesClass instance, string name, BsonDeserializationContext context)
+            protected override void ReadArrayElement(Dotnet_3597 instance, string name, BsonDeserializationContext context)
             {
-                // No persisted list/set properties to deserialize
+                switch (name)
+                {
+                    case "FloatList":
+                        instance.FloatList.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
+                        break;
+                }
             }
 
-            protected override void ReadDocumentField(AutomaticPropertiesClass instance, string name, string fieldName, BsonDeserializationContext context)
+            protected override void ReadDocumentField(Dotnet_3597 instance, string name, string fieldName, BsonDeserializationContext context)
             {
                 // No persisted dictionary properties to deserialize
             }

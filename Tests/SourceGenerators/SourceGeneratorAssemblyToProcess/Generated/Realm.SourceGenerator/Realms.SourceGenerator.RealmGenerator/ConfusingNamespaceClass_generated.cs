@@ -31,6 +31,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         /// <summary>
         /// Defines the schema for the <see cref="ConfusingNamespaceClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ConfusingNamespaceClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Id"),

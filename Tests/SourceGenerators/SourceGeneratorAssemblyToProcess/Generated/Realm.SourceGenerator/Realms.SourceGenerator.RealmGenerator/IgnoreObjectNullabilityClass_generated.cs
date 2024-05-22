@@ -31,6 +31,7 @@ namespace SourceGeneratorAssemblyToProcess
         /// <summary>
         /// Defines the schema for the <see cref="IgnoreObjectNullabilityClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IgnoreObjectNullabilityClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Object("NullableObject", "IgnoreObjectNullabilityClass", managedName: "NullableObject"),

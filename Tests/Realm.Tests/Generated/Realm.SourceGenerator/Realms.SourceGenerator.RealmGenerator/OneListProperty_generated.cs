@@ -33,6 +33,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="OneListProperty"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OneListProperty", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.ObjectList("People", "Person", managedName: "People"),

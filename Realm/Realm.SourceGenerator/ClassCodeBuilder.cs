@@ -253,6 +253,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
             var schema = @$"/// <summary>
 /// Defines the schema for the <see cref=""{_classInfo.Name}""/> class.
 /// </summary>
+[System.Reflection.Obfuscation]
 public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
