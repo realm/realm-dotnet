@@ -919,11 +919,6 @@ namespace Realms.Tests.Database
             Assert.That(recursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
             Assert.That(recursiveObjViaBacklinks.DynamicApi.Get<string>(nameof(EmbeddedLevel1.String)), Is.EqualTo("level 1"));
 
-            if (TestHelpers.IsAOTTarget)
-            {
-                return;
-            }
-
 #if !UNITY
             dynamic dynamicParentViaBacklinks = topLevelBacklinks.Single();
             Assert.That(dynamicParentViaBacklinks, Is.EqualTo(parent));

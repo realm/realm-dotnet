@@ -607,11 +607,6 @@ namespace Realms.Tests.Sync
                     Assert.That(asymmetricObj.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
                 });
 
-                if (TestHelpers.IsAOTTarget)
-                {
-                    return;
-                }
-
 #if !UNITY
                 realm.Write(() =>
                 {

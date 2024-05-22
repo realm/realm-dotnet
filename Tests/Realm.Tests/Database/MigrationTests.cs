@@ -90,12 +90,9 @@ namespace Realms.Tests.Database
                         newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
 
 #if !UNITY
-                        if (!TestHelpers.IsAOTTarget)
-                        {
-                            // Ensure we can still use the dynamic API during migrations
-                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
-                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
-                        }
+                        // Ensure we can still use the dynamic API during migrations
+                        dynamic dynamicOldPerson = oldPeople.ElementAt(i);
+                        Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
 #endif
                     }
                 }

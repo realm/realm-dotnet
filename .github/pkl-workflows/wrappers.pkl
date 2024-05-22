@@ -38,7 +38,7 @@ jobs {
       .toMap((platform) -> "wrappers-\(platform)",(platform) -> "${{ steps.check-cache-\(platform).outputs.cache-hit }}")
       .toMapping()
     steps {
-      Steps.checkoutWithoutMatchers()
+      Steps.checkoutWithoutMatchers("recursive")
       for (platform in Common.wrapperBinaryNames) {
         restoreCache(platform) |> withCondition(platform, null)
         Steps.uploadArtifacts("wrappers-\(platform)", "wrappers/build/**") |> withCondition(platform, "steps.check-cache-\(platform).outputs.cache-hit == 'true'")
@@ -176,7 +176,7 @@ local function wrappersJob(config: JobConfig) = new Mixin<StepJobBase> {
   }
   `if` = config.ifCondition
   steps {
-    Steps.checkoutWithoutMatchers()
+    Steps.checkoutWithoutMatchers("recursive")
     checkCache(config.platform)
     ...config.intermediateSteps.toList().map((step) -> (step) {
       `if` = WrappersCacheCondition

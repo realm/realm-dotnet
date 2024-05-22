@@ -5,24 +5,30 @@ const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b
 const actionSetupJDK = "actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0"
 const actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v4.0.2"
 const actionCoveralls = "coverallsapp/github-action@v2.3.0"
+const actionCheckout = "actions/checkout@v4"
+const actionUploadArtifact = "actions/upload-artifact@v4"
+const actionDownloadArtifact = "actions/download-artifact@v4"
+const actionSetupXcode = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
+const actionSetupDotnet = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
+const actionSetupMsBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
 
-const function checkout(): Listing<gha.Step> = new Listing {
-  checkoutWithoutMatchers()
+const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {
+  checkoutWithoutMatchers(submodules)
   registerProblemMatchers()
 }
 
-const function checkoutWithoutMatchers(): gha.Step = new {
+const function checkoutWithoutMatchers(submodules: (Boolean | "recursive")): gha.Step = new {
   name = "Checkout Code"
-  uses = "actions/checkout@v4"
+  uses = actionCheckout
   with {
-    ["submodules"] = "recursive"
+    ["submodules"] = submodules
     ["ref"] = "${{ github.event.pull_request.head.sha }}"
   }
 }
 
 const function uploadArtifacts(artifactName: String, relPath: String): gha.Step = new {
   name = "Store artifacts for \(artifactName)"
-  uses = "actions/upload-artifact@v4"
+  uses = actionUploadArtifact
   with {
     ["name"] = artifactName
     ["path"] = "${{ github.workspace }}/\(relPath)"
@@ -33,7 +39,7 @@ const function uploadArtifacts(artifactName: String, relPath: String): gha.Step 
 
 const function setupXcode(version: String): gha.Step = new gha.Step {
   name = "Setup Xcode"
-  uses = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
+  uses = actionSetupXcode
   with {
     ["xcode-version"] = version
   }
@@ -46,14 +52,14 @@ const function setupMSVC(edition: String): gha.Step = new {
 }
 
 const function setupDotnet(version: String?): gha.Step = new {
-  uses = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
+  uses = actionSetupDotnet
   with {
     ["dotnet-version"] = version ?? "8.0.x"
   }
 }
 
 const function registerProblemMatchers(): gha.Step = new {
-  name = "Register csc problem matcher"
+  name = "Register problem matchers"
   run = """
     echo "::add-matcher::.github/problem-matchers/csc.json"
     echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -62,16 +68,16 @@ const function registerProblemMatchers(): gha.Step = new {
 
 const function fetchPackages(packageJob: String, _packages: List<String>?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
   name = "Fetch \(package)"
-  uses = "actions/download-artifact@v4"
+  uses = actionDownloadArtifact
   with {
     ["name"] = "\(package).${{ needs.\(packageJob).outputs.package_version }}"
     ["path"] = "${{ github.workspace }}/Realm/packages/"
   }
 })
 
-const function fetchWrappers(): List<gha.Step> = Common.wrapperBinaryNames.map((wrapper) -> new gha.Step {
+const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))): List<gha.Step> = wrappers.map((wrapper) -> new gha.Step {
   name = "Fetch wrappers for \(wrapper)"
-  uses = "actions/download-artifact@v4"
+  uses = actionDownloadArtifact
   with {
     ["name"] = "wrappers-\(wrapper)"
     ["path"] = "wrappers/build"
@@ -109,6 +115,7 @@ class MSBuildConfig {
   project: String
   target: String?
   properties: Mapping<String, String> = new Mapping{}
+  standaloneExe: Boolean = false
 
   function getTargetForInvocation(): String = if (target != null) " -t:\(target)" else ""
   function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
@@ -194,7 +201,7 @@ class DeviceFarmConfig {
 
 local const function addMSBuildToPath(): gha.Step = new {
   name = "Add msbuild to PATH"
-  uses = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
+  uses = actionSetupMsBuild
   `if` = "${{ runner.os == 'Windows' }}"
 }
 

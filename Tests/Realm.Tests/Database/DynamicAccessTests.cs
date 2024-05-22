@@ -75,11 +75,6 @@ namespace Realms.Tests.Database
                 Assert.That(allTypesObject.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
                 Assert.That(allTypesObject.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
 
-                if (TestHelpers.IsAOTTarget)
-                {
-                    return;
-                }
-
 #if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
@@ -232,10 +227,6 @@ namespace Realms.Tests.Database
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
 
-                if (TestHelpers.IsAOTTarget)
-                {
-                    return;
-                }
 #if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
@@ -267,11 +258,6 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(ato.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
-
-                if (TestHelpers.IsAOTTarget)
-                {
-                    return;
-                }
 
 #if !UNITY
                 var (dynamicAto, dynamicRV) = realm.Write(() =>

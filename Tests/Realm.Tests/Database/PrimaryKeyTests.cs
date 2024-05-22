@@ -154,11 +154,6 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
 
-            if (TestHelpers.IsAOTTarget)
-            {
-                return;
-            }
-
 #if !UNITY
             dynamic dynamicObj = obj;
 

@@ -37,9 +37,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -91,9 +91,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -111,7 +111,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: './Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
     - name: Publish Unit Test Results
@@ -135,9 +135,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -162,7 +162,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ''
       shell: powershell
@@ -187,9 +187,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -272,9 +272,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -292,7 +292,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.XamarinMac
-      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Publish Unit Test Results
@@ -311,14 +311,14 @@ jobs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
-    runs-on: macos-14
+    runs-on: macos-13
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -342,9 +342,9 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: 'Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+      run: 'Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
     - name: Transform Results
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
@@ -368,9 +368,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -388,7 +388,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
@@ -413,14 +413,14 @@ jobs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
-    runs-on: macos-14
+    runs-on: macos-13
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -444,11 +444,11 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-arm64/Tests.Maui.app
+        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
         iphoneToSimulate: iPhone-15
         arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
@@ -476,9 +476,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -496,7 +496,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.XamarinTVOS
-      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
@@ -531,9 +531,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -551,7 +551,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -592,9 +592,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -614,7 +614,7 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Publish Tests/Tests.Maui
-      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
@@ -656,9 +656,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -699,9 +699,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -737,9 +737,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -787,111 +787,16 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch wrappers for macos
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-macos
-        path: wrappers/build
-    - name: Fetch wrappers for catalyst
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-catalyst
-        path: wrappers/build
     - name: Fetch wrappers for linux-x86_64
       uses: actions/download-artifact@v4
       with:
         name: wrappers-linux-x86_64
-        path: wrappers/build
-    - name: Fetch wrappers for linux-armhf
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-linux-armhf
-        path: wrappers/build
-    - name: Fetch wrappers for linux-aarch64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-linux-aarch64
-        path: wrappers/build
-    - name: Fetch wrappers for android-armeabi-v7a
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-android-armeabi-v7a
-        path: wrappers/build
-    - name: Fetch wrappers for android-arm64-v8a
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-android-arm64-v8a
-        path: wrappers/build
-    - name: Fetch wrappers for android-x86
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-android-x86
-        path: wrappers/build
-    - name: Fetch wrappers for android-x86_64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-android-x86_64
-        path: wrappers/build
-    - name: Fetch wrappers for windows-Win32
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-Win32
-        path: wrappers/build
-    - name: Fetch wrappers for windows-x64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-x64
-        path: wrappers/build
-    - name: Fetch wrappers for windows-ARM64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-ARM64
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-Win32
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-Win32
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-x64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-x64
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-ARM
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-ARM64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM64
-        path: wrappers/build
-    - name: Fetch wrappers for iOS-Device
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-iOS-Device
-        path: wrappers/build
-    - name: Fetch wrappers for iOS-Simulator
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-iOS-Simulator
-        path: wrappers/build
-    - name: Fetch wrappers for tvOS-Device
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-tvOS-Device
-        path: wrappers/build
-    - name: Fetch wrappers for tvOS-Simulator
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-tvOS-Simulator
         path: wrappers/build
     - name: Deploy Apps
       working-directory: Tools/DeployApps
@@ -948,9 +853,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
+    - name: Register problem matchers
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
@@ -974,7 +879,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Fetch Realm
       uses: actions/download-artifact@v4
@@ -1031,7 +936,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: nirinchev/verify-todo@9be6f76daddad71433e5deb1b58c517490e5c66e
       with:

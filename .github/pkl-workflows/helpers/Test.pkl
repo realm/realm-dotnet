@@ -73,7 +73,7 @@ function netCore(frameworks: Listing<Common.NetFramework>): gha.StepJobBase = te
       shell = "bash"
     }
     Steps.setupDotnet("${{ steps.get-net-version.outputs.version }}")
-    ...Steps.dotnetPublish("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}", getTestProps())
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}", getTestProps(true))
     ...dotnetRunTests(true)
     ...reportTestResults(config)
   })
@@ -94,7 +94,7 @@ function weaver(): gha.StepJobBase = testJob(
     }
   },
   (config) -> new Listing<gha.Step> {
-    ...Steps.checkout()
+    ...Steps.checkout(false)
     ...Steps.setupWorkloads(null, "6.0.x")
     ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
     ...dotnetRunTests(false)
@@ -109,7 +109,7 @@ function sourceGeneration(): gha.StepJobBase = testJob(
   new gha.WindowsLatest{},
   null,
   (config) -> new Listing<gha.Step> {
-    ...Steps.checkout()
+    ...Steps.checkout(false)
     ...Steps.setupWorkloads(null, "6.0.x")
     ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping{}).toList()
     ...dotnetRunTests(false)
@@ -125,7 +125,7 @@ function wovenClasses(): gha.StepJobBase = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "win-x64", (getTestProps()) {
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "win-x64", (getTestProps(true)) {
       ["TestWeavedClasses"] = "true"
     })
     ...dotnetRunTests(false)
@@ -193,15 +193,15 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-14",
+  "macos-13",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps())
+    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig{
-      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
+      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-x64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
       bundleId = "io.realm.mauitests"
       iphoneToSimulate = "iPhone-15"
@@ -237,16 +237,16 @@ function macOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): g
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-14",
+  "macos-13",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", null, getTestProps())
+    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", null, getTestProps(false))
     new {
       name = "Run the tests"
-      run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-arm64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
+      run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
     }
     ...reportTestResults(config)
   })
@@ -329,7 +329,7 @@ function android_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>):
     Steps.setupJDK()
     ...prepareTests(config)
     ...Steps.setupWorkloads("maui", null)
-    ...Steps.dotnetPublish("Tests/Tests.Maui", "net8.0-android", /* runtime */ null, getTestProps())
+    ...Steps.dotnetPublish("Tests/Tests.Maui", "net8.0-android", /* runtime */ null, getTestProps(false))
     ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
       apkPath = "${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk"
       appId = "io.realm.mauitests"
@@ -342,7 +342,7 @@ function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.
     title = "Code Coverage"
     syncDifferentiator = "code-coverage"
     syncDifferentiators = _syncDifferentiators
-    useWrappers = true
+    usedWrappers = List("linux-x86_64")
   },
   new gha.UbuntuLatest{},
   null,
@@ -389,10 +389,10 @@ local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strate
   steps = _steps.apply(config)
 }
 
-local function prepareTests(config: TestConfig(needsPackages == true || useWrappers == true)): Listing<gha.Step> = new Listing {
-  ...Steps.checkout()
+local function prepareTests(config: TestConfig(needsPackages == true || !usedWrappers.isEmpty)): Listing<gha.Step> = new Listing {
+  ...Steps.checkout(false)
   ...cleanWorkspace(config.shouldCleanWorkspace)
-  ...fetchTestArtifacts(Common.job_Packages, config.useWrappers)
+  ...fetchTestArtifacts(Common.job_Packages, config.usedWrappers)
   ...BaaS.deployStep(config.syncDifferentiator, config.runSyncTests)
 }
 
@@ -405,13 +405,13 @@ local function cleanWorkspace(shouldClean: Boolean): Listing<gha.Step> = new Lis
   }
 }
 
-local function fetchTestArtifacts(packageJob: String, useWrappers: Boolean): List<gha.Step> = if (useWrappers)
-  Steps.fetchWrappers()
+local function fetchTestArtifacts(packageJob: String, wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))): List<gha.Step> =
+  if (!wrappers.isEmpty) Steps.fetchWrappers(wrappers)
   else Steps.fetchPackages(packageJob, Common.nugetPackages)
 
 local function buildTests(config: Steps.MSBuildConfig): List<gha.Step> = Steps.msbuild((config) {
   properties {
-    ...getTestProps()
+    ...getTestProps(config.standaloneExe)
   }
 })
 
@@ -442,10 +442,12 @@ local function reportTestResultsWithCustomFile(_outputFile: String, config: Test
   }
 }
 
-local function getTestProps(): Mapping<String, String> = new Mapping {
+local function getTestProps(standaloneExe: Boolean): Mapping<String, String> = new Mapping {
   ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
   ["UseRealmNupkgsWithVersion"] = "${{ needs.\(Common.job_Packages).outputs.package_version }}"
-  ["RealmTestsStandaloneExe"] = "true"
+  when (standaloneExe) {
+    ["RealmTestsStandaloneExe"] = "true"
+  }
 }
 
 local function dotnetRunTests(enableCoreDumps: Boolean): Listing<gha.Step> = new Listing {
@@ -485,7 +487,7 @@ local class MatrixOS {
 local class TestConfig {
   title: String
   needsPackages: Boolean = false
-  useWrappers: Boolean = false
+  usedWrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))
   shouldCleanWorkspace: Boolean = false
   syncDifferentiator: Common.SyncDifferentiator? = null
   transformResults: Boolean = false
