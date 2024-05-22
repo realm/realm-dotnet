@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.2.0 (2024-05-22)
 
 ### Enhancements
 * Added support for `Migration.FindInNewRealm` which is a helper that allows you to lookup the object in the post-migration Realm that corresponds to an object from the pre-migration Realm. (Issue [#3600](https://github.com/realm/realm-dotnet/issues/3600))
