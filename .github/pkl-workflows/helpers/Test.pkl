@@ -476,7 +476,7 @@ local function archiveCoreDump(): gha.Step = (Steps.uploadArtifacts("crash-repor
   name = "Archive core dump"
   `if` = "${{ failure() && runner.os != 'Windows' }}"
   with {
-    ["retention-days"] = 30 
+    ["retention-days"] = 30
     ["if-no-files-found"] = "warn"
   }
 }
