@@ -1,0 +1,130 @@
+module package
+
+import "../GithubAction/GithubAction.pkl" as gha
+import "Common.pkl"
+import "Steps.pkl"
+import "Actions.pkl"
+
+const versionOutput = "package_version"
+const unityPkgName = "io.realm.unity-${{ needs.\(Common.job_Packages).outputs.\(versionOutput) }}.tgz"
+
+local const getVersionStep = "get-version"
+local const setVersionSuffixStep = "set-version-suffix"
+local const checkDocfxCacheStep = "check-docfx-cache"
+
+local const buildSuffixOutput = "build_suffix"
+
+function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
+  name = "Package NuGet"
+  `runs-on` = new gha.WindowsLatest{}
+  outputs {
+    [versionOutput] = "${{ steps.\(getVersionStep).outputs.\(versionOutput) }}"
+  }
+  `timeout-minutes` = 30
+  steps {
+    ...Steps.checkout(false)
+    ...Steps.setupAndroid()
+    ...Steps.setupWorkloads("tvos ios maccatalyst android", "8.0.x")
+    setVersionSuffix
+    ...Steps.fetchWrappers(null)
+    ...Steps.msbuild(new Steps.MSBuildConfig {
+      projects = Common.nugetPackages.map((pkg) -> "Realm/\(pkg)").toListing()
+      target = "Pack"
+      properties {
+        ["PackageOutputPath"] = "${{ github.workspace }}/Realm/packages"
+        ["VersionSuffix"] = "${{ steps.\(setVersionSuffixStep).outputs.\(buildSuffixOutput) }}"
+      }
+    })
+    readVersionFromPackage
+    for (pkgName in Common.nugetPackages) {
+      let (finalPkgName = "\(pkgName).${{ steps.\(getVersionStep).outputs.\(versionOutput) }}")
+      Steps.uploadArtifacts(finalPkgName, "Realm/packages/\(finalPkgName).*nupkg")
+    }
+    Steps.uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+    ...buildDocs(shouldBuildDocsCondition)
+  }
+}
+function unity(): gha.Job = new gha.Job {
+  name = "Package Unity"
+  `runs-on` = new gha.WindowsLatest{}
+  `timeout-minutes` = 30
+  `if` = Common.ifNotCanceledCondition
+  needs {
+    Common.job_Packages
+  }
+  steps {
+    ...Steps.checkout(false)
+    ...Steps.fetchPackages(null)
+    new {
+      name = "Build Unity"
+      run = "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
+    }
+    Steps.uploadArtifacts(unityPkgName, "Realm/Realm.Unity/\(unityPkgName)")
+    new {
+      name = "Build Tests"
+      run = "dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/Realm.Unity/\(unityPkgName)"
+    }
+    Steps.uploadArtifacts("UnityTests", "Tests/Tests.Unity")
+  }
+}
+
+local const setVersionSuffix = new gha.Step {
+  name = "Set version suffix"
+  id = setVersionSuffixStep
+  // Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
+  run = """
+    $suffix = ""
+    if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+    {
+      if (-Not "${{ github.head_ref }}".Contains("release"))
+      {
+        $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+      }
+    }
+    else
+    {
+      $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+    }
+    echo "\(buildSuffixOutput)=$suffix" >> $Env:GITHUB_OUTPUT
+    """
+  shell = "pwsh"
+}
+
+local const readVersionFromPackage = new gha.Step {
+  name = "Read version"
+  id = getVersionStep
+  run = """
+    cd Realm/packages
+    pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \\; | sed -n 's/Realm\\.\\(.*\\)\\.nupkg$/\\1/p')
+    echo "\(versionOutput)=$pkgVersion" >> $GITHUB_OUTPUT
+    """
+}
+
+local const function buildDocs(condition: String) = new Listing<gha.Step> {
+  new {
+    name = "Check Docfx cache"
+    id = checkDocfxCacheStep
+    `if` = condition
+    uses = Actions.cache
+    with {
+      ["path"] = "C:\\docfx"
+      ["key"] = "docfx-2.75.2"
+    }
+  }
+  new {
+    name = "Download docfx"
+    `if` = "\(condition) && steps.\(checkDocfxCacheStep).outputs.cache-hit != 'true'"
+    run = """
+      Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.75.2/docfx-win-x64-v2.75.2.zip -OutFile C:\\docfx.zip
+      Expand-Archive -Path C:\\docfx.zip -DestinationPath C:\\docfx
+      """
+  }
+  new {
+    name = "Build docs"
+    `if` = condition
+    env {
+      ["DOCFX_SOURCE_BRANCH_NAME"] = "${{ github.head_ref }}"
+    }
+    run = "C:\\docfx\\docfx Docs/docfx.json"
+  }
+}

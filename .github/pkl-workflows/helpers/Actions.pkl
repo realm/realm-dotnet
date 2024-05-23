@@ -1,0 +1,15 @@
+module actions
+
+const runSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
+const setupJDK = "actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a"
+const awsConfigureCredentials = "aws-actions/configure-aws-credentials@v4.0.2"
+const coveralls = "coverallsapp/github-action@v2.3.0"
+const checkout = "actions/checkout@v4"
+const uploadArtifact = "actions/upload-artifact@v4"
+const downloadArtifact = "actions/download-artifact@v4"
+const setupXcode = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
+const setupDotnet = "actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59"
+const setupMsBuild = "microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9"
+const setupAndroid = "android-actions/setup-android@e1f5280adf78cf863c0fa43ffabc64a9cd08153f"
+const restoreCache = "actions/cache/restore@v4"
+const cache = "actions/cache@v4"

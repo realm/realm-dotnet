@@ -4,6 +4,7 @@ amends "GithubAction/GithubAction.pkl"
 
 import "helpers/Common.pkl"
 import "helpers/Steps.pkl"
+import "helpers/Actions.pkl"
 
 local class JobNamesDefition {
   const checkCache: String = "check-cache"
@@ -153,11 +154,11 @@ local function withCondition(platform: String, _conditionToAppend: String?) = ne
 }
 
 local function restoreCache(platform: String): Step = new Step {
-  uses = "actions/cache/restore@v4"
+  uses = Actions.restoreCache
 } |> cacheStep(platform, platform)
 
 local function checkCache(platform: String): Step = new Step {
-  uses = "actions/cache@v4"
+  uses = Actions.cache
 } |> cacheStep(platform, null)
 
 local function cacheStep(platform: String, idSuffix: String?) = new Mixin<Step> {

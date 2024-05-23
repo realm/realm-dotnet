@@ -55,31 +55,407 @@ jobs:
         - code-coverage
       fail-fast: false
   build-packages:
-    name: Package
-    needs:
-    - build-wrappers
-    uses: ./.github/workflows/build-packages.yml
-    with:
-      build-docs: ${{ contains(github.head_ref, 'release') }}
+    name: Package NuGet
+    outputs:
+      package_version: ${{ steps.get-version.outputs.package_version }}
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Setup Android
+      uses: android-actions/setup-android@e1f5280adf78cf863c0fa43ffabc64a9cd08153f
+    - name: Install SDK platform 21
+      run: sdkmanager --install "platforms;android-21"
+    - name: Setup JDK
+      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
+      with:
+        distribution: microsoft
+        java-version: 11
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
+    - name: Set version suffix
+      id: set-version-suffix
+      run: |-
+        $suffix = ""
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+        {
+          if (-Not "${{ github.head_ref }}".Contains("release"))
+          {
+            $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+          }
+        }
+        else
+        {
+          $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+        }
+        echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
+      shell: pwsh
+    - name: Fetch wrappers for macos
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-macos
+        path: wrappers/build
+    - name: Fetch wrappers for catalyst
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-catalyst
+        path: wrappers/build
+    - name: Fetch wrappers for linux-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for linux-armhf
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-armhf
+        path: wrappers/build
+    - name: Fetch wrappers for linux-aarch64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-aarch64
+        path: wrappers/build
+    - name: Fetch wrappers for android-armeabi-v7a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: wrappers/build
+    - name: Fetch wrappers for android-arm64-v8a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-arm64-v8a
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-Win32
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-Win32
+        path: wrappers/build
+    - name: Fetch wrappers for windows-x64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-x64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-ARM64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-ARM64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-Win32
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-Win32
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-x64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-x64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-ARM
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-ARM64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-ARM64
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Device
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Device
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Simulator
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Simulator
+        path: wrappers/build
+    - name: Fetch wrappers for tvOS-Device
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-tvOS-Device
+        path: wrappers/build
+    - name: Fetch wrappers for tvOS-Simulator
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-tvOS-Simulator
+        path: wrappers/build
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Read version
+      id: get-version
+      run: |-
+        cd Realm/packages
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+        echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
+    - name: Store artifacts for Realm.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for ExtractedChangelog
+      uses: actions/upload-artifact@v4
+      with:
+        name: ExtractedChangelog
+        path: Realm/Realm/ExtractedChangelog.md
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Check Docfx cache
+      id: check-docfx-cache
+      if: contains(github.head_ref, 'release')
+      uses: actions/cache@v4
+      with:
+        path: C:\docfx
+        key: docfx-2.75.2
+    - name: Download docfx
+      if: contains(github.head_ref, 'release') && steps.check-docfx-cache.outputs.cache-hit != 'true'
+      run: |-
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.75.2/docfx-win-x64-v2.75.2.zip -OutFile C:\docfx.zip
+        Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
+    - name: Build docs
+      if: contains(github.head_ref, 'release')
+      env:
+        DOCFX_SOURCE_BRANCH_NAME: ${{ github.head_ref }}
+      run: C:\docfx\docfx Docs/docfx.json
   build-unity:
-    name: Package
+    name: Package Unity
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/build-unity.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-  test-unity:
-    name: Test
-    needs:
-    - build-unity
-    - build-packages
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityUtils
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityWeaver
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Unity
+      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
+    - name: Store artifacts for io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/upload-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Build Tests
+      run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/Realm.Unity/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+    - name: Store artifacts for UnityTests
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  build-unity-tests-linux:
+    name: Build Unity linux
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/test-unity.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-      settings: '["Mono-Net4"]'
-      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
+    timeout-minutes: 30
+    runs-on:
+    - unity
+    - linux
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/download-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch UnityTests
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform StandaloneLinux64 -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile -
+    - name: Store artifacts for UnityTestsRunner.linux
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTestsRunner.linux
+        path: Tests/Tests.Unity/Player_StandaloneLinux64_Mono-Net4/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  run-unity-tests-linux:
+    name: Test Unity linux
+    needs:
+    - build-unity-tests-linux
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch UnityTestsRunner.linux
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTestsRunner.linux
+        path: TestRunner
+    - name: Install xvfb
+      run: sudo apt install -y xvfb libglu1 libxcursor1
+    - name: Run Tests
+      run: |-
+        chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
+        xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Unity linux Mono-Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  build-unity-tests-windows:
+    name: Build Unity windows
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on:
+    - unity
+    - windows
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/download-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch UnityTests
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform StandaloneWindows64 -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile build.log
+    - name: Store artifacts for UnityTestsRunner.windows
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTestsRunner.windows
+        path: Tests/Tests.Unity/Player_StandaloneWindows64_Mono-Net4/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  run-unity-tests-windows:
+    name: Test Unity windows
+    needs:
+    - build-unity-tests-windows
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch UnityTestsRunner.windows
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTestsRunner.windows
+        path: TestRunner
+    - name: Run Tests
+      run: "Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList \"-logFile\",\"${{ github.workspace }}\test.log\",\"--result=${{ github.workspace }}\TestResults.xml\"\ncat ${{ github.workspace }}\test.log"
+      shell: pwsh
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Unity windows Mono-Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
   test-net-framework:
     name: Test .NET Framework
     needs:

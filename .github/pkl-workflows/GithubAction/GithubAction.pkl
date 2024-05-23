@@ -571,7 +571,7 @@ abstract class JobBase {
 }
 
 abstract class StepJobBase extends JobBase {
-  `runs-on`: Machine|String
+  `runs-on`: Machine|String|Listing<String>
   steps: Listing<Step>(stepsHasOnlyRunOrUses(this))
 }
 
@@ -673,7 +673,7 @@ output {
   text = "# Do not modify!\n# This file was generated from a template using https://github.com/apple/pkl\n\n\(super.text)"
   renderer = new YamlRenderer {
     converters {
-      ["runs-on"] = (runsOn: String|Machine) -> if (runsOn is Machine) runsOn.name else runsOn
+      ["runs-on"] = (runsOn: String|Machine|Listing<String>) -> if (runsOn is Machine) runsOn.name else runsOn
       ["schedule"] = (schedule: Schedule?) -> schedule.ifNonNull((_) ->
         schedule.cron.toList().map((cr) -> Map("cron", new RenderDirective { text = " " + jsonRenderer.renderValue(cr) }))
       )

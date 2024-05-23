@@ -4,6 +4,7 @@ import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
 import "Steps.pkl"
 import "BaaS.pkl"
+import "Package.pkl"
 
 local const actionReportTestResults = "dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5"
 
@@ -22,7 +23,9 @@ function netFramework(_syncDifferentiators: Listing<String>): gha.StepJobBase = 
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Realm.Tests"
+      projects {
+        "Tests/Realm.Tests"
+      }
       properties {
         ["TargetFramework"] = "net461"
       }
@@ -148,7 +151,9 @@ function tvOS(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Ste
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Tests.XamarinTVOS"
+      projects {
+        "Tests/Tests.XamarinTVOS"
+      }
       properties {
         ["Platform"] = "iPhoneSimulator"
       }
@@ -173,7 +178,9 @@ function iOS_Xamarin(): gha.StepJobBase = testJob(
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Tests.iOS"
+      projects {
+        "Tests/Tests.iOS"
+      }
       properties {
         ["Platform"] = "iPhoneSimulator"
       }
@@ -223,7 +230,9 @@ function macOS_Xamarin(): gha.StepJobBase = testJob(
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Tests.XamarinMac"
+      projects {
+        "Tests/Tests.XamarinMac"
+      }
     })
     new {
       name = "Run the tests"
@@ -276,7 +285,9 @@ function uwp(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Step
       shell = "powershell"
     }
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Tests.UWP"
+      projects {
+        "Tests/Tests.UWP"
+      }
       properties {
         ["AppxBundle"] = "Always"
         ["PackageCertificateKeyFile"] = "${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx"
@@ -304,7 +315,9 @@ function android_Xamarin(): gha.StepJobBase = testJob(
     Steps.setupJDK()
     ...prepareTests(config)
     ...buildTests(new Steps.MSBuildConfig {
-      project = "Tests/Tests.Android"
+      projects {
+        "Tests/Tests.Android"
+      }
       target = "SignAndroidPackage"
       properties {
         ["AndroidUseSharedRuntime"] = "False"
@@ -373,6 +386,76 @@ function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.
     }
   }
 
+function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<String, gha.Job> {
+  ["build-unity-tests-\(config.os)"] = new gha.Job {
+    name = "Build Unity \(config.os)"
+    `runs-on` = new Listing<String> {
+      "unity"
+      config.os
+    }
+    `timeout-minutes` = 30
+    `if` = Common.ifNotCanceledCondition
+    steps {
+      ...Steps.checkout(false)
+      Steps.cleanupWorkspace()
+      Steps.downloadArtifacts(Package.unityPkgName, "Realm/Realm.Unity")
+      Steps.downloadArtifacts("UnityTests", "Tests/Tests.Unity")
+      new gha.Step {
+        name = "Build Unity Tests"
+        run = "unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone\(config.platform()) -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/\(config.settings).json -logFile \(if (config.os == "windows") "build.log" else "-")"
+      }
+      Steps.uploadArtifacts("UnityTestsRunner.\(config.os)", "Tests/Tests.Unity/Player_Standalone\(config.platform())_\(config.settings)/")
+    }
+  }
+  ["run-unity-tests-\(config.os)"] = new gha.Job {
+    name = "Test Unity \(config.os)"
+    `runs-on` = config.runsOn()
+    `timeout-minutes` = 30
+    `if` = Common.ifNotCanceledCondition
+    needs {
+      "build-unity-tests-\(config.os)"
+    }
+    steps {
+      ...Steps.checkout(false)
+      Steps.downloadArtifacts("UnityTestsRunner.\(config.os)", "TestRunner")
+      when (config.os == "linux") {
+        new gha.Step {
+          name = "Install xvfb"
+          run = "sudo apt install -y xvfb libglu1 libxcursor1"
+        }
+        new gha.Step {
+          name = "Run Tests"
+          run = """
+            chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/\(outputFile)
+            """
+        }
+      }
+      when (config.os == "windows") {
+        new gha.Step {
+          name = "Run Tests"
+          run = """
+            Start-Process ${{ github.workspace }}\\TestRunner\\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\\test.log","--result=${{ github.workspace }}\\\(outputFile)"
+            cat ${{ github.workspace }}\test.log
+            """
+          shell = "pwsh"
+        }
+      }
+      ...reportTestResults(new TestConfig {
+        title = "Unity \(config.os) \(config.settings)"
+      })
+    }
+  }
+}
+
+class UnityTestConfig {
+  os: "windows" | "linux"
+  settings: String = "Mono-Net4"
+
+  function platform() = "\(os.capitalize())64"
+  function runsOn():gha.Machine = if (os == "windows") new gha.WindowsLatest{} else if (os == "linux") new gha.UbuntuLatest{} else throw("invalid os: \(os)")
+}
+
 // Private helpers
 local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strategy: gha.MatrixStrategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.StepJobBase = (if (_strategy != null) new gha.MatrixJob{
   strategy = _strategy
@@ -395,24 +478,21 @@ local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strate
 local function prepareTests(config: TestConfig(needsPackages == true || !usedWrappers.isEmpty)): Listing<gha.Step> = new Listing {
   ...Steps.checkout(false)
   ...cleanWorkspace(config.shouldCleanWorkspace)
-  ...fetchTestArtifacts(Common.job_Packages, config.usedWrappers)
+  ...fetchTestArtifacts(config.usedWrappers)
   ...BaaS.deployStep(config.syncDifferentiator, config.runSyncTests)
 }
 
 local function cleanWorkspace(shouldClean: Boolean): Listing<gha.Step> = new Listing {
   when (shouldClean) {
-    new gha.Step {
-      name = "Cleanup Workspace"
-      run = "git clean -fdx"
-    }
+    Steps.cleanupWorkspace()
   }
 }
 
-local function fetchTestArtifacts(packageJob: String, wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))): List<gha.Step> =
+local function fetchTestArtifacts(wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))): List<gha.Step> =
   if (!wrappers.isEmpty) Steps.fetchWrappers(wrappers)
-  else Steps.fetchPackages(packageJob, Common.nugetPackages)
+  else Steps.fetchPackages(Common.nugetPackages)
 
-local function buildTests(config: Steps.MSBuildConfig): List<gha.Step> = Steps.msbuild((config) {
+local function buildTests(config: Steps.MSBuildConfig): Listing<gha.Step> = Steps.msbuild((config) {
   properties {
     ...getTestProps(config.standaloneExe)
   }
@@ -447,7 +527,7 @@ local function reportTestResultsWithCustomFile(_outputFile: String, config: Test
 
 local function getTestProps(standaloneExe: Boolean): Mapping<String, String> = new Mapping {
   ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
-  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(Common.job_Packages).outputs.package_version }}"
+  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(Common.job_Packages).outputs.\(Package.versionOutput) }}"
   when (standaloneExe) {
     ["RealmTestsStandaloneExe"] = "true"
   }

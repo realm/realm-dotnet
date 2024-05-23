@@ -3,13 +3,13 @@ module pr
 amends "GithubAction/GithubAction.pkl"
 
 import "helpers/Common.pkl"
+import "helpers/Package.pkl"
 import "helpers/BaaS.pkl"
 import "helpers/Lint.pkl"
 import "helpers/Test.pkl" as TestJobs
 
 local class JobNamesDefition {
   const wrappers: String = "build-wrappers"
-  const unity: String = "build-unity"
   const coverage: String = "test-code-coverage"
 }
 
@@ -54,41 +54,14 @@ jobs {
     name = "Wrappers"
   }
   [Common.job_Baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
-  [Common.job_Packages] = new ReusableWorkflowJob {
-    uses = "./.github/workflows/build-packages.yml"
-    name = "Package"
-    needs {
-      JobNames.wrappers
-    }
-    with {
-      ["build-docs"] = "${{ contains(github.head_ref, 'release') }}"
-    }
-  }
-  [JobNames.unity] = new ReusableWorkflowJob {
-    uses = "./.github/workflows/build-unity.yml"
-    name = "Package"
-    with {
-      ["version"] = "${{ needs.build-packages.outputs.package_version }}"
-    }
-    needs {
-      Common.job_Packages
-    }
-    `if` = Common.ifNotCanceledCondition
-  }
-  ["test-unity"] = new ReusableWorkflowJob {
-    uses = "./.github/workflows/test-unity.yml"
-    name = "Test"
-    with {
-      ["version"] = "${{ needs.build-packages.outputs.package_version }}"
-      ["settings"] = "[\"Mono-Net4\"]"
-      ["platform"] = "[{ \"os\": \"windows\", \"testPlatform\": \"Windows64\" }, { \"os\": \"linux\", \"testPlatform\": \"Linux64\" }]"
-    }
-    needs {
-      JobNames.unity
-      Common.job_Packages
-    }
-    `if` = Common.ifNotCanceledCondition
-  }
+  [Common.job_Packages] = Package.nuget("contains(github.head_ref, 'release')")
+  [Common.job_Unity] = Package.unity()
+  ...TestJobs.unity(new TestJobs.UnityTestConfig {
+    os = "linux"
+  })
+  ...TestJobs.unity(new TestJobs.UnityTestConfig {
+    os = "windows"
+  })
   ["test-net-framework"] = TestJobs.netFramework(baasDifferentiators)
   ["test-uwp"] = TestJobs.uwp(baasDifferentiators)
   ["test-net-core"] = TestJobs.netCore(new Listing { "net8.0" })

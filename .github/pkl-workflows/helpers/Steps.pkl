@@ -1,16 +1,7 @@
 import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
-
-local const actionRunSimulator = "realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
-local const actionSetupJDK = "actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a"
-local const actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v4.0.2"
-local const actionCoveralls = "coverallsapp/github-action@v2.3.0"
-local const actionCheckout = "actions/checkout@v4"
-local const actionUploadArtifact = "actions/upload-artifact@v4"
-local const actionDownloadArtifact = "actions/download-artifact@v4"
-local const actionSetupXcode = "maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd"
-local const actionSetupDotnet = "actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59"
-local const actionSetupMsBuild = "microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9"
+import "Package.pkl"
+import "Actions.pkl"
 
 const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers(submodules)
@@ -19,7 +10,7 @@ const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> 
 
 const function checkoutWithoutMatchers(submodules: (Boolean | "recursive")): gha.Step = new {
   name = "Checkout Code"
-  uses = actionCheckout
+  uses = Actions.checkout
   with {
     ["submodules"] = submodules
     ["ref"] = "${{ github.event.pull_request.head.sha }}"
@@ -28,7 +19,7 @@ const function checkoutWithoutMatchers(submodules: (Boolean | "recursive")): gha
 
 const function uploadArtifacts(artifactName: String, relPath: String): gha.Step = new {
   name = "Store artifacts for \(artifactName)"
-  uses = actionUploadArtifact
+  uses = Actions.uploadArtifact
   with {
     ["name"] = artifactName
     ["path"] = relPath
@@ -37,9 +28,18 @@ const function uploadArtifacts(artifactName: String, relPath: String): gha.Step 
   }
 }
 
+const function downloadArtifacts(artifactName: String, relPath: String): gha.Step = new {
+  name = "Fetch \(artifactName)"
+  uses = Actions.downloadArtifact
+  with {
+    ["name"] = artifactName
+    ["path"] = relPath
+  }
+}
+
 const function setupXcode(version: String): gha.Step = new gha.Step {
   name = "Setup Xcode"
-  uses = actionSetupXcode
+  uses = Actions.setupXcode
   with {
     ["xcode-version"] = version
   }
@@ -52,7 +52,7 @@ const function setupMSVC(edition: String): gha.Step = new {
 }
 
 const function setupDotnet(version: String?): gha.Step = new {
-  uses = actionSetupDotnet
+  uses = Actions.setupDotnet
   with {
     ["dotnet-version"] = version ?? "8.0.x"
   }
@@ -66,18 +66,18 @@ const function registerProblemMatchers(): gha.Step = new {
     """
 }
 
-const function fetchPackages(packageJob: String, _packages: List<String>?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
+const function fetchPackages(_packages: List<String>(every((package) -> Common.packages.contains(package)))?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
   name = "Fetch \(package)"
-  uses = actionDownloadArtifact
+  uses = Actions.downloadArtifact
   with {
-    ["name"] = "\(package).${{ needs.\(packageJob).outputs.package_version }}"
+    ["name"] = "\(package).${{ needs.\(Common.job_Packages).outputs.\(Package.versionOutput) }}"
     ["path"] = "${{ github.workspace }}/Realm/packages/"
   }
 })
 
-const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))): List<gha.Step> = wrappers.map((wrapper) -> new gha.Step {
+const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))?): List<gha.Step> = (wrappers ?? Common.wrapperBinaryNames).map((wrapper) -> new gha.Step {
   name = "Fetch wrappers for \(wrapper)"
-  uses = actionDownloadArtifact
+  uses = Actions.downloadArtifact
   with {
     ["name"] = "wrappers-\(wrapper)"
     ["path"] = "wrappers/build"
@@ -94,16 +94,28 @@ const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listi
 
 const function setupJDK(): gha.Step = new {
   name = "Setup JDK"
-  uses = actionSetupJDK
+  uses = Actions.setupJDK
   with {
     ["distribution"] = "microsoft"
     ["java-version"] = 11
   }
 }
 
+const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
+  new {
+    name = "Setup Android"
+    uses = Actions.setupAndroid
+  }
+  new {
+    name = "Install SDK platform 21"
+    run = "sdkmanager --install \"platforms;android-21\""
+  }
+  setupJDK()
+}
+
 const function configureAWSCredentials(accessKey: String, secretKey: String, region: String): gha.Step = new {
   name = "Configure AWS Credentials"
-  uses = actionAWSConfigureCredentials
+  uses = Actions.awsConfigureCredentials
   with {
     ["aws-access-key-id"] = "${{ secrets.\(accessKey) }}"
     ["aws-secret-access-key"] = "${{ secrets.\(secretKey) }}"
@@ -112,7 +124,7 @@ const function configureAWSCredentials(accessKey: String, secretKey: String, reg
 }
 
 class MSBuildConfig {
-  project: String
+  projects: Listing<String>
   target: String?
   properties: Mapping<String, String> = new Mapping{}
   standaloneExe: Boolean = false
@@ -121,13 +133,16 @@ class MSBuildConfig {
   function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
 }
 
-const function msbuild(config: MSBuildConfig): List<gha.Step> = List(
-  addMSBuildToPath(),
-  new gha.Step {
-    name = "Build \(config.project)"
-    run = "msbuild \(config.project)\(config.getTargetForInvocation()) -restore \(config.getPropertiesForInvocation())"
+const function msbuild(config: MSBuildConfig): Listing<gha.Step> = new Listing<gha.Step> {
+  addMSBuildToPath()
+
+  for (project in config.projects) {
+    new gha.Step {
+      name = "Build \(project)"
+      run = "msbuild \(project)\(config.getTargetForInvocation()) -restore \(config.getPropertiesForInvocation())"
+    }
   }
-)
+}
 
 const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
   new gha.Step {
@@ -149,7 +164,7 @@ const function dotnetBuild(project: String, framework: Common.NetFramework, runt
 
 const function runSimulator(config: SimulatorConfig): gha.Step = new {
   name = "Run on Simulator"
-  uses = actionRunSimulator
+  uses = Actions.runSimulator
   with = config.toMap().toMapping()
 }
 
@@ -172,7 +187,7 @@ const function publishCoverage(file: String): Listing<gha.Step> = new Listing<gh
   new gha.Step {
     name = "Publish Coverage"
     id = "publish-coveralls"
-    uses = actionCoveralls
+    uses = Actions.coveralls
     with {
       ["github-token"] = "${{ secrets.GITHUB_TOKEN }}"
       ["file"] = file
@@ -184,6 +199,11 @@ const function publishCoverage(file: String): Listing<gha.Step> = new Listing<gh
     name = "Output Coveralls response"
     run = "echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}"
   }
+}
+
+const function cleanupWorkspace(): gha.Step = new gha.Step {
+  name = "Cleanup Workspace"
+  run = "git clean -fdx"
 }
 
 class SimulatorConfig {
@@ -201,7 +221,7 @@ class DeviceFarmConfig {
 
 local const function addMSBuildToPath(): gha.Step = new {
   name = "Add msbuild to PATH"
-  uses = actionSetupMsBuild
+  uses = Actions.setupMsBuild
   `if` = "${{ runner.os == 'Windows' }}"
 }
 
