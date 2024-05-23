@@ -97,11 +97,12 @@ const function setupJDK(): gha.Step = new {
   uses = Actions.setupJDK
   with {
     ["distribution"] = "microsoft"
-    ["java-version"] = 11
+    ["java-version"] = 21
   }
 }
 
 const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
+  setupJDK()
   new {
     name = "Setup Android"
     uses = Actions.setupAndroid
@@ -110,7 +111,6 @@ const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
     name = "Install SDK platform 21"
     run = "sdkmanager --install \"platforms;android-21\""
   }
-  setupJDK()
 }
 
 const function configureAWSCredentials(accessKey: String, secretKey: String, region: String): gha.Step = new {
