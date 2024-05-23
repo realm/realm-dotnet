@@ -1,0 +1,75 @@
+module codeql
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+import "helpers/Actions.pkl"
+
+name = "CodeQL"
+on {
+  push {
+    branches {
+      Common.mainBranch
+    }
+  }
+  pull_request {
+    branches {
+      Common.mainBranch
+    }
+    paths {
+      "**.cs"
+      "**.cpp"
+      "**.hpp"
+      "**.csproj"
+      ".github/workflows/codeql.yml"
+    }
+  }
+}
+env {
+  ["REALM_DISABLE_ANALYTICS"] = true
+}
+concurrency {
+  group = "codeql-${{ github.head_ref || github.run_id }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  ["analyze-csharp"] = new Job {
+    name = "Analyze C#"
+    `runs-on` = new WindowsLatest{}
+    permissions {
+      actions = "read"
+      contents = "read"
+      `security-events` = "write"
+    }
+    steps {
+      Steps.checkoutWithoutMatchers(false)
+      new Step {
+        name = "Initialize CodeQL"
+        uses = Actions.codeQLInit
+        with {
+          ["languages"] = "csharp"
+          ["config"] = """
+            queries:
+              - uses: security-and-quality
+            query-filters:
+              - exclude: cs/call-to-unmanaged-code
+              - exclude: cs/unmanaged-code
+            """
+        }
+      }
+      ...Steps.setupAndroid()
+      ...Steps.setupWorkloads("tvos ios maccatalyst android", "8.0.x")
+      ...Steps.msbuild(new Steps.MSBuildConfig {
+        projects = Common.packages.map((pkg) -> "Realm/\(pkg)").toListing()
+        properties {
+          ["UseSharedCompilation"] = "false"
+        }
+      })
+      new Step {
+        name = "Perform CodeQL Analysis"
+        uses = Actions.codeQLAnalyze
+      }
+    }
+  }
+}

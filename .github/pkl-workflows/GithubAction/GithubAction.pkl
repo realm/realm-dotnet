@@ -568,6 +568,7 @@ abstract class JobBase {
   env: EnvironmentVariables?
   outputs: Mapping<String, String>?
   `timeout-minutes`: Int?
+  permissions: (*Permissions|"read-all"|"write-all")?
 }
 
 abstract class StepJobBase extends JobBase {

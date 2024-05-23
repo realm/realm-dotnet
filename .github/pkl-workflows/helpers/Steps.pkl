@@ -1,7 +1,9 @@
 import "../GithubAction/GithubAction.pkl" as gha
 import "Common.pkl"
-import "Package.pkl"
 import "Actions.pkl"
+
+const getVersionStepName = "get-version"
+const getVersionOutput = "package_version"
 
 const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers(submodules)
@@ -34,6 +36,17 @@ const function downloadArtifacts(artifactName: String, relPath: String): gha.Ste
   with {
     ["name"] = artifactName
     ["path"] = relPath
+  }
+}
+
+const function downloadAllArtifacts(): gha.Step = new {
+  name = "Download all artifacts"
+  uses = Actions.downloadAllArtifacts
+  with {
+    ["workflow"] = "pr.yml"
+    ["commit"] = "${{ github.sha }}"
+    ["path"] = "Realm/packages/"
+    ["workflow_conclusion"] = "completed"
   }
 }
 
@@ -70,7 +83,7 @@ const function fetchPackages(_packages: List<String>(every((package) -> Common.p
   name = "Fetch \(package)"
   uses = Actions.downloadArtifact
   with {
-    ["name"] = "\(package).${{ needs.\(Common.job_Packages).outputs.\(Package.versionOutput) }}"
+    ["name"] = "\(package).${{ needs.\(Common.job_Packages).outputs.\(getVersionOutput) }}"
     ["path"] = "${{ github.workspace }}/Realm/packages/"
   }
 })
@@ -113,13 +126,43 @@ const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
   }
 }
 
-const function configureAWSCredentials(accessKey: String, secretKey: String, region: String): gha.Step = new {
+const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1" | "us-west-2"): gha.Step = new {
   name = "Configure AWS Credentials"
   uses = Actions.awsConfigureCredentials
   with {
     ["aws-access-key-id"] = "${{ secrets.\(accessKey) }}"
     ["aws-secret-access-key"] = "${{ secrets.\(secretKey) }}"
     ["aws-region"] = region
+  }
+}
+
+const function readVersionFromPackage(): gha.Step = new {
+  name = "Read version"
+  id = getVersionStepName
+  run = #"""
+    cd Realm/packages
+    pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+    echo "\#(getVersionOutput)=$pkgVersion" >> $GITHUB_OUTPUT
+    """#
+  shell = "bash"
+}
+
+const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new Listing<gha.Step> {
+  local packageName = "io.realm.unity-${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}.tgz"
+
+  new gha.Step {
+    uses = Actions.setupNode
+    with {
+      ["node-version"] = "16.x"
+      ["registry-url"] = "https://registry.npmjs.org"
+    }
+  }
+  new gha.Step {
+    name = "NPM publish \(packageName)"
+    run = "npm publish ${{ github.workspace }}/Realm/packages/\(packageName)/\(packageName) --tag \(tag)"
+    env {
+      ["NODE_AUTH_TOKEN"] = "${{ secrets.NPM_TOKEN }}"
+    }
   }
 }
 

@@ -5,10 +5,8 @@ import "Common.pkl"
 import "Steps.pkl"
 import "Actions.pkl"
 
-const versionOutput = "package_version"
-const unityPkgName = "io.realm.unity-${{ needs.\(Common.job_Packages).outputs.\(versionOutput) }}.tgz"
+const unityPkgName = "io.realm.unity-${{ needs.\(Common.job_Packages).outputs.\(Steps.getVersionOutput) }}.tgz"
 
-local const getVersionStep = "get-version"
 local const setVersionSuffixStep = "set-version-suffix"
 local const checkDocfxCacheStep = "check-docfx-cache"
 
@@ -18,7 +16,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
   name = "Package NuGet"
   `runs-on` = new gha.WindowsLatest{}
   outputs {
-    [versionOutput] = "${{ steps.\(getVersionStep).outputs.\(versionOutput) }}"
+    [Steps.getVersionOutput] = "${{ steps.\(Steps.getVersionStepName).outputs.\(Steps.getVersionOutput) }}"
   }
   `timeout-minutes` = 30
   steps {
@@ -35,9 +33,9 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
         ["VersionSuffix"] = "${{ steps.\(setVersionSuffixStep).outputs.\(buildSuffixOutput) }}"
       }
     })
-    readVersionFromPackage
+    Steps.readVersionFromPackage()
     for (pkgName in Common.nugetPackages) {
-      let (finalPkgName = "\(pkgName).${{ steps.\(getVersionStep).outputs.\(versionOutput) }}")
+      let (finalPkgName = "\(pkgName).${{ steps.\(Steps.getVersionStepName).outputs.\(Steps.getVersionOutput) }}")
       Steps.uploadArtifacts(finalPkgName, "Realm/packages/\(finalPkgName).*nupkg")
     }
     Steps.uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
@@ -88,16 +86,6 @@ local const setVersionSuffix = new gha.Step {
     echo "\(buildSuffixOutput)=$suffix" >> $Env:GITHUB_OUTPUT
     """
   shell = "pwsh"
-}
-
-local const readVersionFromPackage = new gha.Step {
-  name = "Read version"
-  id = getVersionStep
-  run = """
-    cd Realm/packages
-    pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \\; | sed -n 's/Realm\\.\\(.*\\)\\.nupkg$/\\1/p')
-    echo "\(versionOutput)=$pkgVersion" >> $GITHUB_OUTPUT
-    """
 }
 
 local const function buildDocs(condition: String) = new Listing<gha.Step> {

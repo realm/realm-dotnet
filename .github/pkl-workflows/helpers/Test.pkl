@@ -530,7 +530,7 @@ local function reportTestResultsWithCustomFile(_outputFile: String, config: Test
 
 local function getTestProps(standaloneExe: Boolean): Mapping<String, String> = new Mapping {
   ["RestoreConfigFile"] = "Tests/Test.NuGet.Config"
-  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(Common.job_Packages).outputs.\(Package.versionOutput) }}"
+  ["UseRealmNupkgsWithVersion"] = "${{ needs.\(Common.job_Packages).outputs.\(Steps.getVersionOutput) }}"
   when (standaloneExe) {
     ["RealmTestsStandaloneExe"] = "true"
   }

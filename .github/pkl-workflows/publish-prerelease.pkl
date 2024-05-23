@@ -1,0 +1,38 @@
+module prerelease
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+import "helpers/Actions.pkl"
+
+name = "Publish Prerelease"
+on {
+  workflow_dispatch{}
+}
+jobs {
+  ["main"] = new Job {
+    `runs-on` = new UbuntuLatest{}
+    name = "Publish package to S3"
+    steps {
+      Steps.checkoutWithoutMatchers(false)
+      Steps.downloadAllArtifacts()
+      Steps.readVersionFromPackage()
+      Steps.setupDotnet(null)
+      new Step {
+        name = "Install sleet"
+        run = "dotnet tool install -g sleet"
+      }
+
+      Steps.configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY", "us-east-1")
+      for (package in Common.nugetPackages) {
+        let (packageWithVersion = "\(package).${{ steps.\(Steps.getVersionStepName).outputs.\(Steps.getVersionOutput) }}")
+        new Step {
+          name = "NuGet Publish \(packageWithVersion)"
+          run = "sleet push ${{ github.workspace }}/Realm/packages/\(packageWithVersion)/\(packageWithVersion).nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
+        }
+      }
+      ...Steps.uploadToNPM("alpha")
+    }
+  }
+}
