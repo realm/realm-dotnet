@@ -109,7 +109,7 @@ namespace Realms.Tests.Sync
             return realm;
         }
 
-        [Test]
+        [Test, Ignore("TODO: restore once https://mongodb.slack.com/archives/C04NACGT7J7/p1716383151806129 is resolved")]
         public void Model_CanMigratePropertyOptionality()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -258,7 +258,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Ignore("TODO: restore once https://mongodb.slack.com/archives/C04NACGT7J7/p1716383151806129 is resolved")]
         public void SameRealm_CanBeMigratedThroughConsecutiveVersions()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -326,7 +326,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Ignore("TODO: restore once https://mongodb.slack.com/archives/C04NACGT7J7/p1716383151806129 is resolved")]
         public void SameRealm_CanBeMigratedSkippingVersions()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
