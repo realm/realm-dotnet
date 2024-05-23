@@ -4,6 +4,9 @@
 name: Publish Release
 'on':
   workflow_dispatch: {}
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
 jobs:
   main:
     name: Publish Release

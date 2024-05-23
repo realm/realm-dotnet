@@ -15,6 +15,7 @@ local const buildSuffixOutput = "build_suffix"
 function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
   name = "Package NuGet"
   `runs-on` = new gha.WindowsLatest{}
+  `if` = Common.ifNotCanceledCondition
   outputs {
     [Steps.getVersionOutput] = Steps.getVersionExpresssion
   }

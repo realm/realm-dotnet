@@ -9,6 +9,7 @@ import "Package.pkl"
 local const actionReportTestResults = "dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5"
 
 local const outputFile = "TestResults.xml"
+local const executableExpression = "${{ steps.dotnet-publish.outputs.executable-path }}"
 
 // Public test targets
 function netFramework(_syncDifferentiators: Listing<String>): gha.StepJobBase = testJob(
@@ -105,8 +106,23 @@ function weaver(): gha.StepJobBase = testJob(
     ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
-  }
-)
+  })
+
+function xunit(): gha.StepJobBase = testJob(
+  new TestConfig {
+    title = "xUnit Compatibility"
+    needsPackages = true
+  },
+  new gha.WindowsLatest{},
+  null,
+  (config) -> new Listing<gha.Step> {
+    ...prepareTests(config)
+    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", new Mapping{}).toList()
+    new gha.Step {
+      name = "Run Tests"
+      run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
+    }
+  })
 
 function sourceGeneration(): gha.StepJobBase = testJob(
   new TestConfig {
@@ -375,7 +391,7 @@ function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.
     ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "linux-x64", new Mapping { ["RealmTestsStandaloneExe"] = "true" })
     new gha.Step {
       name = "Run the tests"
-      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=\(outputFile) --labels=After\(baasTestArgs(config))' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
+      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t \(executableExpression) -a '--result=\(outputFile) --labels=After\(baasTestArgs(config))' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
     } |> enableCoreDumps(true)
     archiveCoreDump()
     ...Steps.publishCoverage("./report.lcov")
@@ -451,6 +467,52 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
     }
   }
 }
+
+function benchmark(): gha.StepJobBase = testJob(
+  new TestConfig {
+    title = "Benchmark"
+    shouldCleanWorkspace = true
+    needsPackages = true
+  },
+  "performance-tests",
+  null,
+  (config) -> new Listing<gha.Step> {
+    local find_results_step = "find-results-file"
+    local find_results_output = "benchmark-results"
+
+    ...prepareTests(config)
+    // To avoid NU5037 error
+    new gha.Step {
+      name = "Clear nuget cache"
+      run = "dotnet nuget locals all --clear"
+    }
+    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", getTestProps(true))
+    new gha.Step {
+      name = "Run the tests"
+      run = "\(executableExpression)/PerformanceTests -f \"*\" --join"
+    }
+    new gha.Step {
+      name = "Find Results file"
+      run = """
+        cd BenchmarkDotNet.Artifacts/results
+        file=$(basename BenchmarkRun*json)
+        echo "\(find_results_output)=$file" >> $GITHUB_OUTPUT
+        """
+      shell = "bash"
+      id = find_results_step
+    }
+    new gha.Step {
+      name = "Publish Benchmark Results"
+      uses = "./github/actions/benchmark-uploader"
+      with {
+        ["realm-token"] = "${{ secrets.Realm_Token }}"
+        ["file"] = "${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.\(find_results_step).outputs.\(find_results_output) }}"
+        ["dashboard-path"] = "dashboard.charts"
+        ["nuget-package"] = "${{ github.workspace }}/Realm/packages/Realm.${{ needs.\(Common.job_Packages).outputs.\(Steps.getVersionOutput) }}.nupkg"
+      }
+    }
+    Steps.uploadArtifacts("dashboard.charts", "dashboard.charts")
+  })
 
 class UnityTestConfig {
   os: "windows" | "linux"
@@ -540,7 +602,7 @@ local function getTestProps(standaloneExe: Boolean): Mapping<String, String> = n
 local function dotnetRunTests(enableCoreDumps: Boolean): Listing<gha.Step> = new Listing {
   new gha.Step {
     name = "Run the tests"
-    run = "${{ steps.dotnet-publish.outputs.executable-path }} --result=\(outputFile) --labels=After"
+    run = "\(executableExpression) --result=\(outputFile) --labels=After"
   } |> enableCoreDumps(enableCoreDumps)
   when (enableCoreDumps) {
     archiveCoreDump()

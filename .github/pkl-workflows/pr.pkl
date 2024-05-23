@@ -3,10 +3,6 @@ module pr
 amends "GithubAction/GithubAction.pkl"
 
 import "helpers/Common.pkl"
-import "helpers/Package.pkl"
-import "helpers/BaaS.pkl"
-import "helpers/Lint.pkl"
-import "helpers/Test.pkl" as TestJobs
 
 local class JobNamesDefition {
   const wrappers: String = "build-wrappers"
@@ -17,6 +13,10 @@ local JobNames = new JobNamesDefition{}
 
 local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
   "code-coverage"
+}
+
+local netCoreFrameworks: Listing<Common.NetFramework> = new {
+  "net6.0"
 }
 
 name = "PR Build"
@@ -48,41 +48,4 @@ concurrency {
   `cancel-in-progress` = true
 }
 
-jobs {
-  [JobNames.wrappers] = new ReusableWorkflowJob {
-    uses = "./.github/workflows/wrappers.yml"
-    name = "Wrappers"
-  }
-  [Common.job_Baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
-  [Common.job_Packages] = (Package.nuget("contains(github.head_ref, 'release')")){
-    needs {
-      JobNames.wrappers
-    }
-  }
-  [Common.job_Unity] = Package.unity()
-  ...TestJobs.unity(new TestJobs.UnityTestConfig {
-    os = "linux"
-  })
-  ...TestJobs.unity(new TestJobs.UnityTestConfig {
-    os = "windows"
-  })
-  ["test-net-framework"] = TestJobs.netFramework(baasDifferentiators)
-  ["test-uwp"] = TestJobs.uwp(baasDifferentiators)
-  ["test-net-core"] = TestJobs.netCore(new Listing { "net8.0" })
-  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin()
-  ["test-macos-maui"] = TestJobs.macOS_Maui(baasDifferentiators)
-  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin()
-  ["test-ios-maui"] = TestJobs.iOS_Maui(baasDifferentiators)
-  ["test-tvos"] = TestJobs.tvOS(baasDifferentiators)
-  ["test-android-xamarin"] = TestJobs.android_Xamarin()
-  ["test-android-maui"] = TestJobs.android_Maui(baasDifferentiators)
-  ["test-woven-classes"] = TestJobs.wovenClasses()
-  ["test-source-generation"] = TestJobs.sourceGeneration()
-  ["test-weaver"] = TestJobs.weaver()
-  ["test-code-coverage"] = TestJobs.codeCoverage(JobNames.wrappers, baasDifferentiators)
-  ["cleanup-baas"] = (BaaS.cleanup(baasDifferentiators)) {
-    needs = baasDifferentiators.toList().map((d) -> "test-\(d)").toListing()
-  }
-  ["verify-namespaces"] = Lint.verifyNamespaces()
-  ["lint"] = Lint.lint()
-}
+jobs = Common.defaultBuildJobs(baasDifferentiators, netCoreFrameworks)

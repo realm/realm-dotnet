@@ -168,6 +168,24 @@ const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new Lis
   }
 }
 
+const function uploadPackagesToSleet(versionExpression: String, expectShortPath: Boolean): Listing<gha.Step> = new {
+  setupDotnet(null)
+  new gha.Step {
+    name = "Install sleet"
+    run = "dotnet tool install -g sleet"
+  }
+
+  configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY", "us-east-1")
+  for (package in Common.nugetPackages) {
+    let (packageWithVersion = "\(package).\(versionExpression)")
+    let (packagePath = "\(if (expectShortPath) "" else "\(packageWithVersion)/")\(packageWithVersion).nupkg")
+      new gha.Step {
+        name = "NuGet Publish \(packageWithVersion)"
+        run = "sleet push ${{ github.workspace }}/Realm/packages/\(packagePath) --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
+      }
+  }
+}
+
 class MSBuildConfig {
   projects: Listing<String>
   target: String?

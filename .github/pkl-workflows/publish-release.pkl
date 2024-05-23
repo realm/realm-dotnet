@@ -10,6 +10,7 @@ name = "Publish Release"
 on {
   workflow_dispatch{}
 }
+env = Common.defaultEnv
 jobs {
   ["main"] = new Job {
     `runs-on` = new WindowsLatest{}

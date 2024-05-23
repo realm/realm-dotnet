@@ -58,6 +58,7 @@ jobs:
     name: Package NuGet
     needs:
     - build-wrappers
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     outputs:
       package_version: ${{ steps.get-version.outputs.package_version }}
     timeout-minutes: 30
@@ -654,7 +655,7 @@ jobs:
     strategy:
       matrix:
         framework:
-        - net8.0
+        - net6.0
         os:
         - runner: windows-latest
           runtime: win-x64
