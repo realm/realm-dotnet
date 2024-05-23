@@ -393,6 +393,9 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
       "unity"
       config.os
     }
+    needs {
+      Common.job_Packages
+    }
     `timeout-minutes` = 30
     `if` = Common.ifNotCanceledCondition
     steps {
@@ -434,10 +437,10 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
       when (config.os == "windows") {
         new gha.Step {
           name = "Run Tests"
-          run = """
-            Start-Process ${{ github.workspace }}\\TestRunner\\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\\test.log","--result=${{ github.workspace }}\\\(outputFile)"
+          run = #"""
+            Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\\#(outputFile)"
             cat ${{ github.workspace }}\test.log
-            """
+            """#
           shell = "pwsh"
         }
       }

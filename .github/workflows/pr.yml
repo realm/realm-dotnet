@@ -309,6 +309,8 @@ jobs:
         if-no-files-found: error
   build-unity-tests-linux:
     name: Build Unity linux
+    needs:
+    - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 30
     runs-on:
@@ -385,6 +387,8 @@ jobs:
         fail-on-error: true
   build-unity-tests-windows:
     name: Build Unity windows
+    needs:
+    - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 30
     runs-on:
@@ -444,7 +448,9 @@ jobs:
         name: UnityTestsRunner.windows
         path: TestRunner
     - name: Run Tests
-      run: "Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList \"-logFile\",\"${{ github.workspace }}\test.log\",\"--result=${{ github.workspace }}\TestResults.xml\"\ncat ${{ github.workspace }}\test.log"
+      run: |-
+        Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
+        cat ${{ github.workspace }}\test.log
       shell: pwsh
     - name: Publish Unit Test Results
       if: always()
