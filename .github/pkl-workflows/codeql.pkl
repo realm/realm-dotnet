@@ -53,8 +53,10 @@ jobs {
             queries:
               - uses: security-and-quality
             query-filters:
-              - exclude: cs/call-to-unmanaged-code
-              - exclude: cs/unmanaged-code
+              - exclude:
+                  id: cs/call-to-unmanaged-code
+              - exclude:
+                  id: cs/unmanaged-code
             """
         }
       }

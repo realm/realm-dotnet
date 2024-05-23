@@ -210,6 +210,10 @@ jobs:
       run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.PlatformHelpers
       run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
       run: |-
@@ -229,6 +233,20 @@ jobs:
       with:
         name: Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
         path: Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for ExtractedChangelog
@@ -314,6 +332,7 @@ jobs:
     name: Build Unity linux
     needs:
     - build-packages
+    - build-unity
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 30
     runs-on:
@@ -392,6 +411,7 @@ jobs:
     name: Build Unity windows
     needs:
     - build-packages
+    - build-unity
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 30
     runs-on:

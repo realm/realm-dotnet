@@ -5,6 +5,8 @@ import "Actions.pkl"
 const getVersionStepName = "get-version"
 const getVersionOutput = "package_version"
 
+const getVersionExpresssion = "${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}"
+
 const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {
   checkoutWithoutMatchers(submodules)
   registerProblemMatchers()
@@ -126,7 +128,7 @@ const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
   }
 }
 
-const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1" | "us-west-2"): gha.Step = new {
+const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1" | "us-west-2" | "us-east-2"): gha.Step = new {
   name = "Configure AWS Credentials"
   uses = Actions.awsConfigureCredentials
   with {
@@ -148,7 +150,7 @@ const function readVersionFromPackage(): gha.Step = new {
 }
 
 const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new Listing<gha.Step> {
-  local packageName = "io.realm.unity-${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}.tgz"
+  local packageName = "io.realm.unity-\(getVersionExpresssion).tgz"
 
   new gha.Step {
     uses = Actions.setupNode

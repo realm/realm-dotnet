@@ -42,8 +42,10 @@ jobs:
           queries:
             - uses: security-and-quality
           query-filters:
-            - exclude: cs/call-to-unmanaged-code
-            - exclude: cs/unmanaged-code
+            - exclude:
+                id: cs/call-to-unmanaged-code
+            - exclude:
+                id: cs/unmanaged-code
     - name: Setup JDK
       uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
       with:

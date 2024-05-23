@@ -395,6 +395,7 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
     }
     needs {
       Common.job_Packages
+      Common.job_Unity
     }
     `timeout-minutes` = 30
     `if` = Common.ifNotCanceledCondition

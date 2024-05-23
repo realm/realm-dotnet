@@ -16,7 +16,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
   name = "Package NuGet"
   `runs-on` = new gha.WindowsLatest{}
   outputs {
-    [Steps.getVersionOutput] = "${{ steps.\(Steps.getVersionStepName).outputs.\(Steps.getVersionOutput) }}"
+    [Steps.getVersionOutput] = Steps.getVersionExpresssion
   }
   `timeout-minutes` = 30
   steps {
@@ -26,7 +26,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
     setVersionSuffix
     ...Steps.fetchWrappers(null)
     ...Steps.msbuild(new Steps.MSBuildConfig {
-      projects = Common.nugetPackages.map((pkg) -> "Realm/\(pkg)").toListing()
+      projects = Common.packages.map((pkg) -> "Realm/\(pkg)").toListing()
       target = "Pack"
       properties {
         ["PackageOutputPath"] = "${{ github.workspace }}/Realm/packages"
@@ -34,8 +34,8 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
       }
     })
     Steps.readVersionFromPackage()
-    for (pkgName in Common.nugetPackages) {
-      let (finalPkgName = "\(pkgName).${{ steps.\(Steps.getVersionStepName).outputs.\(Steps.getVersionOutput) }}")
+    for (pkgName in Common.packages) {
+      let (finalPkgName = "\(pkgName).\(Steps.getVersionExpresssion)")
       Steps.uploadArtifacts(finalPkgName, "Realm/packages/\(finalPkgName).*nupkg")
     }
     Steps.uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
