@@ -56,6 +56,8 @@ jobs:
       fail-fast: false
   build-packages:
     name: Package NuGet
+    needs:
+    - build-wrappers
     outputs:
       package_version: ${{ steps.get-version.outputs.package_version }}
     timeout-minutes: 30

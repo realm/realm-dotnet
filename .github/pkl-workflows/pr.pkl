@@ -54,7 +54,11 @@ jobs {
     name = "Wrappers"
   }
   [Common.job_Baas] = BaaS.deploy(baasDifferentiators) // TODO: run baasaas tests for more targets
-  [Common.job_Packages] = Package.nuget("contains(github.head_ref, 'release')")
+  [Common.job_Packages] = (Package.nuget("contains(github.head_ref, 'release')")){
+    needs {
+      JobNames.wrappers
+    }
+  }
   [Common.job_Unity] = Package.unity()
   ...TestJobs.unity(new TestJobs.UnityTestConfig {
     os = "linux"
