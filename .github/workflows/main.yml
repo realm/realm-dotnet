@@ -39,7 +39,7 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Deploy Apps
       working-directory: Tools/DeployApps
       run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -1298,7 +1298,7 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Terminate Baas
       working-directory: Tools/DeployApps
       run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
