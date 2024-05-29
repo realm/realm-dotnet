@@ -760,7 +760,8 @@ namespace Realms.Tests.Sync
 
                 var realmValObj = realm.Find<RealmValueObject>(obj.Id)!;
 
-                await WaitForConditionAsync(() => {
+                await WaitForConditionAsync(() => 
+                {
                     return realmValObj.RealmValueProperty.Type == RealmValueType.Null ==
                     (obj.RealmValueProperty.Type == RealmValueType.Null);
                 });
@@ -780,8 +781,9 @@ namespace Realms.Tests.Sync
                 foreach (var key in obj.RealmValueDictionary.Keys)
                 {
                     Assert.That(realmValObj.RealmValueDictionary.ContainsKey(key));
-                    await WaitForConditionAsync(() => { return realmValObj.RealmValueDictionary[key].Type == RealmValueType.Null
-                        == (obj.RealmValueDictionary[key].Type == RealmValueType.Null);
+                    await WaitForConditionAsync(() =>
+                    {
+                        return realmValObj.RealmValueDictionary[key].Type == RealmValueType.Null == (obj.RealmValueDictionary[key].Type == RealmValueType.Null);
                     });
 
                     AssertEqual(realmValObj.RealmValueDictionary[key], obj.RealmValueDictionary[key]);
@@ -1274,9 +1276,6 @@ namespace Realms.Tests.Sync
             var client = user.GetMongoClient(ServiceName);
             var collection = client.GetCollection<T>();
             await collection.DeleteManyAsync(new object());
-
-            //var syncObjects = realm.All<T>();
-            //await syncObjects.WaitForEventAsync((sender, _) => sender.Count == 0);
 
             return collection;
         }
