@@ -4,13 +4,6 @@ amends "GithubAction/GithubAction.pkl"
 
 import "helpers/Common.pkl"
 
-local class JobNamesDefition {
-  const wrappers: String = "build-wrappers"
-  const coverage: String = "test-code-coverage"
-}
-
-local JobNames = new JobNamesDefition{}
-
 local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
   "code-coverage"
 }

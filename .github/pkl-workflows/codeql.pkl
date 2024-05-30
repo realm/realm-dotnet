@@ -44,7 +44,7 @@ jobs {
     }
     steps {
       Steps.checkoutWithoutMatchers(false)
-      new Step {
+      new {
         name = "Initialize CodeQL"
         uses = Actions.codeQLInit
         with {
@@ -68,7 +68,7 @@ jobs {
           ["UseSharedCompilation"] = "false"
         }
       })
-      new Step {
+      new {
         name = "Perform CodeQL Analysis"
         uses = Actions.codeQLAnalyze
       }

@@ -30,12 +30,12 @@ on {
   }
   workflow_dispatch {
     inputs {
-      ["publish-prerelease"] = new WorkflowInput {
+      ["publish-prerelease"] = new {
         description = "Indicates whether to publish the package to Sleet/npm"
         required = false
         type = "boolean"
       }
-      ["run-benchmark"] = new WorkflowInput {
+      ["run-benchmark"] = new {
         description = "Indicates whether to run the benchmark tests"
         required = false
         type = "boolean"

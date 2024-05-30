@@ -38,7 +38,7 @@ function cleanup(differentiators: Listing<Common.SyncDifferentiator>): gha.Matri
   steps {
     ...Steps.checkout(false)
     Steps.setupDotnet("8.0.x")
-    new gha.Step {
+    new {
       name = "Terminate Baas"
       run = "dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}"
       `working-directory` = "Tools/DeployApps"

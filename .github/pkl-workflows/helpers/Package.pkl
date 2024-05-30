@@ -12,7 +12,7 @@ local const checkDocfxCacheStep = "check-docfx-cache"
 
 local const buildSuffixOutput = "build_suffix"
 
-function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
+function nuget(shouldBuildDocsCondition: String): gha.Job = new {
   name = "Package NuGet"
   `runs-on` = new gha.WindowsLatest{}
   `if` = Common.ifNotCanceledCondition
@@ -43,7 +43,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new gha.Job {
     ...buildDocs(shouldBuildDocsCondition)
   }
 }
-function unity(): gha.Job = new gha.Job {
+function unity(): gha.Job = new {
   name = "Package Unity"
   `runs-on` = new gha.WindowsLatest{}
   `timeout-minutes` = 30
@@ -67,7 +67,7 @@ function unity(): gha.Job = new gha.Job {
   }
 }
 
-local const setVersionSuffix = new gha.Step {
+local const setVersionSuffix: gha.Step = new {
   name = "Set version suffix"
   id = setVersionSuffixStep
   // Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
@@ -89,7 +89,7 @@ local const setVersionSuffix = new gha.Step {
   shell = "pwsh"
 }
 
-local const function buildDocs(condition: String) = new Listing<gha.Step> {
+local const function buildDocs(condition: String): Listing<gha.Step> = new {
   new {
     name = "Check Docfx cache"
     id = checkDocfxCacheStep

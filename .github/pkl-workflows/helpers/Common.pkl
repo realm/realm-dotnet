@@ -21,7 +21,6 @@ const job_Baas: String = "deploy-baas"
 const job_Unity: String = "build-unity"
 
 local const job_Wrappers: String = "build-wrappers"
-local const job_Coverage: String = "test-code-coverage"
 
 const mainBranch: String = "main"
 
@@ -51,7 +50,7 @@ const packages: List<String> = nugetPackages + List("Realm.UnityUtils", "Realm.U
 
 const testTimeout: Int = 60
 
-const function defaultBuildJobs(baasDifferentiators: Listing<SyncDifferentiator>, netCoreVersions: Listing<NetFramework>): Mapping<String, gha.JobBase> = new Mapping<String, gha.JobBase> {
+const function defaultBuildJobs(baasDifferentiators: Listing<SyncDifferentiator>, netCoreVersions: Listing<NetFramework>): Mapping<String, gha.JobBase> = new {
   [job_Wrappers] = new gha.ReusableWorkflowJob {
     uses = "./.github/workflows/wrappers.yml"
     name = "Wrappers"

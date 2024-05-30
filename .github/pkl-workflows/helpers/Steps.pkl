@@ -7,7 +7,7 @@ const getVersionOutput = "package_version"
 
 const getVersionExpresssion = "${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}"
 
-const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new Listing {
+const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new {
   checkoutWithoutMatchers(submodules)
   registerProblemMatchers()
 }
@@ -52,7 +52,7 @@ const function downloadAllArtifacts(): gha.Step = new {
   }
 }
 
-const function setupXcode(version: String): gha.Step = new gha.Step {
+const function setupXcode(version: String): gha.Step = new {
   name = "Setup Xcode"
   uses = Actions.setupXcode
   with {
@@ -99,7 +99,7 @@ const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wr
   }
 })
 
-const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new Listing<gha.Step> {
+const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new {
   setupDotnet(dotnetVersion)
   new {
     name = "Setup workloads"
@@ -116,7 +116,7 @@ const function setupJDK(): gha.Step = new {
   }
 }
 
-const function setupAndroid(): Listing<gha.Step> = new Listing<gha.Step> {
+const function setupAndroid(): Listing<gha.Step> = new {
   setupJDK()
   new {
     name = "Setup Android"
@@ -149,17 +149,17 @@ const function readVersionFromPackage(): gha.Step = new {
   shell = "bash"
 }
 
-const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new Listing<gha.Step> {
+const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new {
   local packageName = "io.realm.unity-\(getVersionExpresssion).tgz"
 
-  new gha.Step {
+  new {
     uses = Actions.setupNode
     with {
       ["node-version"] = "16.x"
       ["registry-url"] = "https://registry.npmjs.org"
     }
   }
-  new gha.Step {
+  new {
     name = "NPM publish \(packageName)"
     run = "npm publish ${{ github.workspace }}/Realm/packages/\(packageName)/\(packageName) --tag \(tag)"
     env {
@@ -170,7 +170,7 @@ const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new Lis
 
 const function uploadPackagesToSleet(versionExpression: String, expectShortPath: Boolean): Listing<gha.Step> = new {
   setupDotnet(null)
-  new gha.Step {
+  new {
     name = "Install sleet"
     run = "dotnet tool install -g sleet"
   }
@@ -179,7 +179,7 @@ const function uploadPackagesToSleet(versionExpression: String, expectShortPath:
   for (package in Common.nugetPackages) {
     let (packageWithVersion = "\(package).\(versionExpression)")
     let (packagePath = "\(if (expectShortPath) "" else "\(packageWithVersion)/")\(packageWithVersion).nupkg")
-      new gha.Step {
+      new {
         name = "NuGet Publish \(packageWithVersion)"
         run = "sleet push ${{ github.workspace }}/Realm/packages/\(packagePath) --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
       }
@@ -189,30 +189,30 @@ const function uploadPackagesToSleet(versionExpression: String, expectShortPath:
 class MSBuildConfig {
   projects: Listing<String>
   target: String?
-  properties: Mapping<String, String> = new Mapping{}
+  properties: Mapping<String, String> = new{}
   standaloneExe: Boolean = false
 
   function getTargetForInvocation(): String = if (target != null) " -t:\(target)" else ""
   function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
 }
 
-const function msbuild(config: MSBuildConfig): Listing<gha.Step> = new Listing<gha.Step> {
+const function msbuild(config: MSBuildConfig): Listing<gha.Step> = new {
   addMSBuildToPath()
 
   for (project in config.projects) {
-    new gha.Step {
+    new {
       name = "Build \(project)"
       run = "msbuild \(project)\(config.getTargetForInvocation()) -restore \(config.getPropertiesForInvocation())"
     }
   }
 }
 
-const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new Listing {
-  new gha.Step {
+const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new {
+  new {
     name = "Publish \(project)"
     run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties)) --no-self-contained"
   }
-  new gha.Step {
+  new {
     name = "Output executable path"
     id = "dotnet-publish"
     run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)/\(project.split("/").last)' >> $GITHUB_OUTPUT"
@@ -220,7 +220,7 @@ const function dotnetPublish(project: String, framework: Common.NetFramework, ru
   }
 }
 
-const function dotnetBuild(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): gha.Step = new gha.Step {
+const function dotnetBuild(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): gha.Step = new {
   name = "Build \(project)"
   run = "dotnet build \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties))"
 }
@@ -231,9 +231,9 @@ const function runSimulator(config: SimulatorConfig): gha.Step = new {
   with = config.toMap().toMapping()
 }
 
-const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new Listing<gha.Step> {
+const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new {
   configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2")
-  new gha.Step {
+  new {
     name = "Run the tests"
     uses = "./.github/actions/run-android-device-farm-test"
     id = "run_tests"
@@ -246,8 +246,8 @@ const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new 
   }
 }
 
-const function publishCoverage(file: String): Listing<gha.Step> = new Listing<gha.Step> {
-  new gha.Step {
+const function publishCoverage(file: String): Listing<gha.Step> = new {
+  new {
     name = "Publish Coverage"
     id = "publish-coveralls"
     uses = Actions.coveralls
@@ -258,13 +258,13 @@ const function publishCoverage(file: String): Listing<gha.Step> = new Listing<gh
       ["compare-sha"] = "${{ github.event.pull_request.base.sha }}"
     }
   }
-  new gha.Step {
+  new {
     name = "Output Coveralls response"
     run = "echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}"
   }
 }
 
-const function cleanupWorkspace(): gha.Step = new gha.Step {
+const function cleanupWorkspace(): gha.Step = new {
   name = "Cleanup Workspace"
   run = "git clean -fdx"
 }

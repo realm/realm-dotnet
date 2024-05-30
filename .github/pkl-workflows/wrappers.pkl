@@ -6,10 +6,7 @@ import "helpers/Common.pkl"
 import "helpers/Steps.pkl"
 import "helpers/Actions.pkl"
 
-local class JobNamesDefition {
-  const checkCache: String = "check-cache"
-}
-local JobNames = new JobNamesDefition{}
+local job_CheckCache = "check-cache"
 
 local WrappersBuildTimeout = 90
 local WrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -21,7 +18,7 @@ on {
 env = Common.defaultEnv
 
 jobs {
-  [JobNames.checkCache] = new MatrixJob {
+  [job_CheckCache] = new MatrixJob {
     strategy {
       matrix {
         ["os"] {
@@ -79,7 +76,7 @@ jobs {
       intermediateSteps {
         Steps.setupXcode("14")
       }
-      ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(JobNames.checkCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
+      ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(job_CheckCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
     })
   ["linux"] = new MatrixJob {
     `runs-on` = new UbuntuLatest {}
@@ -94,7 +91,7 @@ jobs {
       ifCondition = "\(Common.linuxArchs.map((arch) -> "needs.check-cache.outputs.wrappers-linux-\(arch) != 'true'").join(" || "))"
       platform = "linux-${{ matrix.arch }}"
       intermediateSteps {
-        new Step {
+        new {
           name = "Install Ninja"
           run = "sudo apt install ninja-build"
           `if` = WrappersCacheCondition
@@ -149,7 +146,7 @@ jobs {
     })
 }
 
-local function withCondition(platform: String, _conditionToAppend: String?) = new Mixin<Step> {
+local function withCondition(platform: String, _conditionToAppend: String?): Mixin<Step> = new {
   `if` = "matrix.os == \(if (platform.contains("windows")) "'windows'" else "'ubuntu'")\(if (_conditionToAppend == null) "" else " && \(_conditionToAppend)")"
 }
 
@@ -161,7 +158,7 @@ local function checkCache(platform: String): Step = new Step {
   uses = Actions.cache
 } |> cacheStep(platform, null)
 
-local function cacheStep(platform: String, idSuffix: String?) = new Mixin<Step> {
+local function cacheStep(platform: String, idSuffix: String?): Mixin<Step> = new {
   name = "Check Cache for \(platform)"
   id = "check-cache\(if (idSuffix == null) "" else "-\(idSuffix)")"
   with {
@@ -170,10 +167,10 @@ local function cacheStep(platform: String, idSuffix: String?) = new Mixin<Step> 
   }
 }
 
-local function wrappersJob(config: JobConfig) = new Mixin<StepJobBase> {
+local function wrappersJob(config: JobConfig): Mixin<StepJobBase> = new {
   `timeout-minutes` = WrappersBuildTimeout
   needs {
-    JobNames.checkCache
+    job_CheckCache
   }
   `if` = config.ifCondition
   steps {
@@ -182,7 +179,7 @@ local function wrappersJob(config: JobConfig) = new Mixin<StepJobBase> {
     ...config.intermediateSteps.toList().map((step) -> (step) {
       `if` = WrappersCacheCondition
     })
-    new Step {
+    new {
       name = "Build Wrappers"
       run = config.toString()
       `if` = WrappersCacheCondition

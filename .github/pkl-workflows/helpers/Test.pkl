@@ -32,7 +32,7 @@ function netFramework(_syncDifferentiators: Listing<String>): gha.StepJobBase = 
       }
       standaloneExe = true
     })
-    new gha.Step {
+    new {
       name = "Run the tests"
       run = "./Tests/Realm.Tests/bin/\(Common.configuration)/net461/Realm.Tests.exe --result=\(outputFile) --labels=After \(baasTestArgs(config))"
     }
@@ -65,12 +65,12 @@ function netCore(frameworks: Listing<Common.NetFramework>): gha.StepJobBase = te
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     // To avoid NU5037 error
-    new gha.Step {
+    new {
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
       `if` = "${{ matrix.os.runner == 'win81' }}"
     }
-    new gha.Step {
+    new {
       id = "get-net-version"
       name = "Extract .NET version"
       run = """
@@ -118,7 +118,7 @@ function xunit(): gha.StepJobBase = testJob(
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...Steps.dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", new Mapping{}).toList()
-    new gha.Step {
+    new {
       name = "Run Tests"
       run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
     }
@@ -380,7 +380,7 @@ function codeCoverage(wrappersJob: String, _syncDifferentiators: Listing<Common.
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    new gha.Step {
+    new {
       name = "Setup Coverlet & Report Generator"
       run = """
         dotnet tool install coverlet.console --tool-path tools
@@ -420,7 +420,7 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
       Steps.cleanupWorkspace()
       Steps.downloadArtifacts(Package.unityPkgName, "Realm/Realm.Unity")
       Steps.downloadArtifacts("UnityTests", "Tests/Tests.Unity")
-      new gha.Step {
+      new {
         name = "Build Unity Tests"
         run = "unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone\(config.platform()) -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/\(config.settings).json -logFile \(if (config.os == "windows") "build.log" else "-")"
       }
@@ -439,11 +439,11 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
       ...Steps.checkout(false)
       Steps.downloadArtifacts("UnityTestsRunner.\(config.os)", "TestRunner")
       when (config.os == "linux") {
-        new gha.Step {
+        new {
           name = "Install xvfb"
           run = "sudo apt install -y xvfb libglu1 libxcursor1"
         }
-        new gha.Step {
+        new {
           name = "Run Tests"
           run = """
             chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
@@ -452,7 +452,7 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
         }
       }
       when (config.os == "windows") {
-        new gha.Step {
+        new {
           name = "Run Tests"
           run = #"""
             Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\\#(outputFile)"
@@ -482,16 +482,16 @@ function benchmark(): gha.StepJobBase = testJob(
 
     ...prepareTests(config)
     // To avoid NU5037 error
-    new gha.Step {
+    new {
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
     }
     ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", getTestProps(true))
-    new gha.Step {
+    new {
       name = "Run the tests"
       run = "\(executableExpression)/PerformanceTests -f \"*\" --join"
     }
-    new gha.Step {
+    new {
       name = "Find Results file"
       run = """
         cd BenchmarkDotNet.Artifacts/results
@@ -501,7 +501,7 @@ function benchmark(): gha.StepJobBase = testJob(
       shell = "bash"
       id = find_results_step
     }
-    new gha.Step {
+    new {
       name = "Publish Benchmark Results"
       uses = "./github/actions/benchmark-uploader"
       with {
@@ -571,12 +571,12 @@ local function reportTestResults(config: TestConfig): Listing<gha.Step> = report
 local function reportTestResultsWithCustomFile(_outputFile: String, config: TestConfig): Listing<gha.Step> = new {
   local __outputFile = if (config.transformResults) "\(_outputFile)_transformed.xml" else _outputFile
   when (config.transformResults) {
-    new gha.Step {
+    new {
       name = "Transform Results"
       run = "xsltproc --output \(__outputFile) Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt \(_outputFile)"
     }
   }
-  new gha.Step {
+  new {
     name = "Publish Unit Test Results"
     uses = actionReportTestResults
     `if` = "always()"
