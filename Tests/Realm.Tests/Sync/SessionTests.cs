@@ -756,7 +756,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // This test needs to be revisited when the work on progress notification is finished.
         [Test]
         public void SessionIntegrationTest_ProgressObservable(
             [ValueSource(nameof(AppTypes))] string appType,
@@ -800,15 +799,11 @@ namespace Realms.Tests.Sync
 
                 var lastReportedProgress = 0.0d;
 
-                var progressList = new List<SyncProgress>();
-
                 using var token = observable.Subscribe(p =>
                 {
                     try
                     {
                         callbacksInvoked++;
-
-                        progressList.Add(p);
 
                         if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
                         {
