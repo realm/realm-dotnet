@@ -42,7 +42,7 @@ namespace Realms.Sync
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionProgressCallback(double progressEstimate);
+            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, double progressEstimate);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
