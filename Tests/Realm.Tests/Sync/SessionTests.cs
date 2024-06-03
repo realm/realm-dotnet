@@ -763,14 +763,38 @@ namespace Realms.Tests.Sync
         {
             const int objectSize = 1_000_000;
             const int objectsToRecord = 2;
+            var partitionString = Guid.NewGuid().ToString();
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                Realm realm;
+                var uploadRealm = await GetTestRealm(appType, partitionString);
+                var uploadSession = GetSession(uploadRealm);
+                var uploadObservable = uploadSession.GetProgressObservable(ProgressDirection.Upload, mode);
+
+                for (var i = 0; i < objectsToRecord; i++)
+                {
+                    uploadRealm.Write(() =>
+                    {
+                        uploadRealm.Add(new HugeSyncObject(objectSize));
+                    });
+                }
+
+                await TestObservable(uploadObservable);
+
+                var downloadRealm = await GetTestRealm(appType, partitionString);
+                var downloadSession = GetSession(downloadRealm);
+                var downloadObservable = downloadSession.GetProgressObservable(ProgressDirection.Download, mode);
+
+                await TestObservable(downloadObservable);
+            }, timeout: 120_000);
+            return;
+
+            async Task<Realm> GetTestRealm(string type, string partition)
+            {
                 if (appType == AppConfigType.Default)
                 {
-                    var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                    realm = GetRealm(config);
+                    var config = await GetIntegrationConfigAsync(partition);
+                    return GetRealm(config);
                 }
                 else
                 {
@@ -779,25 +803,15 @@ namespace Realms.Tests.Sync
                     {
                         r.Subscriptions.Add(r.All<HugeSyncObject>());
                     };
-                    realm = await GetRealmAsync(config);
+                    return GetRealm(config);
                 }
+            }
 
+            async Task TestObservable(IObservable<SyncProgress> observable)
+            {
                 var completionTcs = new TaskCompletionSource();
-                var callbacksInvoked = 0;
-
-                var session = GetSession(realm);
-
-                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
-
-                for (var i = 0; i < objectsToRecord; i++)
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new HugeSyncObject(objectSize));
-                    });
-                }
-
                 var lastReportedProgress = 0.0d;
+                var callbacksInvoked = 0;
 
                 using var token = observable.Subscribe(p =>
                 {
@@ -805,7 +819,7 @@ namespace Realms.Tests.Sync
                     {
                         callbacksInvoked++;
 
-                        if (p.ProgressEstimate < 0.0 || p.ProgressEstimate > 1.0)
+                        if (p.ProgressEstimate is < 0.0 or > 1.0)
                         {
                             throw new Exception($"Expected progress estimate to be between 0.0 and 1.0, but was {p.ProgressEstimate}");
                         }
@@ -823,9 +837,8 @@ namespace Realms.Tests.Sync
                             }
 
                             completionTcs.TrySetResult();
+                            lastReportedProgress = p.ProgressEstimate;
                         }
-
-                        lastReportedProgress = p.ProgressEstimate;
                     }
                     catch (Exception e)
                     {
@@ -833,15 +846,9 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                realm.Write(() =>
-                {
-                    realm.Add(new HugeSyncObject(objectSize));
-                });
-
                 await completionTcs.Task;
-
                 Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(1));
-            }, timeout: 120_000);
+            }
         }
 
         [Test]
