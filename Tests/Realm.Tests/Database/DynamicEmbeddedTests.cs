@@ -16,10 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
 #if TEST_WEAVER
 using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
@@ -28,6 +24,10 @@ using TestRealmObject = Realms.RealmObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 
 namespace Realms.Tests.Database
 {
@@ -718,7 +718,7 @@ namespace Realms.Tests.Database
                         realm.DynamicApi.AddEmbeddedObjectToDictionary(dict, "foo");
                         realm.DynamicApi.AddEmbeddedObjectToDictionary(dict, "foo");
                     });
-                }, $"An item with the key 'foo' has already been added.");
+                }, "An item with the key 'foo' has already been added.");
 
 #if !UNITY
                 Assert.Throws<ArgumentException>(() =>
@@ -963,7 +963,7 @@ namespace Realms.Tests.Database
 #if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
-                dynamic dynamicSecond = realm.Write(() =>
+                realm.Write(() =>
                 {
                     dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), dynamicId);
                     dynamic first = realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "first");
@@ -971,8 +971,6 @@ namespace Realms.Tests.Database
 
                     first.Summary = "first";
                     second.Summary = "second";
-
-                    return second;
                 });
 
                 dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
@@ -1012,10 +1010,10 @@ namespace Realms.Tests.Database
                     subTask.DynamicApi.Set(nameof(DynamicSubTask.Summary), "This is level 1 subtask");
 
                     var subSubTasks = task.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubSubTasks));
-                    var subSubTask1 = realm.DynamicApi.AddEmbeddedObjectToList(subSubTasks);
+                    _ = realm.DynamicApi.AddEmbeddedObjectToList(subSubTasks);
 
                     var subTaskSubSubTasks = subTask.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicSubTask.SubSubTasks));
-                    var subSubtask2 = realm.DynamicApi.AddEmbeddedObjectToList(subTaskSubSubTasks);
+                    _ = realm.DynamicApi.AddEmbeddedObjectToList(subTaskSubSubTasks);
                 });
 
                 var addedTask = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
@@ -1045,8 +1043,8 @@ namespace Realms.Tests.Database
                     dynamic subTask = realm.DynamicApi.AddEmbeddedObjectToList(task.SubTasks);
                     subTask.Summary = "This is level 1 subtask";
 
-                    dynamic subSubTask1 = realm.DynamicApi.AddEmbeddedObjectToList(task.SubSubTasks);
-                    dynamic subSubtask2 = realm.DynamicApi.AddEmbeddedObjectToList(subTask.SubSubTasks);
+                    _ = realm.DynamicApi.AddEmbeddedObjectToList(task.SubSubTasks);
+                    _ = realm.DynamicApi.AddEmbeddedObjectToList(subTask.SubSubTasks);
                 });
 
                 dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;

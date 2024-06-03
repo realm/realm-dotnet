@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,11 +34,6 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Schema;
-#if TEST_WEAVER
-using TestRealmObject = Realms.RealmObject;
-#else
-using TestRealmObject = Realms.IRealmObject;
-#endif
 
 namespace Realms.Tests.Database
 {

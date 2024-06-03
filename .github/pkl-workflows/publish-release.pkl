@@ -1,0 +1,142 @@
+module release
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+import "helpers/Actions.pkl"
+
+name = "Publish Release"
+on {
+  workflow_dispatch{}
+}
+env = Common.defaultEnv
+jobs {
+  ["main"] = new Job {
+    `runs-on` = new WindowsLatest{}
+    name = "Publish Release"
+    environment = "Production"
+    steps {
+      Steps.checkoutWithoutMatchers(false)
+      Steps.downloadAllArtifacts()
+      Steps.readVersionFromPackage()
+      Steps.configureAWSCredentials("DOCS_S3_ACCESS_KEY", "DOCS_S3_SECRET_KEY", "us-east-2")
+      uploadDocs()
+      ...uploadToNuGet()
+      ...Steps.uploadToNPM("latest")
+      ...mergeReleasePR()
+      publishGithubReleasee()
+      ...updateChangelogForvNext()
+      postReleaseToSlack()
+    }
+  }
+}
+
+local function uploadDocs(): Step = new {
+  name = "Upload docs"
+  run = #"""
+    Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
+    $versions = "${{ steps.\#(Steps.getVersionStepName).outputs.\#(Steps.getVersionOutput) }}", "latest"
+    Foreach ($ver in $versions)
+    {
+      aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
+    }
+    """#
+}
+
+local function uploadToNuGet(): Listing<Step> = new {
+  for (package in Common.nugetPackages) {
+    let (packageWithVersion = "\(package).\(Steps.getVersionExpresssion)")
+      new Step {
+        name = "NuGet Publish \(packageWithVersion)"
+        run = "dotnet nuget push ${{ github.workspace }}/Realm/packages/\(packageWithVersion)/\(packageWithVersion).nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
+      }
+  }
+}
+
+local function mergeReleasePR(): Listing<Step> = new {
+  local find_pr_step = "find-pull-request"
+  new Step {
+    name = "Find Release PR"
+    uses = Actions.findPR
+    id = find_pr_step
+    with {
+      ["branch"] = "${{ github.ref }}"
+    }
+  }
+  mergePR("${{ steps.\(find_pr_step).outputs.number }}")
+}
+
+local function mergePR(numberExpression: String): Step = new {
+  name = "Merge Pull Request"
+  uses = Actions.mergePR
+  with {
+    ["github-token"] = "${{ secrets.GITHUB_TOKEN }}"
+    ["number"] = numberExpression
+    ["method"] = "squash"
+  }
+}
+
+local function publishGithubReleasee(): Step = new {
+  name = "Publish Github Release"
+  uses = Actions.publishGithubRelease
+  with {
+    ["artifacts"] = "Realm/packages/io.realm.unity-\(Steps.getVersionExpresssion).tgz/io.realm.unity-\(Steps.getVersionExpresssion).tgz"
+    ["bodyFile"] = "Realm/packages/ExtractedChangelog/ExtractedChangelog.md"
+    ["name"] = Steps.getVersionExpresssion
+    ["commit"] = Common.mainBranch
+    ["tag"] = Steps.getVersionExpresssion
+    ["token"] = "${{ secrets.GITHUB_TOKEN }}"
+    ["draft"] = false
+  }
+}
+
+local function updateChangelogForvNext(): Listing<Step> = new {
+  local create_pr_step = "vnext-pr"
+  new {
+    name = "Update Changelog"
+    run = """
+      echo "## vNext (TBD)
+
+      ### Enhancements
+      * None
+
+      ### Fixed
+      * None
+
+      ### Compatibility
+      * Realm Studio: 15.0.0 or later.
+
+      ### Internal
+      * Using Core x.y.z.
+      " | cat - CHANGELOG.md >> temp
+      mv temp CHANGELOG.md
+      """
+    shell = "bash"
+  }
+  new {
+    name = "Create vNext PR"
+    id = create_pr_step
+    uses = Actions.createPR
+    with {
+      ["branch"] = "prepare-vnext"
+      ["title"] = "Prepare for vNext"
+      ["body"] = "Update Changelog for vNext"
+      ["delete-branch"] = true
+      ["base"] = Common.mainBranch
+      ["commit-message"] = "Prepare for vNext"
+    }
+  }
+  mergePR("${{ steps.\(create_pr_step).outputs.pull-request-number }}")
+}
+
+local function postReleaseToSlack(): Step = new {
+  name = "Post to #realm-releases"
+  uses = Actions.releaseToSlack
+  with {
+    ["changelog"] = "Realm/packages/ExtractedChangelog/ExtractedChangelog.md"
+    ["sdk"] = ".NET"
+    ["webhook-url"] = "${{ secrets.SLACK_RELEASE_WEBHOOK }}"
+    ["version"] = Steps.getVersionExpresssion
+  }
+}

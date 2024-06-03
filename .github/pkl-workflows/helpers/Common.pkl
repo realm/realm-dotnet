@@ -1,0 +1,90 @@
+module common
+
+import "../GithubAction/GithubAction.pkl" as gha
+import "BaaS.pkl"
+import "Lint.pkl"
+import "Package.pkl"
+import "Test.pkl" as TestJobs
+
+const configuration: String = "Release"
+
+const linuxArchs: List<String> = List("x86_64", "armhf", "aarch64")
+const applePlatforms: List<String> = List("iOS", "tvOS")
+const androidABIs: List<String> = List("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+const windowsArchs: List<String> = List("Win32", "x64", "ARM64")
+const uwpArchs: List<String> = List("Win32", "x64", "ARM", "ARM64")
+
+const appleTargets: List<String> = List("Device", "Simulator")
+
+const job_Packages: String = "build-packages"
+const job_Baas: String = "deploy-baas"
+const job_Unity: String = "build-unity"
+
+local const job_Wrappers: String = "build-wrappers"
+
+const mainBranch: String = "main"
+
+typealias NetFramework = "net6.0" | "net8.0" | String(startsWith("${{ matrix")) | String(startsWith("net8"))
+typealias NetRuntime = "win-x64" | "linux-x64" | "osx-x64" | "osx-arm64" | String(startsWith("${{ matrix"))
+typealias SyncDifferentiator = "ios-maui" | "android-maui" | "tvos" | "macos-maui" | "code-coverage" | "uwp" | "net-framework" | String(startsWith("${{ matrix"))
+
+const wrapperBinaryNames: List<String> =
+  List("macos", "catalyst")
+  + linuxArchs.map((arch) -> "linux-\(arch)")
+  + androidABIs.map((abi) -> "android-\(abi)")
+  + windowsArchs.map((arch) -> "windows-\(arch)")
+  + uwpArchs.map((arch) -> "windows-uwp-\(arch)")
+  + applePlatformTargets((platform, target) -> "\(platform)-\(target)")
+
+const defaultEnv: Mapping<String, String | Boolean> = new {
+  ["REALM_DISABLE_ANALYTICS"] = true
+  ["DOTNET_NOLOGO"] = true
+}
+
+const function applePlatformTargets(_transform: (String, String) -> String): List<String> = applePlatforms.map((platform) -> appleTargets.map((target) -> _transform.apply(platform, target))).flatten()
+
+const ifNotCanceledCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
+const nugetPackages: List<String> = List("Realm", "Realm.PlatformHelpers")
+const packages: List<String> = nugetPackages + List("Realm.UnityUtils", "Realm.UnityWeaver")
+
+const testTimeout: Int = 60
+
+const function defaultBuildJobs(baasDifferentiators: Listing<SyncDifferentiator>, netCoreVersions: Listing<NetFramework>): Mapping<String, gha.JobBase> = new {
+  [job_Wrappers] = new gha.ReusableWorkflowJob {
+    uses = "./.github/workflows/wrappers.yml"
+    name = "Wrappers"
+  }
+  [job_Baas] = BaaS.deploy(baasDifferentiators)
+  [job_Packages] = (Package.nuget("contains(github.head_ref, 'release')")){
+    needs {
+      job_Wrappers
+    }
+  }
+  [job_Unity] = Package.unity()
+  ...TestJobs.unity(new TestJobs.UnityTestConfig {
+    os = "linux"
+  })
+  ...TestJobs.unity(new TestJobs.UnityTestConfig {
+    os = "windows"
+  })
+  ["test-net-framework"] = TestJobs.netFramework(baasDifferentiators)
+  ["test-uwp"] = TestJobs.uwp(baasDifferentiators)
+  ["test-net-core"] = TestJobs.netCore(netCoreVersions)
+  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin()
+  ["test-macos-maui"] = TestJobs.macOS_Maui(baasDifferentiators)
+  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin()
+  ["test-ios-maui"] = TestJobs.iOS_Maui(baasDifferentiators)
+  ["test-tvos"] = TestJobs.tvOS(baasDifferentiators)
+  ["test-android-xamarin"] = TestJobs.android_Xamarin()
+  ["test-android-maui"] = TestJobs.android_Maui(baasDifferentiators)
+  ["test-woven-classes"] = TestJobs.wovenClasses()
+  ["test-source-generation"] = TestJobs.sourceGeneration()
+  ["test-weaver"] = TestJobs.weaver()
+  ["test-code-coverage"] = TestJobs.codeCoverage(job_Wrappers, baasDifferentiators)
+  ["cleanup-baas"] = (BaaS.cleanup(baasDifferentiators)) {
+    needs = baasDifferentiators.toList().map((d) -> "test-\(d)").toListing()
+  }
+  ["verify-namespaces"] = Lint.verifyNamespaces()
+  ["lint"] = Lint.lint()
+}

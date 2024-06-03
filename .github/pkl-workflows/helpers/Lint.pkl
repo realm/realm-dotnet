@@ -1,0 +1,69 @@
+module lint
+
+import "../GithubAction/GithubAction.pkl" as gha
+import "Steps.pkl"
+import "Common.pkl"
+
+const actionVerifyTODO = "nirinchev/verify-todo@ffa352ac028b4cdc8bc626471d33aa341b3ab7c9"
+
+function lint(): gha.Job = new {
+  name = "Verify TODOs"
+  `runs-on` = new gha.UbuntuLatest{}
+  steps {
+    Steps.checkoutWithoutMatchers(false)
+    new gha.Step {
+      uses = actionVerifyTODO
+      with {
+        ["token"] = "${{ secrets.GITHUB_TOKEN }}"
+        ["include"] = "**/*.+(cs|cpp|hpp)"
+        ["exclude"] = "wrappers/realm-core/**"
+        ["pattern"] = "\\\\WR[A-Z]+-[0-9]+"
+      }
+    }
+  }
+}
+
+function verifyNamespaces(): gha.Job = new {
+  `runs-on` = new gha.UbuntuLatest{}
+  name = "Verify Namespaces"
+  needs {
+    Common.job_Packages
+  }
+  steps {
+    Steps.checkoutWithoutMatchers(false)
+    ...Steps.fetchPackages(null)
+    new {
+      run = "dotnet tool install ilspycmd -g --version 8.0.0.7345"
+    }
+    new {
+      name = "Verify Namespaces"
+      run = """
+        $isFailure = $false
+        Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
+          $targetPath = Join-Path ./Realm/packages $_.BaseName
+          Expand-Archive $_.FullName -DestinationPath $targetPath
+
+          Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
+            if (-not ($_.FullName -match "runtimes")) {
+              $ilspyOutput = ilspycmd $_.FullName
+
+              $parentDll = $_.FullName
+
+              $ilspyOutput | ForEach-Object {
+                if ($_ -match "namespace.*Realm(\\.|$)") {
+                  Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                  Set-Variable "isFailure" -Value $true
+                }
+              }
+            }
+          }
+        }
+
+        if ($isFailure) {
+          exit 1
+        }
+        """
+      shell = "pwsh"
+    }
+  }
+}

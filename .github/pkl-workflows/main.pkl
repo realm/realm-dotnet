@@ -1,0 +1,67 @@
+module main
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+import "helpers/Test.pkl" as TestJobs
+
+local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
+  "code-coverage"
+  "net-framework"
+  "uwp"
+  "macos-maui"
+  "android-maui"
+  "ios-maui"
+  "macos-maui"
+}
+
+local netCoreFrameworks: Listing<Common.NetFramework> = new {
+  "net6.0"
+  "net8.0"
+}
+
+name = "Main Build"
+on {
+  push {
+    branches {
+      Common.mainBranch
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      ["publish-prerelease"] = new {
+        description = "Indicates whether to publish the package to Sleet/npm"
+        required = false
+        type = "boolean"
+      }
+      ["run-benchmark"] = new {
+        description = "Indicates whether to run the benchmark tests"
+        required = false
+        type = "boolean"
+      }
+    }
+  }
+}
+
+env = Common.defaultEnv
+
+jobs = (Common.defaultBuildJobs(baasDifferentiators, netCoreFrameworks)) {
+  ["publish-packages-to-sleet"] = new Job {
+    `runs-on` = new UbuntuLatest{}
+    name = "Publish package to S3"
+    needs {
+      Common.job_Packages
+    }
+    `if` = "${{ \(Common.ifNotCanceledCondition) && (github.event_name == 'push' || github.event.inputs.publish-prerelease) }}"
+    steps {
+      Steps.checkoutWithoutMatchers(false)
+      ...Steps.fetchPackages(Common.nugetPackages)
+      ...Steps.uploadPackagesToSleet("${{ needs.\(Common.job_Packages).outputs.\(Steps.getVersionOutput) }}", true)
+    }
+  }
+  ["test-xunit"] = TestJobs.xunit()
+  ["benchmark-linux"] = (TestJobs.benchmark()) {
+    `if` = "${{ \(Common.ifNotCanceledCondition) && (github.event_name == 'push' || github.event.inputs.run-benchmark) }}"
+  }
+}

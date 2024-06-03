@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +28,9 @@ using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
-#if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-#else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-#endif
 
 namespace Realms.Tests.Sync
 {
