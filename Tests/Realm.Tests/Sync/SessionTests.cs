@@ -837,8 +837,9 @@ namespace Realms.Tests.Sync
                             }
 
                             completionTcs.TrySetResult();
-                            lastReportedProgress = p.ProgressEstimate;
                         }
+
+                        lastReportedProgress = p.ProgressEstimate;
                     }
                     catch (Exception e)
                     {
