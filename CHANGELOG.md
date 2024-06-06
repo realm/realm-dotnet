@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Passing in a deleted object as a substitution argument to `.Filter()` would throw a confusing error with a message starting with `invalid RQL for table`. It now throws a more descriptive error instead. (Issue [#3619](https://github.com/realm/realm-dotnet/issues/3619))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

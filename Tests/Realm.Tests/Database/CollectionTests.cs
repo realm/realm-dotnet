@@ -1120,6 +1120,35 @@ namespace Realms.Tests.Database
             Assert.That(query.ToArray().All(i => i.Int >= 5));
         }
 
+        [Test]
+        public void Results_Filter_WhenArgumentIsDeletedObject_Throws()
+        {
+            var targetObj = _realm.Write(() =>
+            {
+                var intPropertyObject = _realm.Add(new IntPropertyObject());
+
+                for (var i = 0; i < 10; i++)
+                {
+                    _realm.Add(new ObjectWithObjectProperties
+                    {
+                        StandaloneObject = i % 2 == 0 ? intPropertyObject : null
+                    });
+                }
+
+                return intPropertyObject;
+            });
+
+            var query = _realm.All<ObjectWithObjectProperties>().Filter($"{nameof(ObjectWithObjectProperties.StandaloneObject)} = $0", targetObj);
+            Assert.That(query.Count(), Is.EqualTo(5));
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(targetObj);
+            });
+
+            Assert.Throws<ArgumentException>(() => _realm.All<ObjectWithObjectProperties>().Filter($"{nameof(ObjectWithObjectProperties.StandaloneObject)} = $0", targetObj));
+        }
+
         public readonly struct StringQueryNumericData
         {
             public readonly string PropertyName;
