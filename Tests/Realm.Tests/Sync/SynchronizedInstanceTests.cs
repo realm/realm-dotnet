@@ -30,7 +30,6 @@ using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
-using NUnitExplicit = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Sync
 {
@@ -75,6 +74,49 @@ namespace Realms.Tests.Sync
                     Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
                 }
             });
+        }
+
+        [Test]
+        public void ShouldCompact_IsInvokedAfterOpening([Values(true, false)] bool shouldCompact, [Values(true, false)] bool useSync)
+        {
+            RealmConfigurationBase config = useSync ? GetFakeConfig() : new RealmConfiguration(Guid.NewGuid().ToString());
+
+            using (var realm = GetRealm(config))
+            {
+                AddDummyData(realm, singleTransaction: false);
+            }
+
+            var oldSize = new FileInfo(config.DatabasePath).Length;
+            long projectedNewSize = 0;
+            var hasPrompted = false;
+            config.ShouldCompactOnLaunch = (totalBytes, bytesUsed) =>
+            {
+                Assert.That(totalBytes, Is.EqualTo(oldSize));
+                hasPrompted = true;
+                projectedNewSize = (long)bytesUsed;
+                return shouldCompact;
+            };
+
+            using (var realm = GetRealm(config))
+            {
+                Assert.That(hasPrompted, Is.True);
+                var newSize = new FileInfo(config.DatabasePath).Length;
+                if (shouldCompact)
+                {
+                    // Less than or equal because of the new online compaction mechanism - it's possible
+                    // that the Realm was already at the optimal size.
+                    Assert.That(newSize, Is.LessThanOrEqualTo(oldSize));
+
+                    // Less than 20% error in projections
+                    Assert.That((newSize - projectedNewSize) / newSize, Is.LessThan(0.2));
+                }
+                else
+                {
+                    Assert.That(newSize, Is.EqualTo(oldSize));
+                }
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+            }
         }
 
         [Test]
@@ -176,10 +218,7 @@ namespace Realms.Tests.Sync
                 Logger.Default = logger;
 
                 config = await GetIntegrationConfigAsync((string?)config.Partition);
-                config.OnProgress = (progress) =>
-                {
-                    throw new Exception("Exception in OnProgress");
-                };
+                config.OnProgress = _ => throw new Exception("Exception in OnProgress");
 
                 var realmTask = GetRealmAsync(config);
                 config.OnProgress = null;
@@ -357,13 +396,10 @@ namespace Realms.Tests.Sync
 
                 Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
 
-                var fromCopy = copiedRealm.Write(() =>
+                var fromCopy = copiedRealm.Write(() => copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
                 {
-                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "Added from copy"
-                    });
-                });
+                    StringValue = "Added from copy"
+                }));
 
                 await WaitForUploadAsync(copiedRealm);
                 await WaitForDownloadAsync(originalRealm);
@@ -372,13 +408,10 @@ namespace Realms.Tests.Sync
                 Assert.That(itemInOriginal, Is.Not.Null);
                 Assert.That(itemInOriginal!.StringValue, Is.EqualTo(fromCopy.StringValue));
 
-                var fromOriginal = originalRealm.Write(() =>
+                var fromOriginal = originalRealm.Write(() => originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
                 {
-                    return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "Added from original"
-                    });
-                });
+                    StringValue = "Added from original"
+                }));
 
                 await WaitForUploadAsync(originalRealm);
                 await WaitForDownloadAsync(copiedRealm);
@@ -441,13 +474,10 @@ namespace Realms.Tests.Sync
 
                 Assert.That(anotherUserRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(addedObjects));
 
-                var addedObject = anotherUserRealm.Write(() =>
+                var addedObject = anotherUserRealm.Write(() => anotherUserRealm.Add(new ObjectIdPrimaryKeyWithValueObject
                 {
-                    return anotherUserRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "abc"
-                    });
-                });
+                    StringValue = "abc"
+                }));
 
                 await WaitForUploadAsync(anotherUserRealm);
                 await WaitForDownloadAsync(copiedRealm);
@@ -534,7 +564,7 @@ namespace Realms.Tests.Sync
                     realmConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
                 }
 
-                using var realm = GetRealm(realmConfig);
+                var realm = GetRealm(realmConfig);
 
                 AddDummyData(realm, true);
 

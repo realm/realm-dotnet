@@ -40,6 +40,17 @@ namespace Realms
         internal delegate void InitialDataDelegate(Realm realm);
 
         /// <summary>
+        /// A callback, invoked when opening a Realm for the first time during the life
+        /// of a process to determine if it should be compacted before being returned
+        /// to the user.
+        /// </summary>
+        /// <param name="totalBytes">Total file size (data + free space).</param>
+        /// <param name="bytesUsed">Total data size.</param>
+        /// <returns><c>true</c> to indicate that an attempt to compact the file should be made.</returns>
+        /// <remarks>The compaction will be skipped if another process is accessing it.</remarks>
+        public delegate bool ShouldCompactDelegate(ulong totalBytes, ulong bytesUsed);
+
+        /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
         /// <value>A string representing a filename only, no path.</value>
@@ -68,6 +79,15 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if the Realm will be opened in dynamic mode; <c>false</c> otherwise.</value>
         public bool IsDynamic { get; set; }
+
+        /// <summary>
+        /// Gets or sets the compact on launch callback.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ShouldCompactDelegate"/> that will be invoked when opening a Realm for the first time
+        /// to determine if it should be compacted before being returned to the user.
+        /// </value>
+        public ShouldCompactDelegate? ShouldCompactOnLaunch { get; set; }
 
         internal bool EnableCache = true;
 
@@ -233,6 +253,7 @@ namespace Realms
                 invoke_initial_data_callback = PopulateInitialData != null,
                 managed_config = GCHandle.ToIntPtr(managedConfig),
                 encryption_key = MarshaledVector<byte>.AllocateFrom(EncryptionKey, arena),
+                invoke_should_compact_callback = ShouldCompactOnLaunch != null,
             };
 
             return config;
