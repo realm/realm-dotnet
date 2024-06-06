@@ -1,17 +1,16 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Allow `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
+* None
 
 ### Fixed
-* A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
-* After compacting, a file upgrade would be triggered. This could cause loss of data if `ShouldDeleteIfMigrationNeeded` is set to `true`. (Issue [#3583](https://github.com/realm/realm-dotnet/issues/3583), Core 14.9.0)
+* None
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 14.9.0.
+* Using Core x.y.z.
 
 ## 12.2.0 (2024-05-22)
 
