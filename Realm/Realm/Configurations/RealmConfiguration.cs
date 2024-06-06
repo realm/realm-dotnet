@@ -50,17 +50,6 @@ namespace Realms
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
-        /// A callback, invoked when opening a Realm for the first time during the life
-        /// of a process to determine if it should be compacted before being returned
-        /// to the user.
-        /// </summary>
-        /// <param name="totalBytes">Total file size (data + free space).</param>
-        /// <param name="bytesUsed">Total data size.</param>
-        /// <returns><c>true</c> to indicate that an attempt to compact the file should be made.</returns>
-        /// <remarks>The compaction will be skipped if another process is accessing it.</remarks>
-        public delegate bool ShouldCompactDelegate(ulong totalBytes, ulong bytesUsed);
-
-        /// <summary>
         /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/>
         /// mismatches the one in the code. Use this when debugging and developing your app but never release it with
         /// this flag set to <c>true</c>.
@@ -83,15 +72,6 @@ namespace Realms
         /// to be migrated.
         /// </value>
         public MigrationCallbackDelegate? MigrationCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets the compact on launch callback.
-        /// </summary>
-        /// <value>
-        /// The <see cref="ShouldCompactDelegate"/> that will be invoked when opening a Realm for the first time
-        /// to determine if it should be compacted before being returned to the user.
-        /// </value>
-        public ShouldCompactDelegate? ShouldCompactOnLaunch { get; set; }
 
         /// <summary>
         /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
@@ -150,7 +130,6 @@ namespace Realms
             result.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             result.read_only = IsReadOnly;
             result.invoke_migration_callback = MigrationCallback != null;
-            result.invoke_should_compact_callback = ShouldCompactOnLaunch != null;
             result.automatically_migrate_embedded = true;
 
             return result;
