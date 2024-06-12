@@ -1,16 +1,18 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Allow `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
 
 ### Fixed
+* A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
+* After compacting, a file upgrade would be triggered. This could cause loss of data if `ShouldDeleteIfMigrationNeeded` is set to `true`. (Issue [#3583](https://github.com/realm/realm-dotnet/issues/3583), Core 14.9.0)
 * Passing in a deleted object as a substitution argument to `.Filter()` would throw a confusing error with a message starting with `invalid RQL for table`. It now throws a more descriptive error instead. (Issue [#3619](https://github.com/realm/realm-dotnet/issues/3619))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 14.9.0.
 
 ## 12.2.0 (2024-05-22)
 
