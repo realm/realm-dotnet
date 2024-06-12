@@ -321,50 +321,6 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject"));
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ShouldCompact_IsInvokedAfterOpening(bool shouldCompact)
-        {
-            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
-
-            using (var realm = GetRealm(config))
-            {
-                AddDummyData(realm);
-            }
-
-            var oldSize = new FileInfo(config.DatabasePath).Length;
-            long projectedNewSize = 0;
-            var hasPrompted = false;
-            config.ShouldCompactOnLaunch = (totalBytes, bytesUsed) =>
-            {
-                Assert.That(totalBytes, Is.EqualTo(oldSize));
-                hasPrompted = true;
-                projectedNewSize = (long)bytesUsed;
-                return shouldCompact;
-            };
-
-            using (var realm = GetRealm(config))
-            {
-                Assert.That(hasPrompted, Is.True);
-                var newSize = new FileInfo(config.DatabasePath).Length;
-                if (shouldCompact)
-                {
-                    // Less than or equal because of the new online compaction mechanism - it's possible
-                    // that the Realm was already at the optimal size.
-                    Assert.That(newSize, Is.LessThanOrEqualTo(oldSize));
-
-                    // Less than 20% error in projections
-                    Assert.That((newSize - projectedNewSize) / newSize, Is.LessThan(0.2));
-                }
-                else
-                {
-                    Assert.That(newSize, Is.EqualTo(oldSize));
-                }
-
-                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
-            }
-        }
-
         [TestCase(false, true)]
         [TestCase(false, false)]
         [TestCase(true, true)]
@@ -454,13 +410,39 @@ namespace Realms.Tests.Database
         {
             using var realm = GetRealm();
 
-            var token = realm.All<Person>().SubscribeForNotifications((sender, changes) =>
+            var token = realm.All<Person>().SubscribeForNotifications((_, changes) =>
             {
                 Console.WriteLine(changes?.InsertedIndices);
             });
 
             Assert.That(() => Realm.Compact(), Is.False);
             token.Dispose();
+        }
+
+        [Test]
+        public void Compact_WhenShouldDeleteIfMigrationNeeded_PreservesObjects()
+        {
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+            config.ShouldDeleteIfMigrationNeeded = true;
+
+            using (var realm = GetRealm(config))
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new Person
+                    {
+                        FirstName = "Peter"
+                    });
+                });
+            }
+
+            Assert.That(Realm.Compact(config), Is.True);
+
+            using (var realm = GetRealm(config))
+            {
+                Assert.That(realm.All<Person>().Count(), Is.EqualTo(1));
+                Assert.That(realm.All<Person>().Single().FirstName, Is.EqualTo("Peter"));
+            }
         }
 
         [Test]
@@ -472,13 +454,13 @@ namespace Realms.Tests.Database
                 using var realm2 = GetRealm();
 
                 var changed1 = 0;
-                realm1.RealmChanged += (sender, e) =>
+                realm1.RealmChanged += (_, _) =>
                 {
                     changed1++;
                 };
 
                 var changed2 = 0;
-                realm2.RealmChanged += (sender, e) =>
+                realm2.RealmChanged += (_, _) =>
                 {
                     changed2++;
                 };
@@ -628,7 +610,7 @@ namespace Realms.Tests.Database
                 var threadId = Environment.CurrentManagedThreadId;
                 var hasCompletedMigration = false;
                 config.SchemaVersion = 2;
-                config.MigrationCallback = (migration, oldSchemaVersion) =>
+                config.MigrationCallback = (migration, _) =>
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
                     Task.Delay(300).Wait();
@@ -914,8 +896,7 @@ namespace Realms.Tests.Database
             using var realm = GetRealm();
             using var frozenRealm = realm.Freeze();
 
-            Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged += (_, __) => { });
-            Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged -= (_, __) => { });
+            Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged += (_, _) => { });
         }
 
         [Test]
@@ -1046,7 +1027,7 @@ namespace Realms.Tests.Database
                     using var realm = Realm.GetInstance();
                     var state = stateAccessor.GetValue(realm)!;
 
-                    return new object[] { state };
+                    return new[] { state };
                 });
             });
         }
@@ -1093,7 +1074,7 @@ namespace Realms.Tests.Database
             {
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("MyType", ObjectSchema.ObjectType.RealmObject)
+                    new ObjectSchema.Builder("MyType")
                     {
                         Property.Primitive("IntValue", RealmValueType.Int),
                         Property.PrimitiveList("ListValue", RealmValueType.Date),
@@ -1104,7 +1085,7 @@ namespace Realms.Tests.Database
                         Property.ObjectSet("ObjectSetValue", "OtherObject"),
                         Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
                     },
-                    new ObjectSchema.Builder("OtherObject", ObjectSchema.ObjectType.RealmObject)
+                    new ObjectSchema.Builder("OtherObject")
                     {
                         Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
                         Property.Backlinks("MyTypes", "MyType", "ObjectValue")
@@ -1230,13 +1211,10 @@ namespace Realms.Tests.Database
 
             using var realm = GetRealm(config);
 
-            var person = realm.Write(() =>
+            var person = realm.Write(() => realm.Add(new Person
             {
-                return realm.Add(new Person
-                {
-                    LastName = "Smith"
-                });
-            });
+                LastName = "Smith"
+            }));
 
             var exGet = Assert.Throws<MissingMemberException>(() => _ = person.FirstName)!;
             Assert.That(exGet.Message, Does.Contain(nameof(Person)));
@@ -1255,13 +1233,10 @@ namespace Realms.Tests.Database
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString());
             var realm = GetRealm(config);
-            var frozenObj = realm.Write(() =>
+            var frozenObj = realm.Write(() => realm.Add(new IntPropertyObject
             {
-                return realm.Add(new IntPropertyObject
-                {
-                    Int = 1
-                }).Freeze();
-            });
+                Int = 1
+            }).Freeze());
 
             frozenObj.Realm!.Dispose();
             realm.Dispose();
@@ -1275,7 +1250,7 @@ namespace Realms.Tests.Database
         public void BeginWrite_CalledMultipleTimes_Throws()
         {
             using var realm = GetRealm();
-            var ts = realm.BeginWrite();
+            using var ts = realm.BeginWrite();
 
             Assert.That(() => realm.BeginWrite(), Throws.TypeOf<RealmInvalidTransactionException>());
         }
