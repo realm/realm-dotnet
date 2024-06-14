@@ -1099,10 +1099,8 @@ namespace Baas
 
             private async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
             {
-                while (maxRetries > 0)
+                for (var i = 0; i < maxRetries; i++)
                 {
-                    maxRetries -= 1;
-
                     try
                     {
                         var containers = await GetContainers();
@@ -1125,7 +1123,7 @@ namespace Baas
                     await Task.Delay(2000);
                 }
 
-                throw new Exception($"Container with id={containerId} was not found or ready after 100 retries");
+                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retries");
             }
 
             private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)
