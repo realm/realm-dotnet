@@ -473,17 +473,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void GetProperty_WhenPropertyIsMissing_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(AllTypesObject)));
-
-                Assert.Throws<MissingMemberException>(() => allTypesObject.DynamicApi.Get<string>("idontexist"));
-            });
-        }
-
-        [Test]
         public void GetProperty_WhenPropertyIsBacklinks_Throws()
         {
             RunTestInAllModes((realm, _) =>
@@ -559,20 +548,6 @@ namespace Realms.Tests.Database
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), 123);
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), 9999L);
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), (short)5);
-                });
-            });
-        }
-
-        [Test]
-        public void SetProperty_WhenPropertyIsMissing_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                realm.Write(() =>
-                {
-                    var ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-
-                    Assert.Throws<MissingMemberException>(() => ato.DynamicApi.Set("idontexist", "foo"));
                 });
             });
         }
@@ -999,6 +974,29 @@ namespace Realms.Tests.Database
                     Assert.That(ex.Message, Does.Contain("type mismatch"));
                 });
             });
+        }
+
+        #endregion
+
+        #region Flexible schema
+
+        [Test]
+        public void FlexibleSchema_BaseTest()
+        {
+            var person = _realm.Write(() =>
+            {
+                return _realm.Add(new Person());
+            });
+
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Set("prop1", "testval");
+                person.DynamicApi.Set("prop2", 10);
+
+            });
+
+            Assert.That(person.DynamicApi.Get<string>("prop1"), Is.EqualTo("testval"));
+            Assert.That(person.DynamicApi.Get<int>("prop2"), Is.EqualTo(10));
         }
 
         #endregion
