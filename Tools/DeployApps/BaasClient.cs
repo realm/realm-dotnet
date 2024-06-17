@@ -823,6 +823,8 @@ namespace Baas
             return content;
         }
 
+        // Extract arguments and populate a type T with the extracted values. Only string readwrite properties
+        // will be considered.
         public static (T Extracted, string[] RemainingArgs) ExtractArguments<T>(string[] args)
             where T : new()
         {
@@ -831,12 +833,10 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var argsToExtract = typeof(T).GetProperties().Select(p => (ArgName: GetArgName(p.Name), PropertyInfo: p)).ToArray();
-            var invalidProps = argsToExtract.Where(p => p.PropertyInfo != typeof(string) || !p.PropertyInfo.CanRead || !p.PropertyInfo.CanWrite).ToArray();
-            if (invalidProps.Length != 0)
-            {
-                throw new ArgumentException($"Invalid properties: {string.Join(", ", invalidProps.Select(p => p.PropertyInfo.Name))}");
-            }
+            var argsToExtract = typeof(T).GetProperties()
+                .Where(p => p.PropertyType == typeof(string) && p is { CanRead: true, CanWrite: true })
+                .Select(p => (ArgName: GetArgName(p.Name), PropertyInfo: p))
+                .ToArray();
 
             var extracted = new T();
             return (extracted, args.Where(a => !argsToExtract.Any(kvp => ExtractArg(a, kvp))).ToArray());
