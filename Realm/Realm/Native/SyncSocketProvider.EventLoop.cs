@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -48,56 +47,37 @@ internal partial class SyncSocketProvider
             _cts.Dispose();
         }
 
-        private class Work : IWork
+        private class Work(IntPtr nativeCallback, CancellationToken cancellationToken)
+            : IWork
         {
-            private readonly IntPtr _nativeCallback;
-            private readonly CancellationToken _cancellationToken;
-
-            public Work(IntPtr nativeCallback, CancellationToken cancellationToken)
-            {
-                _nativeCallback = nativeCallback;
-                _cancellationToken = cancellationToken;
-            }
-
             public void Execute()
             {
                 var status = Status.OK;
-                if (_cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     status = new(ErrorCode.OperationAborted, "Timer canceled");
                 }
 
-                RunCallback(_nativeCallback, status);
+                RunCallback(nativeCallback, status);
             }
         }
     }
 
-    private class EventLoopWork : IWork
+    // Belongs to SyncSocketProvider. When Native destroys the Provider we need to stop executing
+    // enqueued work, but we need to release all the callbacks we copied on the heap.
+    private class EventLoopWork(IntPtr nativeCallback, CancellationToken cancellationToken)
+        : IWork
     {
-        private readonly IntPtr _nativeCallback;
-        private readonly Status _status;
-
-        // Belongs to SyncSocketProvider. When Native destroys the Provider we need to stop executing
-        // enqueued work, but we need to release all the callbacks we copied on the heap.
-        private readonly CancellationToken _cancellationToken;
-
-        public EventLoopWork(IntPtr nativeCallback, Status status, CancellationToken cancellationToken)
-        {
-            _nativeCallback = nativeCallback;
-            _status = status;
-            _cancellationToken = cancellationToken;
-        }
-
         public void Execute()
         {
-            if (_cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 Logger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
-                NativeMethods.delete_callback(_nativeCallback);
+                NativeMethods.delete_callback(nativeCallback);
                 return;
             }
 
-            RunCallback(_nativeCallback, _status);
+            RunCallback(nativeCallback, Status.OK);
         }
     }
 
@@ -112,7 +92,7 @@ internal partial class SyncSocketProvider
     private async Task PostWorkAsync(IntPtr nativeCallback)
     {
         Logger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
-        await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, Status.OK, _cts.Token));
+        await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, _cts.Token));
     }
 
     private async partial Task WorkThread()

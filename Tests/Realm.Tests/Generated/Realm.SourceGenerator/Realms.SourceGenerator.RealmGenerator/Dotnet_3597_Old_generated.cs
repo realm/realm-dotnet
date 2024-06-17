@@ -36,6 +36,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="Dotnet_3597_Old"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dotnet_3597", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntProp"),
