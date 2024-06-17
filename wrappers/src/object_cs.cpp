@@ -128,6 +128,17 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void object_get_additional_property(const Object& object, realm_string_t proeprty_name, realm_value_t* value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            auto val = object.get_obj().get_any(capi_to_std(proeprty_name));
+
+            *value = to_capi(std::move(val));
+        });
+    }
+
     REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
@@ -171,6 +182,17 @@ extern "C" {
             else {
                 object.get_obj().set_any(prop.column_key, from_capi(value));
             }
+        });
+    }
+
+    REALM_EXPORT void object_set_additional_property(Object& object, realm_string_t property_name, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+
+            //Set_additional_prop is private at the moment
+
+            object.get_obj().set_any(capi_to_std(property_name), from_capi(value));
         });
     }
 
