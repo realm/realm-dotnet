@@ -282,7 +282,7 @@ dotnet_diagnostic.SA1637.severity = none
 
 dotnet_diagnostic.SX1101.severity = warning
 
-
+resharper_inconsistent_naming_highlighting = none
 
 
 ## Visual Studio generated .editorconfig file with C++ settings.
