@@ -114,16 +114,6 @@ namespace Realms
             ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
         }
 
-        public RealmValue GetValueFlexi(string propertyName)
-        {
-            return ObjectHandle.GetValue(propertyName, Metadata, Realm);
-        }
-
-        public void SetValueFlexi(string propertyName, RealmValue val)
-        {
-            ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
-        }
-
         /// <inheritdoc/>
         public void SetValueUnique(string propertyName, RealmValue val)
         {
