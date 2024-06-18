@@ -983,20 +983,19 @@ namespace Realms.Tests.Database
         [Test]
         public void FlexibleSchema_BaseTest()
         {
-            var person = _realm.Write(() =>
+            var testObj = _realm.Write(() =>
             {
-                return _realm.Add(new Person());
+                return _realm.Add(new IntPropertyObject());
             });
 
             _realm.Write(() =>
             {
-                person.DynamicApi.Set("prop1", "testval");
-                person.DynamicApi.Set("prop2", 10);
-
+                testObj.DynamicApi.Set("prop1", "testval");
+                testObj.DynamicApi.Set("prop2", 10);
             });
 
-            Assert.That(person.DynamicApi.Get<string>("prop1"), Is.EqualTo("testval"));
-            Assert.That(person.DynamicApi.Get<int>("prop2"), Is.EqualTo(10));
+            Assert.That(testObj.DynamicApi.Get<string>("prop1"), Is.EqualTo("testval"));
+            Assert.That(testObj.DynamicApi.Get<int>("prop2"), Is.EqualTo(10));
         }
 
         #endregion
