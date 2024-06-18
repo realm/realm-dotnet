@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
@@ -983,20 +984,40 @@ namespace Realms.Tests.Database
         [Test]
         public void FlexibleSchema_BaseTest()
         {
-            var testObj = _realm.Write(() =>
+            var person = _realm.Write(() =>
             {
-                return _realm.Add(new IntPropertyObject());
+                return _realm.Add(new Person());
             });
+
+            var testObj = new Person { FirstName = "Luigi" };
+            var testList = new List<RealmValue> { 1, "test", true };
 
             _realm.Write(() =>
             {
-                testObj.DynamicApi.Set("prop1", "testval");
-                testObj.DynamicApi.Set("prop2", 10);
+                person.DynamicApi.Set("propString", "testval");
+                person.DynamicApi.Set("propInt", 10);
+                person.DynamicApi.Set("propObj", testObj);
+                person.DynamicApi.Set("propList", testList);
+
             });
 
-            Assert.That(testObj.DynamicApi.Get<string>("prop1"), Is.EqualTo("testval"));
-            Assert.That(testObj.DynamicApi.Get<int>("prop2"), Is.EqualTo(10));
+            Assert.That(person.DynamicApi.Get<string>("propString"), Is.EqualTo("testval"));
+            Assert.That(person.DynamicApi.Get<int>("propInt"), Is.EqualTo(10));
+            Assert.That(person.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
+            Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
         }
+
+        /** To test
+         * - add and retrieve objects
+         * - add and retrieve collections
+         * - set on same property changes
+         * - set null value
+         * - retrieve property that does not exist raises exception
+         * - retrieve additional properties
+         * - erase a property
+         * 
+         * 
+         */
 
         #endregion
 

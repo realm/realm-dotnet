@@ -54,6 +54,12 @@ namespace Realms
         /// </remarks>
         public T Get<T>(string propertyName)
         {
+            return Get(propertyName).As<T>();
+        }
+
+        //TODO Add docs
+        public RealmValue Get(string propertyName)
+        {
             if (GetProperty(propertyName) is Property property)
             {
                 if (property.Type.IsComputed())
@@ -76,11 +82,11 @@ namespace Realms
                         $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
                 }
 
-                return _managedAccessor.GetValue(propertyName).As<T>();
+                return _managedAccessor.GetValue(propertyName);
             }
             else
             {
-                return _managedAccessor.GetValue(propertyName).As<T>();
+                return _managedAccessor.GetValue(propertyName);
             }
         }
 

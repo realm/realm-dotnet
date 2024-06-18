@@ -55,6 +55,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_collection_value(ObjectHandle handle, IntPtr propertyIndex, RealmValueType type, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_additional_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection_additional_property(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -269,17 +272,50 @@ namespace Realms
             }
             else
             {
+                //TODO Eventually merge with the previous case
+
                 //TODO Probably this can be improved
                 using Arena arena = new();
                 var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+                if (value.Type == RealmValueType.Object)
+                {
+                    switch (value.AsIRealmObject())
+                    {
+                        case IRealmObject realmObj when !realmObj.IsManaged:
+                            realm.Add(realmObj);
+                            break;
+                        case IEmbeddedObject:
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        case IAsymmetricObject:
+                            throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                    }
+                }
+                else if (value.Type.IsCollection())
+                {
+                    var collectionPtr = NativeMethods.set_collection_additional_property(this, propertyNameNative, value.Type, out var collNativeException);
+                    collNativeException.ThrowIfNecessary();
+
+                    switch (value.Type)
+                    {
+                        case RealmValueType.List:
+                            CollectionHelpers.PopulateCollection(realm, new ListHandle(Root!, collectionPtr), value);
+                            break;
+                        case RealmValueType.Dictionary:
+                            CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return;
+                }
 
                 var (primitive, handles) = value.ToNative();
                 NativeMethods.set_additional_property(this, propertyNameNative, primitive, out var nativeException);
                 handles?.Dispose();
                 nativeException.ThrowIfNecessary();
             }
-
-
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)

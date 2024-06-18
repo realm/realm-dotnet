@@ -105,7 +105,7 @@ extern "C" {
             }
 
             auto val = object.get_obj().get_any(prop.column_key);
-            if (val.is_null())
+            if (val.is_null())  //TODO I think we don't need this check
             {
                 *value = to_capi(std::move(val));
                 return;
@@ -128,14 +128,26 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_additional_property(const Object& object, realm_string_t proeprty_name, realm_value_t* value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_additional_property(const Object& object, realm_string_t property_name, realm_value_t* value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            auto val = object.get_obj().get_any(capi_to_std(proeprty_name));
+            auto val = object.get_obj().get_additional_prop(capi_to_std(property_name));
 
-            *value = to_capi(std::move(val));
+            Path path = { PathElement(capi_to_std(property_name)) };
+
+            switch (val.get_type()) {
+            case type_TypedLink:
+                *value = to_capi(val.get<ObjLink>(), object.realm());
+                break;
+            case type_List:
+                *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path)));
+                break;
+            default:
+                *value = to_capi(std::move(val));
+                break;
+            }
         });
     }
 
@@ -190,9 +202,7 @@ extern "C" {
         handle_errors(ex, [&]() {
             verify_can_set(object);
 
-            //Set_additional_prop is private at the moment
-
-            object.get_obj().set_any(capi_to_std(property_name), from_capi(value));
+            object.get_obj().set_additional_prop(capi_to_std(property_name), from_capi(value));
         });
     }
 
@@ -221,6 +231,37 @@ extern "C" {
             }
             default:
                 REALM_TERMINATE("Invalid collection type");
+            }
+        });
+    }
+
+    REALM_EXPORT void* object_set_collection_additional_property(Object& object, 
+        realm_string_t property_name, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+            verify_can_set(object);
+
+            auto prop = capi_to_std(property_name);
+
+            Path path = { PathElement(prop) };
+
+            switch (type)
+            {
+                case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                {
+                
+                    object.get_obj().set_collection(prop, CollectionType::List);
+                    //TODO We probably need to ask for methods that do not require to build a path
+                    auto innerList = new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path));
+                    innerList->remove_all();
+                    return innerList;
+                }
+                case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                {
+                    REALM_TERMINATE("Invalid collection type");
+                }
+                default:
+                    REALM_TERMINATE("Invalid collection type");
             }
         });
     }
