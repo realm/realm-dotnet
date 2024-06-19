@@ -992,29 +992,48 @@ namespace Realms.Tests.Database
             var testObj = new Person { FirstName = "Luigi" };
             var testList = new List<RealmValue> { 1, "test", true };
 
+            // Basic set/get
             _realm.Write(() =>
             {
                 person.DynamicApi.Set("propString", "testval");
                 person.DynamicApi.Set("propInt", 10);
                 person.DynamicApi.Set("propObj", testObj);
                 person.DynamicApi.Set("propList", testList);
-
+                person.DynamicApi.Set("propNull", RealmValue.Null);
             });
 
             Assert.That(person.DynamicApi.Get<string>("propString"), Is.EqualTo("testval"));
             Assert.That(person.DynamicApi.Get<int>("propInt"), Is.EqualTo(10));
             Assert.That(person.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
             Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
+            Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
+
+            // Change type
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Set("propString", 23);
+            });
+
+            Assert.That(person.DynamicApi.Get<int>("propString"), Is.EqualTo(23));
+
+            // Get unknown property
+            Assert.That(() => person.DynamicApi.Get<RealmValue>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+
+            // Unset property
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Unset("propString");
+            });
+            Assert.That(() => person.DynamicApi.Get<RealmValue>("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
+
+            // Get all additional properties keys
+            var additionalProperties = person.DynamicApi.GetAdditionalProperties();
+            Assert.That(additionalProperties, Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
         }
 
         /** To test
-         * - add and retrieve objects
-         * - add and retrieve collections
-         * - set on same property changes
-         * - set null value
-         * - retrieve property that does not exist raises exception
          * - retrieve additional properties
-         * - erase a property
+         * - erase a property (both in additional property and not...?)
          * 
          * 
          */

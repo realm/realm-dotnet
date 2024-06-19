@@ -137,6 +137,18 @@ namespace Realms
             }
         }
 
+        //TODO Add docs
+        public void Unset(string propertyName)
+        {
+            _managedAccessor.UnsetProperty(propertyName);
+        }
+
+        //TODO Add docs / fix name
+        public IEnumerable<string> GetAdditionalProperties()
+        {
+            return _managedAccessor.GetAdditionalProperties();
+        }
+
         /// <summary>
         /// Gets the value of a backlink property. This property must have been declared
         /// explicitly and annotated with <see cref="BacklinkAttribute"/>.

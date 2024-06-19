@@ -105,9 +105,9 @@ extern "C" {
             }
 
             auto val = object.get_obj().get_any(prop.column_key);
-            if (val.is_null())  //TODO I think we don't need this check
+            if (val.is_null())
             {
-                *value = to_capi(std::move(val));
+                *value = to_capi(val);
                 return;
             }
             
@@ -134,6 +134,12 @@ extern "C" {
             verify_can_get(object);
 
             auto val = object.get_obj().get_additional_prop(capi_to_std(property_name));
+
+            if (val.is_null())
+            {
+                *value = to_capi(val);
+                return;
+            }
 
             Path path = { PathElement(capi_to_std(property_name)) };
 
@@ -201,8 +207,31 @@ extern "C" {
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
-
             object.get_obj().set_additional_prop(capi_to_std(property_name), from_capi(value));
+        });
+    }
+
+    REALM_EXPORT void object_unset_property(Object& object, realm_string_t property_name, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+            object.get_obj().erase_prop(capi_to_std(property_name));
+        });
+    }
+
+    REALM_EXPORT realm_string_t* object_get_additional_properties(Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto props = object.get_obj().get_additional_properties();
+
+            size_t size = props.size();
+            realm_string_t* realm_string_array = new realm_string_t[size];
+
+            for (size_t i = 0; i < size; ++i) {
+                realm_string_array[i] = to_capi(props[i]);
+            }
+
+            return realm_string_array;
         });
     }
 

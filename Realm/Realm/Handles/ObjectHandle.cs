@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Extensions;
@@ -46,6 +49,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_unset_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unset_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_property", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_additional_property(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, out NativeException ex);
 
@@ -57,6 +63,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_additional_property", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_collection_additional_property(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_properties", CallingConvention = CallingConvention.Cdecl)]
+            public static extern StringValue[] get_additional_properties(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -273,7 +282,6 @@ namespace Realms
             else
             {
                 //TODO Eventually merge with the previous case
-
                 //TODO Probably this can be improved
                 using Arena arena = new();
                 var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
@@ -316,6 +324,25 @@ namespace Realms
                 handles?.Dispose();
                 nativeException.ThrowIfNecessary();
             }
+        }
+
+        public void UnsetProperty(string propertyName)
+        {
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            NativeMethods.unset_property(this, propertyNameNative, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public IEnumerable<string> GetAdditionalProperties()
+        {
+            var value = NativeMethods.get_additional_properties(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            //TODO We should not get empty null values here, so this is mostly to make the warning go away
+            //Need to fix this
+            return value.Select(v => v.ToDotnetString() ?? string.Empty);
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)
