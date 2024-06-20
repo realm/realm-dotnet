@@ -984,16 +984,19 @@ namespace Realms.Tests.Database
         [Test]
         public void FlexibleSchema_BaseTest()
         {
-            var person = _realm.Write(() =>
+            _configuration.FlexibleSchema = true;
+            var realm = GetRealm(_configuration);
+
+            var person = realm.Write(() =>
             {
-                return _realm.Add(new Person());
+                return realm.Add(new Person());
             });
 
             var testObj = new Person { FirstName = "Luigi" };
             var testList = new List<RealmValue> { 1, "test", true };
 
             // Basic set/get
-            _realm.Write(() =>
+            realm.Write(() =>
             {
                 person.DynamicApi.Set("propString", "testval");
                 person.DynamicApi.Set("propInt", 10);
@@ -1009,7 +1012,7 @@ namespace Realms.Tests.Database
             Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
 
             // Change type
-            _realm.Write(() =>
+            realm.Write(() =>
             {
                 person.DynamicApi.Set("propString", 23);
             });
@@ -1020,7 +1023,7 @@ namespace Realms.Tests.Database
             Assert.That(() => person.DynamicApi.Get<RealmValue>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
 
             // Unset property
-            _realm.Write(() =>
+            realm.Write(() =>
             {
                 person.DynamicApi.Unset("propString");
             });
