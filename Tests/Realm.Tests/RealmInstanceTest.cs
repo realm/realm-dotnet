@@ -31,7 +31,7 @@ namespace Realms.Tests
 
         protected Realm _realm => _lazyRealm.Value;
 
-        protected virtual RealmConfiguration CreateConfiguration(string path) => new(path);
+        protected virtual RealmConfiguration CreateConfiguration(string path) => new(path) { FlexibleSchema = true };
 
         protected T Freeze<T>(T obj)
             where T : IRealmObjectBase

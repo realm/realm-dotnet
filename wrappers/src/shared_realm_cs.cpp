@@ -305,7 +305,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
         Realm::Config config = get_shared_realm_config(configuration);
         config.in_memory = configuration.in_memory;
         config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
-        config.flexible_schema = true;
+        config.flexible_schema = configuration.flexible_schema;
 
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;

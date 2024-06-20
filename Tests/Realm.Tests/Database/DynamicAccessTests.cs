@@ -1031,13 +1031,6 @@ namespace Realms.Tests.Database
             Assert.That(additionalProperties, Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
         }
 
-        /** To test
-         * - retrieve additional properties
-         * - erase a property (both in additional property and not...?)
-         * 
-         * 
-         */
-
         #endregion
 
         [Test]
