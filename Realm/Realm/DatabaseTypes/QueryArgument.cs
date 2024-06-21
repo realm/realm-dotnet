@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using MongoDB.Bson;
-using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
@@ -318,9 +317,18 @@ namespace Realms
             if (RealmValue != null)
             {
                 var primitive = RealmValue.Value;
-                if (primitive.Type == RealmValueType.Object && !primitive.AsIRealmObject().IsManaged)
+                if (primitive.Type == RealmValueType.Object)
                 {
-                    throw new RealmException("Can't use unmanaged object as argument of Filter");
+                    var obj = primitive.AsIRealmObject();
+                    if (!obj.IsManaged)
+                    {
+                        throw new ArgumentException("Can't use unmanaged object as argument of Filter");
+                    }
+
+                    if (!obj.IsValid)
+                    {
+                        throw new ArgumentException("Can't use removed object as argument of Filter");
+                    }
                 }
 
                 var (primitiveValue, handles) = primitive.ToNative();
