@@ -16,13 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using Realms.Exceptions;
-using Realms.Extensions;
-using Realms.Schema;
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
@@ -30,11 +23,18 @@ using TestRealmObject = Realms.RealmObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using Realms.Exceptions;
+using Realms.Extensions;
+using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public partial class MigrationTests : RealmInstanceTest
+    public class MigrationTests : RealmInstanceTest
     {
         private const string FileToMigrate = "ForMigrationsToCopyAndMigrate.realm";
 
@@ -116,10 +116,7 @@ namespace Realms.Tests.Database
             var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
-                {
-                    throw dummyException;
-                }
+                MigrationCallback = (_, _) => throw dummyException
             };
 
             TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
@@ -138,7 +135,7 @@ namespace Realms.Tests.Database
                 IsDynamic = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
+                    new ObjectSchema.Builder("Person")
                     {
                         Property.FromType<string>("Name")
                     }
@@ -160,7 +157,7 @@ namespace Realms.Tests.Database
                 ShouldDeleteIfMigrationNeeded = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
+                    new ObjectSchema.Builder("Person")
                     {
                         Property.FromType<int>("Name")
                     }
@@ -185,7 +182,7 @@ namespace Realms.Tests.Database
             var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
 
@@ -212,12 +209,10 @@ namespace Realms.Tests.Database
         [Test]
         public void MigrationRenamePropertyErrors()
         {
-            var oldPropertyValues = new List<string>();
-
             var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", "PropertyNotInNewSchema");
                 }
@@ -231,7 +226,7 @@ namespace Realms.Tests.Database
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty(nameof(Person), "PropertyNotInOldSchema", nameof(Person.OptionalAddress));
                 }
@@ -243,7 +238,7 @@ namespace Realms.Tests.Database
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty("NonExistingType", "TriggersSchema", nameof(Person.OptionalAddress));
                 }
@@ -255,7 +250,7 @@ namespace Realms.Tests.Database
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.Birthday));
                 }
@@ -267,7 +262,7 @@ namespace Realms.Tests.Database
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RenameProperty(nameof(Person), nameof(Person.Latitude), nameof(Person.Longitude));
                 }
@@ -283,7 +278,7 @@ namespace Realms.Tests.Database
             var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     Assert.Throws<ArgumentNullException>(() => migration.RenameProperty(null!, "TriggersSchema", "OptionalAddress"));
                     Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", null!, "OptionalAddress"));
@@ -309,7 +304,7 @@ namespace Realms.Tests.Database
                 Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
             };
 
-            using (var oldRealm = GetRealm(oldRealmConfig))
+            using (GetRealm(oldRealmConfig))
             {
             }
 
@@ -317,7 +312,7 @@ namespace Realms.Tests.Database
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migration.RemoveType(nameof(Person));
                 }
@@ -349,7 +344,7 @@ namespace Realms.Tests.Database
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(Dog), typeof(Owner) },
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     migrationCallbackCalled = true;
 
@@ -397,7 +392,7 @@ namespace Realms.Tests.Database
                 Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
             };
 
-            using (var oldRealm = GetRealm(oldRealmConfig))
+            using (GetRealm(oldRealmConfig))
             {
             }
 
@@ -405,7 +400,7 @@ namespace Realms.Tests.Database
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     Assert.Throws<ArgumentNullException>(() => migration.RemoveType(null!));
                     Assert.Throws<ArgumentException>(() => migration.RemoveType(string.Empty));
@@ -419,7 +414,7 @@ namespace Realms.Tests.Database
         public void Migration_WhenDone_DisposesAllObjectsAndLists()
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString());
-            using (var oldRealm = GetRealm(config))
+            using (GetRealm(config))
             {
             }
 
@@ -433,7 +428,7 @@ namespace Realms.Tests.Database
             var newConfig = new RealmConfiguration(config.DatabasePath)
             {
                 SchemaVersion = 1,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     standaloneObject = migration.NewRealm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
                     Assert.That(standaloneObject.IsValid);
@@ -476,7 +471,7 @@ namespace Realms.Tests.Database
                 }
             };
 
-            using (var newRealm = Realm.GetInstance(newConfig))
+            using (Realm.GetInstance(newConfig))
             {
                 // Here we should see all objects accessed during the migration get disposed, even though
                 // newRealm is still open.
@@ -583,7 +578,7 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     var value = migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123)!;
                     value.DynamicApi.Set("_id", 456);
@@ -619,7 +614,7 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(123)!;
                     value.Id = 456;
@@ -666,7 +661,7 @@ namespace Realms.Tests.Database
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(ObjectV2) },
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     foreach (var oldObj in migration.OldRealm.DynamicApi.All("Object"))
                     {
@@ -706,7 +701,7 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
-                MigrationCallback = (migration, oldSchemaVersion) =>
+                MigrationCallback = (migration, _) =>
                 {
                     var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1)!;
                     value.Id = 2;
@@ -744,7 +739,7 @@ namespace Realms.Tests.Database
                         Value = "foo"
                     });
 
-                    var container1 = oldRealm.Add(new ObjectContainerV1
+                    oldRealm.Add(new ObjectContainerV1
                     {
                         Value = "container1",
                         Link = obj,
@@ -757,7 +752,7 @@ namespace Realms.Tests.Database
                         Value = "bar"
                     });
 
-                    var container2 = oldRealm.Add(new ObjectContainerV1
+                    oldRealm.Add(new ObjectContainerV1
                     {
                         Value = "container2",
                         Link = obj,
@@ -805,13 +800,13 @@ namespace Realms.Tests.Database
                         Value = "foo"
                     });
 
-                    var orphanedObj = oldRealm.Add(new ObjectV1
+                    oldRealm.Add(new ObjectV1
                     {
                         Id = 2,
                         Value = "bar"
                     });
 
-                    var container = oldRealm.Add(new ObjectContainerV1
+                    oldRealm.Add(new ObjectContainerV1
                     {
                         Value = "container",
                         Link = obj
@@ -833,6 +828,113 @@ namespace Realms.Tests.Database
 
             Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Count(), Is.EqualTo(1));
             Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Any(e => e.Value == "bar"), Is.False);
+        }
+
+        [Test]
+        public void Migration_FindInNewRealm_WhenObjectIsDeleted_ReturnsNull()
+        {
+            var oldConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597_Old)
+                }
+            };
+
+            using (var oldRealm = GetRealm(oldConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new Dotnet_3597_Old { FloatProp = 1, IntProp = 1 });
+                    oldRealm.Add(new Dotnet_3597_Old { FloatProp = 2, IntProp = 2 });
+                });
+            }
+
+            var newConfig = new RealmConfiguration(oldConfig.DatabasePath)
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597)
+                },
+                SchemaVersion = 2,
+                MigrationCallback = (migration, _) =>
+                {
+                    var oldObjects = migration.OldRealm.DynamicApi.All(nameof(Dotnet_3597)).ToArray();
+                    var old1 = oldObjects.First(o => o.DynamicApi.Get<int>("IntProp") == 1);
+                    var old2 = oldObjects.First(o => o.DynamicApi.Get<int>("IntProp") == 2);
+
+                    var newObjects = migration.NewRealm.All<Dotnet_3597>().ToArray();
+                    var new1 = newObjects.First(o => o.IntProp == 1);
+                    var new2 = newObjects.First(o => o.IntProp == 2);
+
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old1), Is.EqualTo(new1));
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old2), Is.EqualTo(new2));
+
+                    migration.NewRealm.Remove(new1);
+
+                    Assert.That(migration.FindInNewRealm<Dotnet_3597>(old1), Is.Null);
+                }
+            };
+
+            var newRealm = GetRealm(newConfig);
+            Assert.That(newRealm.All<Dotnet_3597>().Count(), Is.EqualTo(1));
+        }
+
+        // Test for https://github.com/realm/realm-dotnet/issues/3597
+        [Test]
+        public void Migration_MigratesListOfFloats()
+        {
+            var oldConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597_Old)
+                }
+            };
+
+            using (var oldRealm = GetRealm(oldConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new Dotnet_3597_Old
+                    {
+                        FloatProp = 3.14f,
+                        FloatList =
+                        {
+                            1,
+                            2,
+                            -1.23f
+                        }
+                    });
+                });
+            }
+
+            var newConfig = new RealmConfiguration(oldConfig.DatabasePath)
+            {
+                Schema = new[]
+                {
+                    typeof(Dotnet_3597)
+                },
+                SchemaVersion = 2,
+                MigrationCallback = (migration, _) =>
+                {
+                    foreach (var item in migration.OldRealm.DynamicApi.All(nameof(Dotnet_3597)))
+                    {
+                        var newItem = migration.FindInNewRealm<Dotnet_3597>(item)!;
+                        newItem.FloatProp = item.DynamicApi.Get<float?>("FloatProp").ToString()!;
+                        foreach (var floatValue in item.DynamicApi.GetList<float?>("FloatList"))
+                        {
+                            newItem.FloatList.Add(floatValue.ToString()!);
+                        }
+                    }
+                }
+            };
+
+            var newRealm = GetRealm(newConfig);
+
+            var obj = newRealm.All<Dotnet_3597>().Single();
+            Assert.That(obj.FloatProp, Is.EqualTo("3.14"));
+            CollectionAssert.AreEqual(obj.FloatList, new[] { "1", "2", "-1.23" });
         }
     }
 
@@ -883,5 +985,27 @@ namespace Realms.Tests.Database
     public partial class ObjectEmbedded : TestEmbeddedObject
     {
         public string? Value { get; set; }
+    }
+
+    [Explicit]
+    [MapTo("Dotnet_3597")]
+    public partial class Dotnet_3597_Old : TestRealmObject
+    {
+        public int IntProp { get; set; }
+
+        public float? FloatProp { get; set; }
+
+        public IList<float?> FloatList { get; } = null!;
+    }
+
+    [Explicit]
+    [MapTo("Dotnet_3597")]
+    public partial class Dotnet_3597 : TestRealmObject
+    {
+        public int IntProp { get; set; }
+
+        public string FloatProp { get; set; } = string.Empty;
+
+        public IList<string> FloatList { get; } = null!;
     }
 }

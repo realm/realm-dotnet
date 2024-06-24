@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="UnqueryableBacklinks"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Object("Parent", "ClassWithUnqueryableMembers", managedName: "Parent"),

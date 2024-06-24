@@ -26,7 +26,7 @@ namespace Realms.Sync.ErrorHandling
     /// To use either of them, create a new instance and assign it to <see cref="SyncConfigurationBase.ClientResetHandler"/> on the configuration
     /// you use to open the synchronized <see cref="Realm"/> instance.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/">Client Resets - .NET SDK</seealso>
     public abstract class ClientResetHandlerBase
     {
         /// <summary>

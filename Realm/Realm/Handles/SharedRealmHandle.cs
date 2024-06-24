@@ -229,6 +229,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_object_for_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object_for_object(SharedRealmHandle realmHandle, ObjectHandle handle, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -365,7 +368,7 @@ namespace Realms
             // if we get !=0 and the real value was in fact 0, then we will just skip and then catch up next time around.
             // however, doing things this way will save lots and lots of locks when the list is empty, which it should be if people have
             // been using the dispose pattern correctly, or at least have been eager at disposing as soon as they can
-            // except of course dot notation users that cannot dispose cause they never get a reference in the first place
+            // except of course dot notation users that cannot dispose because they never get a reference in the first place
             lock (_unbindListLock)
             {
                 UnbindLockedList();
@@ -605,8 +608,7 @@ namespace Realms
         public RealmSchema GetSchema()
         {
             RealmSchema? result = null;
-            Action<Native.Schema> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
-            var callbackHandle = GCHandle.Alloc(callback);
+            var callbackHandle = GCHandle.Alloc((Action<Native.Schema>)SchemaCallback);
             try
             {
                 NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
@@ -618,6 +620,8 @@ namespace Realms
             }
 
             return result!;
+
+            void SchemaCallback(Native.Schema schema) => result = RealmSchema.CreateFromObjectStoreSchema(schema);
         }
 
         public ObjectHandle CreateObject(TableKey tableKey)
@@ -665,6 +669,21 @@ namespace Realms
             var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primary_key(this, tableKey.Value, primitiveValue, out var ex);
             handles?.Dispose();
+            ex.ThrowIfNecessary();
+
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(this, result);
+            return true;
+        }
+
+        public bool TryFindObject(ObjectHandle handle, [MaybeNullWhen(false)] out ObjectHandle objectHandle)
+        {
+            var result = NativeMethods.get_object_for_object(this, handle, out var ex);
             ex.ThrowIfNecessary();
 
             if (result == IntPtr.Zero)
@@ -850,7 +869,7 @@ namespace Realms
             try
             {
                 var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
-                var config = (RealmConfiguration)configHandle.Target!;
+                var config = (RealmConfigurationBase)configHandle.Target!;
 
                 shouldCompact = config.ShouldCompactOnLaunch!.Invoke(totalSize, dataSize);
                 return IntPtr.Zero;

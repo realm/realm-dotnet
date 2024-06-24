@@ -1,0 +1,25 @@
+module prerelease
+
+amends "GithubAction/GithubAction.pkl"
+
+import "helpers/Common.pkl"
+import "helpers/Steps.pkl"
+
+name = "Publish Prerelease"
+on {
+  workflow_dispatch{}
+}
+env = Common.defaultEnv
+jobs {
+  ["main"] = new Job {
+    `runs-on` = new UbuntuLatest{}
+    name = "Publish package to S3"
+    steps {
+      Steps.checkoutWithoutMatchers(false)
+      Steps.downloadAllArtifacts()
+      Steps.readVersionFromPackage()
+      ...Steps.uploadPackagesToSleet(Steps.getVersionExpresssion, false)
+      ...Steps.uploadToNPM("alpha")
+    }
+  }
+}

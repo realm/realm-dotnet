@@ -34,6 +34,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="Level3"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Level3", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("DateValue", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DateValue"),

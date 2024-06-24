@@ -34,6 +34,8 @@ namespace Realms.Tests.Sync
         public const string DefaultPassword = "123456";
         private const string DummyAppId = "myapp-123";
 
+        private static readonly string? _baaSaasApiKey;
+
         private static IDictionary<string, BaasClient.BaasApp> _apps = new Dictionary<string, BaasClient.BaasApp>
         {
             [AppConfigType.Default] = new(string.Empty, DummyAppId, AppConfigType.Default),
@@ -41,7 +43,6 @@ namespace Realms.Tests.Sync
 
         public static Uri? BaasUri;
         private static BaasClient? _baasClient;
-        private static string? _baaSaasApiKey;
 
         static SyncTestHelpers()
         {
@@ -61,7 +62,7 @@ namespace Realms.Tests.Sync
             BaseUri = BaasUri ?? new Uri("http://localhost:12345"),
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
 #pragma warning disable CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
-            BaseFilePath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"rt-sync-{System.Diagnostics.Process.GetCurrentProcess().Id}-{_appCounter++}")).FullName
+            BaseFilePath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"rt-sync-{Process.GetCurrentProcess().Id}-{_appCounter++}")).FullName
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
         };
 
@@ -125,33 +126,41 @@ namespace Realms.Tests.Sync
             return remainingArgs;
         }
 
+        private class LogArgs
+        {
+            public string? RealmLogLevel { get; set; }
+
+            public string? RealmLogFile { get; set; }
+        }
+
         public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
         {
-            var (extracted, remaining) = BaasClient.ExtractArguments(args, "realmloglevel", "realmlogfile");
+            var (extracted, remaining) = BaasClient.ExtractArguments<LogArgs>(args);
 
-            if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
+            if (!string.IsNullOrEmpty(extracted.RealmLogLevel))
             {
+                var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), extracted.RealmLogLevel!);
                 TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
 
                 Logger.LogLevel = logLevel;
             }
 
             Logger.AsyncFileLogger? logger = null;
-            if (extracted.TryGetValue("realmlogfile", out var logFile))
+            if (!string.IsNullOrEmpty(extracted.RealmLogFile))
             {
                 if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
                 {
-                    TestHelpers.Output.WriteLine($"Setting sync logger to file: {logFile}");
+                    TestHelpers.Output.WriteLine($"Setting sync logger to file: {extracted.RealmLogFile}");
 
                     // We're running in a test runner, so we need to use the sync logger
-                    Logger.Default = Logger.File(logFile);
+                    Logger.Default = Logger.File(extracted.RealmLogFile!);
                 }
                 else
                 {
-                    TestHelpers.Output.WriteLine($"Setting async logger to file: {logFile}");
+                    TestHelpers.Output.WriteLine($"Setting async logger to file: {extracted.RealmLogFile}");
 
                     // We're running standalone (likely on CI), so we use the async logger
-                    Logger.Default = logger = new Logger.AsyncFileLogger(logFile);
+                    Logger.Default = logger = new Logger.AsyncFileLogger(extracted.RealmLogFile!);
                 }
             }
 

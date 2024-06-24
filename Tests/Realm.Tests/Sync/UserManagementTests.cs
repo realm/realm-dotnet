@@ -162,7 +162,7 @@ namespace Realms.Tests.Sync
                 Assert.That(DefaultApp.CurrentUser, Is.Null);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(Credentials.EmailPassword(username, password)));
-                Assert.That(ex.Message, Is.EqualTo("InvalidPassword: invalid username/password"));
+                Assert.That(ex.Message, Is.EqualTo("InvalidPassword: unauthorized"));
             });
         }
 
@@ -362,7 +362,7 @@ namespace Realms.Tests.Sync
 
                 // TODO: this should be bad request when https://jira.mongodb.org/browse/REALMC-7028 is fixed
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
-                Assert.That(ex.Message, Does.Contain("linking a local-userpass identity is not allowed when one is already linked"));
+                Assert.That(ex.Message, Does.Contain("unauthorized"));
             });
         }
 
@@ -374,10 +374,7 @@ namespace Realms.Tests.Sync
                 var user = await GetUserAsync();
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.Anonymous()));
-
-                // TODO: this should be bad request when https://jira.mongodb.org/browse/REALMC-7028 is fixed
-                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
-                Assert.That(ex.Message, Does.Contain("linking an anonymous identity is not allowed"));
+                Assert.That(ex.Message, Does.Contain("Cannot add anonymous credentials to an existing user"));
             });
         }
 
@@ -388,14 +385,14 @@ namespace Realms.Tests.Sync
             {
                 var existingEmail = SyncTestHelpers.GetVerifiedUsername();
                 await DefaultApp.EmailPasswordAuth.RegisterUserAsync(existingEmail, SyncTestHelpers.DefaultPassword);
-                var emailUser = await DefaultApp.LogInAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword));
+                await DefaultApp.LogInAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword));
 
                 var anonUser = await DefaultApp.LogInAsync(Credentials.Anonymous());
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => anonUser.LinkCredentialsAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword)));
 
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-                Assert.That(ex.Message, Does.Contain("a user already exists with the specified provider"));
+                Assert.That(ex.Message, Does.Contain("unauthorized"));
             });
         }
 
@@ -413,7 +410,7 @@ namespace Realms.Tests.Sync
                 await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
 
                 var ex3 = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
-                Assert.That(ex3.Message, Does.Contain("confirmation required"));
+                Assert.That(ex3.Message, Does.Contain("AuthError: unauthorized"));
 
                 // The second time we call the confirmation function we find the email we saved in the collection and return "success", so the user
                 // gets confirmed and can log in.
@@ -448,7 +445,7 @@ namespace Realms.Tests.Sync
                 await DefaultApp.EmailPasswordAuth.RegisterUserAsync(unconfirmedMail, SyncTestHelpers.DefaultPassword).Timeout(10_000, detail: "Failed to register user");
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
-                Assert.That(ex.Message, Does.Contain("confirmation required"));
+                Assert.That(ex.Message, Does.Contain("AuthError: unauthorized"));
 
                 // This retrieves the token and tokenId we saved in the confirmation function
                 var functionUser = await GetUserAsync();
@@ -498,7 +495,7 @@ namespace Realms.Tests.Sync
                 await DefaultApp.EmailPasswordAuth.CallResetPasswordFunctionAsync(email, newPassword);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(Credentials.EmailPassword(email, newPassword)));
-                Assert.That(ex.Message, Does.Contain("invalid username/password"));
+                Assert.That(ex.Message, Does.Contain("InvalidPassword: unauthorized"));
 
                 // This retrieves the token and tokenId we saved in the password reset function.
                 var functionUser = await GetUserAsync();
@@ -889,7 +886,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
-                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+                Assert.That(ex.Message, Is.EqualTo("AuthError: unauthorized"));
 
                 await user.ApiKeys.EnableAsync(apiKey.Id);
 
@@ -916,7 +913,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+                Assert.That(ex.Message, Is.EqualTo("AuthError: unauthorized"));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
@@ -936,7 +933,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+                Assert.That(ex.Message, Is.EqualTo("AuthError: unauthorized"));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }

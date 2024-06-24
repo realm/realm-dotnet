@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithFtsIndex"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithFtsIndex", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Title", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Title"),

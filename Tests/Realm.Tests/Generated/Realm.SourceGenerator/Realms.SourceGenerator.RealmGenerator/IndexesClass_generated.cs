@@ -34,6 +34,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="IndexesClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexesClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),

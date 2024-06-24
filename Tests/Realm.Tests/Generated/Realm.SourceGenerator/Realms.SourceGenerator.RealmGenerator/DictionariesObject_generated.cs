@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="DictionariesObject"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DictionariesObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.PrimitiveDictionary("CharDictionary", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharDictionary"),

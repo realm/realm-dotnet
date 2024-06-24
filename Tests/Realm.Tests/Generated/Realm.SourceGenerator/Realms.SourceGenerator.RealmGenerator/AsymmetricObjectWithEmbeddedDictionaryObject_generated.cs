@@ -5,7 +5,6 @@ using Baas;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Realms;
 using Realms.Dynamic;
 using Realms.Exceptions;
@@ -40,6 +39,7 @@ namespace Realms.Tests.Sync
         /// <summary>
         /// Defines the schema for the <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedDictionaryObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
             Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),

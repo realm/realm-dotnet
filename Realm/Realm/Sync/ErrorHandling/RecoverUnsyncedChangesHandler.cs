@@ -22,7 +22,7 @@ namespace Realms.Sync.ErrorHandling
     /// A client reset strategy that attempts to automatically recover any unsynchronized changes.
     /// </summary>
     /// <remarks>
-    /// You can read more about the automatic merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
+    /// You can read more about the automatic merge rules at <see href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/">Client Resets - .NET SDK</see>.
     /// The automatic recovery mechanism creates write transactions meaning that all the changes that take place
     /// are properly propagated through the standard Realm's change notifications.
     /// The <see cref="RecoverUnsyncedChangesHandler"/> strategy supplies three callbacks: <see cref="OnBeforeReset"/>, <see cref="OnAfterReset"/> and <see cref="ManualResetFallback"/>.
@@ -37,7 +37,7 @@ namespace Realms.Sync.ErrorHandling
     /// 4. Backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>).
     ///    Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
-    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class RecoverUnsyncedChangesHandler : ClientResetHandlerBase
     {
         internal override ClientResyncMode ClientResetMode => ClientResyncMode.Recover;

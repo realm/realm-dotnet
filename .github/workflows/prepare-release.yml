@@ -20,7 +20,7 @@ jobs:
         id: get-core-version
         run: |
           cd wrappers/realm-core
-          pkgVersion=$(grep "\bVERSION=" dependencies.list | cut -d= -f2)
+          pkgVersion=$(grep "\bVERSION:" dependencies.yml | cut -d: -f2)
           echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
         shell: bash
       - name: Update Analytics.cs
@@ -31,7 +31,7 @@ jobs:
           include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog
-        uses: realm/ci-actions/update-changelog@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+        uses: realm/ci-actions/update-changelog@6418e15ed9bbdb19b7d456a347e5623779f95cdf
         with:
           changelog: ${{ github.workspace }}/CHANGELOG.md
           version: ${{ inputs.version }}

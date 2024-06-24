@@ -22,9 +22,9 @@ To see what is supported, refer to the [LINQ Support](linqsupport.md) page.
 
 Documentation
 -------------
-The documentation can be found at [https://docs.mongodb.com/realm/sdk/dotnet/](https://docs.mongodb.com/realm/sdk/dotnet/).
+The documentation can be found at [https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/).
 
-The API reference is located at [https://docs.mongodb.com/realm-sdks/dotnet/latest/reference/Realms.html](https://docs.mongodb.com/realm-sdks/dotnet/latest/reference/Realms.html).
+The API reference is located at [https://www.mongodb.com/docs/realm-sdks/dotnet/latest/](https://www.mongodb.com/docs/realm-sdks/dotnet/latest/).
 
 Source
 ------

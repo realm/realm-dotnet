@@ -32,7 +32,7 @@ namespace Realms.Sync.ErrorHandling
     /// 3. advanced use cases for data-sensitive applications where the developer wants to recover in the most appropriate way the unsynced data
     /// 4. backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>). Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
-    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/sync/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class DiscardUnsyncedChangesHandler : ClientResetHandlerBase
     {
         /// <summary>

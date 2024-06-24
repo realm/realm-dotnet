@@ -18,21 +18,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Serializers;
-#if !NETCOREAPP2_1_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-#endif
 
 namespace Baas
 {
@@ -43,6 +43,7 @@ namespace Baas
         public const string ObjectIdPartitionKey = "pbs-oid";
         public const string UUIDPartitionKey = "pbs-uuid";
         public const string FlexibleSync = "flx";
+        public const string StaticSchema = "schema";
     }
 
     public class BaasClient
@@ -228,6 +229,26 @@ namespace Baas
             return result;
         }
 
+        private class BaasArgs
+        {
+            public string? BaasaasApiKey { get; set; }
+
+            public string? BaasUrl { get; set; }
+
+            public string? BaasCluster { get; set; }
+
+            public string? BaasApiKey { get; set; }
+
+            public string? BaasPrivateApiKey { get; set; }
+
+            public string? BaasProjectId { get; set; }
+
+            public string BaasDifferentiator { get; set; } = "local";
+
+            [MemberNotNullWhen(false, nameof(BaasCluster), nameof(BaasApiKey), nameof(BaasPrivateApiKey), nameof(BaasProjectId))]
+            public bool UseDocker => BaasCluster == null;
+        }
+
         public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
         {
             if (args == null)
@@ -235,32 +256,30 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = ExtractArguments(args, "baasaas-api-key", "baas-url", "baas-cluster",
-                "baas-api-key", "baas-private-api-key", "baas-projectid", "baas-differentiator");
+            var (extracted, remaining) = ExtractArguments<BaasArgs>(args);
 
-            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+            var differentiator = extracted.BaasDifferentiator;
 
             BaasClient client;
             Uri baseUri;
 
-            if (extracted.TryGetValue("baasaas-api-key", out var baasaasApiKey) && !string.IsNullOrEmpty(baasaasApiKey))
+            if (!string.IsNullOrEmpty(extracted.BaasaasApiKey))
             {
-                baseUri = await GetOrDeployContainer(baasaasApiKey, differentiator, output);
+                baseUri = await GetOrDeployContainer(extracted.BaasaasApiKey!, differentiator, output);
                 client = await Docker(baseUri, differentiator, output);
             }
             else
             {
-                if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
+                if (string.IsNullOrEmpty(extracted.BaasUrl))
                 {
                     return (null, null, remaining);
                 }
 
-                baseUri = new Uri(baseUrl);
-                var baasCluster = extracted.GetValueOrDefault("baascluster");
+                baseUri = new Uri(extracted.BaasUrl!);
 
-                client = string.IsNullOrEmpty(baasCluster)
+                client = extracted.UseDocker
                     ? await Docker(baseUri, differentiator, output)
-                    : await Atlas(baseUri, differentiator, output, baasCluster!, extracted["baasapikey"], extracted["baasprivateapikey"], extracted["baasprojectid"]);
+                    : await Atlas(baseUri, differentiator, output, extracted.BaasCluster, extracted.BaasApiKey, extracted.BaasPrivateApiKey, extracted.BaasProjectId);
             }
 
             return (client, baseUri, remaining);
@@ -273,16 +292,16 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, _) = ExtractArguments(args, "baasaas-api-key", "baas-differentiator");
+            var (extracted, _) = ExtractArguments<BaasArgs>(args);
 
-            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+            var differentiator = extracted.BaasDifferentiator;
 
-            if (!extracted.TryGetValue("baasaas-api-key", out var baaSaasApiKey) || string.IsNullOrEmpty(baaSaasApiKey))
+            if (string.IsNullOrEmpty(extracted.BaasaasApiKey))
             {
-                throw new InvalidOperationException("Need a BaaSaas API key to terminate containers");
+                throw new InvalidOperationException("Need a Baasaas API key to terminate containers");
             }
 
-            await StopContainer(baaSaasApiKey, differentiator, output);
+            await StopContainer(extracted.BaasaasApiKey!, differentiator, output);
         }
 
         public string GetSyncDatabaseName(string appType = AppConfigType.Default) => $"Sync_{Differentiator}_{appType}";
@@ -316,7 +335,8 @@ namespace Baas
 
             var result = new Dictionary<string, BaasApp>();
             await GetOrCreateApp(result, AppConfigType.Default, apps, CreateDefaultApp);
-            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateFlxApp);
+            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, name => CreateFlxApp(name, enableDevMode: true));
+            await GetOrCreateApp(result, AppConfigType.StaticSchema, apps, name => CreateFlxApp(name, enableDevMode: false));
             await GetOrCreateApp(result, AppConfigType.IntPartitionKey, apps, name => CreatePbsApp(name, "long"));
             await GetOrCreateApp(result, AppConfigType.UUIDPartitionKey, apps, name => CreatePbsApp(name, "uuid"));
             await GetOrCreateApp(result, AppConfigType.ObjectIdPartitionKey, apps, name => CreatePbsApp(name, "objectId"));
@@ -463,7 +483,7 @@ namespace Baas
             return app;
         }
 
-        private async Task<BaasApp> CreateFlxApp(string name)
+        private async Task<BaasApp> CreateFlxApp(string name, bool enableDevMode)
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
@@ -473,9 +493,9 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = GetSyncDatabaseName(name),
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike", "Differentiator" },
                 }
-            });
+            }, enableDevMode);
 
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/default_rule", new
             {
@@ -500,6 +520,20 @@ namespace Baas
 
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
+            if (!enableDevMode)
+            {
+                var schemaV0 = Schemas.Nullables(Differentiator, required: false);
+                var schemaId = await CreateSchema(app, mongoServiceId, schemaV0, null);
+
+                var schemaV1 = Schemas.Nullables(Differentiator, required: true);
+                await UpdateSchema(app, schemaId, schemaV1);
+
+                // Revert to schema_v0
+                await UpdateSchema(app, schemaId, schemaV0);
+
+                await WaitForSchemaVersion(app, 2);
+            }
+
             return app;
         }
 
@@ -523,7 +557,7 @@ namespace Baas
             await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
 
-        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
+        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig, bool enableDeveloperMode = true)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
             var appId = doc!["_id"].AsString;
@@ -551,10 +585,13 @@ namespace Baas
 
             var mongoServiceId = await CreateMongodbService(app, syncConfig);
 
-            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+            if (enableDeveloperMode)
             {
-                development_mode_enabled = true,
-            });
+                await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+                {
+                    development_mode_enabled = true,
+                });
+            }
 
             return (app, mongoServiceId);
         }
@@ -617,7 +654,6 @@ namespace Baas
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
                 .Where(a => a != null)
-                .Select(a => a!)
                 .ToArray();
         }
 
@@ -672,12 +708,36 @@ namespace Baas
             return mongoServiceId;
         }
 
-        private async Task CreateSchema(BaasApp app, string mongoServiceId, object schema, object rule)
+        private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema, object? rule)
         {
             _output.WriteLine($"Creating schema for {app.Name}...");
 
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
+            var createResponse = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
+            if (rule != null)
+            {
+                await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
+            }
+
+            return createResponse!["_id"].AsString;
+        }
+
+        private async Task UpdateSchema(BaasApp app, string schemaId, object schema)
+        {
+            _output.WriteLine($"Creating schema for {app.Name}...");
+
+            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas/{schemaId}?bypass_service_change=SyncSchemaVersionIncrease", schema);
+        }
+
+        private async Task WaitForSchemaVersion(BaasApp app, int expectedVersion)
+        {
+            while (true)
+            {
+                var response = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/schemas/versions");
+                if (response!["versions"].AsBsonArray.Any(version => version.AsBsonDocument["version_major"].AsInt32 >= expectedVersion))
+                {
+                    return;
+                }
+            }
         }
 
         private async Task RefreshAccessTokenAsync()
@@ -763,35 +823,40 @@ namespace Baas
             return content;
         }
 
-        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        // Extract arguments and populate a type T with the extracted values. Only string readwrite properties
+        // will be considered.
+        public static (T Extracted, string[] RemainingArgs) ExtractArguments<T>(string[] args)
+            where T : new()
         {
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var extracted = new Dictionary<string, string>();
-            var remainingArgs = new List<string>();
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!toExtract.Any(name => ExtractArg(i, name)))
-                {
-                    remainingArgs.Add(args[i]);
-                }
-            }
+            var argsToExtract = typeof(T).GetProperties()
+                .Where(p => p.PropertyType == typeof(string) && p is { CanRead: true, CanWrite: true })
+                .Select(p => (ArgName: GetArgName(p.Name), PropertyInfo: p))
+                .ToArray();
 
-            return (extracted, remainingArgs.ToArray());
+            var extracted = new T();
+            return (extracted, args.Where(a => !argsToExtract.Any(kvp => ExtractArg(a, kvp))).ToArray());
 
-            bool ExtractArg(int index, string name)
+            bool ExtractArg(string arg, (string ArgName, PropertyInfo Info) prop)
             {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
+                if (arg.StartsWith($"--{prop.ArgName}="))
                 {
-                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    prop.Info.SetValue(extracted, arg.Replace($"--{prop.ArgName}=", string.Empty));
                     return true;
                 }
 
                 return false;
+            }
+
+            static string GetArgName(string propertyName)
+            {
+                return Regex.Replace(propertyName, "(?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z0-9])", "-$1", RegexOptions.Compiled)
+                    .Trim()
+                    .ToLower();
             }
         }
 
@@ -918,6 +983,51 @@ namespace Baas
                 }
             },
             GenericBaasRule(differentiator, "foos"));
+
+            public static object Nullables(string differentiator, bool required)
+            {
+                var schema = new
+                {
+                    title = "Nullables",
+                    bsonType = "object",
+                    properties = new Dictionary<string, object>
+                    {
+                        ["_id"] = new { bsonType = "objectId" },
+                        ["Differentiator"] = new { bsonType = "objectId" },
+                        ["BoolValue"] = new { bsonType = "bool" },
+                        ["IntValue"] = new { bsonType = "long" },
+                        ["FloatValue"] = new { bsonType = "float" },
+                        ["DoubleValue"] = new { bsonType = "double" },
+                        ["DecimalValue"] = new { bsonType = "decimal" },
+                        ["DateValue"] = new { bsonType = "date" },
+                        ["StringValue"] = new { bsonType = "string" },
+                        ["ObjectIdValue"] = new { bsonType = "objectId" },
+                        ["UuidValue"] = new { bsonType = "uuid" },
+                        ["BinaryValue"] = new { bsonType = "binData" },
+                    },
+                    required = new List<string>(),
+                };
+
+                if (required)
+                {
+                    // For schema v1, we add an extra property
+                    schema.properties["WillBeRemoved"] = new
+                    {
+                        bsonType = "string"
+                    };
+                }
+
+                schema.required.AddRange(required ? schema.properties.Keys : new[]
+                {
+                    "_id", "Differentiator"
+                });
+
+                return new
+                {
+                    metadata = Metadata(differentiator, "Nullables"),
+                    schema,
+                };
+            }
         }
 
         private class BaasaasClient
@@ -957,7 +1067,7 @@ namespace Baas
                     }
                 }
 
-                output.WriteLine($"No container found, starting a new one.");
+                output.WriteLine("No container found, starting a new one.");
                 var containerId = await StartContainer(differentiator);
 
                 output.WriteLine($"Container with id {containerId} started, waiting for it to be running.");
@@ -976,7 +1086,7 @@ namespace Baas
                 var containers = await GetContainers();
                 var userId = await GetCurrentUserId();
 
-                var existingContainers = containers!
+                var existingContainers = containers
                     .Where(c => c.CreatorId == userId && c.Tags.Any(t => t.Key == "DIFFERENTIATOR" && t.Value == differentiator));
 
                 foreach (var container in existingContainers)
@@ -1012,10 +1122,8 @@ namespace Baas
 
             private async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
             {
-                while (maxRetries > 0)
+                for (var i = 0; i < maxRetries; i++)
                 {
-                    maxRetries -= 1;
-
                     try
                     {
                         var containers = await GetContainers();
@@ -1038,7 +1146,7 @@ namespace Baas
                     await Task.Delay(2000);
                 }
 
-                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retrues");
+                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retries");
             }
 
             private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)

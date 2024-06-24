@@ -29,7 +29,7 @@ namespace Realms
     /// You can read from the <see cref="OldRealm"/> and access properties that have been removed from
     /// the classes by using the dynamic API.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/model-data/change-an-object-model/#migrate-a-schema">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
         private IntPtr _migrationSchema;
@@ -114,6 +114,28 @@ namespace Realms
             Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
 
             NewRealm.SharedRealmHandle.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
+        }
+
+        /// <summary>
+        /// Finds an object obtained from <see cref="OldRealm"/> in <see cref="NewRealm"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object in the new realm.</typeparam>
+        /// <param name="obj">The object obtained from the old realm.</param>
+        /// <returns>The corresponding object post-migration or <c>null</c> if the object no longer exists in the new realm.</returns>
+        /// <example>
+        /// <code>
+        /// foreach (var oldPerson in migration.OldRealm.DynamicApi.All("Person"))
+        /// {
+        ///     var newPerson = migration.FindInNewRealm&lt;Person&gt;(oldPerson)
+        ///     newPerson.Name = $"{oldPerson.DynamicApi.Get&lt;string&gt;("FirstName")} {oldPerson.DynamicApi.Get&lt;string&gt;("LastName")}";
+        /// }
+        /// </code>
+        /// </example>
+        public T? FindInNewRealm<T>(IRealmObject obj)
+            where T : IRealmObject
+        {
+            Argument.Ensure(obj.IsManaged, "Only managed RealmObject instances can be looked up in the new Realm", nameof(obj));
+            return NewRealm.FindExisting<T>(obj);
         }
     }
 }

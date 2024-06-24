@@ -1,0 +1,291 @@
+import "../GithubAction/GithubAction.pkl" as gha
+import "Common.pkl"
+import "Actions.pkl"
+
+const getVersionStepName = "get-version"
+const getVersionOutput = "package_version"
+
+const getVersionExpresssion = "${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}"
+
+const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new {
+  checkoutWithoutMatchers(submodules)
+  registerProblemMatchers()
+}
+
+const function checkoutWithoutMatchers(submodules: (Boolean | "recursive")): gha.Step = new {
+  name = "Checkout Code"
+  uses = Actions.checkout
+  with {
+    ["submodules"] = submodules
+    ["ref"] = "${{ github.event.pull_request.head.sha }}"
+  }
+}
+
+const function uploadArtifacts(artifactName: String, relPath: String): gha.Step = new {
+  name = "Store artifacts for \(artifactName)"
+  uses = Actions.uploadArtifact
+  with {
+    ["name"] = artifactName
+    ["path"] = relPath
+    ["retention-days"] = "${{ github.event_name != 'pull_request' && 30 || 1 }}"
+    ["if-no-files-found"] = "error"
+  }
+}
+
+const function downloadArtifacts(artifactName: String, relPath: String): gha.Step = new {
+  name = "Fetch \(artifactName)"
+  uses = Actions.downloadArtifact
+  with {
+    ["name"] = artifactName
+    ["path"] = relPath
+  }
+}
+
+const function downloadAllArtifacts(): gha.Step = new {
+  name = "Download all artifacts"
+  uses = Actions.downloadAllArtifacts
+  with {
+    ["workflow"] = "pr.yml"
+    ["commit"] = "${{ github.sha }}"
+    ["path"] = "Realm/packages/"
+    ["workflow_conclusion"] = "completed"
+  }
+}
+
+const function setupXcode(version: String): gha.Step = new {
+  name = "Setup Xcode"
+  uses = Actions.setupXcode
+  with {
+    ["xcode-version"] = version
+  }
+}
+
+const function setupMSVC(edition: String): gha.Step = new {
+  name = "Setup MSVC"
+  run = "Start-Process \"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vs_installer.exe\" -ArgumentList 'modify --installPath \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.\(edition)' -Wait -PassThru"
+  shell = "pwsh"
+}
+
+const function setupDotnet(version: String?): gha.Step = new {
+  uses = Actions.setupDotnet
+  with {
+    ["dotnet-version"] = version ?? "8.0.x"
+  }
+}
+
+const function registerProblemMatchers(): gha.Step = new {
+  name = "Register problem matchers"
+  run = """
+    echo "::add-matcher::.github/problem-matchers/csc.json"
+    echo "::add-matcher::.github/problem-matchers/msvc.json"
+    """
+}
+
+const function fetchPackages(_packages: List<String>(every((package) -> Common.packages.contains(package)))?): List<gha.Step> = (_packages ?? Common.packages).map((package) -> new gha.Step {
+  name = "Fetch \(package)"
+  uses = Actions.downloadArtifact
+  with {
+    ["name"] = "\(package).${{ needs.\(Common.job_Packages).outputs.\(getVersionOutput) }}"
+    ["path"] = "${{ github.workspace }}/Realm/packages/"
+  }
+})
+
+const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wrapperBinaryNames.contains(wrapper)))?): List<gha.Step> = (wrappers ?? Common.wrapperBinaryNames).map((wrapper) -> new gha.Step {
+  name = "Fetch wrappers for \(wrapper)"
+  uses = Actions.downloadArtifact
+  with {
+    ["name"] = "wrappers-\(wrapper)"
+    ["path"] = "wrappers/build"
+  }
+})
+
+const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new {
+  setupDotnet(dotnetVersion)
+  new {
+    name = "Setup workloads"
+    run = "dotnet workload install \(workloads ?? "android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}")"
+  }
+}
+
+const function setupJDK(): gha.Step = new {
+  name = "Setup JDK"
+  uses = Actions.setupJDK
+  with {
+    ["distribution"] = "microsoft"
+    ["java-version"] = 17
+  }
+}
+
+const function setupAndroid(): Listing<gha.Step> = new {
+  setupJDK()
+  new {
+    name = "Setup Android"
+    uses = Actions.setupAndroid
+  }
+  new {
+    name = "Install SDK platform 21"
+    run = "sdkmanager --install \"platforms;android-21\""
+  }
+}
+
+const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1" | "us-west-2" | "us-east-2"): gha.Step = new {
+  name = "Configure AWS Credentials"
+  uses = Actions.awsConfigureCredentials
+  with {
+    ["aws-access-key-id"] = "${{ secrets.\(accessKey) }}"
+    ["aws-secret-access-key"] = "${{ secrets.\(secretKey) }}"
+    ["aws-region"] = region
+  }
+}
+
+const function readVersionFromPackage(): gha.Step = new {
+  name = "Read version"
+  id = getVersionStepName
+  run = #"""
+    cd Realm/packages
+    pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+    echo "\#(getVersionOutput)=$pkgVersion" >> $GITHUB_OUTPUT
+    """#
+  shell = "bash"
+}
+
+const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new {
+  local packageName = "io.realm.unity-\(getVersionExpresssion).tgz"
+
+  new {
+    uses = Actions.setupNode
+    with {
+      ["node-version"] = "16.x"
+      ["registry-url"] = "https://registry.npmjs.org"
+    }
+  }
+  new {
+    name = "NPM publish \(packageName)"
+    run = "npm publish ${{ github.workspace }}/Realm/packages/\(packageName)/\(packageName) --tag \(tag)"
+    env {
+      ["NODE_AUTH_TOKEN"] = "${{ secrets.NPM_TOKEN }}"
+    }
+  }
+}
+
+const function uploadPackagesToSleet(versionExpression: String, expectShortPath: Boolean): Listing<gha.Step> = new {
+  setupDotnet(null)
+  new {
+    name = "Install sleet"
+    run = "dotnet tool install -g sleet"
+  }
+
+  configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY", "us-east-1")
+  for (package in Common.nugetPackages) {
+    let (packageWithVersion = "\(package).\(versionExpression)")
+    let (packagePath = "\(if (expectShortPath) "" else "\(packageWithVersion)/")\(packageWithVersion).nupkg")
+      new {
+        name = "NuGet Publish \(packageWithVersion)"
+        run = "sleet push ${{ github.workspace }}/Realm/packages/\(packagePath) --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
+      }
+  }
+}
+
+class MSBuildConfig {
+  projects: Listing<String>
+  target: String?
+  properties: Mapping<String, String> = new{}
+  standaloneExe: Boolean = false
+
+  function getTargetForInvocation(): String = if (target != null) " -t:\(target)" else ""
+  function getPropertiesForInvocation(): String = "-p:Configuration=\(Common.configuration)\(propertiesToString(properties))"
+}
+
+const function msbuild(config: MSBuildConfig): Listing<gha.Step> = new {
+  addMSBuildToPath()
+
+  for (project in config.projects) {
+    new {
+      name = "Build \(project)"
+      run = "msbuild \(project)\(config.getTargetForInvocation()) -restore \(config.getPropertiesForInvocation())"
+    }
+  }
+}
+
+const function dotnetPublish(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): Listing<gha.Step> = new {
+  new {
+    name = "Publish \(project)"
+    run = "dotnet publish \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties)) --no-self-contained"
+  }
+  new {
+    name = "Output executable path"
+    id = "dotnet-publish"
+    run = "echo 'executable-path=./\(project)/bin/\(Common.configuration)/\(framework)/\(runtime)/\(project.split("/").last)' >> $GITHUB_OUTPUT"
+    shell = "bash"
+  }
+}
+
+const function dotnetBuild(project: String, framework: Common.NetFramework, runtime: Common.NetRuntime?, properties: Mapping<String, String>): gha.Step = new {
+  name = "Build \(project)"
+  run = "dotnet build \(project) -c \(Common.configuration) -f \(framework)\(if (runtime != null) " -r \(runtime)" else "")\(propertiesToString(properties))"
+}
+
+const function runSimulator(config: SimulatorConfig): gha.Step = new {
+  name = "Run on Simulator"
+  uses = Actions.runSimulator
+  with = config.toMap().toMapping()
+}
+
+const function runDeviceFarm(config: DeviceFarmConfig): Listing<gha.Step> = new {
+  configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2")
+  new {
+    name = "Run the tests"
+    uses = "./.github/actions/run-android-device-farm-test"
+    id = "run_tests"
+    with {
+      ["apk-path"] = config.apkPath
+      ["app-id"] = config.appId
+      ["project-arn"] = "${{ secrets.DEVICEFARM_PROJECT_ARN }}"
+      ["device-pool-arn"] = "${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}"
+    }
+  }
+}
+
+const function publishCoverage(file: String): Listing<gha.Step> = new {
+  new {
+    name = "Publish Coverage"
+    id = "publish-coveralls"
+    uses = Actions.coveralls
+    with {
+      ["github-token"] = "${{ secrets.GITHUB_TOKEN }}"
+      ["file"] = file
+      ["git-commit"] = "${{ github.event.pull_request.head.sha }}"
+      ["compare-sha"] = "${{ github.event.pull_request.base.sha }}"
+    }
+  }
+  new {
+    name = "Output Coveralls response"
+    run = "echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}"
+  }
+}
+
+const function cleanupWorkspace(): gha.Step = new {
+  name = "Cleanup Workspace"
+  run = "git clean -fdx"
+}
+
+class SimulatorConfig {
+  appPath: String
+  bundleId: String
+  iphoneToSimulate: "Apple-TV-1080p" | "iPhone-8" | "iPhone-15"
+  arguments: String
+  os: "tvOS" | "iOS"
+}
+
+class DeviceFarmConfig {
+  apkPath: String
+  appId: String
+}
+
+local const function addMSBuildToPath(): gha.Step = new {
+  name = "Add msbuild to PATH"
+  uses = Actions.setupMsBuild
+  `if` = "${{ runner.os == 'Windows' }}"
+}
+
+local const function propertiesToString(properties: Mapping<String, String>): String = " " + properties.toMap().entries.map((kvp) -> "-p:\(kvp.key)=\(kvp.value)").join(" ")

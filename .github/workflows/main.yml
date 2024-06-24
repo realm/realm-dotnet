@@ -1,5 +1,8 @@
-name: main
-"on":
+# Do not modify!
+# This file was generated from a template using https://github.com/apple/pkl
+
+name: Main Build
+'on':
   push:
     branches:
     - main
@@ -18,220 +21,1472 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   build-wrappers:
-    uses: ./.github/workflows/wrappers.yml
     name: Wrappers
+    uses: ./.github/workflows/wrappers.yml
   deploy-baas:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-  build-packages:
-    uses: ./.github/workflows/build-packages.yml
-    name: Package
-    needs:
-    - build-wrappers
-  publish-packages-to-sleet:
+    name: Deploy BaaS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
-    name: Publish package to S3
-    needs:
-    - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.publish-prerelease)
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
+        dotnet-version: 8.0.x
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
+    strategy:
+      matrix:
+        differentiator:
+        - code-coverage
+        - net-framework
+        - uwp
+        - macos-maui
+        - android-maui
+        - ios-maui
+        - macos-maui
+      fail-fast: false
+  build-packages:
+    name: Package NuGet
+    needs:
+    - build-wrappers
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    outputs:
+      package_version: ${{ steps.get-version.outputs.package_version }}
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Setup JDK
+      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
+      with:
+        distribution: microsoft
+        java-version: 17
+    - name: Setup Android
+      uses: android-actions/setup-android@e1f5280adf78cf863c0fa43ffabc64a9cd08153f
+    - name: Install SDK platform 21
+      run: sdkmanager --install "platforms;android-21"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
+    - name: Set version suffix
+      id: set-version-suffix
+      run: |-
+        $suffix = ""
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+        {
+          if (-Not "${{ github.head_ref }}".Contains("release"))
+          {
+            $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+          }
+        }
+        else
+        {
+          $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+        }
+        echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
+      shell: pwsh
+    - name: Fetch wrappers for macos
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-macos
+        path: wrappers/build
+    - name: Fetch wrappers for catalyst
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-catalyst
+        path: wrappers/build
+    - name: Fetch wrappers for linux-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for linux-armhf
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-armhf
+        path: wrappers/build
+    - name: Fetch wrappers for linux-aarch64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-aarch64
+        path: wrappers/build
+    - name: Fetch wrappers for android-armeabi-v7a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: wrappers/build
+    - name: Fetch wrappers for android-arm64-v8a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-arm64-v8a
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-Win32
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-Win32
+        path: wrappers/build
+    - name: Fetch wrappers for windows-x64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-x64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-ARM64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-ARM64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-Win32
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-Win32
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-x64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-x64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-ARM
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - name: Fetch wrappers for windows-uwp-ARM64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-uwp-ARM64
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Device
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Device
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Simulator
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Simulator
+        path: wrappers/build
+    - name: Fetch wrappers for tvOS-Device
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-tvOS-Device
+        path: wrappers/build
+    - name: Fetch wrappers for tvOS-Simulator
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-tvOS-Simulator
+        path: wrappers/build
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Read version
+      id: get-version
+      run: |-
+        cd Realm/packages
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+        echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Store artifacts for Realm.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for ExtractedChangelog
+      uses: actions/upload-artifact@v4
+      with:
+        name: ExtractedChangelog
+        path: Realm/Realm/ExtractedChangelog.md
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Check Docfx cache
+      id: check-docfx-cache
+      if: contains(github.head_ref, 'release')
+      uses: actions/cache@v4
+      with:
+        path: C:\docfx
+        key: docfx-2.75.2
+    - name: Download docfx
+      if: contains(github.head_ref, 'release') && steps.check-docfx-cache.outputs.cache-hit != 'true'
+      run: |-
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.75.2/docfx-win-x64-v2.75.2.zip -OutFile C:\docfx.zip
+        Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
+    - name: Build docs
+      if: contains(github.head_ref, 'release')
+      env:
+        DOCFX_SOURCE_BRANCH_NAME: ${{ github.head_ref }}
+      run: C:\docfx\docfx Docs/docfx.json
+  build-unity:
+    name: Package Unity
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityUtils
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityWeaver
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Unity
+      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
+    - name: Store artifacts for io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/upload-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Build Tests
+      run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/Realm.Unity/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+    - name: Store artifacts for UnityTests
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  build-unity-tests-linux:
+    name: Build Unity linux
+    needs:
+    - build-packages
+    - build-unity
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on:
+    - unity
+    - linux
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/download-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch UnityTests
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform StandaloneLinux64 -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile -
+    - name: Store artifacts for UnityTestsRunner.linux
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTestsRunner.linux
+        path: Tests/Tests.Unity/Player_StandaloneLinux64_Mono-Net4/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  run-unity-tests-linux:
+    name: Test Unity linux
+    needs:
+    - build-unity-tests-linux
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch UnityTestsRunner.linux
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTestsRunner.linux
+        path: TestRunner
+    - name: Install xvfb
+      run: sudo apt install -y xvfb libglu1 libxcursor1
+    - name: Run Tests
+      run: |-
+        chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
+        xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Unity linux Mono-Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  build-unity-tests-windows:
+    name: Build Unity windows
+    needs:
+    - build-packages
+    - build-unity
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on:
+    - unity
+    - windows
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/download-artifact@v4
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch UnityTests
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform StandaloneWindows64 -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile build.log
+    - name: Store artifacts for UnityTestsRunner.windows
+      uses: actions/upload-artifact@v4
+      with:
+        name: UnityTestsRunner.windows
+        path: Tests/Tests.Unity/Player_StandaloneWindows64_Mono-Net4/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  run-unity-tests-windows:
+    name: Test Unity windows
+    needs:
+    - build-unity-tests-windows
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch UnityTestsRunner.windows
+      uses: actions/download-artifact@v4
+      with:
+        name: UnityTestsRunner.windows
+        path: TestRunner
+    - name: Run Tests
+      run: |-
+        Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
+        cat ${{ github.workspace }}\test.log
+      shell: pwsh
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Unity windows Mono-Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-net-framework:
+    name: Test .NET Framework
+    needs:
+    - build-packages
+    - deploy-baas
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=net-framework-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Realm.Tests
+      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+    - name: Run the tests
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=net-framework-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results .NET Framework
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-uwp:
+    name: Test UWP
+    needs:
+    - build-packages
+    - deploy-baas
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=uwp-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Import test certificate
+      run: |-
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $currentDirectory = Get-Location
+        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+      shell: powershell
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Tests.UWP
+      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=uwp-${{ github.run_id }}-${{ github.run_attempt }}'
+      shell: powershell
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results UWP
+        path: ${{ env.TEST_RESULTS }}
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-net-core:
+    name: Test ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os.runner }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Clear nuget cache
+      if: ${{ matrix.os.runner == 'win81' }}
+      run: dotnet nuget locals all --clear
+    - name: Extract .NET version
+      id: get-net-version
+      run: |2-
+          NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
+          echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
+      shell: bash
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: ${{ steps.get-net-version.outputs.version }}
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Archive core dump
+      if: ${{ failure() && runner.os != 'Windows' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
+        path: /tmp/coredump*
+        retention-days: 30
+        if-no-files-found: warn
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+    strategy:
+      matrix:
+        framework:
+        - net6.0
+        - net8.0
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-13
+          runtime: osx-x64
+        include:
+        - framework: net8.0
+          os:
+            runner: macos-14
+            runtime: osx-arm64
+      fail-fast: false
+  test-macos-xamarin:
+    name: Test Xamarin.macOS
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: macos-12
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Tests.XamarinMac
+      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Xamarin.macOS
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-macos-maui:
+    name: Test Maui.MacCatalyst
+    needs:
+    - build-packages
+    - deploy-baas
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: macos-13
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=macos-maui-${{ github.run_id }}-${{ github.run_attempt }}
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install maui
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
+      with:
+        xcode-version: latest-stable
+    - name: Build Tests/Tests.Maui
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=macos-maui-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Transform Results
+      run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Maui.MacCatalyst
+        path: TestResults.xml_transformed.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-ios-xamarin:
+    name: Test Xamarin.iOS
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: macos-12
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Tests.iOS
+      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run on Simulator
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
+      with:
+        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
+        bundleId: io.realm.dotnettests
+        iphoneToSimulate: iPhone-8
+        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+        os: iOS
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Xamarin.iOS
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-ios-maui:
+    name: Test Maui.iOS
+    needs:
+    - build-packages
+    - deploy-baas
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: macos-13
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=ios-maui-${{ github.run_id }}-${{ github.run_attempt }}
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install maui
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
+      with:
+        xcode-version: latest-stable
+    - name: Build Tests/Tests.Maui
+      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run on Simulator
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
+      with:
+        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
+        bundleId: io.realm.mauitests
+        iphoneToSimulate: iPhone-15
+        arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=ios-maui-${{ github.run_id }}-${{ github.run_attempt }}
+        os: iOS
+    - name: Transform Results
+      run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Maui.iOS
+        path: TestResults.xml_transformed.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-tvos:
+    name: Test Xamarin.tvOS
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: macos-12
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Tests.XamarinTVOS
+      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run on Simulator
+      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
+      with:
+        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
+        bundleId: io.realm.Tests-XamarinTVOS
+        iphoneToSimulate: Apple-TV-1080p
+        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+        os: tvOS
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Xamarin.tvOS
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-android-xamarin:
+    name: Test Xamarin.Android
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Setup JDK
+      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
+      with:
+        distribution: microsoft
+        java-version: 17
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Tests/Tests.Android
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      id: run_tests
+      uses: ./.github/actions/run-android-device-farm-test
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+        app-id: io.realm.xamarintests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Xamarin.Android
+        path: ${{ steps.run_tests.outputs.test-results-path }}
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-android-maui:
+    name: Test Maui.Android
+    needs:
+    - build-packages
+    - deploy-baas
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Setup JDK
+      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
+      with:
+        distribution: microsoft
+        java-version: 17
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=android-maui-${{ github.run_id }}-${{ github.run_attempt }}
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup workloads
+      run: dotnet workload install maui
+    - name: Publish Tests/Tests.Maui
+      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      id: run_tests
+      uses: ./.github/actions/run-android-device-farm-test
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
+        app-id: io.realm.mauitests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: Transform Results
+      run: xsltproc --output ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt ${{ steps.run_tests.outputs.test-results-path }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Maui.Android
+        path: ${{ steps.run_tests.outputs.test-results-path }}_transformed.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-woven-classes:
+    name: Test Woven Classes
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Woven Classes
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-source-generation:
+    name: Test Source Generation
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
+    - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Source Generation
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  test-weaver:
+    name: Test Weaver
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os.runner }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
+    - name: Publish Tests/Weaver/Realm.Fody.Tests
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Weaver
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+    strategy:
+      matrix:
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-14
+          runtime: osx-arm64
+      fail-fast: false
+  test-code-coverage:
+    name: Test Code Coverage
+    needs:
+    - build-wrappers
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch wrappers for linux-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-x86_64
+        path: wrappers/build
+    - name: Deploy Apps
+      working-directory: Tools/DeployApps
+      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Setup Coverlet & Report Generator
+      run: |-
+        dotnet tool install coverlet.console --tool-path tools
+        dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      env:
+        DOTNET_DbgEnableMiniDump: 1
+        DOTNET_EnableCrashReport: 1
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+    - name: Archive core dump
+      if: ${{ failure() && runner.os != 'Windows' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: crash-report-net-core-${{ runner.os }}-${{ runner.arch }}
+        path: /tmp/coredump*
+        retention-days: 30
+        if-no-files-found: warn
+    - name: Publish Coverage
+      id: publish-coveralls
+      uses: coverallsapp/github-action@v2.3.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./report.lcov
+        git-commit: ${{ github.event.pull_request.head.sha }}
+        compare-sha: ${{ github.event.pull_request.base.sha }}
+    - name: Output Coveralls response
+      run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+    - name: Publish Unit Test Results
+      if: always()
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
+      with:
+        name: Results Code Coverage
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        path-replace-backslashes: true
+        fail-on-error: true
+  cleanup-baas:
+    name: Cleanup BaaS
+    needs:
+    - test-code-coverage
+    - test-net-framework
+    - test-uwp
+    - test-macos-maui
+    - test-android-maui
+    - test-ios-maui
+    - test-macos-maui
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
+    - name: Terminate Baas
+      working-directory: Tools/DeployApps
+      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
+    strategy:
+      matrix:
+        differentiator:
+        - code-coverage
+        - net-framework
+        - uwp
+        - macos-maui
+        - android-maui
+        - ios-maui
+        - macos-maui
+      fail-fast: false
+  verify-namespaces:
+    name: Verify Namespaces
+    needs:
+    - build-packages
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityUtils
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityWeaver
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - run: dotnet tool install ilspycmd -g --version 8.0.0.7345
+    - name: Verify Namespaces
+      run: |-
+        $isFailure = $false
+        Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
+          $targetPath = Join-Path ./Realm/packages $_.BaseName
+          Expand-Archive $_.FullName -DestinationPath $targetPath
+
+          Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
+            if (-not ($_.FullName -match "runtimes")) {
+              $ilspyOutput = ilspycmd $_.FullName
+
+              $parentDll = $_.FullName
+
+              $ilspyOutput | ForEach-Object {
+                if ($_ -match "namespace.*Realm(\.|$)") {
+                  Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                  Set-Variable "isFailure" -Value $true
+                }
+              }
+            }
+          }
+        }
+
+        if ($isFailure) {
+          exit 1
+        }
+      shell: pwsh
+  lint:
+    name: Verify TODOs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: nirinchev/verify-todo@ffa352ac028b4cdc8bc626471d33aa341b3ab7c9
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        include: '**/*.+(cs|cpp|hpp)'
+        exclude: wrappers/realm-core/**
+        pattern: \\WR[A-Z]+-[0-9]+
+  publish-packages-to-sleet:
+    name: Publish package to S3
+    needs:
+    - build-packages
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.publish-prerelease) }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Fetch Realm
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 8.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
         aws-access-key-id: ${{ secrets.NUGET_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.NUGET_S3_SECRET_KEY }}
         aws-region: us-east-1
-    - name: NuGet Publish Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
-  build-unity:
-    uses: ./.github/workflows/build-unity.yml
-    name: Package
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    needs:
-    - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-  test-net-framework:
-    uses: ./.github/workflows/test-net-framework.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-  test-uwp-managed:
-    uses: ./.github/workflows/test-uwp-managed.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-      Pfx_Password: ${{ secrets.Pfx_Password }}
-      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
-  test-net-core:
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    name: Test
-    needs:
-    - build-packages
-    uses: ./.github/workflows/test-net-core.yml
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["net6.0", "net7.0"]'
-  test-macos:
-    uses: ./.github/workflows/test-macos.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-  test-ios:
-    uses: ./.github/workflows/test-ios.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-  test-tvos:
-    uses: ./.github/workflows/test-tvos.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
-  test-android:
-    uses: ./.github/workflows/test-android.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
-      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
-      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+    - name: NuGet Publish Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   test-xunit:
-    runs-on: windows-latest
     name: Test xUnit Compatibility
-    timeout-minutes: 10
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    timeout-minutes: 60
+    runs-on: windows-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Tests.XUnit
-      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net6.0/win-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net6.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
-  test-weaver:
-    uses: ./.github/workflows/test-weaver.yml
-    name: Test
-  test-code-coverage:
-    uses: ./.github/workflows/test-code-coverage.yml
-    name: Test
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+  benchmark-linux:
+    name: Test Benchmark
     needs:
     - build-packages
-    - deploy-baas
-    with:
-      version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}
-  benchmark-linux:
-    name: Benchmark Linux
-    needs: build-packages
-    runs-on: performance-tests
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.run-benchmark)
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.run-benchmark) }}
     timeout-minutes: 60
+    runs-on: performance-tests
     steps:
-    - name: Cleanup Workspace
-      run: rm -rf "${{ github.workspace }}/*"
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
+    - name: Register problem matchers
+      run: |-
+        echo "::add-matcher::.github/problem-matchers/csc.json"
+        echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
     - name: Fetch Realm
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v4
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Clear nuget cache
       run: dotnet nuget locals all --clear
@@ -239,44 +1494,28 @@ jobs:
       run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
       id: find-results-file
-      run: |
+      run: |-
         cd BenchmarkDotNet.Artifacts/results
         file=$(basename BenchmarkRun*json)
         echo "benchmark-results=$file" >> $GITHUB_OUTPUT
       shell: bash
     - name: Publish Benchmark Results
-      uses: ./.github/actions/benchmark-uploader
+      uses: ./github/actions/benchmark-uploader
       with:
         realm-token: ${{ secrets.Realm_Token }}
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
         dashboard-path: dashboard.charts
         nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
     - name: Store artifacts for dashboard.charts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dashboard.charts
-        path: ${{ github.workspace }}/dashboard.charts
-        retention-days: 30
+        path: dashboard.charts
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
-  cleanup-baas:
-    uses: ./.github/workflows/cleanup-baas.yml
-    if: always()
-    name: Cleanup
-    needs:
-    - deploy-baas
-    - test-net-framework
-    - test-code-coverage
-    - test-uwp-managed
-    - test-macos
-    - test-ios
-    - test-android
-    with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
-    secrets:
-      BaaSaasApiKey: ${{ secrets.BAASAAS_API_KEY }}

@@ -36,6 +36,7 @@ namespace Realms.Tests
         /// <summary>
         /// Defines the schema for the <see cref="ClassWithUnqueryableMembers"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ClassWithUnqueryableMembers", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("RealPropertyToSatisfyWeaver", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),

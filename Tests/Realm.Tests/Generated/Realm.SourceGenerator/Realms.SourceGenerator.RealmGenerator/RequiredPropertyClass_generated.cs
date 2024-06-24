@@ -34,6 +34,7 @@ namespace Realms.Tests.Database
         /// <summary>
         /// Defines the schema for the <see cref="RequiredPropertyClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPropertyClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("FooRequired", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "FooRequired"),

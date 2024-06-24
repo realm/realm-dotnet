@@ -1,78 +1,86 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/apple/pkl
+
 name: Publish Release
-"on": workflow_dispatch
+'on':
+  workflow_dispatch: {}
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
 jobs:
   main:
-    runs-on: windows-latest
+    name: Publish Release
     environment: Production
+    runs-on: windows-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c
+      uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
       with:
         workflow: pr.yml
         commit: ${{ github.sha }}
-        path: ${{ github.workspace }}/Realm/packages/
+        path: Realm/packages/
         workflow_conclusion: completed
     - name: Read version
       id: get-version
-      run: |
+      run: |-
         cd Realm/packages
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
-        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
+        echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
         aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
         aws-region: us-east-2
     - name: Upload docs
-      run: |
+      run: |-
         Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
-        $versions = "${{ steps.get-version.outputs.version }}", "latest"
+        $versions = "${{ steps.get-version.outputs.package_version }}", "latest"
         Foreach ($ver in $versions)
         {
           aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
         }
-    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
+    - name: NuGet Publish Realm.${{ steps.get-version.outputs.package_version }}
+      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}/Realm.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
+      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
       with:
         node-version: 16.x
         registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag latest
+    - name: NPM publish io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz --tag latest
     - name: Find Release PR
-      uses: juliangruber/find-pull-request-action@afdd62ccd2d4c55f5bdb154b489b85fc4cbcb9c1
       id: find-pull-request
+      uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0
       with:
         branch: ${{ github.ref }}
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14
+      uses: juliangruber/merge-pull-request-action@9234b8714dda9a08f3d1df5b2a6a3abd7b695353
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.find-pull-request.outputs.number }}
         method: squash
     - name: Publish Github Release
-      uses: ncipollo/release-action@3ac4132803a6419fa2a7f4e9dbd1d93fceb690b9
+      uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
       with:
-        artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+        artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz
         bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
-        name: ${{ steps.get-version.outputs.version }}
+        name: ${{ steps.get-version.outputs.package_version }}
         commit: main
-        tag: ${{ steps.get-version.outputs.version }}
+        tag: ${{ steps.get-version.outputs.package_version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
     - name: Update Changelog
-      run: |
+      run: |-
         echo "## vNext (TBD)
 
         ### Enhancements
@@ -82,7 +90,7 @@ jobs:
         * None
 
         ### Compatibility
-        * Realm Studio: 13.0.0 or later.
+        * Realm Studio: 15.0.0 or later.
 
         ### Internal
         * Using Core x.y.z.
@@ -91,7 +99,7 @@ jobs:
       shell: bash
     - name: Create vNext PR
       id: vnext-pr
-      uses: peter-evans/create-pull-request@6c704eb7a8ba1daa13da0dcea9bb93a4fe530275
+      uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
       with:
         branch: prepare-vnext
         title: Prepare for vNext
@@ -100,15 +108,15 @@ jobs:
         base: main
         commit-message: Prepare for vNext
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14
+      uses: juliangruber/merge-pull-request-action@9234b8714dda9a08f3d1df5b2a6a3abd7b695353
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@fa20eb972b9f018654fdb4e2c7afb52b0532f907
+      uses: realm/ci-actions/release-to-slack@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
         changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
-        version: ${{ steps.get-version.outputs.version }}
+        version: ${{ steps.get-version.outputs.package_version }}

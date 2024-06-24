@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
-**File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
+### Enhancements
+* Allow `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
 
 ### Breaking Changes
 * Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
@@ -10,8 +11,22 @@
 * Sorting order of strings has changed to use standard unicode codepoint order instead of grouping similar english letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". (Core 14.0.0)
 * In RQL (`Filter()`), if you want to query using `@type` operation, you must use `objectlink` to match links to objects. `object` is reserved for dictionary types. (Core 14.0.0)
 * Opening realm with file format 23 or lower (Realm .NET versions earlier than 12.0.0) in read-only mode will crash. (Core 14.0.0)
+### Fixed
+* A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
+* After compacting, a file upgrade would be triggered. This could cause loss of data if `ShouldDeleteIfMigrationNeeded` is set to `true`. (Issue [#3583](https://github.com/realm/realm-dotnet/issues/3583), Core 14.9.0)
+* Passing in a deleted object as a substitution argument to `.Filter()` would throw a confusing error with a message starting with `invalid RQL for table`. It now throws a more descriptive error instead. (Issue [#3619](https://github.com/realm/realm-dotnet/issues/3619))
+
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
+### Internal
+* Using Core 14.9.0.
+
+## 12.2.0 (2024-05-22)
 
 ### Enhancements
+* Added support for `Migration.FindInNewRealm` which is a helper that allows you to lookup the object in the post-migration Realm that corresponds to an object from the pre-migration Realm. (Issue [#3600](https://github.com/realm/realm-dotnet/issues/3600))
+* Added `[System.Reflection.Obfuscation]` on the generated `RealmSchema` field to improve compatibility with obfuscation tools that change field and property names of generated classes. (Issue [#3574](https://github.com/realm/realm-dotnet/issues/3574))
 * Added support for list and dictionaries of `RealmValue` (`IList<RealmValue>` and `IDictionary<string, RealmValue>`) to be contained in a `RealmValue`. Lists and dictionaries can contain an arbitrary number of collections themselves. It is possible to convert an existing collection to a `RealmValue` using the new static methods `RealmValue.List` and `RealmValue.Dictionary` or using the implicit operators if converting from common types like `List`, `RealmValue[]` or `Dictionary`. Finally, it is possible to obtain the contained collections by using the new conversion method `AsList` and `AsDictionary`. For example:
 
   ```csharp
@@ -25,6 +40,55 @@
   var retrievedList = rvo.RealmValueProperty.AsList();
   ```
   (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
+
+### Fixed
+* Accessing `App.CurrentUser` from within a `User.Changed` notification would deadlock. (Core 14.7.0)
+* Inserting the same link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affected the value returned by `RealmObject.BacklinksCount` and queries involving backlinks counts. (Core 14.7.0)
+* Fixed an issue that would cause `RealmObject.DynamicApi.GetList/Set/Dictionary` to fail when the collection contains primitive values. (Issue [#3597](https://github.com/realm/realm-dotnet/issues/3597))
+
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
+### Internal
+* Using Core 14.7.0.
+
+## 12.1.0 (2024-05-01)
+
+### Enhancements
+* Added an experimental API to update the base url for an application at runtime - `App.UpdateBaseUriAsync()`. This intended to be used for roaming between edge server and cloud. (Issue [#3521](https://github.com/realm/realm-dotnet/issues/3521))
+
+### Fixed
+* The returned value from `MongoClient.Collection.FindOneAsync` is now a nullable document to more explicitly convey that `null` may be returned in case no object matched the filter. (PR [#3586](https://github.com/realm/realm-dotnet/pull/3586))
+* Fixed crash when integrating removal of already removed dictionary key. (Core 14.5.2)
+* `App.AllUsers` included logged out users only if they were logged out while the App instance existed. It now always includes all logged out users. (Core 14.6.0)
+* Fixed several issues around encrypted file portability (copying a "bundled" encrypted Realm from one device to another): (Core 14.6.0)
+  * Fixed `Assertion failed: new_size % (1ULL << m_page_shift) == 0` when opening an encrypted Realm less than 64Mb that was generated on a platform with a different page size than the current platform.
+  * Fixed a `DecryptionFailed` exception thrown when opening a small (<4k of data) Realm generated on a device with a page size of 4k if it was bundled and opened on a device with a larger page size.
+  * Fixed an issue during a subsequent open of an encrypted Realm for some rare allocation patterns when the top ref was within ~50 bytes of the end of a page. This could manifest as a DecryptionFailed exception or as an assertion: `encrypted_file_mapping.hpp:183: Assertion failed: local_ndx < m_page_state.size()`.
+* Schema initialization could hit an assertion failure if the sync client applied a downloaded changeset while the Realm file was in the process of being opened. (Core 14.6.0)
+* Improve perfomance of "chained OR equality" queries for UUID/ObjectId types and RQL parsed "IN" queries on string/int/uuid/objectid types. (Core 14.6.0)
+* Fixed a bug when running a IN query (or a query of the pattern `x == 1 OR x == 2 OR x == 3`) when evaluating on a string property with an empty string in the search condition. Matches with an empty string would have been evaluated as if searching for a null string instead. (Core 14.6.1)
+
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
+### Internal
+* Using Core 14.6.1.
+
+## 12.0.0 (2024-04-17)
+
+**File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
+
+### Breaking Changes
+* Added automatic serialization and deserialization of Realm classes when using methods on `MongoClient.Collection`, without the need to annotate classes with `MongoDB.Bson`attributes. This feature required to change the default serialization for various types (including `DateTimeOffset`). If you prefer to use the previous serialization, you need to call `Realm.SetLegacySerialization` before any kind of serialization is done, otherwise it may not work as epxected. [#3459](https://github.com/realm/realm-dotnet/pull/3459)
+* `SyncProgress.TransferredBytes` and `SyncProgress.TransferableBytes` have been removed in favour of `SyncProgress.ProgressEstimate`, a double value between 0.0 and 1.0 that expresses the percentage estimate of the current progress. (Issue [#3478](https://github.com/realm/realm-dotnet/issues/3478]))
+* Support for upgrading from Realm files produced by RealmCore v5.23.9 (Realm .NET v5.0.1) or earlier is no longer supported. (Core 14.0.0)
+* `String` and `byte[]` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a `RealmValue` property, as now only strings will be returned. If searching for binary data is desired, then that type must be specified by the constant. In RQL (`.Filter()`) the new way to specify a binary constant is to use `RealmValueProp = bin('xyz')` or `RealmValueProp = binary('xyz')`. (Core 14.0.0)
+* Sorting order of strings has changed to use standard unicode codepoint order instead of grouping similar english letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". (Core 14.0.0)
+* In RQL (`Filter()`), if you want to query using `@type` operation, you must use `objectlink` to match links to objects. `object` is reserved for dictionary types. (Core 14.0.0)
+* Opening realm with file format 23 or lower (Realm .NET versions earlier than 12.0.0) in read-only mode will crash. (Core 14.0.0)
+
+### Enhancements
 * Reduced memory usage of `RealmValue`. (PR [#3441](https://github.com/realm/realm-dotnet/pull/3441))
 * Add support for passing a key paths collection (`KeyPathsCollection`) when using `IRealmCollection.SubscribeForNotifications`. Passing a `KeyPathsCollection` allows to specify which changes in properties should raise a notification.
 
@@ -107,7 +171,7 @@
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 14.5.0.
+* Using Core 14.5.1.
 
 ## 11.7.0 (2024-02-05)
 

@@ -29,7 +29,7 @@ namespace Realms.Sync
     /// <see cref="FlexibleSyncConfiguration"/> will be initially empty until one or more subscriptions are added
     /// via <see cref="Realm.Subscriptions"/>.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/fundamentals/realm-sync/">Sync Docs</seealso>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/sync/">Device Sync Docs</seealso>
     public class FlexibleSyncConfiguration : SyncConfigurationBase
     {
         /// <summary>

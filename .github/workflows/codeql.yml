@@ -1,17 +1,20 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/apple/pkl
+
 name: CodeQL
-"on":
-  push:
-    branches:
-    - main
+'on':
   pull_request:
-    branches:
-    - main
     paths:
     - '**.cs'
     - '**.cpp'
     - '**.hpp'
     - '**.csproj'
     - .github/workflows/codeql.yml
+    branches:
+    - main
+  push:
+    branches:
+    - main
 env:
   REALM_DISABLE_ANALYTICS: true
 concurrency:
@@ -20,51 +23,53 @@ concurrency:
 jobs:
   analyze-csharp:
     name: Analyze C#
-    runs-on: windows-latest
     permissions:
       actions: read
       contents: read
       security-events: write
+    runs-on: windows-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31
+      uses: github/codeql-action/init@a57c67b89589d2d13d5ac85a9fc4679c7539f94c
       with:
         languages: csharp
-        config: |
+        config: |-
           queries:
             - uses: security-and-quality
           query-filters:
-            - exclude: cs/call-to-unmanaged-code
-            - exclude: cs/unmanaged-code
-    - name: Setup Android
-      uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
-    - name: Install SDK platform 21
-      run: sdkmanager --install "platforms;android-21"
+            - exclude:
+                id: cs/call-to-unmanaged-code
+            - exclude:
+                id: cs/unmanaged-code
     - name: Setup JDK
-      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
       with:
         distribution: microsoft
-        java-version: 11
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+        java-version: 17
+    - name: Setup Android
+      uses: android-actions/setup-android@e1f5280adf78cf863c0fa43ffabc64a9cd08153f
+    - name: Install SDK platform 21
+      run: sdkmanager --install "platforms;android-21"
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
-    - name: Build Realm.PlatformHelpers
-      run: msbuild Realm/Realm.PlatformHelpers -p:UseSharedCompilation=false -restore -p:Configuration=Release
-    - name: Build Realm
-      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
-    - name: Build Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
-    - name: Build Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      if: ${{ runner.os == 'Windows' }}
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -restore -p:Configuration=Release -p:UseSharedCompilation=false
+    - name: Build Realm/Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -restore -p:Configuration=Release -p:UseSharedCompilation=false
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -restore -p:Configuration=Release -p:UseSharedCompilation=false
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -restore -p:Configuration=Release -p:UseSharedCompilation=false
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31
+      uses: github/codeql-action/analyze@a57c67b89589d2d13d5ac85a9fc4679c7539f94c

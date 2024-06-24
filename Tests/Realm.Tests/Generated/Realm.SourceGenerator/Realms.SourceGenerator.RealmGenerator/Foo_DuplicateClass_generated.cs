@@ -36,6 +36,7 @@ namespace Foo
         /// <summary>
         /// Defines the schema for the <see cref="DuplicateClass"/> class.
         /// </summary>
+        [System.Reflection.Obfuscation]
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntValue"),

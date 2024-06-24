@@ -22,7 +22,7 @@ namespace Realms.Exceptions
     /// Exception thrown when the schema specified in your C# models doesn't pass validation for the type of Realm you're trying to open.
     /// The message contains information about the validation errors and how to correct them.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/dotnet/realms/#std-label-dotnet-realm-schema">
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/model-data/define-object-model/">
     /// General information about Realm's schema.
     /// </seealso>
     public class RealmSchemaValidationException : RealmException
