@@ -140,6 +140,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(propertyName), Is.EqualTo(realmValue));
+                Assert.That(allTypesObject.DynamicApi.Get(propertyName), Is.EqualTo(realmValue));
             });
         }
 
@@ -984,7 +985,7 @@ namespace Realms.Tests.Database
         [Test]
         public void FlexibleSchema_BaseTest()
         {
-            _configuration.FlexibleSchema = true;
+            _configuration.RelaxedSchema = true;
             var realm = GetRealm(_configuration);
 
             var person = realm.Write(() =>
