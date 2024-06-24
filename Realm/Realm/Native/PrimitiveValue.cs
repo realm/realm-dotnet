@@ -18,7 +18,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
