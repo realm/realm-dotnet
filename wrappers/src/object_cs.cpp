@@ -224,14 +224,15 @@ extern "C" {
         return handle_errors(ex, [&]() {
             auto props = object.get_obj().get_additional_properties();
 
+            std::vector<realm_string_t> realm_string_array;
+
             size_t size = props.size();
-            realm_string_t* realm_string_array = new realm_string_t[size];
 
             for (size_t i = 0; i < size; ++i) {
-                realm_string_array[i] = to_capi(props[i]);
+                realm_string_array.push_back(to_capi(props[i]));
             }
 
-            return realm_string_array;
+            return MarshaledVector(realm_string_array);
         });
     }
 

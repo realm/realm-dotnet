@@ -64,7 +64,7 @@ namespace Realms
             public static extern IntPtr set_collection_additional_property(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_properties", CallingConvention = CallingConvention.Cdecl)]
-            public static extern StringValue[] get_additional_properties(ObjectHandle handle, out NativeException ex);
+            public static extern MarshaledVector<StringValue> get_additional_properties(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -340,8 +340,8 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             //TODO We should not get empty null values here, so this is mostly to make the warning go away
-            //Need to fix this
-            return value.Select(v => v.ToDotnetString() ?? string.Empty);
+            // We can probably improve the conversion;
+            return value.ToEnumerable().Select(v => v.ToDotnetString(true) ?? string.Empty);
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)
