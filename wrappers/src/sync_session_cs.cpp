@@ -121,7 +121,7 @@ REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedS
                                   : SyncSession::ProgressDirection::download;
 
         return session->register_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable, double progress_estimate) {
-            s_progress_callback(managed_state, transferred, transferable, progress_estimate);
+            s_progress_callback(managed_state, progress_estimate);
         }, notifier_direction, is_streaming);
     });
 }
