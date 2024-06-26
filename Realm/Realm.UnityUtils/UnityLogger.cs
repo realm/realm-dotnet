@@ -22,9 +22,9 @@ namespace UnityUtils
 {
     public class UnityLogger : Logger
     {
-        protected override void LogImpl(LogLevel level, string message)
+        protected override void LogImpl(LogLevel level, LogCategory category, string message)
         {
-            var toLog = FormatLog(level, message);
+            var toLog = FormatLog(level, category, message);
             switch (level)
             {
                 case LogLevel.Fatal:
