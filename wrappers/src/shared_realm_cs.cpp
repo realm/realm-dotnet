@@ -48,7 +48,8 @@ using namespace realm::util;
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using ReleaseGCHandleT = void(void* managed_handle);
-using LogMessageT = void(realm_string_t message, util::Logger::Level level);
+// TODO(lj): Update arg order to be the same across the SDK.
+using LogMessageT = void(realm_string_t message, util::Logger::Level level, realm_string_t category_name);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
@@ -99,7 +100,7 @@ namespace binding {
     protected:
         void do_log(const LogCategory& category, Level level, const std::string& message) override final
         {
-            s_log_message(to_capi(message), level);
+            s_log_message(to_capi(message), level, to_capi(category.get_name()));
         }
     };
 }
@@ -295,8 +296,9 @@ REALM_EXPORT void shared_realm_install_callbacks(
     LogCategory::realm.set_default_level_threshold(Logger::Level::info);
 }
 
-REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
-    LogCategory::realm.set_default_level_threshold(level);
+REALM_EXPORT void shared_realm_set_log_level(Logger::Level level, uint16_t* category_name_buf, size_t category_name_len) {
+    Utf16StringAccessor category_name(category_name_buf, category_name_len);
+    LogCategory::get_category(category_name).set_default_level_threshold(level);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
