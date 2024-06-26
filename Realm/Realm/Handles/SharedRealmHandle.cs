@@ -63,8 +63,9 @@ namespace Realms
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void DisposeGCHandleCallback(IntPtr handle);
 
+            // TODO(lj): Update arg order to be the same across the SDK.
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void LogMessageCallback(StringValue message, LogLevel level);
+            public delegate void LogMessageCallback(StringValue message, LogLevel level, StringValue categoryName);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, [MarshalAs(UnmanagedType.U1)] bool invoke_async, NativeException ex);
@@ -224,7 +225,7 @@ namespace Realms
             public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
-            public static extern bool set_log_level(LogLevel level);
+            public static extern void set_log_level(LogLevel level, [MarshalAs(UnmanagedType.LPWStr)] string category_name, IntPtr category_name_len);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
@@ -271,7 +272,7 @@ namespace Realms
                 notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
 
-        public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);
+        public static void SetLogLevel(LogLevel level, LogCategory category) => NativeMethods.set_log_level(level, category.Name, (IntPtr)category.Name.Length);
 
         [Preserve]
         protected SharedRealmHandle(IntPtr handle) : base(handle)
@@ -822,9 +823,9 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static void LogMessage(StringValue message, LogLevel level)
+        private static void LogMessage(StringValue message, LogLevel level, StringValue categoryName)
         {
-            Logger.LogDefault(level, message!);
+            Logger.LogDefault(level, LogCategory.FromName(categoryName!), message!);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
