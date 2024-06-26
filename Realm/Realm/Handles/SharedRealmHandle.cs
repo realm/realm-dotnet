@@ -224,6 +224,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_log_level", CallingConvention = CallingConvention.Cdecl)]
+            public static extern LogLevel get_log_level([MarshalAs(UnmanagedType.LPWStr)] string category_name, IntPtr category_name_len);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_log_level(LogLevel level, [MarshalAs(UnmanagedType.LPWStr)] string category_name, IntPtr category_name_len);
 
@@ -271,6 +274,8 @@ namespace Realms
             NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage,
                 notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
+
+        public static LogLevel GetLogLevel(LogCategory category) => NativeMethods.get_log_level(category.Name, (IntPtr)category.Name.Length);
 
         public static void SetLogLevel(LogLevel level, LogCategory category) => NativeMethods.set_log_level(level, category.Name, (IntPtr)category.Name.Length);
 

@@ -35,11 +35,11 @@ namespace Realms.Logging
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
+        // TODO(lj): Use this default log level?
+        private static readonly LogLevel _defaultLogLevel = LogLevel.Info;
         private static readonly LogCategory _defaultLogCategory = LogCategory.Realm;
-        private static Logger? _defaultLogger;
-        // TODO(lj): Remove since it's not one level anymore. (Get it from Core)
-        private static LogLevel _logLevel = LogLevel.Info;
         private static LogCategory _logCategory = _defaultLogCategory;
+        private static Logger? _defaultLogger;
 
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
@@ -102,7 +102,8 @@ namespace Realms.Logging
         /// <value>The log level for Realm-originating messages.</value>
         public static LogLevel LogLevel
         {
-            get => _logLevel;
+            // TODO(lj): Do we want to deprecate the getter as well?
+            get => GetLogLevel();
             // TODO(lj): Deprecate and refer to `SetLogLevel`.
             set
             {
@@ -115,12 +116,19 @@ namespace Realms.Logging
             get => _logCategory;
         }
 
+        public static LogLevel GetLogLevel(LogCategory? category = null)
+        {
+            // TODO(lj): Perhaps we should grab the current category (`_logCategory`)
+            //           instead of the default here? If there hasn't been a category
+            //           explicitly set, it will still be the default.
+            category ??= _defaultLogCategory;
+            return SharedRealmHandle.GetLogLevel(category);
+        }
+
         public static void SetLogLevel(LogLevel level, LogCategory? category = null)
         {
             category ??= _defaultLogCategory;
             SharedRealmHandle.SetLogLevel(level, category);
-            // TODO(lj): Remove setting `_logLevel` as we should get the level at the current category.
-            _logLevel = level;
             _logCategory = category;
         }
 

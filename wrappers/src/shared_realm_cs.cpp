@@ -296,6 +296,16 @@ REALM_EXPORT void shared_realm_install_callbacks(
     LogCategory::realm.set_default_level_threshold(Logger::Level::info);
 }
 
+REALM_EXPORT Logger::Level shared_realm_get_log_level(uint16_t* category_name_buf, size_t category_name_len) {
+    Utf16StringAccessor category_name(category_name_buf, category_name_len);
+    // TODO(lj): Usage in Core:
+    auto& category = LogCategory::get_category(category_name);
+    return Logger::get_default_logger()->get_level_threshold(category);
+
+    // TODO(lj): But this seems to work as well:
+    // return LogCategory::get_category(category_name).get_default_level_threshold();
+}
+
 REALM_EXPORT void shared_realm_set_log_level(Logger::Level level, uint16_t* category_name_buf, size_t category_name_len) {
     Utf16StringAccessor category_name(category_name_buf, category_name_len);
     LogCategory::get_category(category_name).set_default_level_threshold(level);
