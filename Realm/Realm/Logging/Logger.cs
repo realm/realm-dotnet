@@ -93,15 +93,14 @@ namespace Realms.Logging
         /// </returns>
         public static Logger Function(Action<LogLevel, LogCategory, string> logFunction) => new FunctionLogger(logFunction);
 
+        // TODO(lj): Deprecate
         /// <summary>
         /// Gets or sets the verbosity of log messages.
         /// </summary>
         /// <value>The log level for Realm-originating messages.</value>
         public static LogLevel LogLevel
         {
-            // TODO(lj): Do we want to deprecate the getter as well?
             get => GetLogLevel();
-            // TODO(lj): Deprecate and refer to `SetLogLevel`.
             set
             {
                 SetLogLevel(value);
@@ -120,8 +119,6 @@ namespace Realms.Logging
             SharedRealmHandle.SetLogLevel(level, category);
         }
 
-        // TODO(lj): Would it make sense to also deprecate the Default setter
-        //           and provide e.g. `SetDefaultLogger()`?
         /// <summary>
         /// Gets or sets a custom <see cref="Logger"/> implementation that will be used by
         /// Realm whenever information must be logged.
@@ -147,6 +144,7 @@ namespace Realms.Logging
 
         internal static void LogDefault(LogLevel level, LogCategory category, string message) => Default?.Log(level, category, message);
 
+        // TODO(lj): Deprecate
         /// <summary>
         /// Log a message at the supplied level.
         /// </summary>
@@ -158,9 +156,10 @@ namespace Realms.Logging
             Log(level, _defaultLogCategory, message);
         }
 
+        // TODO(lj): Use category as optional 3rd param.
         public void Log(LogLevel level, LogCategory category, string message)
         {
-            if (level < LogLevel)
+            if (level < GetLogLevel(category))
             {
                 return;
             }
