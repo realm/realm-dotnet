@@ -35,10 +35,7 @@ namespace Realms.Logging
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
-        // TODO(lj): Use this default log level?
-        private static readonly LogLevel _defaultLogLevel = LogLevel.Info;
         private static readonly LogCategory _defaultLogCategory = LogCategory.Realm;
-        private static LogCategory _logCategory = _defaultLogCategory;
         private static Logger? _defaultLogger;
 
         /// <summary>
@@ -111,16 +108,8 @@ namespace Realms.Logging
             }
         }
 
-        public static LogCategory LogCategory
-        {
-            get => _logCategory;
-        }
-
         public static LogLevel GetLogLevel(LogCategory? category = null)
         {
-            // TODO(lj): Perhaps we should grab the current category (`_logCategory`)
-            //           instead of the default here? If there hasn't been a category
-            //           explicitly set, it will still be the default.
             category ??= _defaultLogCategory;
             return SharedRealmHandle.GetLogLevel(category);
         }
@@ -129,7 +118,6 @@ namespace Realms.Logging
         {
             category ??= _defaultLogCategory;
             SharedRealmHandle.SetLogLevel(level, category);
-            _logCategory = category;
         }
 
         // TODO(lj): Would it make sense to also deprecate the Default setter
@@ -166,7 +154,8 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
-            Log(level, LogCategory, message);
+            // TODO(lj): See if `LogCategory.Realm.SDK` should be preferred.
+            Log(level, _defaultLogCategory, message);
         }
 
         public void Log(LogLevel level, LogCategory category, string message)
