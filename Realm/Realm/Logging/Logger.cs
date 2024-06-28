@@ -152,8 +152,7 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
-            // TODO(lj): See if `LogCategory.Realm.SDK` should be preferred.
-            Log(level, _defaultLogCategory, message);
+            Log(level, LogCategory.Realm.SDK, message);
         }
 
         // TODO(lj): Use category as optional 3rd param.
