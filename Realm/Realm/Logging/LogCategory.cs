@@ -22,8 +22,7 @@ using Realms.Helpers;
 
 namespace Realms.Logging
 {
-    // TODO(lj): Remove 'abstract' and use this class instead of 'LeafLogCategory'?
-    public abstract class LogCategory
+    public class LogCategory
     {
         public string Name { get; }
 
@@ -72,9 +71,9 @@ namespace Realms.Logging
 
             public SyncLogCategory Sync { get; } = new();
 
-            public LeafLogCategory App { get; } = new("Realm.App");
+            public LogCategory App { get; } = new("Realm.App");
 
-            public LeafLogCategory SDK { get; } = new("Realm.SDK");
+            public LogCategory SDK { get; } = new("Realm.SDK");
 
             internal RealmLogCategory() : base("Realm")
             {
@@ -83,13 +82,13 @@ namespace Realms.Logging
 
         public class StorageLogCategory : LogCategory
         {
-            public LeafLogCategory Transaction { get; } = new("Realm.Storage.Transaction");
+            public LogCategory Transaction { get; } = new("Realm.Storage.Transaction");
 
-            public LeafLogCategory Query { get; } = new("Realm.Storage.Query");
+            public LogCategory Query { get; } = new("Realm.Storage.Query");
 
-            public LeafLogCategory Object { get; } = new("Realm.Storage.Object");
+            public LogCategory Object { get; } = new("Realm.Storage.Object");
 
-            public LeafLogCategory Notification { get; } = new("Realm.Storage.Notification");
+            public LogCategory Notification { get; } = new("Realm.Storage.Notification");
 
             internal StorageLogCategory() : base("Realm.Storage")
             {
@@ -100,7 +99,7 @@ namespace Realms.Logging
         {
             public ClientLogCategory Client { get; } = new();
 
-            public LeafLogCategory Server { get; } = new("Realm.Sync.Server");
+            public LogCategory Server { get; } = new("Realm.Sync.Server");
 
             internal SyncLogCategory() : base("Realm.Sync")
             {
@@ -109,22 +108,15 @@ namespace Realms.Logging
 
         public class ClientLogCategory : LogCategory
         {
-            public LeafLogCategory Session { get; } = new("Realm.Sync.Client.Session");
+            public LogCategory Session { get; } = new("Realm.Sync.Client.Session");
 
-            public LeafLogCategory Changeset { get; } = new("Realm.Sync.Client.Changeset");
+            public LogCategory Changeset { get; } = new("Realm.Sync.Client.Changeset");
 
-            public LeafLogCategory Network { get; } = new("Realm.Sync.Client.Network");
+            public LogCategory Network { get; } = new("Realm.Sync.Client.Network");
 
-            public LeafLogCategory Reset { get; } = new("Realm.Sync.Client.Reset");
+            public LogCategory Reset { get; } = new("Realm.Sync.Client.Reset");
 
             internal ClientLogCategory() : base("Realm.Sync.Client")
-            {
-            }
-        }
-
-        public class LeafLogCategory : LogCategory
-        {
-            internal LeafLogCategory(string name) : base(name)
             {
             }
         }
