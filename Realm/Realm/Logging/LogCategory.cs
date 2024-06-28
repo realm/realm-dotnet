@@ -28,7 +28,7 @@ namespace Realms.Logging
 
         public static RealmLogCategory Realm { get; } = new();
 
-        private static readonly Dictionary<string, LogCategory> _nameToCategory = new()
+        internal static readonly Dictionary<string, LogCategory> NameToCategory = new()
         {
             { Realm.Name, Realm },
             { Realm.Storage.Name, Realm.Storage },
@@ -51,7 +51,7 @@ namespace Realms.Logging
 
         internal static LogCategory FromName(string name)
         {
-            Argument.Ensure(_nameToCategory.TryGetValue(name, out var category), $"Unexpected category name: '{name}'", nameof(name));
+            Argument.Ensure(NameToCategory.TryGetValue(name, out var category), $"Unexpected category name: '{name}'", nameof(name));
 
             return category;
         }

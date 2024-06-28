@@ -27,21 +27,29 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class LoggerTests
     {
+        private readonly LogCategory _originalLogCategory = LogCategory.Realm;
+        private readonly LogLevel _originalLogLevel = Logger.GetLogLevel(LogCategory.Realm);
         private Logger _originalLogger = null!;
-        private LogLevel _originalLogLevel;
 
         [SetUp]
         public void Setup()
         {
             _originalLogger = Logger.Default;
-            _originalLogLevel = Logger.LogLevel;
         }
 
         [TearDown]
         public void TearDown()
         {
             Logger.Default = _originalLogger;
-            Logger.LogLevel = _originalLogLevel;
+            Logger.SetLogLevel(_originalLogLevel, _originalLogCategory);
+        }
+
+        private void AssertLogMessageContains(string actual, LogLevel level, LogCategory category, string message)
+        {
+            Assert.That(actual, Does.Contain(level.ToString()));
+            Assert.That(actual, Does.Contain(category.Name));
+            Assert.That(actual, Does.Contain(message));
+            Assert.That(actual, Does.Contain(DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")));
         }
 
         [Test]
@@ -50,12 +58,10 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             Logger.Default = Logger.Function(message => messages.Add(message));
 
-            Logger.LogDefault(LogLevel.Warn, "This is very dangerous!");
+            Logger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
 
             Assert.That(messages.Count, Is.EqualTo(1));
-            Assert.That(messages[0], Does.Contain(LogLevel.Warn.ToString()));
-            Assert.That(messages[0], Does.Contain(DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")));
-            Assert.That(messages[0], Does.Contain("This is very dangerous!"));
+            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
         }
 
         [Test]
@@ -69,27 +75,68 @@ namespace Realms.Tests.Database
             Assert.That(messages.Count, Is.EqualTo(0));
         }
 
+        [Test]
+        public void Logger_SetsLogLevelAtGivenCategory()
+        {
+            var categories = LogCategory.NameToCategory.Values;
+            foreach (var category in categories)
+            {
+                Logger.SetLogLevel(LogLevel.All, category);
+                Assert.That(Logger.GetLogLevel(category), Is.EqualTo(LogLevel.All));
+            }
+        }
+
         [TestCase(LogLevel.Error)]
         [TestCase(LogLevel.Info)]
         [TestCase(LogLevel.Debug)]
         public void Logger_WhenLevelIsSet_LogsOnlyExpectedLevels(LogLevel level)
         {
-            var messages = new List<string>();
-            Logger.Default = Logger.Function(message => messages.Add(message));
-            Logger.LogLevel = level;
+            var categories = LogCategory.NameToCategory.Values;
+            foreach (var category in categories)
+            {
+                var messages = new List<string>();
+                Logger.Default = Logger.Function(message => messages.Add(message));
+                Logger.SetLogLevel(level, category);
 
-            Logger.LogDefault(level - 1, "This is at level - 1");
-            Logger.LogDefault(level, "This is at the same level");
-            Logger.LogDefault(level + 1, "This is at level + 1");
+                Logger.LogDefault(level - 1, category, "This is at level - 1");
+                Logger.LogDefault(level, category, "This is at the same level");
+                Logger.LogDefault(level + 1, category, "This is at level + 1");
 
-            Assert.That(messages.Count, Is.EqualTo(2));
-
-            Assert.That(messages[0], Does.Contain(level.ToString()));
-            Assert.That(messages[0], Does.Contain("This is at the same level"));
-
-            Assert.That(messages[1], Does.Contain((level + 1).ToString()));
-            Assert.That(messages[1], Does.Contain("This is at level + 1"));
+                Assert.That(messages.Count, Is.EqualTo(2));
+                AssertLogMessageContains(messages[0], level, category, "This is at the same level");
+                AssertLogMessageContains(messages[1], level + 1, category, "This is at level + 1");
+            }
         }
+
+        [Test]
+        public void Logger_LogsAtGivenCategory()
+        {
+            var categories = LogCategory.NameToCategory.Values;
+            foreach (var category in categories)
+            {
+                var messages = new List<string>();
+                Logger.Default = Logger.Function((message) => messages.Add(message));
+
+                Logger.LogDefault(LogLevel.Warn, category, "A log message");
+
+                Assert.That(messages.Count, Is.EqualTo(1));
+                AssertLogMessageContains(messages[0], LogLevel.Warn, category, "A log message");
+            }
+        }
+
+        [Test]
+        public void Logger_CallsCustomFunction()
+        {
+            var messages = new List<string>();
+            Logger.Default = Logger.Function((level, category, message) => messages.Add(Logger.FormatLog(level, category, message)));
+
+            Logger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+
+            Assert.That(messages.Count, Is.EqualTo(1));
+            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+        }
+
+        // TODO(lj): Test that all Core categories are being used and matches names.
 
         [Test]
         public void FileLogger()
