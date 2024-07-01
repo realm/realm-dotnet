@@ -103,6 +103,7 @@ namespace Realms.Schema
             }
         }
 
+        //TODO This seems to not have references, need to try to remove it and see if anything fails
         internal ObjectSchema(in SchemaObject native)
         {
             Name = native.name!;

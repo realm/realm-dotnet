@@ -107,7 +107,7 @@ extern "C" {
             auto val = object.get_obj().get_any(prop.column_key);
             if (val.is_null())
             {
-                *value = to_capi(std::move(val));
+                *value = to_capi(val);
                 return;
             }
             
@@ -120,6 +120,35 @@ extern "C" {
                 break;
             case type_Dictionary:
                 *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj(), prop.column_key));
+                break;
+            default:
+                *value = to_capi(std::move(val));
+                break;
+            }
+        });
+    }
+
+    REALM_EXPORT void object_get_additional_property(const Object& object, realm_string_t property_name, realm_value_t* value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            auto val = object.get_obj().get_additional_prop(capi_to_std(property_name));
+
+            if (val.is_null())
+            {
+                *value = to_capi(val);
+                return;
+            }
+
+            Path path = { PathElement(capi_to_std(property_name)) };
+
+            switch (val.get_type()) {
+            case type_TypedLink:
+                *value = to_capi(val.get<ObjLink>(), object.realm());
+                break;
+            case type_List:
+                *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path)));
                 break;
             default:
                 *value = to_capi(std::move(val));
@@ -174,6 +203,40 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void object_set_additional_property(Object& object, realm_string_t property_name, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+            object.get_obj().set_additional_prop(capi_to_std(property_name), from_capi(value));
+        });
+    }
+
+    REALM_EXPORT void object_unset_property(Object& object, realm_string_t property_name, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+            object.get_obj().erase_prop(capi_to_std(property_name));
+        });
+    }
+
+    //realm_string_collection_t is equivalent to MarshaledVector<realm_string_t> but that cannot be used
+    //TODO need to see if we can do this differently
+    REALM_EXPORT realm_string_collection_t object_get_additional_properties(Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto props = object.get_obj().get_additional_properties();
+
+            size_t size = props.size();
+            realm_string_t* array = new realm_string_t[size];
+
+            for (size_t i = 0; i < size; ++i) {
+                array[i] = to_capi(props[i]);
+            }
+
+            return realm_string_collection_t{ array, size };
+        });
+    }
+
     REALM_EXPORT void* object_set_collection_value(Object& object, size_t property_ndx, realm_value_type type, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]()-> void* {
@@ -199,6 +262,37 @@ extern "C" {
             }
             default:
                 REALM_TERMINATE("Invalid collection type");
+            }
+        });
+    }
+
+    REALM_EXPORT void* object_set_collection_additional_property(Object& object, 
+        realm_string_t property_name, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+            verify_can_set(object);
+
+            auto prop = capi_to_std(property_name);
+
+            Path path = { PathElement(prop) };
+
+            switch (type)
+            {
+                case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                {
+                
+                    object.get_obj().set_collection(prop, CollectionType::List);
+                    //TODO We probably need to ask for methods that do not require to build a path
+                    auto innerList = new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path));
+                    innerList->remove_all();
+                    return innerList;
+                }
+                case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                {
+                    REALM_TERMINATE("Invalid collection type");
+                }
+                default:
+                    REALM_TERMINATE("Invalid collection type");
             }
         });
     }

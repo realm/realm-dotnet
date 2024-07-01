@@ -52,5 +52,16 @@ namespace Realms
 
             throw new MissingMemberException(Schema.Name, propertyName);
         }
+
+        //TODO Should merge with the previous one
+        public IntPtr? GetPropertyIndexNullable(string propertyName)
+        {
+            if (PropertyIndices.TryGetValue(propertyName, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
     }
 }

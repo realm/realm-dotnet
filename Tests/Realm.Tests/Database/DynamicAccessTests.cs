@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
@@ -139,6 +140,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(propertyName), Is.EqualTo(realmValue));
+                Assert.That(allTypesObject.DynamicApi.Get(propertyName), Is.EqualTo(realmValue));
             });
         }
 
@@ -473,17 +475,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void GetProperty_WhenPropertyIsMissing_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(AllTypesObject)));
-
-                Assert.Throws<MissingMemberException>(() => allTypesObject.DynamicApi.Get<string>("idontexist"));
-            });
-        }
-
-        [Test]
         public void GetProperty_WhenPropertyIsBacklinks_Throws()
         {
             RunTestInAllModes((realm, _) =>
@@ -559,20 +550,6 @@ namespace Realms.Tests.Database
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), 123);
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), 9999L);
                     ato.DynamicApi.Set(nameof(AllTypesObject.Int32Property), (short)5);
-                });
-            });
-        }
-
-        [Test]
-        public void SetProperty_WhenPropertyIsMissing_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                realm.Write(() =>
-                {
-                    var ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject));
-
-                    Assert.Throws<MissingMemberException>(() => ato.DynamicApi.Set("idontexist", "foo"));
                 });
             });
         }
@@ -999,6 +976,81 @@ namespace Realms.Tests.Database
                     Assert.That(ex.Message, Does.Contain("type mismatch"));
                 });
             });
+        }
+
+        #endregion
+
+        #region Flexible schema
+
+
+        /* To test:
+         * - opening same realm with or without relaxed schema (need to decide on behavior=
+         * - notifications
+         * - keypath filtering
+         * - method to check if object has a certain additional property
+         * - unset a property in strict schema
+         * - mapped properties
+         * - dynamic objects
+         */
+
+        /* To do:
+         * - add checks
+         * - add method to check if object has a certain additional property
+         */
+
+        [Test]
+        public void FlexibleSchema_BaseTest()
+        {
+            _configuration.RelaxedSchema = true;
+            var realm = GetRealm(_configuration);
+
+            var person = realm.Write(() =>
+            {
+                return realm.Add(new Person());
+            });
+
+            var testObj = new Person { FirstName = "Luigi" };
+            var testList = new List<RealmValue> { 1, "test", true };
+
+            // Additional properties should be empty in the beginning
+            Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.Empty);
+
+            // Basic set/get
+            realm.Write(() =>
+            {
+                person.DynamicApi.Set("propString", "testval");
+                person.DynamicApi.Set("propInt", 10);
+                person.DynamicApi.Set("propObj", testObj);
+                person.DynamicApi.Set("propList", testList);
+                person.DynamicApi.Set("propNull", RealmValue.Null);
+            });
+
+            Assert.That(person.DynamicApi.Get<string>("propString"), Is.EqualTo("testval"));
+            Assert.That(person.DynamicApi.Get<int>("propInt"), Is.EqualTo(10));
+            Assert.That(person.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
+            Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
+            Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
+
+            // Change type
+            realm.Write(() =>
+            {
+                person.DynamicApi.Set("propString", 23);
+            });
+
+            Assert.That(person.DynamicApi.Get<int>("propString"), Is.EqualTo(23));
+
+            // Get unknown property
+            Assert.That(() => person.DynamicApi.Get<RealmValue>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+
+            // Unset property
+            realm.Write(() =>
+            {
+                person.DynamicApi.Unset("propString");
+            });
+            Assert.That(() => person.DynamicApi.Get<RealmValue>("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
+
+            // Get all additional properties keys
+            Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
         }
 
         #endregion

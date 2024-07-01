@@ -89,6 +89,9 @@ namespace Realms
         /// </value>
         public ShouldCompactDelegate? ShouldCompactOnLaunch { get; set; }
 
+        //TODO Add docs
+        public bool RelaxedSchema { get; set; }
+
         internal bool EnableCache = true;
 
         /// <summary>
@@ -254,6 +257,7 @@ namespace Realms
                 managed_config = GCHandle.ToIntPtr(managedConfig),
                 encryption_key = MarshaledVector<byte>.AllocateFrom(EncryptionKey, arena),
                 invoke_should_compact_callback = ShouldCompactOnLaunch != null,
+                relaxed_schema = RelaxedSchema,
             };
 
             return config;
