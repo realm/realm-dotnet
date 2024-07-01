@@ -47,7 +47,7 @@ namespace Realms.Logging
             { Realm.SDK.Name, Realm.SDK },
         };
 
-        private LogCategory(string name) => Name = name;
+        private LogCategory(string name, LogCategory? parent) => Name = parent == null ? name : $"{parent}.{name}";
 
         internal static LogCategory FromName(string name)
         {
@@ -62,62 +62,74 @@ namespace Realms.Logging
         /// <returns>A string that represents the category, equivalent to its name.</returns>
         public override string ToString() => Name;
 
-        // TODO(lj): Passing entire category name path for now, can update later to
-        //           pass the current-level name (e.g. "Storage") and the parent.
-
         public class RealmLogCategory : LogCategory
         {
-            public StorageLogCategory Storage { get; } = new();
+            public StorageLogCategory Storage { get; }
 
-            public SyncLogCategory Sync { get; } = new();
+            public SyncLogCategory Sync { get; }
 
-            public LogCategory App { get; } = new("Realm.App");
+            public LogCategory App { get; }
 
-            public LogCategory SDK { get; } = new("Realm.SDK");
+            // TODO(lj): Prefer `SDK` or `Sdk` for c#?
+            public LogCategory SDK { get; }
 
-            internal RealmLogCategory() : base("Realm")
+            internal RealmLogCategory() : base("Realm", null)
             {
+                Storage = new StorageLogCategory(this);
+                Sync = new SyncLogCategory(this);
+                App = new LogCategory("App", this);
+                SDK = new LogCategory("SDK", this);
             }
         }
 
         public class StorageLogCategory : LogCategory
         {
-            public LogCategory Transaction { get; } = new("Realm.Storage.Transaction");
+            public LogCategory Transaction { get; }
 
-            public LogCategory Query { get; } = new("Realm.Storage.Query");
+            public LogCategory Query { get; }
 
-            public LogCategory Object { get; } = new("Realm.Storage.Object");
+            public LogCategory Object { get; }
 
-            public LogCategory Notification { get; } = new("Realm.Storage.Notification");
+            public LogCategory Notification { get; }
 
-            internal StorageLogCategory() : base("Realm.Storage")
+            internal StorageLogCategory(LogCategory parent) : base("Storage", parent)
             {
+                Transaction = new LogCategory("Transaction", this);
+                Query = new LogCategory("Query", this);
+                Object = new LogCategory("Object", this);
+                Notification = new LogCategory("Notification", this);
             }
         }
 
         public class SyncLogCategory : LogCategory
         {
-            public ClientLogCategory Client { get; } = new();
+            public ClientLogCategory Client { get; }
 
-            public LogCategory Server { get; } = new("Realm.Sync.Server");
+            public LogCategory Server { get; }
 
-            internal SyncLogCategory() : base("Realm.Sync")
+            internal SyncLogCategory(LogCategory parent) : base("Sync", parent)
             {
+                Client = new ClientLogCategory(this);
+                Server = new LogCategory("Server", this);
             }
         }
 
         public class ClientLogCategory : LogCategory
         {
-            public LogCategory Session { get; } = new("Realm.Sync.Client.Session");
+            public LogCategory Session { get; }
 
-            public LogCategory Changeset { get; } = new("Realm.Sync.Client.Changeset");
+            public LogCategory Changeset { get; }
 
-            public LogCategory Network { get; } = new("Realm.Sync.Client.Network");
+            public LogCategory Network { get; }
 
-            public LogCategory Reset { get; } = new("Realm.Sync.Client.Reset");
+            public LogCategory Reset { get; }
 
-            internal ClientLogCategory() : base("Realm.Sync.Client")
+            internal ClientLogCategory(LogCategory parent) : base("Client", parent)
             {
+                Session = new LogCategory("Session", this);
+                Changeset = new LogCategory("Changeset", this);
+                Network = new LogCategory("Network", this);
+                Reset = new LogCategory("Reset", this);
             }
         }
     }
