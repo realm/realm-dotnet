@@ -136,7 +136,20 @@ namespace Realms.Tests.Database
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
         }
 
-        // TODO(lj): Test that all Core categories are being used and matches names.
+        [Test]
+        public void Logger_MatchesCoreCategoryNames()
+        {
+            var coreCategoryNames = SharedRealmHandle.GetLogCategoryNames();
+            var sdkCategoriesMap = LogCategory.NameToCategory;
+
+            Assert.That(sdkCategoriesMap.Count, Is.EqualTo(coreCategoryNames.Length));
+            foreach (var name in coreCategoryNames)
+            {
+                Assert.That(sdkCategoriesMap.TryGetValue(name!, out var category), Is.True);
+                Assert.That(category!.Name, Is.EqualTo(name));
+                Assert.That(LogCategory.FromName(name!), Is.SameAs(category));
+            }
+        }
 
         [Test]
         public void FileLogger()
