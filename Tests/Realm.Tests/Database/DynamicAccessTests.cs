@@ -982,6 +982,22 @@ namespace Realms.Tests.Database
 
         #region Flexible schema
 
+
+        /* To test:
+         * - opening same realm with or without relaxed schema (need to decide on behavior=
+         * - notifications
+         * - keypath filtering
+         * - method to check if object has a certain additional property
+         * - unset a property in strict schema
+         * - mapped properties
+         * - dynamic objects
+         */
+
+        /* To do:
+         * - add checks
+         * - add method to check if object has a certain additional property
+         */
+
         [Test]
         public void FlexibleSchema_BaseTest()
         {
@@ -995,6 +1011,9 @@ namespace Realms.Tests.Database
 
             var testObj = new Person { FirstName = "Luigi" };
             var testList = new List<RealmValue> { 1, "test", true };
+
+            // Additional properties should be empty in the beginning
+            Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.Empty);
 
             // Basic set/get
             realm.Write(() =>
@@ -1031,8 +1050,7 @@ namespace Realms.Tests.Database
             Assert.That(() => person.DynamicApi.Get<RealmValue>("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
 
             // Get all additional properties keys
-            var additionalProperties = person.DynamicApi.GetAdditionalProperties();
-            Assert.That(additionalProperties, Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
+            Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
         }
 
         #endregion

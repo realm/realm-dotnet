@@ -219,20 +219,21 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT realm_string_t* object_get_additional_properties(Object& object, NativeException::Marshallable& ex)
+    //realm_string_collection_t is equivalent to MarshaledVector<realm_string_t> but that cannot be used
+    //TODO need to see if we can do this differently
+    REALM_EXPORT realm_string_collection_t object_get_additional_properties(Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             auto props = object.get_obj().get_additional_properties();
 
-            std::vector<realm_string_t> realm_string_array;
-
             size_t size = props.size();
+            realm_string_t* array = new realm_string_t[size];
 
             for (size_t i = 0; i < size; ++i) {
-                realm_string_array.push_back(to_capi(props[i]));
+                array[i] = to_capi(props[i]);
             }
 
-            return MarshaledVector(realm_string_array);
+            return realm_string_collection_t{ array, size };
         });
     }
 

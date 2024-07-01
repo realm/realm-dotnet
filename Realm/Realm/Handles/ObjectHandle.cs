@@ -193,7 +193,7 @@ namespace Realms
 
                 return new RealmValue(result, realm, this, propertyIndex);
             }
-            else
+            else if(realm.Config.RelaxedSchema)
             {
                 using Arena arena = new();
                 var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
@@ -278,10 +278,8 @@ namespace Realms
                 handles?.Dispose();
                 nativeException.ThrowIfNecessary();
             }
-            else
+            else if(realm.Config.RelaxedSchema)
             {
-                //TODO Eventually merge with the previous case
-                //TODO Probably this can be improved
                 using Arena arena = new();
                 var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
@@ -327,6 +325,8 @@ namespace Realms
 
         public void UnsetProperty(string propertyName)
         {
+            EnsureIsOpen();
+
             using Arena arena = new();
             var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
@@ -336,12 +336,12 @@ namespace Realms
 
         public IEnumerable<string> GetAdditionalProperties()
         {
+            EnsureIsOpen();
+
             var value = NativeMethods.get_additional_properties(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            //TODO We should not get empty null values here, so this is mostly to make the warning go away
-            // We can probably improve the conversion;
-            return value.ToEnumerable().Select(v => v.ToDotnetString(true) ?? string.Empty);
+            return value.ToEnumerable().Select(v => v.ToDotnetString()!);
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)
