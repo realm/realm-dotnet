@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database;
@@ -26,15 +29,45 @@ namespace Realms.Tests.Database;
 public partial class FlexibleSchemaPocTests : RealmInstanceTest
 {
     [Test]
-    public void ConvertDictionary_ToMappedType()
+    public void RealmValue_AsMappedType_ReturnsCorrectObject()
     {
-        // TODO: NI to get this to work
         AddData();
 
         var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
 
         var dog = dogContainer.MixedProperty.As<Dog>();
-        // var dogFromDict = dogContainer.MixedDict.As<Dog>();
+
+        // TODO: add assertions for the values
+        Assert.That(dog, Is.TypeOf<Dog>());
+
+        var dog2 = dogContainer.MixedProperty.AsMappedObject<Dog>();
+
+        // TODO: add assertions for the values
+        Assert.That(dog2, Is.TypeOf<Dog>());
+
+        var nullContainer = _realm.Write(() => _realm.Add(new FlexibleSchemaPocContainer("null")
+        {
+            MixedProperty = RealmValue.Null
+        }));
+
+        var nullDog = nullContainer.MixedProperty.As<Dog?>();
+        Assert.That(nullDog, Is.Null);
+
+        var nullDog2 = nullContainer.MixedProperty.AsNullableMappedObject<Dog>();
+        Assert.That(nullDog2, Is.Null);
+    }
+
+    [Test]
+    public void RealmValue_AsMappedType_WhenTypeIsIncorrect_Throws()
+    {
+        var intContainer = _realm.Write(() => _realm.Add(new FlexibleSchemaPocContainer("int")
+        {
+            MixedProperty = 5
+        }));
+
+        Assert.Throws<InvalidCastException>(() => intContainer.MixedProperty.As<Dog>());
+        Assert.Throws<InvalidCastException>(() => intContainer.MixedProperty.AsMappedObject<Dog>());
+        Assert.Throws<InvalidCastException>(() => intContainer.MixedProperty.AsNullableMappedObject<Dog>());
     }
 
     [Test]
@@ -57,6 +90,43 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
 
         Assert.That(bird.Name, Is.EqualTo("Tweety"));
         Assert.That(bird.CanFly, Is.True);
+    }
+
+    [Test]
+    public void NotifyPropertyChanged_NotifiesForModifications()
+    {
+        AddData();
+
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+
+        var dog = dogContainer.MixedProperty.As<Dog>();
+        var changes = new List<PropertyChangedEventArgs>();
+        dog.PropertyChanged += (s, e) =>
+        {
+            Assert.That(s, Is.EqualTo(dog));
+            changes.Add(e);
+        };
+
+        _realm.Write(() =>
+        {
+            dogContainer.MixedProperty.AsDictionary()[nameof(Dog.BarkCount)] = 10;
+        });
+
+        _realm.Refresh();
+
+        Assert.That(changes.Count, Is.EqualTo(1));
+        Assert.That(changes[0].PropertyName, Is.EqualTo(nameof(Dog.BarkCount)));
+
+        _realm.Write(() =>
+        {
+            dogContainer.MixedProperty.AsDictionary()[nameof(Dog.BarkCount)] = 15;
+            dogContainer.MixedProperty.AsDictionary()[nameof(Dog.Name)] = "Fido III";
+        });
+        _realm.Refresh();
+
+        Assert.That(changes.Count, Is.EqualTo(3));
+        Assert.That(changes[1].PropertyName, Is.EqualTo(nameof(Dog.BarkCount)));
+        Assert.That(changes[2].PropertyName, Is.EqualTo(nameof(Dog.Name)));
     }
 
     private void AddData()
@@ -115,7 +185,7 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     }
 
     // Generated
-    public partial class Dog
+    public partial class Dog : INotifyPropertyChanged
     {
         private IDictionary<string, RealmValue> _backingStorage = null!;
 
@@ -123,6 +193,69 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         {
             _backingStorage = dictionary;
         }
+
+        #region  INotifyPropertyChanged
+
+        private IDisposable? _notificationToken;
+
+        private event PropertyChangedEventHandler? _propertyChanged;
+
+        /// <inheritdoc />
+        public event PropertyChangedEventHandler? PropertyChanged
+        {
+            add
+            {
+                if (_propertyChanged == null)
+                {
+                    SubscribeForNotifications();
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {
+                    UnsubscribeFromNotifications();
+                }
+            }
+        }
+
+        partial void OnPropertyChanged(string? propertyName);
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            OnPropertyChanged(propertyName);
+        }
+
+        private void SubscribeForNotifications()
+        {
+            _notificationToken = _backingStorage.SubscribeForKeyNotifications((sender, changes) =>
+            {
+                if (changes == null)
+                {
+                    return;
+                }
+
+                foreach (var key in changes.ModifiedKeys)
+                {
+                    RaisePropertyChanged(key);
+                }
+
+                // TODO: what do we do with deleted/inserted keys
+            });
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            _notificationToken?.Dispose();
+        }
+
+        #endregion
     }
 
     // User-defined
@@ -134,7 +267,7 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     }
 
     // Generated
-    public partial class Bird
+    public partial class Bird : INotifyPropertyChanged
     {
         private IDictionary<string, RealmValue> _backingStorage = null!;
 
@@ -142,5 +275,68 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         {
             _backingStorage = dictionary;
         }
+
+        #region  INotifyPropertyChanged
+
+        private IDisposable? _notificationToken;
+
+        private event PropertyChangedEventHandler? _propertyChanged;
+
+        /// <inheritdoc />
+        public event PropertyChangedEventHandler? PropertyChanged
+        {
+            add
+            {
+                if (_propertyChanged == null)
+                {
+                    SubscribeForNotifications();
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {
+                    UnsubscribeFromNotifications();
+                }
+            }
+        }
+
+        partial void OnPropertyChanged(string? propertyName);
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            OnPropertyChanged(propertyName);
+        }
+
+        private void SubscribeForNotifications()
+        {
+            _notificationToken = _backingStorage.SubscribeForKeyNotifications((sender, changes) =>
+            {
+                if (changes == null)
+                {
+                    return;
+                }
+
+                foreach (var key in changes.ModifiedKeys)
+                {
+                    RaisePropertyChanged(key);
+                }
+
+                // TODO: what do we do with deleted/inserted keys
+            });
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            _notificationToken?.Dispose();
+        }
+
+        #endregion
     }
 }

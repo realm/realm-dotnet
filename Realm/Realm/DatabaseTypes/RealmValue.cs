@@ -789,13 +789,17 @@ namespace Realms
             where T : class, IRealmObjectBase
             => Type == RealmValueType.Null ? null : AsRealmObject<T>();
 
+        // TODO (ni): add docs
         public T AsMappedObject<T>()
             where T : class, IMappedObject
         {
             EnsureType("dictionary", RealmValueType.Dictionary);
-            throw new NotImplementedException();
+            var result = Activator.CreateInstance<T>();
+            result.SetBackingStorage(_dictionaryValue!);
+            return result;
         }
 
+        // TODO (ni): add docs
         public T? AsNullableMappedObject<T>()
             where T : class, IMappedObject
             => Type == RealmValueType.Null ? null : AsMappedObject<T>();
@@ -815,12 +819,17 @@ namespace Realms
 
             if (typeof(IMappedObject).IsAssignableFrom(typeof(T)))
             {
-                return Type switch
+                switch (Type)
                 {
-                    RealmValueType.Null => Operator.Convert<T>(null)!,
-                    RealmValueType.Dictionary => throw new NotImplementedException(),
-                    _ => throw new NotSupportedException($"Can't convert from {Type} to dictionary, which is the backing storage type for {typeof(T)}"),
-                };
+                    case RealmValueType.Null:
+                        return Operator.Convert<T>(null)!;
+                    case RealmValueType.Dictionary:
+                        var result = Activator.CreateInstance<T>()!;
+                        ((IMappedObject)result).SetBackingStorage(_dictionaryValue!);
+                        return result;
+                    default:
+                        throw new InvalidCastException($"Can't convert from {Type} to dictionary, which is the backing storage type for {typeof(T)}");
+                }
             }
 
             // This largely copies AsAny to avoid boxing the underlying value in an object
