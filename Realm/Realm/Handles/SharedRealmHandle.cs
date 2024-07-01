@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -230,6 +231,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_log_level(LogLevel level, [MarshalAs(UnmanagedType.LPWStr)] string category_name, IntPtr category_name_len);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_log_category_names", CallingConvention = CallingConvention.Cdecl)]
+            public static extern MarshaledVector<StringValue> get_log_category_names();
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
 
@@ -278,6 +282,11 @@ namespace Realms
         public static LogLevel GetLogLevel(LogCategory category) => NativeMethods.get_log_level(category.Name, (IntPtr)category.Name.Length);
 
         public static void SetLogLevel(LogLevel level, LogCategory category) => NativeMethods.set_log_level(level, category.Name, (IntPtr)category.Name.Length);
+
+        public static string[] GetLogCategoryNames() => NativeMethods.get_log_category_names()
+            .ToEnumerable()
+            .Select(name => name.ToDotnetString()!)
+            .ToArray();
 
         [Preserve]
         protected SharedRealmHandle(IntPtr handle) : base(handle)
