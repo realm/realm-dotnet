@@ -17,12 +17,16 @@
 * Tokenizing strings for full-text search could pass values outside the range [-1, 255] to `isspace()`, which is undefined behavior. (Core 14.10.0)
 * Opening an Flexible Sync Realm asynchronously may not wait to download all data. (Core 14.10.1)
 * Clearing a List of `RealmValue` in an upgraded file would lead to an assertion failing. (Core 14.10.1)
+* You could get unexpected merge results when assigning to a nested collection. (Core 14.10.2)
+* Fixed removing backlinks from the wrong objects if the link came from a nested list, nested dictionary, top-level dictionary, or list of `RealmValue`, and the source table had more than 256 objects. This could manifest as `array_backlink.cpp:112: Assertion failed: int64_t(value >> 1) == key.value` when removing an object. (Core 14.10.2-14-gf66e24d03)
+* Fixed the collapse/rejoin of clusters which contained nested collections with links. This could manifest as `array.cpp:319: Array::move() Assertion failed: begin <= end [2, 1]` when removing an object. (Core 14.10.2-14-gf66e24d03)
+* `Session.WaitForUpload()` was inconsistent in how it handled commits which did not produce any changesets to upload. Previously it would sometimes complete immediately if all commits waiting to be uploaded were empty, and at other times it would wait for a server roundtrip. It will now always complete immediately. (Core 14.10.2-14-gf66e24d03)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 14.9.0.
+* Using Core v14.10.2-14-gf66e24d03.
 
 ## 12.2.0 (2024-05-22)
 
