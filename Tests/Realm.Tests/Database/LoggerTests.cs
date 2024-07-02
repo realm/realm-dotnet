@@ -86,6 +86,39 @@ namespace Realms.Tests.Database
             }
         }
 
+        [Test]
+        public void Logger_SetsLogLevelAtSubcategories()
+        {
+            var storageCategories = new[]
+            {
+                LogCategory.Realm.Storage.Transaction,
+                LogCategory.Realm.Storage.Query,
+                LogCategory.Realm.Storage.Object,
+                LogCategory.Realm.Storage.Notification
+            };
+            foreach (var category in storageCategories)
+            {
+                Assert.That(Logger.GetLogLevel(category), Is.Not.EqualTo(LogLevel.Error));
+            }
+
+            Logger.SetLogLevel(LogLevel.Error, LogCategory.Realm.Storage);
+            foreach (var category in storageCategories)
+            {
+                Assert.That(Logger.GetLogLevel(category), Is.EqualTo(LogLevel.Error));
+            }
+        }
+
+        [Test]
+        public void Logger_WhenUsingLogLevelSetter_OverwritesCategory()
+        {
+            var category = LogCategory.Realm.Storage;
+            Logger.SetLogLevel(LogLevel.Error, category);
+            Assert.That(Logger.GetLogLevel(category), Is.EqualTo(LogLevel.Error));
+
+            Logger.LogLevel = LogLevel.All;
+            Assert.That(Logger.GetLogLevel(category), Is.EqualTo(LogLevel.All));
+        }
+
         [TestCase(LogLevel.Error)]
         [TestCase(LogLevel.Info)]
         [TestCase(LogLevel.Debug)]
@@ -148,6 +181,16 @@ namespace Realms.Tests.Database
                 Assert.That(sdkCategoriesMap.TryGetValue(name!, out var category), Is.True);
                 Assert.That(category!.Name, Is.EqualTo(name));
                 Assert.That(LogCategory.FromName(name!), Is.SameAs(category));
+            }
+        }
+
+        [Test]
+        public void Logger_WhenNonExistentCategoryName_FromNameThrows()
+        {
+            var nonExistentNames = new[] { "realm", "Realm.app", string.Empty };
+            foreach (var name in nonExistentNames)
+            {
+                Assert.That(() => LogCategory.FromName(name), Throws.TypeOf<ArgumentException>().And.Message.Contains($"Unexpected category name: '{name}'"));
             }
         }
 
