@@ -109,6 +109,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        [Obsolete("Using LogLevel setter.")]
         public void Logger_WhenUsingLogLevelSetter_OverwritesCategory()
         {
             var category = LogCategory.Realm.Storage;

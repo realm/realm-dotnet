@@ -74,7 +74,6 @@ namespace Realms.Logging
         /// </returns>
         public static Logger Function(Action<string> logFunction) => new FunctionLogger((level, category, message) => logFunction(FormatLog(level, message, category)));
 
-        // TODO(lj): Deprecate
         /// <summary>
         /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
         /// </summary>
@@ -82,6 +81,7 @@ namespace Realms.Logging
         /// <returns>
         /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
         /// </returns>
+        [Obsolete("Use Function(Action<LogLevel, LogCategory, string> logFunction).")]
         public static Logger Function(Action<LogLevel, string> logFunction) => new FunctionLogger((level, _, message) => logFunction(level, message));
 
         /// <summary>
@@ -93,11 +93,11 @@ namespace Realms.Logging
         /// </returns>
         public static Logger Function(Action<LogLevel, LogCategory, string> logFunction) => new FunctionLogger(logFunction);
 
-        // TODO(lj): Deprecate
         /// <summary>
         /// Gets or sets the verbosity of log messages for all log categories via <see cref="LogCategory.Realm"/>.
         /// </summary>
         /// <value>The log level for Realm-originating messages.</value>
+        [Obsolete("Use GetLogLevel() and SetLogLevel().")]
         public static LogLevel LogLevel
         {
             get => GetLogLevel();
