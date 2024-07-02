@@ -109,7 +109,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Using LogLevel setter.")]
+        [Obsolete("Using LogLevel set accessor.")]
         public void Logger_WhenUsingLogLevelSetter_OverwritesCategory()
         {
             var category = LogCategory.Realm.Storage;
@@ -183,6 +183,19 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        [Obsolete("Using function not accepting category.")]
+        public void Logger_CallsObsoleteCustomFunction()
+        {
+            var messages = new List<string>();
+            Logger.Default = Logger.Function((level, message) => messages.Add(Logger.FormatLog(level, message, LogCategory.Realm.SDK)));
+
+            Logger.LogDefault(LogLevel.Warn, "A log message");
+
+            Assert.That(messages.Count, Is.EqualTo(1));
+            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+        }
+
+        [Test]
         public void Logger_MatchesCoreCategoryNames()
         {
             var coreCategoryNames = SharedRealmHandle.GetLogCategoryNames();
@@ -212,7 +225,7 @@ namespace Realms.Tests.Database
         {
             var tempFilePath = Path.GetTempFileName();
 
-            Logger.LogLevel = LogLevel.All;
+            Logger.SetLogLevel(LogLevel.All);
             Logger.Default = Logger.File(tempFilePath);
 
             var warnMessage = "This is very dangerous!";
