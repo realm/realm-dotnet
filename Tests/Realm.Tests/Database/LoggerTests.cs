@@ -58,7 +58,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             Logger.Default = Logger.Function(message => messages.Add(message));
 
-            Logger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
+            Logger.LogDefault(LogLevel.Warn, "This is very dangerous!", LogCategory.Realm.SDK);
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
@@ -131,9 +131,9 @@ namespace Realms.Tests.Database
                 Logger.Default = Logger.Function(message => messages.Add(message));
                 Logger.SetLogLevel(level, category);
 
-                Logger.LogDefault(level - 1, category, "This is at level - 1");
-                Logger.LogDefault(level, category, "This is at the same level");
-                Logger.LogDefault(level + 1, category, "This is at level + 1");
+                Logger.LogDefault(level - 1, "This is at level - 1", category);
+                Logger.LogDefault(level, "This is at the same level", category);
+                Logger.LogDefault(level + 1, "This is at level + 1", category);
 
                 Assert.That(messages.Count, Is.EqualTo(2));
                 AssertLogMessageContains(messages[0], level, category, "This is at the same level");
@@ -150,7 +150,7 @@ namespace Realms.Tests.Database
                 var messages = new List<string>();
                 Logger.Default = Logger.Function((message) => messages.Add(message));
 
-                Logger.LogDefault(LogLevel.Warn, category, "A log message");
+                Logger.LogDefault(LogLevel.Warn, "A log message", category);
 
                 Assert.That(messages.Count, Is.EqualTo(1));
                 AssertLogMessageContains(messages[0], LogLevel.Warn, category, "A log message");
@@ -158,12 +158,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Logger_LogsSdkCategoryByDefault()
+        {
+            var messages = new List<string>();
+            Logger.Default = Logger.Function((message) => messages.Add(message));
+
+            Logger.LogDefault(LogLevel.Warn, "A log message");
+
+            Assert.That(messages.Count, Is.EqualTo(1));
+            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+        }
+
+        [Test]
         public void Logger_CallsCustomFunction()
         {
             var messages = new List<string>();
-            Logger.Default = Logger.Function((level, category, message) => messages.Add(Logger.FormatLog(level, category, message)));
+            Logger.Default = Logger.Function((level, category, message) => messages.Add(Logger.FormatLog(level, message, category)));
 
-            Logger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+            Logger.LogDefault(LogLevel.Warn, "A log message", LogCategory.Realm.SDK);
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
