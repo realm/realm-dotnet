@@ -313,16 +313,19 @@ REALM_EXPORT void shared_realm_set_log_level(Logger::Level level, uint16_t* cate
 
 REALM_EXPORT MarshaledVector<realm_string_t> shared_realm_get_log_category_names() {
     const auto names = LogCategory::get_category_names();
-    // Use heap allocation in order to keep the vector alive beyond this call.
-    // This will cause a memory leak 😢; however, this is only used for the tests.
-    const auto result = new std::vector<realm_string_t>();
-    result->reserve(names.size());
+    // Declare the vector as static in order to make it a globally allocated
+    // and keep the vector alive beyond this call.
+    static std::vector<realm_string_t> result;
 
-    for (const auto name : names) {
-        result->push_back(to_capi(name));
+    // Check if it is empty before populating the result to prevent appending
+    // names on each invocation since the vector is global.
+    if (result.empty()) {
+        for (const auto name : names) {
+            result.push_back(to_capi(name));
+        }
     }
 
-    return *result;
+    return result;
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
