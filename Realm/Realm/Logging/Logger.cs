@@ -35,8 +35,8 @@ namespace Realms.Logging
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
+        private static readonly LogCategory _defaultLogCategory = LogCategory.Realm;
         private static Logger? _defaultLogger;
-        private static LogLevel _logLevel = LogLevel.Info;
 
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
@@ -65,15 +65,6 @@ namespace Realms.Logging
         public static Logger Null { get; } = new NullLogger();
 
         /// <summary>
-        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
-        /// </summary>
-        /// <param name="logFunction">Function to proxy log calls to.</param>
-        /// <returns>
-        /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
-        /// </returns>
-        public static Logger Function(Action<LogLevel, string> logFunction) => new FunctionLogger(logFunction);
-
-        /// <summary>
         /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function. The message will
         /// already be formatted with the default message formatting that includes a timestamp.
         /// </summary>
@@ -81,20 +72,63 @@ namespace Realms.Logging
         /// <returns>
         /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
         /// </returns>
-        public static Logger Function(Action<string> logFunction) => new FunctionLogger((level, message) => logFunction(FormatLog(level, message)));
+        public static Logger Function(Action<string> logFunction) => new FunctionLogger((level, category, message) => logFunction(FormatLog(level, message, category)));
 
         /// <summary>
-        /// Gets or sets the verbosity of log messages.
+        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
+        /// </summary>
+        /// <param name="logFunction">Function to proxy log calls to.</param>
+        /// <returns>
+        /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
+        /// </returns>
+        [Obsolete("Use Function(Action<LogLevel, LogCategory, string> logFunction).")]
+        public static Logger Function(Action<LogLevel, string> logFunction) => new FunctionLogger((level, _, message) => logFunction(level, message));
+
+        /// <summary>
+        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
+        /// </summary>
+        /// <param name="logFunction">Function to proxy log calls to.</param>
+        /// <returns>
+        /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
+        /// </returns>
+        public static Logger Function(Action<LogLevel, LogCategory, string> logFunction) => new FunctionLogger(logFunction);
+
+        /// <summary>
+        /// Gets or sets the verbosity of log messages for all log categories via <see cref="LogCategory.Realm"/>.
         /// </summary>
         /// <value>The log level for Realm-originating messages.</value>
+        [Obsolete("Use GetLogLevel() and SetLogLevel().")]
         public static LogLevel LogLevel
         {
-            get => _logLevel;
+            get => GetLogLevel();
             set
             {
-                _logLevel = value;
-                SharedRealmHandle.SetLogLevel(value);
+                SetLogLevel(value);
             }
+        }
+
+        /// <summary>
+        /// Gets the verbosity of log messages for the given category.
+        /// </summary>
+        /// <param name="category">The category to get the level for. Defaults to <see cref="LogCategory.Realm"/> if not specified.</param>
+        /// <returns>
+        /// The log level used.
+        /// </returns>
+        public static LogLevel GetLogLevel(LogCategory? category = null)
+        {
+            category ??= _defaultLogCategory;
+            return SharedRealmHandle.GetLogLevel(category);
+        }
+
+        /// <summary>
+        /// Sets the verbosity of log messages for the given category.
+        /// </summary>
+        /// <param name="level">The log level to use for messages.</param>
+        /// <param name="category">The category to set the level for. Defaults to <see cref="LogCategory.Realm"/> if not specified.</param>
+        public static void SetLogLevel(LogLevel level, LogCategory? category = null)
+        {
+            category ??= _defaultLogCategory;
+            SharedRealmHandle.SetLogLevel(level, category);
         }
 
         /// <summary>
@@ -118,27 +152,29 @@ namespace Realms.Logging
             _gcHandle = new Lazy<GCHandle>(() => GCHandle.Alloc(this));
         }
 
-        internal static void LogDefault(LogLevel level, string message) => Default?.Log(level, message);
+        internal static void LogDefault(LogLevel level, string message, LogCategory? category = null) => Default?.Log(level, message, category);
 
         /// <summary>
-        /// Log a message at the supplied level.
+        /// Log a message at the supplied level and category.
         /// </summary>
         /// <param name="level">The criticality level for the message.</param>
         /// <param name="message">The message to log.</param>
-        public void Log(LogLevel level, string message)
+        /// <param name="category">The category for the message. Defaults to <see cref="LogCategory.RealmLogCategory.SDK"/> if not specified.</param>
+        public void Log(LogLevel level, string message, LogCategory? category = null)
         {
-            if (level < LogLevel)
+            category ??= LogCategory.Realm.SDK;
+            if (level < GetLogLevel(category))
             {
                 return;
             }
 
             try
             {
-                LogImpl(level, message);
+                LogImpl(level, message, category);
             }
             catch (Exception ex)
             {
-                Console.Log(LogLevel.Error, $"An exception occurred while trying to log the message: '{message}' at level: {level}. Error: {ex}");
+                Console.Log(LogLevel.Error, $"An exception occurred while trying to log the message: '{message}' at level: {level} in category: '{category}'. Error: {ex}");
             }
         }
 
@@ -147,21 +183,24 @@ namespace Realms.Logging
         /// </summary>
         /// <param name="level">The criticality level for the message.</param>
         /// <param name="message">The message to log.</param>
-        protected abstract void LogImpl(LogLevel level, string message);
+        /// <param name="category">The category for the message.</param>
+        protected abstract void LogImpl(LogLevel level, string message, LogCategory? category = null);
 
-        internal static string FormatLog(LogLevel level, string message) => $"{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss.fff} {level}: {message}";
+        internal static string FormatLog(LogLevel level, string message, LogCategory category) => $"{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss.fff} {category} {level}: {message}";
 
         private class ConsoleLogger : Logger
         {
-            protected override void LogImpl(LogLevel level, string message)
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null)
             {
-                System.Console.WriteLine(FormatLog(level, message));
+                // TODO(lj): Currently using `!` since calls always go thru `Log()`; however, we
+                //           could do `category ??= LogCategory.Realm.SDK;` in all logger classes.
+                System.Console.WriteLine(FormatLog(level, message, category!));
             }
         }
 
         private class FileLogger : Logger
         {
-            private readonly object locker = new();
+            private readonly object _locker = new();
             private readonly string _filePath;
             private readonly Encoding _encoding;
 
@@ -171,30 +210,30 @@ namespace Realms.Logging
                 _encoding = encoding ?? Encoding.UTF8;
             }
 
-            protected override void LogImpl(LogLevel level, string message)
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null)
             {
-                lock (locker)
+                lock (_locker)
                 {
-                    System.IO.File.AppendAllText(_filePath, FormatLog(level, message) + Environment.NewLine, _encoding);
+                    System.IO.File.AppendAllText(_filePath, FormatLog(level, message, category!) + Environment.NewLine, _encoding);
                 }
             }
         }
 
         private class FunctionLogger : Logger
         {
-            private readonly Action<LogLevel, string> _logFunction;
+            private readonly Action<LogLevel, LogCategory, string> _logFunction;
 
-            public FunctionLogger(Action<LogLevel, string> logFunction)
+            public FunctionLogger(Action<LogLevel, LogCategory, string> logFunction)
             {
                 _logFunction = logFunction;
             }
 
-            protected override void LogImpl(LogLevel level, string message) => _logFunction(level, message);
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null) => _logFunction(level, category!, message);
         }
 
         private class NullLogger : Logger
         {
-            protected override void LogImpl(LogLevel level, string message)
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null)
             {
             }
         }
@@ -203,11 +242,11 @@ namespace Realms.Logging
         {
             private readonly StringBuilder _builder = new();
 
-            protected override void LogImpl(LogLevel level, string message)
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null)
             {
                 lock (_builder)
                 {
-                    _builder.AppendLine(FormatLog(level, message));
+                    _builder.AppendLine(FormatLog(level, message, category!));
                 }
             }
 
@@ -255,11 +294,11 @@ namespace Realms.Logging
                 _flush.Dispose();
             }
 
-            protected override void LogImpl(LogLevel level, string message)
+            protected override void LogImpl(LogLevel level, string message, LogCategory? category = null)
             {
                 if (!_isFlushing)
                 {
-                    _queue.Enqueue(FormatLog(level, message));
+                    _queue.Enqueue(FormatLog(level, message, category!));
                     _hasNewItems.Set();
                 }
             }
