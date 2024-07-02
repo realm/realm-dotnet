@@ -1,21 +1,26 @@
 ## vNext (TBD)
 
 ### Deprecations
-* TODO(lj): Add deprecated APIs
+* The `Logger.LogLevel` `set` and `get` accessors have been deprecated. Please use `Logger.SetLogLevel()` and `Logger.GetLogLevel()` (see **Enhancements** below).
+* The `Logger.Function(Action<LogLevel, string> logFunction)` have been deprecated. Please use `Logger.Function(Action<LogLevel, LogCategory, string> logFunction)` (see **Enhancements** below).
 
 ### Enhancements
 * Allowed `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
-* Allowed setting and getting a `LogLevel` for a given `LogCategory`, enabling more control over which category of messages should be logged and at what criticality level. The hierarchy of categories starts at `LogCategory.Realm`.
-  ```csharp
-  Logger.SetLogLevel(LogLevel.Warn, LogCategory.Realm.Sync);
-  Logger.GetLogLevel(LogCategory.Realm.Sync.Client.Session); // LogLevel.Warn
-  ```
-  (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
-* Added a function logger that accepts a callback that will receive the `LogLevel`, `LogCategory`, and the message when invoked.
-  ```csharp
-  Logger.Default = Logger.Function((level, category, message) => /* custom implementation */);
-  ```
-  (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
+* Introduced a `LogCategory` and allowed for more control over which category of messages should be logged and at which criticality level:
+  * Allowed setting and getting a `LogLevel` for a given `LogCategory`. The hierarchy of categories starts at `LogCategory.Realm`.
+    ```csharp
+    Logger.SetLogLevel(LogLevel.Warn, LogCategory.Realm.Sync);
+    Logger.GetLogLevel(LogCategory.Realm.Sync.Client.Session); // LogLevel.Warn
+    ```
+  * Added a function logger that accepts a callback that will receive the `LogLevel`, `LogCategory`, and the message when invoked.
+    ```csharp
+    Logger.Default = Logger.Function((level, category, message) => /* custom implementation */);
+    ```
+  * Added an optional category as a last parameter to `Logger.Log()`. If unset, `LogCategory.Realm.SDK` will be used.
+    ```csharp
+    Logger.Default.Log(LogLevel.Warn, "A warning message", LogCategory.Realm);
+    ```
+    (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
 
 ### Fixed
 * A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
