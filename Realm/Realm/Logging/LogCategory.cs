@@ -16,16 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using Realms.Helpers;
 
 namespace Realms.Logging
 {
+    /// <summary>
+    /// Specifies the category to receive log messages for when logged by the default
+    /// logger. The <see cref="LogLevel"/> will always be set for a specific category.
+    /// Setting the log level for one category will automatically set the same level
+    /// for all of its subcategories.
+    /// </summary>
     public class LogCategory
     {
+        /// <summary>
+        /// Gets the name of the category.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Gets the top-level category for receiving log messages for all categories.
+        /// </summary>
         public static RealmLogCategory Realm { get; } = new();
 
         internal static readonly Dictionary<string, LogCategory> NameToCategory = new()
@@ -62,15 +73,30 @@ namespace Realms.Logging
         /// <returns>A string that represents the category, equivalent to its name.</returns>
         public override string ToString() => Name;
 
+        /// <summary>
+        /// The top-level category for receiving log messages for all categories.
+        /// </summary>
         public class RealmLogCategory : LogCategory
         {
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to database events.
+            /// </summary>
             public StorageLogCategory Storage { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to Atlas Device Sync.
+            /// </summary>
             public SyncLogCategory Sync { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to Atlas App.
+            /// </summary>
             public LogCategory App { get; }
 
             // TODO(lj): Prefer `SDK` or `Sdk` for c#?
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to the SDK.
+            /// </summary>
             public LogCategory SDK { get; }
 
             internal RealmLogCategory() : base("Realm", null)
@@ -82,14 +108,31 @@ namespace Realms.Logging
             }
         }
 
+        /// <summary>
+        /// The category for receiving log messages pertaining to database events.
+        /// </summary>
         public class StorageLogCategory : LogCategory
         {
+            /// <summary>
+            /// Gets the category for receiving log messages when creating, advancing, and
+            /// committing transactions.
+            /// </summary>
             public LogCategory Transaction { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages when querying the database.
+            /// </summary>
             public LogCategory Query { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages when mutating the database.
+            /// </summary>
             public LogCategory Object { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages when there are notifications
+            /// of changes to the database.
+            /// </summary>
             public LogCategory Notification { get; }
 
             internal StorageLogCategory(LogCategory parent) : base("Storage", parent)
@@ -101,10 +144,19 @@ namespace Realms.Logging
             }
         }
 
+        /// <summary>
+        /// The category for receiving log messages pertaining to Atlas Device Sync.
+        /// </summary>
         public class SyncLogCategory : LogCategory
         {
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to sync client operations.
+            /// </summary>
             public ClientLogCategory Client { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to sync server operations.
+            /// </summary>
             public LogCategory Server { get; }
 
             internal SyncLogCategory(LogCategory parent) : base("Sync", parent)
@@ -114,14 +166,30 @@ namespace Realms.Logging
             }
         }
 
+        /// <summary>
+        /// The category for receiving log messages pertaining to sync client operations.
+        /// </summary>
         public class ClientLogCategory : LogCategory
         {
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to the sync session.
+            /// </summary>
             public LogCategory Session { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages when receiving, uploading, and
+            /// integrating changesets.
+            /// </summary>
             public LogCategory Changeset { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages pertaining to low-level network activity.
+            /// </summary>
             public LogCategory Network { get; }
 
+            /// <summary>
+            /// Gets the category for receiving log messages when there are client reset operations.
+            /// </summary>
             public LogCategory Reset { get; }
 
             internal ClientLogCategory(LogCategory parent) : base("Client", parent)
