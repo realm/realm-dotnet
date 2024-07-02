@@ -95,7 +95,7 @@ namespace Realms.Logging
 
         // TODO(lj): Deprecate
         /// <summary>
-        /// Gets or sets the verbosity of log messages.
+        /// Gets or sets the verbosity of log messages for all log categories via <see cref="LogCategory.Realm"/>.
         /// </summary>
         /// <value>The log level for Realm-originating messages.</value>
         public static LogLevel LogLevel
@@ -107,12 +107,24 @@ namespace Realms.Logging
             }
         }
 
+        /// <summary>
+        /// Gets the verbosity of log messages for the given category.
+        /// </summary>
+        /// <param name="category">The category to get the level for. Defaults to <see cref="LogCategory.Realm"/> if not specified.</param>
+        /// <returns>
+        /// The log level used.
+        /// </returns>
         public static LogLevel GetLogLevel(LogCategory? category = null)
         {
             category ??= _defaultLogCategory;
             return SharedRealmHandle.GetLogLevel(category);
         }
 
+        /// <summary>
+        /// Sets the verbosity of log messages for the given category.
+        /// </summary>
+        /// <param name="level">The log level to use for messages.</param>
+        /// <param name="category">The category to set the level for. Defaults to <see cref="LogCategory.Realm"/> if not specified.</param>
         public static void SetLogLevel(LogLevel level, LogCategory? category = null)
         {
             category ??= _defaultLogCategory;
@@ -156,6 +168,12 @@ namespace Realms.Logging
         }
 
         // TODO(lj): Use category as optional 3rd param.
+        /// <summary>
+        /// Log a message at the supplied level and category.
+        /// </summary>
+        /// <param name="level">The criticality level for the message.</param>
+        /// <param name="category">The category for the message.</param>
+        /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, LogCategory category, string message)
         {
             if (level < GetLogLevel(category))
@@ -173,11 +191,13 @@ namespace Realms.Logging
             }
         }
 
+        // TODO(lj): Set category as optional 3rd arg as we'll do for `Log`,
+        //           so that we don't break the API.
         /// <summary>
         /// The internal implementation being called from <see cref="Log"/>.
         /// </summary>
         /// <param name="level">The criticality level for the message.</param>
-        /// <param name="category">TODO(lj).</param>
+        /// <param name="category">The category for the message.</param>
         /// <param name="message">The message to log.</param>
         protected abstract void LogImpl(LogLevel level, LogCategory category, string message);
 
