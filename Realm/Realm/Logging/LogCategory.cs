@@ -26,7 +26,29 @@ namespace Realms.Logging
     /// logger. The <see cref="LogLevel"/> will always be set for a specific category.
     /// Setting the log level for one category will automatically set the same level
     /// for all of its subcategories.
+    /// <code>
+    /// Realm
+    /// ├─► Storage
+    /// │   ├─► Transaction
+    /// │   ├─► Query
+    /// │   ├─► Object
+    /// │   └─► Notification
+    /// ├─► Sync
+    /// │   ├─► Client
+    /// │   │   ├─► Session
+    /// │   │   ├─► Changeset
+    /// │   │   ├─► Network
+    /// │   │   └─► Reset
+    /// │   └─► Server
+    /// ├─► App
+    /// └─► Sdk
+    /// </code>
     /// </summary>
+    /// <example>
+    /// <code>
+    /// LogCategory.Realm.Sync.Client
+    /// </code>
+    /// </example>
     public class LogCategory
     {
         /// <summary>
