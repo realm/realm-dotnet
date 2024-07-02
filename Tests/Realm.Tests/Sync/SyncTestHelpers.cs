@@ -142,7 +142,7 @@ namespace Realms.Tests.Sync
                 var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), extracted.RealmLogLevel!);
                 TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
 
-                Logger.LogLevel = logLevel;
+                Logger.SetLogLevel(logLevel);
             }
 
             Logger.AsyncFileLogger? logger = null;

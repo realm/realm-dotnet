@@ -1281,14 +1281,14 @@ namespace Realms.Tests.Database
             // We're at info level, so we don't expect any statements.
             WriteAndVerifyLogs();
 
-            Logger.LogLevel = LogLevel.Debug;
+            Logger.SetLogLevel(LogLevel.Debug);
 
             // We're at Debug level now, so we should see the write message.
             var expectedWriteLog = new Regex("Debug: DB: .* Commit of size [^ ]* done in [^ ]* us");
             WriteAndVerifyLogs(expectedWriteLog);
 
             // Revert back to Info level and make sure we don't log anything
-            Logger.LogLevel = LogLevel.Info;
+            Logger.SetLogLevel(LogLevel.Info);
             WriteAndVerifyLogs();
 
             void WriteAndVerifyLogs(Regex? expectedRegex = null)

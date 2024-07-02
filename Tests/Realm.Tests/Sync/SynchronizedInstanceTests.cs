@@ -728,7 +728,7 @@ namespace Realms.Tests.Sync
         {
             var logger = new Logger.InMemoryLogger();
             Logger.Default = logger;
-            Logger.LogLevel = LogLevel.Debug;
+            Logger.SetLogLevel(LogLevel.Debug);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -811,7 +811,7 @@ namespace Realms.Tests.Sync
                 }
             });
 
-            Logger.LogLevel = LogLevel.Info;
+            Logger.SetLogLevel(LogLevel.Info);
             Logger.Default = logger;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -824,7 +824,7 @@ namespace Realms.Tests.Sync
                 Assert.That(initialInfoLogs, Is.GreaterThan(0));
                 Assert.That(logs[LogLevel.Debug].Count, Is.EqualTo(0));
 
-                Logger.LogLevel = LogLevel.Debug;
+                Logger.SetLogLevel(LogLevel.Debug);
 
                 realm.Write(() =>
                 {

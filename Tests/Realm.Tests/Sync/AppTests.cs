@@ -167,7 +167,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                Logger.LogLevel = logLevel;
+                Logger.SetLogLevel(logLevel);
                 var logger = new Logger.InMemoryLogger();
                 Logger.Default = logger;
 

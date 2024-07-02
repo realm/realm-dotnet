@@ -28,6 +28,7 @@ using Realms.Logging;
 
 namespace Realms.Native;
 
+// TODO(lj): For the logs happening in this class, should we log for `LogCategory.Realm.Sync.Client`?
 internal partial class SyncSocketProvider
 {
     private class Socket : IDisposable
@@ -185,7 +186,8 @@ internal partial class SyncSocketProvider
 
             builder.AppendFormat("{0}: {1}", ex.GetType().FullName, ex.Message);
             builder.AppendLine();
-            if (Logger.LogLevel >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
+            // TODO(lj): May update to log for a specific category.
+            if (Logger.GetLogLevel() >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
             {
                 builder.Append(indentation);
                 var indentedTrace = ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indentation);
