@@ -1,9 +1,24 @@
 ## vNext (TBD)
 
+### Deprecations
+* TODO(lj): Add deprecated APIs
+
 ### Enhancements
 * Allow `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
 * Reduce the size of the local transaction log produced by creating objects, improving the performance of insertion-heavy transactions (Core 14.10.0).
 * Performance has been improved for range queries on integers and timestamps. Requires that you use the "BETWEEN" operation in `Realm.All<T>().Filter(...)`. (Core 14.10.1)
+* Allowed `ShouldCompactOnLaunch` to be set on `SyncConfiguration`, not only `RealmConfiguration`. (Issue [#3617](https://github.com/realm/realm-dotnet/issues/3617))
+* Allowed setting and getting a `LogLevel` for a given `LogCategory`, enabling more control over which category of messages should be logged and at what criticality level. The hierarchy of categories starts at `LogCategory.Realm`.
+  ```csharp
+  Logger.SetLogLevel(LogLevel.Warn, LogCategory.Realm.Sync);
+  Logger.GetLogLevel(LogCategory.Realm.Sync.Client.Session); // LogLevel.Warn
+  ```
+  (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
+* Added a function logger that accepts a callback that will receive the `LogLevel`, `LogCategory`, and the message when invoked.
+  ```csharp
+  Logger.Default = Logger.Function((level, category, message) => /* custom implementation */);
+  ```
+  (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
 
 ### Fixed
 * A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
