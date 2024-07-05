@@ -28,6 +28,15 @@
 
 namespace realm::binding {
 
+/// A struct used when marshaling of `MarshaledVector` cannot be
+/// compiled, e.g. for MSVC when returning a `MarshaledVector` from
+/// CPP directly, as compared to when nested within another struct.
+struct AnyMarshaledVector
+{
+    const void* items;
+    size_t count;
+};
+
 template <typename T>
 struct MarshaledVector
 {
@@ -87,15 +96,9 @@ struct MarshaledVector
     iterator begin() const noexcept { return {items}; }
     iterator end() const noexcept { return {items + count}; }
 
-    struct AnyMarshallable
-    {
-        const void* items;
-        size_t count;
-    };
-
     /// Needed for MSVC when returning a `MarshaledVector` from CPP
     /// directly, as compared to when nested within another struct.
-    AnyMarshallable for_top_level_marshalling() const {
+    AnyMarshaledVector for_any_type_marshalling() const {
         return {items, count};
     }
 };
