@@ -28,15 +28,6 @@
 
 namespace realm::binding {
 
-/// Needed for MSVC when returning a `MarshaledVector` from CPP
-/// directly, as compared to when nested within another struct.
-/// Returned via `MarshaledVector::for_top_level_marshalling()`.
-struct AnyTopLevelMarshallable
-{
-    const void* items;
-    size_t count;
-};
-
 template <typename T>
 struct MarshaledVector
 {
@@ -96,9 +87,15 @@ struct MarshaledVector
     iterator begin() const noexcept { return {items}; }
     iterator end() const noexcept { return {items + count}; }
 
+    struct AnyMarshallable
+    {
+        const void* items;
+        size_t count;
+    };
+
     /// Needed for MSVC when returning a `MarshaledVector` from CPP
     /// directly, as compared to when nested within another struct.
-    AnyTopLevelMarshallable for_top_level_marshalling() const {
+    AnyMarshallable for_top_level_marshalling() const {
         return {items, count};
     }
 };
