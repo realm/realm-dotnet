@@ -112,7 +112,7 @@ namespace Realms.Logging
         /// </summary>
         /// <param name="category">The category to get the level for. Defaults to <see cref="LogCategory.Realm"/> if not specified.</param>
         /// <returns>
-        /// The log level used.
+        /// The log level used for the given category.
         /// </returns>
         public static LogLevel GetLogLevel(LogCategory? category = null)
         {
