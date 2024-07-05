@@ -306,7 +306,7 @@ REALM_EXPORT void shared_realm_set_log_level(Logger::Level level, uint16_t* cate
     LogCategory::get_category(category_name).set_default_level_threshold(level);
 }
 
-REALM_EXPORT MarshaledVector<realm_string_t>::TopLevelMarshallable shared_realm_get_log_category_names() {
+REALM_EXPORT AnyTopLevelMarshallable shared_realm_get_log_category_names() {
     const auto names = LogCategory::get_category_names();
     // Declare the vector as static in order to make it a globally allocated
     // and keep the vector alive beyond this call.
