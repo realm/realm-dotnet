@@ -86,6 +86,18 @@ struct MarshaledVector
 
     iterator begin() const noexcept { return {items}; }
     iterator end() const noexcept { return {items + count}; }
+
+    struct TopLevelMarshallable
+    {
+        const T* items;
+        size_t count;
+    };
+
+    /// Needed for MSVC when returning a `MarshaledVector` from CPP
+    /// directly, as compared to when nested within another struct.
+    TopLevelMarshallable for_top_level_marshalling() const {
+        return {items, count};
+    }
 };
 
 enum class realm_value_type : uint8_t {
