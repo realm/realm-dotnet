@@ -320,7 +320,7 @@ REALM_EXPORT MarshaledVector<realm_string_t> shared_realm_get_log_category_names
         }
     }
 
-    return result;
+    return {result};
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
