@@ -4,6 +4,7 @@
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
+using Realms.Helpers;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
