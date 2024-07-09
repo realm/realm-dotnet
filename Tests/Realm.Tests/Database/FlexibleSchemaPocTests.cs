@@ -94,6 +94,53 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     }
 
     [Test]
+    public void AccessMappedTypeProperties_WhenNonExistent_Throws()
+    {
+        var dog = new Dog();
+        dog.SetBackingStorage(new Dictionary<string, RealmValue>());
+
+        Assert.That(() => dog.Name, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(dog.Name)}' does not exist on '{nameof(Dog)}'."));
+        Assert.That(() => dog.BarkCount, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(dog.BarkCount)}' does not exist on '{nameof(Dog)}'."));
+
+        var bird = new Bird();
+        bird.SetBackingStorage(new Dictionary<string, RealmValue>());
+
+        Assert.That(() => bird.Name, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(bird.Name)}' does not exist on '{nameof(Bird)}'."));
+        Assert.That(() => bird.CanFly, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(bird.CanFly)}' does not exist on '{nameof(Bird)}'."));
+    }
+
+    [Test]
+    public void UpdateMappedTypeProperties_WritesValuesToBackingStorage()
+    {
+        AddData();
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+
+        var dog = new Dog();
+        dog.SetBackingStorage(dogContainer.MixedDict);
+
+        _realm.Write(() =>
+        {
+            dog.Name = "Updated Fido";
+            dog.BarkCount++;
+        });
+        Assert.That(dog.Name, Is.EqualTo("Updated Fido"));
+        Assert.That(dog.BarkCount, Is.EqualTo(6));
+
+        var birdContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Bird));
+
+        var bird = new Bird();
+        bird.SetBackingStorage(birdContainer.MixedDict);
+
+        _realm.Write(() =>
+        {
+            bird.Name = "Updated Tweety";
+            bird.CanFly = false;
+        });
+        Assert.That(bird.Name, Is.EqualTo("Updated Tweety"));
+        Assert.That(bird.CanFly, Is.False);
+    }
+
+    [Test]
     public void NotifyPropertyChanged_NotifiesForModifications()
     {
         AddData();
@@ -191,11 +238,13 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         public string Name
         {
             get => Get<string>(nameof(Name));
+            set => Set(nameof(Name), value);
         }
 
         public int BarkCount
         {
             get => Get<int>(nameof(BarkCount));
+            set => Set(nameof(BarkCount), value);
         }
 
         private T Get<T>(string propertyName)
@@ -203,6 +252,11 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
             Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Dog)}'.", nameof(propertyName));
 
             return value.As<T>();
+        }
+
+        private void Set(string propertyName, RealmValue value)
+        {
+            _backingStorage[propertyName] = value;
         }
     }
 
@@ -220,18 +274,25 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         public string Name
         {
             get => Get<string>(nameof(Name));
+            set => Set(nameof(Name), value);
         }
 
         public bool CanFly
         {
             get => Get<bool>(nameof(CanFly));
+            set => Set(nameof(CanFly), value);
         }
 
         private T Get<T>(string propertyName)
         {
-            Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Dog)}'.", nameof(propertyName));
+            Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Bird)}'.", nameof(propertyName));
 
             return value.As<T>();
+        }
+
+        private void Set(string propertyName, RealmValue value)
+        {
+            _backingStorage[propertyName] = value;
         }
     }
 }
