@@ -58,5 +58,7 @@ namespace Realms.Tests.Database
 
         [Backlink(nameof(LinkSameType))]
         public IQueryable<TestNotificationObject> Backlink { get; } = null!;
+
+        public EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
     }
 }
