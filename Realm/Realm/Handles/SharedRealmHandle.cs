@@ -49,6 +49,17 @@ namespace Realms
 
         private static class NativeMethods
         {
+            // This is a wrapper struct around MarshaledVector since P/Invoke doesn't like it
+            // when the MarshaledVector is returned as the top-level return value from a native
+            // function. This only manifests in .NET Framework and is not an issue with Mono/.NET.
+            // The native return value is MarshaledVector without the wrapper because they are binary
+            // compatible.
+            [StructLayout(LayoutKind.Sequential)]
+            public struct CategoryNamesContainer
+            {
+                public MarshaledVector<StringValue> CategoryNames;
+            }
+
 #pragma warning disable IDE0049 // Use built-in type alias
 #pragma warning disable SA1121 // Use built-in type alias
 
@@ -232,7 +243,7 @@ namespace Realms
             public static extern void set_log_level(LogLevel level, [MarshalAs(UnmanagedType.LPWStr)] string category_name, IntPtr category_name_len);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_log_category_names", CallingConvention = CallingConvention.Cdecl)]
-            public static extern MarshaledVector<StringValue> get_log_category_names();
+            public static extern CategoryNamesContainer get_log_category_names();
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
@@ -284,6 +295,7 @@ namespace Realms
         public static void SetLogLevel(LogLevel level, LogCategory category) => NativeMethods.set_log_level(level, category.Name, (IntPtr)category.Name.Length);
 
         public static string[] GetLogCategoryNames() => NativeMethods.get_log_category_names()
+            .CategoryNames
             .ToEnumerable()
             .Select(name => name.ToDotnetString()!)
             .ToArray();
