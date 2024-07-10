@@ -791,17 +791,17 @@ namespace Realms
 
         // TODO (ni): add docs
         public T AsMappedObject<T>()
-            where T : class, IMappedObject
+            where T : class, IMappedObject, new()
         {
             EnsureType("dictionary", RealmValueType.Dictionary);
-            var result = Activator.CreateInstance<T>();
+            var result = new T();
             result.SetBackingStorage(_dictionaryValue!);
             return result;
         }
 
         // TODO (ni): add docs
         public T? AsNullableMappedObject<T>()
-            where T : class, IMappedObject
+            where T : class, IMappedObject, new()
             => Type == RealmValueType.Null ? null : AsMappedObject<T>();
 
         /// <summary>

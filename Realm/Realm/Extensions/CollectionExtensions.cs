@@ -559,9 +559,9 @@ public static class CollectionExtensions
 
     // TODO (ni): add docs
     public static T As<T>(this IDictionary<string, RealmValue> dict)
-        where T : IMappedObject
+        where T : IMappedObject, new()
     {
-        var result = Activator.CreateInstance<T>();
+        var result = new T();
         result.SetBackingStorage(dict);
         return result;
     }

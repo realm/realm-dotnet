@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database;
@@ -176,7 +175,6 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         }
     }
 
-    // User-defined
     public partial class Dog : IMappedObject
     {
         public string Name { get; set; }
@@ -184,159 +182,10 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         public int BarkCount { get; set; }
     }
 
-    // Generated
-    public partial class Dog : INotifyPropertyChanged
-    {
-        private IDictionary<string, RealmValue> _backingStorage = null!;
-
-        public void SetBackingStorage(IDictionary<string, RealmValue> dictionary)
-        {
-            _backingStorage = dictionary;
-        }
-
-        #region  INotifyPropertyChanged
-
-        private IDisposable? _notificationToken;
-
-        private event PropertyChangedEventHandler? _propertyChanged;
-
-        /// <inheritdoc />
-        public event PropertyChangedEventHandler? PropertyChanged
-        {
-            add
-            {
-                if (_propertyChanged == null)
-                {
-                    SubscribeForNotifications();
-                }
-
-                _propertyChanged += value;
-            }
-
-            remove
-            {
-                _propertyChanged -= value;
-
-                if (_propertyChanged == null)
-                {
-                    UnsubscribeFromNotifications();
-                }
-            }
-        }
-
-        partial void OnPropertyChanged(string? propertyName);
-
-        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            OnPropertyChanged(propertyName);
-        }
-
-        private void SubscribeForNotifications()
-        {
-            _notificationToken = _backingStorage.SubscribeForKeyNotifications((sender, changes) =>
-            {
-                if (changes == null)
-                {
-                    return;
-                }
-
-                foreach (var key in changes.ModifiedKeys)
-                {
-                    RaisePropertyChanged(key);
-                }
-
-                // TODO: what do we do with deleted/inserted keys
-            });
-        }
-
-        private void UnsubscribeFromNotifications()
-        {
-            _notificationToken?.Dispose();
-        }
-
-        #endregion
-    }
-
-    // User-defined
     public partial class Bird : IMappedObject
     {
         public string Name { get; set; }
 
         public bool CanFly { get; set; }
-    }
-
-    // Generated
-    public partial class Bird : INotifyPropertyChanged
-    {
-        private IDictionary<string, RealmValue> _backingStorage = null!;
-
-        public void SetBackingStorage(IDictionary<string, RealmValue> dictionary)
-        {
-            _backingStorage = dictionary;
-        }
-
-        #region  INotifyPropertyChanged
-
-        private IDisposable? _notificationToken;
-
-        private event PropertyChangedEventHandler? _propertyChanged;
-
-        /// <inheritdoc />
-        public event PropertyChangedEventHandler? PropertyChanged
-        {
-            add
-            {
-                if (_propertyChanged == null)
-                {
-                    SubscribeForNotifications();
-                }
-
-                _propertyChanged += value;
-            }
-
-            remove
-            {
-                _propertyChanged -= value;
-
-                if (_propertyChanged == null)
-                {
-                    UnsubscribeFromNotifications();
-                }
-            }
-        }
-
-        partial void OnPropertyChanged(string? propertyName);
-
-        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            OnPropertyChanged(propertyName);
-        }
-
-        private void SubscribeForNotifications()
-        {
-            _notificationToken = _backingStorage.SubscribeForKeyNotifications((sender, changes) =>
-            {
-                if (changes == null)
-                {
-                    return;
-                }
-
-                foreach (var key in changes.ModifiedKeys)
-                {
-                    RaisePropertyChanged(key);
-                }
-
-                // TODO: what do we do with deleted/inserted keys
-            });
-        }
-
-        private void UnsubscribeFromNotifications()
-        {
-            _notificationToken?.Dispose();
-        }
-
-        #endregion
     }
 }
