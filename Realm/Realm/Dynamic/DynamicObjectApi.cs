@@ -90,6 +90,17 @@ namespace Realms
             }
         }
 
+        public bool TryGet<T>(string propertyName, out T propertyValue)
+        {
+            return TryGet(propertyName, out propertyValue);
+        }
+
+        public bool TryGet(string propertyName, out RealmValue propertyValue)
+        {
+            propertyValue = Get(propertyName);
+            return true;
+        }
+
         /// <summary>
         /// Sets the value of the property at <paramref name="propertyName"/> to
         /// <paramref name="value"/>.
@@ -141,12 +152,6 @@ namespace Realms
         public void Unset(string propertyName)
         {
             _managedAccessor.UnsetProperty(propertyName);
-        }
-
-        //TODO Add docs / fix name
-        public IEnumerable<string> GetAdditionalProperties()
-        {
-            return _managedAccessor.GetAdditionalProperties();
         }
 
         /// <summary>

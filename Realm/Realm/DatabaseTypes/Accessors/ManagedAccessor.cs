@@ -120,11 +120,6 @@ namespace Realms
             ObjectHandle.UnsetProperty(propertyName);
         }
 
-        //TODO Add docs / fix name
-        public IEnumerable<string> GetAdditionalProperties()
-        {
-            return ObjectHandle.GetAdditionalProperties();
-        }
 
         /// <inheritdoc/>
         public void SetValueUnique(string propertyName, RealmValue val)

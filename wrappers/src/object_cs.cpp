@@ -128,19 +128,19 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_additional_property(const Object& object, realm_string_t property_name, realm_value_t* value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_value_by_name(const Object& object, realm_string_t property_name, realm_value_t* value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            auto val = object.get_obj().get_additional_prop(capi_to_std(property_name));
+            auto val = object.get_obj().get_any(capi_to_std(property_name));
 
             if (val.is_null())
             {
                 *value = to_capi(val);
                 return;
             }
-
+            //TODO This should be different probably
             Path path = { PathElement(capi_to_std(property_name)) };
 
             switch (val.get_type()) {
@@ -203,11 +203,11 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_additional_property(Object& object, realm_string_t property_name, realm_value_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_value_by_name(Object& object, realm_string_t property_name, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
-            object.get_obj().set_additional_prop(capi_to_std(property_name), from_capi(value));
+            object.get_obj().set_any(capi_to_std(property_name), from_capi(value));
         });
     }
 
@@ -266,7 +266,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void* object_set_collection_additional_property(Object& object, 
+    REALM_EXPORT void* object_set_collection_value_by_name(Object& object, 
         realm_string_t property_name, realm_value_type type, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]()-> void* {

@@ -51,18 +51,19 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_unset_property", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unset_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_additional_property(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_value_by_name(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_additional_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_additional_property(ObjectHandle handle, StringValue propertyName, PrimitiveValue value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_value_by_name(ObjectHandle handle, StringValue propertyName, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_collection_value(ObjectHandle handle, IntPtr propertyIndex, RealmValueType type, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_additional_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_collection_additional_property(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection_value_by_name(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
 
+            //TODO Need to check if this works with .NET Framework
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_properties", CallingConvention = CallingConvention.Cdecl)]
             public static extern MarshaledVector<StringValue> get_additional_properties(ObjectHandle handle, out NativeException ex);
 
@@ -186,29 +187,43 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            if(metadata.GetPropertyIndexNullable(propertyName) is IntPtr propertyIndex)
+            //TODO Can we merge the two branches...?
+
+            if (!realm.Config.RelaxedSchema)
             {
+                var propertyIndex = metadata.GetPropertyIndex(propertyName);
                 NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
                 nativeException.ThrowIfNecessary();
 
                 return new RealmValue(result, realm, this, propertyIndex);
             }
-            else if(realm.Config.RelaxedSchema)
+            else
             {
-                using Arena arena = new();
-                var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+                if (metadata.GetPropertyIndexNullable(propertyName) is IntPtr propertyIndex)
+                {
+                    NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
+                    nativeException.ThrowIfNecessary();
 
-                NativeMethods.get_additional_property(this, propertyNameNative, out var result, out var nativeException);
-                nativeException.ThrowIfNecessary();
+                    return new RealmValue(result, realm, this, propertyIndex);
+                }
+                else
+                {
+                    using Arena arena = new();
+                    var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-                return new RealmValue(result, realm, this);
+                    NativeMethods.get_value_by_name(this, propertyNameNative, out var result, out var nativeException);
+                    nativeException.ThrowIfNecessary();
+
+                    return new RealmValue(result, realm, this);
+                }
             }
-
         }
 
         public void SetValue(string propertyName, Metadata metadata, in RealmValue value, Realm realm)
         {
             EnsureIsOpen();
+
+            //TODO Can we merge the two branches...?
 
             if (metadata.GetPropertyIndexNullable(propertyName) is IntPtr propertyIndex)
             {
@@ -298,7 +313,7 @@ namespace Realms
                 }
                 else if (value.Type.IsCollection())
                 {
-                    var collectionPtr = NativeMethods.set_collection_additional_property(this, propertyNameNative, value.Type, out var collNativeException);
+                    var collectionPtr = NativeMethods.set_collection_value_by_name(this, propertyNameNative, value.Type, out var collNativeException);
                     collNativeException.ThrowIfNecessary();
 
                     switch (value.Type)
@@ -317,7 +332,7 @@ namespace Realms
                 }
 
                 var (primitive, handles) = value.ToNative();
-                NativeMethods.set_additional_property(this, propertyNameNative, primitive, out var nativeException);
+                NativeMethods.set_value_by_name(this, propertyNameNative, primitive, out var nativeException);
                 handles?.Dispose();
                 nativeException.ThrowIfNecessary();
             }
