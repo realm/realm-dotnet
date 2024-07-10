@@ -211,4 +211,17 @@ internal static class PropertyDefinitionExtensions
     }
 
     public static SequencePoint? GetSequencePoint(this PropertyDefinition property) => property.GetMethod?.DebugInformation?.SequencePoints.FirstOrDefault() ?? property.SetMethod?.DebugInformation?.SequencePoints.FirstOrDefault();
+
+    public static bool IsIgnored(this PropertyDefinition prop) => !prop.HasThis || prop.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute");
+
+    public static string GetColumnName(this PropertyDefinition prop)
+    {
+        var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
+        if (mapToAttribute != null)
+        {
+            return (string)mapToAttribute.ConstructorArguments[0].Value;
+        }
+
+        return prop.Name;
+    }
 }

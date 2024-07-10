@@ -290,33 +290,58 @@ namespace RealmWeaver
         {
             _logger.Debug("Weaving generated " + type.Name);
 
-            if (type.IsIMappedObjectImplementor(_references))
-            {
-                // TODO (flx-poc): this should actually do something useful
-                return WeaveTypeResult.Success(type.Name, Enumerable.Empty<WeavePropertyResult>(), isGenerated: true);
-            }
-
-            // The forward slash is used to indicate a nested class
-            var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
-
             var persistedProperties = new List<WeavePropertyResult>();
             var backingFields = new HashSet<MetadataToken>();
 
-            // We need to weave all (and only) the properties in the accessor interface
-            foreach (var interfaceProperty in interfaceType.Properties)
+            if (type.IsIMappedObjectImplementor(_references))
             {
-                var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
+                var getValue = type.Methods.Single(m => m.Name == "GetValue" && m.GenericParameters.Count == 1 && m.Parameters.Count == 1 && m.Parameters.Single().ParameterType.FullName == StringTypeName);
+                var setValue = type.Methods.Single(m => m.Name == "SetValue" && m.GenericParameters.Count == 1 && m.Parameters.Count == 2 && m.Parameters[0].ParameterType.FullName == StringTypeName && m.Parameters[1].ParameterType.IsGenericParameter);
+
+                foreach (var prop in type.Properties.Where(p => p.IsAutomatic() && !p.IsIgnored()))
+                {
+                    if (!TryWeaveProperty(prop, p => WeaveMappedClassProperty(p, getValue, setValue)))
+                    {
+                        return WeaveTypeResult.Error(type.Name, isGenerated: true);
+                    }
+                }
+            }
+            else
+            {
+                // The forward slash is used to indicate a nested class
+                var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
+
+                // We need to weave all (and only) the properties in the accessor interface
+                foreach (var interfaceProperty in interfaceType.Properties)
+                {
+                    var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
+
+                    if (!TryWeaveProperty(prop, p => WeaveGeneratedClassProperty(type, p, interfaceType)))
+                    {
+                        return WeaveTypeResult.Error(type.Name, isGenerated: true);
+                    }
+                }
+            }
+
+            RemoveBackingFields(type, backingFields);
+
+            return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
+
+            bool TryWeaveProperty(PropertyDefinition prop, Func<PropertyDefinition, WeavePropertyResult> weaveAction)
+            {
                 try
                 {
-                    // Stash and remove the backing field before weaving as it depends on get method.
+                    // Stash and remove the backing field after weaving as it depends on get method.
                     var backingField = prop.GetBackingField();
                     if (backingField != null)
                     {
                         backingFields.Add(backingField.MetadataToken);
                     }
 
-                    var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
+                    var weaveResult = weaveAction(prop);
                     persistedProperties.Add(weaveResult);
+
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -325,13 +350,9 @@ namespace RealmWeaver
                         $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                         sequencePoint);
 
-                    return WeaveTypeResult.Error(type.Name, isGenerated: true);
+                    return false;
                 }
             }
-
-            RemoveBackingFields(type, backingFields);
-
-            return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
 
         private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
@@ -343,6 +364,47 @@ namespace RealmWeaver
             if (prop.SetMethod != null)
             {
                 ReplaceGeneratedClassSetter(prop, interfaceType, accessorGetter);
+            }
+
+            return WeavePropertyResult.Success(prop);
+        }
+
+        private WeavePropertyResult WeaveMappedClassProperty(PropertyDefinition prop, MethodReference getValue, MethodReference setValue)
+        {
+            var il = prop.GetMethod.Body.GetILProcessor();
+            prop.GetMethod.Body.Instructions.Clear();
+            prop.GetMethod.Body.Variables.Clear();
+
+            getValue = new GenericInstanceMethod(getValue)
+            {
+                GenericArguments =
+                {
+                    prop.PropertyType
+                }
+            };
+
+            setValue = new GenericInstanceMethod(setValue)
+            {
+                GenericArguments =
+                {
+                    prop.PropertyType
+                }
+            };
+
+            var columnName = prop.GetColumnName();
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldstr, columnName));
+            il.Append(il.Create(OpCodes.Call, getValue));
+            il.Append(il.Create(OpCodes.Ret));
+
+            if (prop.SetMethod != null)
+            {
+                il.Append(il.Create(OpCodes.Ldarg_0));
+                il.Append(il.Create(OpCodes.Ldstr, columnName));
+                il.Append(il.Create(OpCodes.Ldarg_1));
+                il.Append(il.Create(OpCodes.Call, setValue));
+                il.Append(il.Create(OpCodes.Ret));
             }
 
             return WeavePropertyResult.Success(prop);
@@ -420,7 +482,7 @@ namespace RealmWeaver
 
             var didSucceed = true;
             var persistedProperties = new List<WeavePropertyResult>();
-            foreach (var prop in type.Properties.Where(x => x.HasThis && x.CustomAttributes.All(a => a.AttributeType.Name != "IgnoredAttribute")))
+            foreach (var prop in type.Properties.Where(x => !x.IsIgnored()))
             {
                 try
                 {
@@ -519,12 +581,7 @@ namespace RealmWeaver
 
         private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type)
         {
-            var columnName = prop.Name;
-            var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
-            if (mapToAttribute != null)
-            {
-                columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
-            }
+            var columnName = prop.GetColumnName();
 
             if (prop.GetMethod == null)
             {
