@@ -128,32 +128,41 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_value_by_name(const Object& object, realm_string_t property_name, realm_value_t* value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_value_by_name(const Object& object, realm_string_t property_name, realm_value_t* value, bool throw_on_missing_property,
+        NativeException::Marshallable& ex)
     {
-        handle_errors(ex, [&]() {
+        return handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            auto val = object.get_obj().get_any(capi_to_std(property_name));
+            auto prop_name = capi_to_std(property_name);
+
+            if (!throw_on_missing_property && !object.get_obj().has_property(prop_name))
+            {
+                *value = realm_value_t{};
+                return false;
+            }
+
+            auto val = object.get_obj().get_any(prop_name);
 
             if (val.is_null())
             {
                 *value = to_capi(val);
-                return;
+                return true;
             }
-            //TODO This should be different probably
-            Path path = { PathElement(capi_to_std(property_name)) };
 
             switch (val.get_type()) {
             case type_TypedLink:
                 *value = to_capi(val.get<ObjLink>(), object.realm());
                 break;
             case type_List:
-                *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path)));
+                *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(prop_name)));
                 break;
             default:
                 *value = to_capi(std::move(val));
                 break;
             }
+
+            return true;
         });
     }
 
@@ -211,11 +220,20 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_unset_property(Object& object, realm_string_t property_name, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_unset_property(Object& object, realm_string_t property_name,
+        bool throw_on_unsuccessful, NativeException::Marshallable& ex)
     {
-        handle_errors(ex, [&]() {
+        return handle_errors(ex, [&]() {
             verify_can_set(object);
-            object.get_obj().erase_prop(capi_to_std(property_name));
+            auto prop_name = capi_to_std(property_name);
+
+            //This should be has_additional_property
+            if (!throw_on_unsuccessful && !object.get_obj().has_property(prop_name))
+            {
+                return false;
+            }
+
+            object.get_obj().erase_prop(prop_name);
         });
     }
 

@@ -109,6 +109,12 @@ namespace Realms
         }
 
         /// <inheritdoc/>
+        public bool TryGetValue(string propertyName, out RealmValue value)
+        {
+            return ObjectHandle.TryGetValue(propertyName, Metadata, Realm, out value);
+        }
+
+        /// <inheritdoc/>
         public void SetValue(string propertyName, RealmValue val)
         {
             ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
@@ -120,6 +126,11 @@ namespace Realms
             ObjectHandle.UnsetProperty(propertyName);
         }
 
+        //TODO Add docs
+        public bool TryUnsetProperty(string propertyName)
+        {
+            return ObjectHandle.TryUnsetProperty(propertyName);
+        }
 
         /// <inheritdoc/>
         public void SetValueUnique(string propertyName, RealmValue val)

@@ -49,10 +49,10 @@ namespace Realms
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_unset_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void unset_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
+            public static extern bool unset_property(ObjectHandle handle, StringValue propertyName, bool throw_on_unsuccessful, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value_by_name", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value_by_name(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, out NativeException ex);
+            public static extern bool get_value_by_name(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, bool throw_on_missing_property, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value_by_name", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value_by_name(ObjectHandle handle, StringValue propertyName, PrimitiveValue value, out NativeException ex);
@@ -185,6 +185,18 @@ namespace Realms
 
         public RealmValue GetValue(string propertyName, Metadata metadata, Realm realm)
         {
+            TryGetValueInternal(propertyName, metadata, realm, out var value, throwOnMissingProperty: true);
+            return value;
+        }
+
+        public bool TryGetValue(string propertyName, Metadata metadata, Realm realm, out RealmValue value)
+        {
+            return TryGetValueInternal(propertyName, metadata, realm, out value, throwOnMissingProperty: false);
+        }
+
+        internal bool TryGetValueInternal(string propertyName, Metadata metadata, Realm realm, out RealmValue value,
+            bool throwOnMissingProperty)
+        {
             EnsureIsOpen();
 
             //TODO Can we merge the two branches...?
@@ -195,7 +207,8 @@ namespace Realms
                 NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
                 nativeException.ThrowIfNecessary();
 
-                return new RealmValue(result, realm, this, propertyIndex);
+                value = new RealmValue(result, realm, this, propertyIndex);
+                return true;
             }
             else
             {
@@ -204,17 +217,19 @@ namespace Realms
                     NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
                     nativeException.ThrowIfNecessary();
 
-                    return new RealmValue(result, realm, this, propertyIndex);
+                    value = new RealmValue(result, realm, this, propertyIndex);
+                    return true;
                 }
                 else
                 {
                     using Arena arena = new();
                     var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-                    NativeMethods.get_value_by_name(this, propertyNameNative, out var result, out var nativeException);
+                    var propFound = NativeMethods.get_value_by_name(this, propertyNameNative, out var result, throwOnMissingProperty, out var nativeException);
                     nativeException.ThrowIfNecessary();
 
-                    return new RealmValue(result, realm, this);
+                    value = new RealmValue(result, realm, this);
+                    return propFound;
                 }
             }
         }
@@ -340,13 +355,24 @@ namespace Realms
 
         public void UnsetProperty(string propertyName)
         {
+            TryUnsetPropertyInternal(propertyName, throwOnUnsuccessful: true);
+        }
+
+        public bool TryUnsetProperty(string propertyName)
+        {
+            return TryUnsetPropertyInternal(propertyName, throwOnUnsuccessful: false);
+        }
+
+        public bool TryUnsetPropertyInternal(string propertyName, bool throwOnUnsuccessful)
+        {
             EnsureIsOpen();
 
             using Arena arena = new();
             var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-            NativeMethods.unset_property(this, propertyNameNative, out var nativeException);
+            var propertyFound = NativeMethods.unset_property(this, propertyNameNative, throwOnUnsuccessful, out var nativeException);
             nativeException.ThrowIfNecessary();
+            return propertyFound;
         }
 
         public IEnumerable<string> GetAdditionalProperties()

@@ -982,7 +982,6 @@ namespace Realms.Tests.Database
 
         #region Flexible schema
 
-
         [Test]
         public void FlexibleSchema_BaseTest()
         {
@@ -1016,6 +1015,16 @@ namespace Realms.Tests.Database
             Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
             Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
 
+            bool found;
+
+            found = person.DynamicApi.TryGet<string>("propString", out var stringVal);
+            Assert.That(found, Is.True);
+            Assert.That(stringVal, Is.EqualTo("testval"));
+
+            found = person.DynamicApi.TryGet<IList<RealmValue>>("propList", out var listVal);
+            Assert.That(found, Is.True);
+            Assert.That(listVal, Is.EqualTo(testList));
+
             // Change type
             realm.Write(() =>
             {
@@ -1025,14 +1034,62 @@ namespace Realms.Tests.Database
             Assert.That(person.DynamicApi.Get<int>("propString"), Is.EqualTo(23));
 
             // Get unknown property
-            Assert.That(() => person.DynamicApi.Get<RealmValue>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+            Assert.That(() => person.DynamicApi.Get<int>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+            Assert.That(() => person.DynamicApi.Get("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+
+            // TryGet unknown property
+            found = person.DynamicApi.TryGet("unknonProp", out var rvUnKnownValue);
+            Assert.That(found, Is.False);
+            Assert.That(rvUnKnownValue, Is.EqualTo(RealmValue.Null));
+
+            found = person.DynamicApi.TryGet<int>("unknonProp", out var intUnknownVal);
+            Assert.That(found, Is.False);
+            Assert.That(intUnknownVal, Is.EqualTo(default(int)));
+
+            found = person.DynamicApi.TryGet<IList<RealmValue>>("unknonProp", out var listUnknonwVal);
+            Assert.That(found, Is.False);
+            Assert.That(listUnknonwVal, Is.EqualTo(default(IList<RealmValue>)));
 
             // Unset property
             realm.Write(() =>
             {
                 person.DynamicApi.Unset("propString");
             });
-            Assert.That(() => person.DynamicApi.Get<RealmValue>("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
+            Assert.That(() => person.DynamicApi.Get("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
+
+            Assert.That(() => realm.Write(() =>
+            {
+                person.DynamicApi.Unset("propString");
+            }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: propString"));
+
+            // Unset property in schema
+            Assert.That(() => realm.Write(() =>
+            {
+                person.DynamicApi.Unset("FirstName");
+            }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: FirstName"));
+
+            // TryUnset property
+            realm.Write(() =>
+            {
+                bool unsetVal = person.DynamicApi.TryUnset("propInt");
+                Assert.That(unsetVal, Is.True);
+            });
+            Assert.That(() => person.DynamicApi.Get("propInt"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propInt"));
+
+            realm.Write(() =>
+            {
+                bool unsetVal = person.DynamicApi.TryUnset("propInt");
+                Assert.That(unsetVal, Is.False);
+            });
+
+            // TryUnset property in schema
+            // We need to get a new core method to check if a certain property in the extra
+            // properties
+            //realm.Write(() =>
+            //{
+            //    bool unsetVal = person.DynamicApi.TryUnset("FirstName");
+            //    Assert.That(unsetVal, Is.False);
+            //});
 
             // Get all additional properties keys
             // Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));

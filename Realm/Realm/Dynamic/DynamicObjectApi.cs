@@ -90,15 +90,49 @@ namespace Realms
             }
         }
 
-        public bool TryGet<T>(string propertyName, out T propertyValue)
+        public bool TryGet<T>(string propertyName, out T? propertyValue)
         {
-            return TryGet(propertyName, out propertyValue);
+            var foundValue = TryGet(propertyName, out var val);
+            if (foundValue)
+            {
+                propertyValue = val.As<T>();
+                return true;
+            }
+
+            propertyValue = default;
+            return false;
         }
 
         public bool TryGet(string propertyName, out RealmValue propertyValue)
         {
-            propertyValue = Get(propertyName);
-            return true;
+            if (GetProperty(propertyName) is Property property)
+            {
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType))
+                {
+                    var collectionMethodName = collectionType switch
+                    {
+                        PropertyType.Array => "GetList",
+                        PropertyType.Set => "GetSet",
+                        PropertyType.Dictionary => "GetDictionary",
+                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
+                    };
+
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                }
+
+                return _managedAccessor.TryGetValue(propertyName, out propertyValue);
+            }
+            else
+            {
+                return _managedAccessor.TryGetValue(propertyName, out propertyValue);
+            }
         }
 
         /// <summary>
@@ -152,6 +186,12 @@ namespace Realms
         public void Unset(string propertyName)
         {
             _managedAccessor.UnsetProperty(propertyName);
+        }
+
+        //TODO Add docs
+        public bool TryUnset(string propertyName)
+        {
+            return _managedAccessor.TryUnsetProperty(propertyName);
         }
 
         /// <summary>
