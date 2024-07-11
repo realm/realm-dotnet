@@ -95,7 +95,7 @@ namespace Realms.Helpers
 
         public static void AssertDebug(string message)
         {
-            Logger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
+            RealmLogger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
 
 #if DEBUG
             throw new Exception(message);

@@ -32,7 +32,7 @@ internal partial class SyncSocketProvider
 
         internal Timer(TimeSpan delay, IntPtr nativeCallback, ChannelWriter<IWork> workQueue)
         {
-            Logger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
+            RealmLogger.LogDefault(LogLevel.Trace, $"Creating timer with delay {delay} and target {nativeCallback}.");
             var cancellationToken = _cts.Token;
             Task.Delay(delay, cancellationToken).ContinueWith(async _ =>
             {
@@ -42,7 +42,7 @@ internal partial class SyncSocketProvider
 
         internal void Cancel()
         {
-            Logger.LogDefault(LogLevel.Trace, $"Canceling timer.");
+            RealmLogger.LogDefault(LogLevel.Trace, $"Canceling timer.");
             _cts.Cancel();
             _cts.Dispose();
         }
@@ -72,7 +72,7 @@ internal partial class SyncSocketProvider
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
+                RealmLogger.LogDefault(LogLevel.Trace, "Deleting EventLoopWork callback only because event loop was cancelled.");
                 NativeMethods.delete_callback(nativeCallback);
                 return;
             }
@@ -83,7 +83,7 @@ internal partial class SyncSocketProvider
 
     private static void RunCallback(IntPtr nativeCallback, Status status)
     {
-        Logger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
+        RealmLogger.LogDefault(LogLevel.Trace, $"SyncSocketProvider running native callback {nativeCallback} with status {status.Code} \"{status.Reason}\".");
 
         using var arena = new Arena();
         NativeMethods.run_callback(nativeCallback, status.Code, StringValue.AllocateFrom(status.Reason, arena));
@@ -91,13 +91,13 @@ internal partial class SyncSocketProvider
 
     private async Task PostWorkAsync(IntPtr nativeCallback)
     {
-        Logger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
+        RealmLogger.LogDefault(LogLevel.Trace, "Posting work to SyncSocketProvider event loop.");
         await _workQueue.Writer.WriteAsync(new EventLoopWork(nativeCallback, _cts.Token));
     }
 
     private async partial Task WorkThread()
     {
-        Logger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
+        RealmLogger.LogDefault(LogLevel.Trace, "Starting SyncSocketProvider event loop.");
         try
         {
             while (await _workQueue.Reader.WaitToReadAsync())
@@ -110,15 +110,15 @@ internal partial class SyncSocketProvider
         }
         catch (Exception e)
         {
-            Logger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
+            RealmLogger.LogDefault(LogLevel.Error, $"Error occurred in SyncSocketProvider event loop {e.GetType().FullName}: {e.Message}");
             if (!string.IsNullOrEmpty(e.StackTrace))
             {
-                Logger.LogDefault(LogLevel.Trace, e.StackTrace);
+                RealmLogger.LogDefault(LogLevel.Trace, e.StackTrace);
             }
 
             throw;
         }
 
-        Logger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
+        RealmLogger.LogDefault(LogLevel.Trace, "Exiting SyncSocketProvider event loop.");
     }
 }

@@ -142,10 +142,10 @@ namespace Realms.Tests.Sync
                 var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), extracted.RealmLogLevel!);
                 TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
 
-                Logger.SetLogLevel(logLevel);
+                RealmLogger.SetLogLevel(logLevel);
             }
 
-            Logger.AsyncFileLogger? logger = null;
+            RealmLogger.AsyncFileLogger? logger = null;
             if (!string.IsNullOrEmpty(extracted.RealmLogFile))
             {
                 if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
@@ -153,14 +153,14 @@ namespace Realms.Tests.Sync
                     TestHelpers.Output.WriteLine($"Setting sync logger to file: {extracted.RealmLogFile}");
 
                     // We're running in a test runner, so we need to use the sync logger
-                    Logger.Default = Logger.File(extracted.RealmLogFile!);
+                    RealmLogger.Default = RealmLogger.File(extracted.RealmLogFile!);
                 }
                 else
                 {
                     TestHelpers.Output.WriteLine($"Setting async logger to file: {extracted.RealmLogFile}");
 
                     // We're running standalone (likely on CI), so we use the async logger
-                    Logger.Default = logger = new Logger.AsyncFileLogger(extracted.RealmLogFile!);
+                    RealmLogger.Default = logger = new RealmLogger.AsyncFileLogger(extracted.RealmLogFile!);
                 }
             }
 

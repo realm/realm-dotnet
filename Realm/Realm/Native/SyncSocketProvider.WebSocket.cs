@@ -46,7 +46,7 @@ internal partial class SyncSocketProvider
 
         internal Socket(ClientWebSocket webSocket, IntPtr observer, ChannelWriter<IWork> workQueue, Uri uri)
         {
-            Logger.LogDefault(LogLevel.Trace, $"Creating a WebSocket to {uri.GetLeftPart(UriPartial.Path)}");
+            RealmLogger.LogDefault(LogLevel.Trace, $"Creating a WebSocket to {uri.GetLeftPart(UriPartial.Path)}");
             _webSocket = webSocket;
             _observer = observer;
             _workQueue = workQueue;
@@ -57,7 +57,7 @@ internal partial class SyncSocketProvider
 
         private async Task ReadThread()
         {
-            Logger.LogDefault(LogLevel.Trace, "Entering WebSocket event loop.");
+            RealmLogger.LogDefault(LogLevel.Trace, "Entering WebSocket event loop.");
 
             try
             {
@@ -68,7 +68,7 @@ internal partial class SyncSocketProvider
             {
                 var builder = new StringBuilder();
                 FormatExceptionForLogging(e, builder);
-                Logger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection {builder}");
+                RealmLogger.LogDefault(LogLevel.Error, $"Error establishing WebSocket connection {builder}");
 
                 await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_CONNECTION_FAILED, e.Message, _observer, _cancellationToken));
                 return;
@@ -93,11 +93,11 @@ internal partial class SyncSocketProvider
 
                             break;
                         case WebSocketMessageType.Close:
-                            Logger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
+                            RealmLogger.LogDefault(LogLevel.Trace, $"WebSocket closed with status {result.CloseStatus!.Value} and description \"{result.CloseStatusDescription}\"");
                             await _workQueue.WriteAsync(new WebSocketClosedWork(clean: true, result.CloseStatus!.Value, result.CloseStatusDescription!, _observer, _cancellationToken));
                             break;
                         default:
-                            Logger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
+                            RealmLogger.LogDefault(LogLevel.Trace, $"Received unexpected text WebSocket message: {Encoding.UTF8.GetString(buffer, 0, result.Count)}");
                             break;
                     }
                 }
@@ -105,7 +105,7 @@ internal partial class SyncSocketProvider
                 {
                     var builder = new StringBuilder();
                     FormatExceptionForLogging(e, builder);
-                    Logger.LogDefault(LogLevel.Error, $"Error reading from WebSocket {builder}");
+                    RealmLogger.LogDefault(LogLevel.Error, $"Error reading from WebSocket {builder}");
 
                     await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_READ_ERROR, e.Message, _observer, _cancellationToken));
                     return;
@@ -131,7 +131,7 @@ internal partial class SyncSocketProvider
             {
                 var builder = new StringBuilder();
                 FormatExceptionForLogging(e, builder);
-                Logger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {builder}");
+                RealmLogger.LogDefault(LogLevel.Error, $"Error writing to WebSocket {builder}");
 
                 // in case of errors notify the websocket observer and just dispose the callback
                 await _workQueue.WriteAsync(new WebSocketClosedWork(false, (WebSocketCloseStatus)RLM_ERR_WEBSOCKET_WRITE_ERROR, e.Message, _observer, _cancellationToken));
@@ -165,7 +165,7 @@ internal partial class SyncSocketProvider
             _webSocket.Dispose();
             _receiveBuffer.Dispose();
             _cts.Dispose();
-            Logger.LogDefault(LogLevel.Trace, "Disposing WebSocket.");
+            RealmLogger.LogDefault(LogLevel.Trace, "Disposing WebSocket.");
 
             try
             {
@@ -187,7 +187,7 @@ internal partial class SyncSocketProvider
             builder.AppendFormat("{0}: {1}", ex.GetType().FullName, ex.Message);
             builder.AppendLine();
             // TODO(lj): May update to log for a specific category.
-            if (Logger.GetLogLevel() >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
+            if (RealmLogger.GetLogLevel() >= LogLevel.Trace && !string.IsNullOrEmpty(ex.StackTrace))
             {
                 builder.Append(indentation);
                 var indentedTrace = ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indentation);

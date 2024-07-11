@@ -1271,8 +1271,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Logger_ChangeLevel_ReflectedImmediately()
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
             using var realm = GetRealm(Guid.NewGuid().ToString());
 
@@ -1281,14 +1281,14 @@ namespace Realms.Tests.Database
             // We're at info level, so we don't expect any statements.
             WriteAndVerifyLogs();
 
-            Logger.SetLogLevel(LogLevel.Debug);
+            RealmLogger.SetLogLevel(LogLevel.Debug);
 
             // We're at Debug level now, so we should see the write message.
             var expectedWriteLog = new Regex("Debug: DB: .* Commit of size [^ ]* done in [^ ]* us");
             WriteAndVerifyLogs(expectedWriteLog);
 
             // Revert back to Info level and make sure we don't log anything
-            Logger.SetLogLevel(LogLevel.Info);
+            RealmLogger.SetLogLevel(LogLevel.Info);
             WriteAndVerifyLogs();
 
             void WriteAndVerifyLogs(Regex? expectedRegex = null)

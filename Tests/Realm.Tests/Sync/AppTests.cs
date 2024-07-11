@@ -167,9 +167,9 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                Logger.SetLogLevel(logLevel);
-                var logger = new Logger.InMemoryLogger();
-                Logger.Default = logger;
+                RealmLogger.SetLogLevel(logLevel);
+                var logger = new RealmLogger.InMemoryLogger();
+                RealmLogger.Default = logger;
 
                 var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
                 using var realm = await GetRealmAsync(config);

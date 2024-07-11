@@ -156,7 +156,7 @@ internal partial class SyncSocketProvider : IDisposable
 
     internal SyncSocketProvider(Action<ClientWebSocketOptions>? onWebSocketConnection)
     {
-        Logger.LogDefault(LogLevel.Debug, "Creating SyncSocketProvider.");
+        RealmLogger.LogDefault(LogLevel.Debug, "Creating SyncSocketProvider.");
         _onWebSocketConnection = onWebSocketConnection;
         _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
         _workThread = Task.Run(WorkThread);
@@ -166,7 +166,7 @@ internal partial class SyncSocketProvider : IDisposable
 
     public void Dispose()
     {
-        Logger.LogDefault(LogLevel.Debug, "Destroying SyncSocketProvider.");
+        RealmLogger.LogDefault(LogLevel.Debug, "Destroying SyncSocketProvider.");
         _workQueue.Writer.Complete();
         _cts.Cancel();
         _cts.Dispose();
