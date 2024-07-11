@@ -26,6 +26,8 @@ namespace Realms.Logging
     /// logger. The <see cref="LogLevel"/> will always be set for a specific category.
     /// Setting the log level for one category will automatically set the same level
     /// for all of its subcategories.
+    /// <br/><br/>
+    /// The category hierarchy is the following:
     /// <code>
     /// Realm
     /// ├─► Storage
@@ -41,7 +43,7 @@ namespace Realms.Logging
     /// │   │   └─► Reset
     /// │   └─► Server
     /// ├─► App
-    /// └─► Sdk
+    /// └─► SDK
     /// </code>
     /// </summary>
     /// <example>

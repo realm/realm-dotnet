@@ -20,6 +20,9 @@ using Realms.Logging;
 
 namespace UnityUtils
 {
+    /// <summary>
+    /// A <see cref="RealmLogger"/> that outputs messages via UnityEngine.
+    /// </summary>
     public class UnityLogger : RealmLogger
     {
         protected override void LogImpl(LogLevel level, LogCategory category, string message)
