@@ -199,14 +199,7 @@ namespace Realms.Logging
                 return;
             }
 
-            try
-            {
-                LogImpl(level, category, message);
-            }
-            catch (Exception ex)
-            {
-                Console.Log(LogLevel.Error, $"An exception occurred while trying to log the message: '{message}' at level: '{level}' in category: '{category}'. Error: {ex}");
-            }
+            CoreLog(level, category, message);
         }
 
         /// <summary>
