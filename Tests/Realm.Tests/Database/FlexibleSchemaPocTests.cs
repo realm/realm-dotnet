@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using NUnit.Framework;
+using Realms.Helpers;
 
 namespace Realms.Tests.Database;
 
@@ -36,13 +37,15 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
 
         var dog = dogContainer.MixedProperty.As<Dog>();
 
-        // TODO: add assertions for the values
         Assert.That(dog, Is.TypeOf<Dog>());
+        Assert.That(dog.Name, Is.EqualTo("Fido"));
+        Assert.That(dog.BarkCount, Is.EqualTo(5));
 
         var dog2 = dogContainer.MixedProperty.AsMappedObject<Dog>();
 
-        // TODO: add assertions for the values
         Assert.That(dog2, Is.TypeOf<Dog>());
+        Assert.That(dog2.Name, Is.EqualTo("Fido"));
+        Assert.That(dog2.BarkCount, Is.EqualTo(5));
 
         var nullContainer = _realm.Write(() => _realm.Add(new FlexibleSchemaPocContainer("null")
         {
@@ -72,23 +75,63 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     [Test]
     public void AccessMappedTypeProperties_ReadsValuesFromBackingStorage()
     {
-        // TODO: LJ to get this to work - this is an example test that should start passing once we wire up the properties.
         AddData();
-        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
 
-        var dog = new Dog();
-        dog.SetBackingStorage(dogContainer.MixedDict);
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+        var dog = dogContainer.MixedProperty.As<Dog>();
 
         Assert.That(dog.Name, Is.EqualTo("Fido"));
         Assert.That(dog.BarkCount, Is.EqualTo(5));
 
         var birdContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Bird));
-
-        var bird = new Bird();
-        bird.SetBackingStorage(birdContainer.MixedDict);
+        var bird = birdContainer.MixedProperty.As<Bird>();
 
         Assert.That(bird.Name, Is.EqualTo("Tweety"));
         Assert.That(bird.CanFly, Is.True);
+    }
+
+    [Test]
+    public void AccessMappedTypeProperties_WhenNonExistent_Throws()
+    {
+        var dog = new Dog();
+        dog.SetBackingStorage(new Dictionary<string, RealmValue>());
+
+        Assert.That(() => dog.Name, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(dog.Name)}' does not exist on '{nameof(Dog)}'."));
+        Assert.That(() => dog.BarkCount, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(dog.BarkCount)}' does not exist on '{nameof(Dog)}'."));
+
+        var bird = new Bird();
+        bird.SetBackingStorage(new Dictionary<string, RealmValue>());
+
+        Assert.That(() => bird.Name, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(bird.Name)}' does not exist on '{nameof(Bird)}'."));
+        Assert.That(() => bird.CanFly, Throws.TypeOf<ArgumentException>().And.Message.Contains($"A property with name '{nameof(bird.CanFly)}' does not exist on '{nameof(Bird)}'."));
+    }
+
+    [Test]
+    public void UpdateMappedTypeProperties_WritesValuesToBackingStorage()
+    {
+        AddData();
+
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+        var dog = dogContainer.MixedProperty.As<Dog>();
+
+        _realm.Write(() =>
+        {
+            dog.Name = "Updated Fido";
+            dog.BarkCount++;
+        });
+        Assert.That(dog.Name, Is.EqualTo("Updated Fido"));
+        Assert.That(dog.BarkCount, Is.EqualTo(6));
+
+        var birdContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Bird));
+        var bird = birdContainer.MixedProperty.As<Bird>();
+
+        _realm.Write(() =>
+        {
+            bird.Name = "Updated Tweety";
+            bird.CanFly = false;
+        });
+        Assert.That(bird.Name, Is.EqualTo("Updated Tweety"));
+        Assert.That(bird.CanFly, Is.False);
     }
 
     [Test]
@@ -175,17 +218,83 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         }
     }
 
+    // User-defined(ish)
     public partial class Dog : IMappedObject
     {
-        public string Name { get; set; }
+        // User-defined
+        // public string Name { get; set; }
 
-        public int BarkCount { get; set; }
+        // Generated
+        public string Name
+        {
+            get => Get<string>(nameof(Name));
+            set => Set(nameof(Name), value);
+        }
+
+        // User-defined
+        // public int BarkCount { get; set; }
+
+        // Generated
+        public int BarkCount
+        {
+            get => Get<int>(nameof(BarkCount));
+            set => Set(nameof(BarkCount), value);
+        }
     }
 
+    // Generated (partial)
+    public partial class Dog : IMappedObject
+    {
+        private T Get<T>(string propertyName)
+        {
+            Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Dog)}'.", nameof(propertyName));
+
+            return value.As<T>();
+        }
+
+        private void Set(string propertyName, RealmValue value)
+        {
+            _backingStorage[propertyName] = value;
+        }
+    }
+
+    // User-defined(ish)
     public partial class Bird : IMappedObject
     {
-        public string Name { get; set; }
+        // User-defined
+        // public string Name { get; set; }
 
-        public bool CanFly { get; set; }
+        // Generated
+        public string Name
+        {
+            get => Get<string>(nameof(Name));
+            set => Set(nameof(Name), value);
+        }
+
+        // User-defined
+        // public bool CanFly { get; set; }
+
+        // Generated
+        public bool CanFly
+        {
+            get => Get<bool>(nameof(CanFly));
+            set => Set(nameof(CanFly), value);
+        }
+    }
+
+    // Generated (partial)
+    public partial class Bird : IMappedObject
+    {
+        private T Get<T>(string propertyName)
+        {
+            Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Bird)}'.", nameof(propertyName));
+
+            return value.As<T>();
+        }
+
+        private void Set(string propertyName, RealmValue value)
+        {
+            _backingStorage[propertyName] = value;
+        }
     }
 }
