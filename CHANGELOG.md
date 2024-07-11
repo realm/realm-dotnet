@@ -20,7 +20,7 @@
     ```csharp
     RealmLogger.Default = RealmLogger.Function((level, category, message) => /* custom implementation */);
     ```
-  * Added a `RealmLogger.Log()` overload taking a category. If unset, `LogCategory.Realm.SDK` will be used.
+  * Added a `RealmLogger.Log()` overload taking a category. The pre-existing `Log()` API will implicitly log at `LogCategory.Realm.SDK`.
     ```csharp
     RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm, "A warning message");
     ```
