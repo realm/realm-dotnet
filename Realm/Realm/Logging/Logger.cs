@@ -174,7 +174,7 @@ namespace Realms.Logging
 
         internal static void LogDefault(LogLevel level, LogCategory category, string message) => Default?.Log(level, category, message);
 
-        internal static void CoreLogDefault(LogLevel level, LogCategory category, string message) => Default?.CoreLog(level, category, message);
+        internal static void CoreLogDefault(LogLevel level, LogCategory category, string message) => Default?.LogAnyLevel(level, category, message);
 
         /// <summary>
         /// Log a message at the supplied level and default category <see cref="LogCategory.RealmLogCategory.SDK"/>.
@@ -199,14 +199,14 @@ namespace Realms.Logging
                 return;
             }
 
-            CoreLog(level, category, message);
+            LogAnyLevel(level, category, message);
         }
 
         /// <summary>
-        /// Log a message from Core that does not require checking the current
-        /// level as that check has already been performed by Core.
+        /// Log a message without calling into Core to check the current level. Logs from
+        /// Core should always call this API as they already check the level prior to notifying.
         /// </summary>
-        private void CoreLog(LogLevel level, LogCategory category, string message)
+        private void LogAnyLevel(LogLevel level, LogCategory category, string message)
         {
             try
             {
