@@ -75,9 +75,8 @@ namespace Realms
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void DisposeGCHandleCallback(IntPtr handle);
 
-            // TODO(lj): Update arg order to be the same across the SDK.
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void LogMessageCallback(StringValue message, LogLevel level, StringValue categoryName);
+            public delegate void LogMessageCallback(LogLevel level, StringValue categoryName, StringValue message);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, [MarshalAs(UnmanagedType.U1)] bool invoke_async, NativeException ex);
@@ -849,7 +848,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static void LogMessage(StringValue message, LogLevel level, StringValue categoryName)
+        private static void LogMessage(LogLevel level, StringValue categoryName, StringValue message)
         {
             RealmLogger.CoreLogDefault(level, LogCategory.FromName(categoryName!), message!);
         }

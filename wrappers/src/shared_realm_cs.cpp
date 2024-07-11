@@ -48,8 +48,7 @@ using namespace realm::util;
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using ReleaseGCHandleT = void(void* managed_handle);
-// TODO(lj): Update arg order to be the same across the SDK.
-using LogMessageT = void(realm_string_t message, util::Logger::Level level, realm_string_t category_name);
+using LogMessageT = void(util::Logger::Level level, realm_string_t category_name, realm_string_t message);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
@@ -100,7 +99,7 @@ namespace binding {
     protected:
         void do_log(const LogCategory& category, Level level, const std::string& message) override final
         {
-            s_log_message(to_capi(message), level, to_capi(category.get_name()));
+            s_log_message(level, to_capi(category.get_name()), to_capi(message));
         }
     };
 }
