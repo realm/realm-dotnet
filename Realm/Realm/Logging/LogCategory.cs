@@ -115,7 +115,6 @@ namespace Realms.Logging
             /// </summary>
             public LogCategory App { get; }
 
-            // TODO(lj): Prefer `SDK` or `Sdk` for c#?
             /// <summary>
             /// Gets the category for receiving log messages pertaining to the SDK.
             /// </summary>
