@@ -224,29 +224,33 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         }
     }
 
-    // User-defined
+    // User-defined(ish)
     public partial class Dog : IMappedObject
     {
+        // User-defined
         // public string Name { get; set; }
 
-        // public int BarkCount { get; set; }
-    }
-
-    // Generated
-    public partial class Dog : IMappedObject
-    {
+        // Generated
         public string Name
         {
             get => Get<string>(nameof(Name));
             set => Set(nameof(Name), value);
         }
 
+        // User-defined
+        // public int BarkCount { get; set; }
+
+        // Generated
         public int BarkCount
         {
             get => Get<int>(nameof(BarkCount));
             set => Set(nameof(BarkCount), value);
         }
+    }
 
+    // Generated (partial)
+    public partial class Dog : IMappedObject
+    {
         private T Get<T>(string propertyName)
         {
             Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Dog)}'.", nameof(propertyName));
@@ -260,29 +264,33 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         }
     }
 
-    // User-defined
+    // User-defined(ish)
     public partial class Bird : IMappedObject
     {
+        // User-defined
         // public string Name { get; set; }
 
-        // public bool CanFly { get; set; }
-    }
-
-    // Generated
-    public partial class Bird : IMappedObject
-    {
+        // Generated
         public string Name
         {
             get => Get<string>(nameof(Name));
             set => Set(nameof(Name), value);
         }
 
+        // User-defined
+        // public bool CanFly { get; set; }
+
+        // Generated
         public bool CanFly
         {
             get => Get<bool>(nameof(CanFly));
             set => Set(nameof(CanFly), value);
         }
+    }
 
+    // Generated (partial)
+    public partial class Bird : IMappedObject
+    {
         private T Get<T>(string propertyName)
         {
             Argument.Ensure(_backingStorage.TryGetValue(propertyName, out var value), $"A property with name '{propertyName}' does not exist on '{nameof(Bird)}'.", nameof(propertyName));
