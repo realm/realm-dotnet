@@ -31,10 +31,15 @@ namespace realm::binding {
 /// A struct used when marshaling of `MarshaledVector` cannot be
 /// compiled, e.g. for MSVC when returning a `MarshaledVector` from
 /// CPP directly, as compared to when nested within another struct.
-struct AnyMarshaledVector
+struct TypeErasedMarshaledVector
 {
     const void* items;
     size_t count;
+
+    template <typename T>
+    static TypeErasedMarshaledVector for_marshalling(const std::vector<T>& vector) {
+        return {vector.data(), vector.size()};
+    }
 };
 
 template <typename T>
@@ -95,12 +100,6 @@ struct MarshaledVector
 
     iterator begin() const noexcept { return {items}; }
     iterator end() const noexcept { return {items + count}; }
-
-    /// Needed for MSVC when returning a `MarshaledVector` from CPP
-    /// directly, as compared to when nested within another struct.
-    AnyMarshaledVector for_any_type_marshalling() const {
-        return {items, count};
-    }
 };
 
 enum class realm_value_type : uint8_t {
