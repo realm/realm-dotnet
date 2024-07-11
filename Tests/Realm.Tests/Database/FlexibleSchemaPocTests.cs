@@ -76,18 +76,15 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     public void AccessMappedTypeProperties_ReadsValuesFromBackingStorage()
     {
         AddData();
-        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
 
-        var dog = new Dog();
-        dog.SetBackingStorage(dogContainer.MixedDict);
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+        var dog = dogContainer.MixedProperty.As<Dog>();
 
         Assert.That(dog.Name, Is.EqualTo("Fido"));
         Assert.That(dog.BarkCount, Is.EqualTo(5));
 
         var birdContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Bird));
-
-        var bird = new Bird();
-        bird.SetBackingStorage(birdContainer.MixedDict);
+        var bird = birdContainer.MixedProperty.As<Bird>();
 
         Assert.That(bird.Name, Is.EqualTo("Tweety"));
         Assert.That(bird.CanFly, Is.True);
@@ -113,10 +110,9 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
     public void UpdateMappedTypeProperties_WritesValuesToBackingStorage()
     {
         AddData();
-        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
 
-        var dog = new Dog();
-        dog.SetBackingStorage(dogContainer.MixedDict);
+        var dogContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Dog));
+        var dog = dogContainer.MixedProperty.As<Dog>();
 
         _realm.Write(() =>
         {
@@ -127,9 +123,7 @@ public partial class FlexibleSchemaPocTests : RealmInstanceTest
         Assert.That(dog.BarkCount, Is.EqualTo(6));
 
         var birdContainer = _realm.All<FlexibleSchemaPocContainer>().First(c => c.ContainedObjectType == nameof(Bird));
-
-        var bird = new Bird();
-        bird.SetBackingStorage(birdContainer.MixedDict);
+        var bird = birdContainer.MixedProperty.As<Bird>();
 
         _realm.Write(() =>
         {
