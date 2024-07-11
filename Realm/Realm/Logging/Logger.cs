@@ -30,7 +30,7 @@ namespace Realms.Logging
     public abstract class Logger : RealmLogger
     {
         /// <summary>
-        /// The internal implementation being called from <see cref="Log"/>.
+        /// The internal implementation being called from <see cref="RealmLogger.Log(LogLevel, string)"/>.
         /// </summary>
         /// <param name="level">The criticality level for the message.</param>
         /// <param name="message">The message to log.</param>
@@ -208,7 +208,7 @@ namespace Realms.Logging
         }
 
         /// <summary>
-        /// The internal implementation being called from <see cref="Log"/>.
+        /// The internal implementation being called from <see cref="Log(Realms.Logging.LogLevel, LogCategory, string)"/>.
         /// </summary>
         /// <param name="level">The criticality level for the message.</param>
         /// <param name="category">The category for the message.</param>
