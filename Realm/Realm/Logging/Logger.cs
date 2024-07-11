@@ -170,12 +170,6 @@ namespace Realms.Logging
             _gcHandle = new Lazy<GCHandle>(() => GCHandle.Alloc(this));
         }
 
-        internal static void LogDefault(LogLevel level, string message) => Default?.Log(level, message);
-
-        internal static void LogDefault(LogLevel level, LogCategory category, string message) => Default?.Log(level, category, message);
-
-        internal static void CoreLogDefault(LogLevel level, LogCategory category, string message) => Default?.LogAnyLevel(level, category, message);
-
         /// <summary>
         /// Log a message at the supplied level and default category <see cref="LogCategory.RealmLogCategory.SDK"/>.
         /// </summary>
@@ -206,7 +200,7 @@ namespace Realms.Logging
         /// Log a message without calling into Core to check the current level. Logs from
         /// Core should always call this API as they already check the level prior to notifying.
         /// </summary>
-        private void LogAnyLevel(LogLevel level, LogCategory category, string message)
+        internal void LogAnyLevel(LogLevel level, LogCategory category, string message)
         {
             try
             {

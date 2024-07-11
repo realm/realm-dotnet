@@ -850,7 +850,7 @@ namespace Realms
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
         private static void LogMessage(LogLevel level, StringValue categoryName, StringValue message)
         {
-            RealmLogger.CoreLogDefault(level, LogCategory.FromName(categoryName!), message!);
+            RealmLogger.Default.LogAnyLevel(level, LogCategory.FromName(categoryName!), message!);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]

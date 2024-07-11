@@ -414,7 +414,7 @@ namespace Realms
         {
             if (Error is null)
             {
-                RealmLogger.LogDefault(LogLevel.Error, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+                RealmLogger.Default.Log(LogLevel.Error, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
 
             Error?.Invoke(this, new ErrorEventArgs(ex));

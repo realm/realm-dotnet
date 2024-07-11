@@ -83,7 +83,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = RealmLogger.Function(message => messages.Add(message));
 
-            RealmLogger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
+            RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "This is very dangerous!");
@@ -95,7 +95,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = new UserDefinedLogger((level, category, message) => messages.Add(RealmLogger.FormatLog(level, category, message)));
 
-            RealmLogger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+            RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -108,7 +108,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             Logger.Default = new ObsoleteUserDefinedLogger((level, message) => messages.Add(Logger.FormatLog(level, LogCategory.Realm.SDK, message)));
 
-            Logger.LogDefault(LogLevel.Warn, "A log message");
+            Logger.Default.Log(LogLevel.Warn, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -120,7 +120,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = RealmLogger.Function(message => messages.Add(message));
 
-            RealmLogger.LogDefault(LogLevel.Debug, "This is a debug message!");
+            RealmLogger.Default.Log(LogLevel.Debug, "This is a debug message!");
 
             Assert.That(messages.Count, Is.EqualTo(0));
         }
@@ -182,9 +182,9 @@ namespace Realms.Tests.Database
                 RealmLogger.Default = RealmLogger.Function(message => messages.Add(message));
                 RealmLogger.SetLogLevel(level, category);
 
-                RealmLogger.LogDefault(level - 1, category, "This is at level - 1");
-                RealmLogger.LogDefault(level, category, "This is at the same level");
-                RealmLogger.LogDefault(level + 1, category, "This is at level + 1");
+                RealmLogger.Default.Log(level - 1, category, "This is at level - 1");
+                RealmLogger.Default.Log(level, category, "This is at the same level");
+                RealmLogger.Default.Log(level + 1, category, "This is at level + 1");
 
                 Assert.That(messages.Count, Is.EqualTo(2));
                 AssertLogMessageContains(messages[0], level, category, "This is at the same level");
@@ -201,7 +201,7 @@ namespace Realms.Tests.Database
                 var messages = new List<string>();
                 RealmLogger.Default = RealmLogger.Function((message) => messages.Add(message));
 
-                RealmLogger.LogDefault(LogLevel.Warn, category, "A log message");
+                RealmLogger.Default.Log(LogLevel.Warn, category, "A log message");
 
                 Assert.That(messages.Count, Is.EqualTo(1));
                 AssertLogMessageContains(messages[0], LogLevel.Warn, category, "A log message");
@@ -214,7 +214,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = RealmLogger.Function((message) => messages.Add(message));
 
-            RealmLogger.LogDefault(LogLevel.Warn, "A log message");
+            RealmLogger.Default.Log(LogLevel.Warn, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -226,7 +226,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = RealmLogger.Function((level, category, message) => messages.Add(RealmLogger.FormatLog(level, category, message)));
 
-            RealmLogger.LogDefault(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
+            RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
             var messages = new List<string>();
             RealmLogger.Default = RealmLogger.Function((level, message) => messages.Add(RealmLogger.FormatLog(level, LogCategory.Realm.SDK, message)));
 
-            RealmLogger.LogDefault(LogLevel.Warn, "A log message");
+            RealmLogger.Default.Log(LogLevel.Warn, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -283,9 +283,9 @@ namespace Realms.Tests.Database
             var errorMessage = "This is an error!";
             var timeString = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
-            RealmLogger.LogDefault(LogLevel.Warn, warnMessage);
-            RealmLogger.LogDefault(LogLevel.Debug, debugMessage);
-            RealmLogger.LogDefault(LogLevel.Error, errorMessage);
+            RealmLogger.Default.Log(LogLevel.Warn, warnMessage);
+            RealmLogger.Default.Log(LogLevel.Debug, debugMessage);
+            RealmLogger.Default.Log(LogLevel.Error, errorMessage);
 
             var loggedStrings = File.ReadAllLines(tempFilePath);
 
