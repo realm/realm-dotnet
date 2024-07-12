@@ -32,8 +32,9 @@ namespace Realms.Tests
     public abstract class RealmTest
     {
         private readonly ConcurrentQueue<StrongBox<Realm>> _realms = new();
-        private Logger _originalLogger = null!;
-        private LogLevel _originalLogLevel;
+        private readonly LogCategory _originalLogCategory = LogCategory.Realm;
+        private readonly LogLevel _originalLogLevel = RealmLogger.GetLogLevel(LogCategory.Realm);
+        private RealmLogger _originalLogger = null!;
 
         private bool _isSetup;
 
@@ -57,8 +58,7 @@ namespace Realms.Tests
         {
             if (!_isSetup)
             {
-                _originalLogger = Logger.Default;
-                _originalLogLevel = Logger.LogLevel;
+                _originalLogger = RealmLogger.Default;
 
                 if (OverrideDefaultConfig)
                 {
@@ -86,8 +86,8 @@ namespace Realms.Tests
             {
                 CustomTearDown();
 
-                Logger.Default = _originalLogger;
-                Logger.LogLevel = _originalLogLevel;
+                RealmLogger.Default = _originalLogger;
+                RealmLogger.SetLogLevel(_originalLogLevel, _originalLogCategory);
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 Realm.UseLegacyGuidRepresentation = false;

@@ -463,7 +463,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while raising User.Changed event: {ex}");
+                RealmLogger.Default.Log(LogLevel.Error, $"An error has occurred while raising User.Changed event: {ex}");
             }
         }
     }

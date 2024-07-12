@@ -53,8 +53,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
             _realm.NotifyError(new Exception());
 
             Assert.That(logger.GetLog(), Does.Contain("exception").And.Contains("Realm.Error"));

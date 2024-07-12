@@ -28,6 +28,20 @@
 
 namespace realm::binding {
 
+/// A struct used when marshaling of `MarshaledVector` cannot be
+/// compiled, e.g. for MSVC when returning a `MarshaledVector` from
+/// CPP directly, as compared to when nested within another struct.
+struct TypeErasedMarshaledVector
+{
+    const void* items;
+    size_t count;
+
+    template <typename T>
+    static TypeErasedMarshaledVector for_marshalling(const std::vector<T>& vector) {
+        return {vector.data(), vector.size()};
+    }
+};
+
 template <typename T>
 struct MarshaledVector
 {

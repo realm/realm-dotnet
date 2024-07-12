@@ -37,7 +37,7 @@ namespace UnityUtils
                 Platform.DeviceInfo = new UnityDeviceInfo();
                 Platform.BundleId = Application.productName;
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
-                Realms.Logging.Logger.Console = new UnityLogger();
+                Realms.Logging.RealmLogger.Console = new UnityLogger();
                 Application.quitting += () =>
                 {
                     NativeCommon.CleanupNativeResources("Application is exiting");
