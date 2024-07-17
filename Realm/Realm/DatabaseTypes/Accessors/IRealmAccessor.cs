@@ -72,6 +72,11 @@ namespace Realms
         /// </remarks>
         ObjectSchema? ObjectSchema { get; }
 
+        //TODO We need to decide if we want to completely substitute object schema
+        // (probably yes, but then we also need to decide if we want to do the same for RealmObject)
+        ExtendedObjectSchema? ExtendedObjectSchema { get; }
+
+
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
         /// </summary>

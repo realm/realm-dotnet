@@ -997,7 +997,7 @@ namespace Realms.Tests.Database
             var testList = new List<RealmValue> { 1, "test", true };
 
             //Additional properties should be empty in the beginning
-            Assert.That(person.ObjectSchema.GetExtraProperties(), Is.Empty);
+            Assert.That(person.ExtendedObjectSchema.GetExtraProperties(), Is.Empty);
 
             // Basic set/get
             realm.Write(() =>
@@ -1091,8 +1091,8 @@ namespace Realms.Tests.Database
             //    Assert.That(unsetVal, Is.False);
             //});
 
-            // Get all additional properties keys
-            // Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.EquivalentTo(new[] { "propInt", "propObj", "propList", "propNull" }));
+            // Get all extra properties keys
+            Assert.That(person.ExtendedObjectSchema.GetExtraProperties(), Is.EquivalentTo(new[] { "propObj", "propList", "propNull" }));
         }
 
         #endregion

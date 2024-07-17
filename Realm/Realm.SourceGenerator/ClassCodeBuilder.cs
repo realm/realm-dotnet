@@ -321,6 +321,10 @@ public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
 /// <inheritdoc />
 {_ignoreFieldAttribute.Value}
+public Realms.Schema.ExtendedObjectSchema ExtendedObjectSchema => Accessor.ExtendedObjectSchema!;
+
+/// <inheritdoc />
+{_ignoreFieldAttribute.Value}
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
 /// <inheritdoc />

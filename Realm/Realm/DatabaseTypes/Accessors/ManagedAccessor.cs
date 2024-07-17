@@ -62,6 +62,10 @@ namespace Realms
         /// <inheritdoc/>
         public ObjectSchema ObjectSchema => Metadata.Schema;
 
+        //TODO This can be cached or done differently 
+        /// <inheritdoc/>
+        public ExtendedObjectSchema ExtendedObjectSchema => new (ObjectSchema, ObjectHandle);
+
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
 

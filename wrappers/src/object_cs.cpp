@@ -234,6 +234,7 @@ extern "C" {
             }
 
             object.get_obj().erase_prop(prop_name);
+            return true;
         });
     }
 
