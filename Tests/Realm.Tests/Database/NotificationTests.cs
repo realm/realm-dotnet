@@ -78,6 +78,53 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Results_WhenEmbeddedObjectIsModified_Notifies()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var actualChanges = new List<ChangeSet?>();
+            void OnNotification(IRealmCollection<TestNotificationObject> collection, ChangeSet? changes) => actualChanges.Add(changes);
+
+            Assert.That(query.Count, Is.EqualTo(0));
+
+            using (query.SubscribeForNotifications(OnNotification))
+            {
+                _realm.Refresh();
+
+                // Notification from subscribing.
+                Assert.That(actualChanges.Count, Is.EqualTo(1));
+
+                var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(2));
+                Assert.That(actualChanges[1], Is.Not.Null);
+                Assert.That(actualChanges[1]!.InsertedIndices, Is.EquivalentTo(new[] { 0 }));
+
+                _realm.Write(() =>
+                {
+                    testObject.EmbeddedObject = new EmbeddedIntPropertyObject { Int = 1 };
+                });
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(3));
+                Assert.That(actualChanges[2], Is.Not.Null);
+                Assert.That(actualChanges[2]!.NewModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+                Assert.That(actualChanges[2]!.ModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+
+                _realm.Write(() =>
+                {
+                    testObject.EmbeddedObject!.Int++;
+                });
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(4));
+                Assert.That(actualChanges[3], Is.Not.Null);
+                Assert.That(actualChanges[3]!.NewModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+                Assert.That(actualChanges[3]!.ModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+            }
+        }
+
+        [Test]
         public void ListShouldSendNotifications()
         {
             var container = new OrderedContainer();
