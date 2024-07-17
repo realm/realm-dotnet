@@ -64,12 +64,12 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Realm/Realm
-      run: msbuild Realm/Realm -restore -p:Configuration=Release -p:UseSharedCompilation=false
+      run: msbuild Realm/Realm -restore -p:Configuration=Debug -p:UseSharedCompilation=false
     - name: Build Realm/Realm.PlatformHelpers
-      run: msbuild Realm/Realm.PlatformHelpers -restore -p:Configuration=Release -p:UseSharedCompilation=false
+      run: msbuild Realm/Realm.PlatformHelpers -restore -p:Configuration=Debug -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -restore -p:Configuration=Release -p:UseSharedCompilation=false
+      run: msbuild Realm/Realm.UnityUtils -restore -p:Configuration=Debug -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -restore -p:Configuration=Release -p:UseSharedCompilation=false
+      run: msbuild Realm/Realm.UnityWeaver -restore -p:Configuration=Debug -p:UseSharedCompilation=false
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@a57c67b89589d2d13d5ac85a9fc4679c7539f94c

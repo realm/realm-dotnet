@@ -6,7 +6,7 @@ import "Lint.pkl"
 import "Package.pkl"
 import "Test.pkl" as TestJobs
 
-const configuration: String = "Release"
+const configuration: String = "Debug"
 
 const linuxArchs: List<String> = List("x86_64", "armhf", "aarch64")
 const applePlatforms: List<String> = List("iOS", "tvOS")

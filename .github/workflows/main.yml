@@ -208,13 +208,13 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Realm/Realm
-      run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Debug -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.PlatformHelpers
-      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Debug -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Debug -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Debug -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
       run: |-
@@ -521,9 +521,9 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
+      run: msbuild Tests/Realm.Tests -restore -p:Configuration=Debug -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=net-framework-${{ github.run_id }}-${{ github.run_attempt }}
+      run: ./Tests/Realm.Tests/bin/Debug/net461/Realm.Tests.exe --result=TestResults.xml --labels=After  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=net-framework-${{ github.run_id }}-${{ github.run_attempt }}
     - name: Publish Unit Test Results
       if: always()
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
@@ -576,7 +576,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Debug -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=uwp-${{ github.run_id }}-${{ github.run_attempt }}'
       shell: powershell
@@ -632,10 +632,10 @@ jobs:
       with:
         dotnet-version: ${{ steps.get-net-version.outputs.version }}
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Debug -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Debug/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       env:
@@ -709,9 +709,9 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.XamarinMac
-      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Debug -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
+      run: Tests/Tests.XamarinMac/bin/Debug/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Publish Unit Test Results
       if: always()
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
@@ -763,9 +763,9 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: dotnet build Tests/Tests.Maui -c Debug -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=macos-maui-${{ github.run_id }}-${{ github.run_attempt }}
+      run: Tests/Tests.Maui/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=macos-maui-${{ github.run_id }}-${{ github.run_attempt }}
     - name: Transform Results
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
@@ -809,11 +809,11 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Debug -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
+        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Debug/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
         arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
@@ -869,11 +869,11 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: dotnet build Tests/Tests.Maui -c Debug -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
+        appPath: Tests/Tests.Maui/bin/Debug/net8.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
         iphoneToSimulate: iPhone-15
         arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All  --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=ios-maui-${{ github.run_id }}-${{ github.run_attempt }}
@@ -921,11 +921,11 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.XamarinTVOS
-      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Debug -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
+        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Debug/Tests.XamarinTVOS.app
         bundleId: io.realm.Tests-XamarinTVOS
         iphoneToSimulate: Apple-TV-1080p
         arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
@@ -976,7 +976,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Debug -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -1043,10 +1043,10 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Publish Tests/Tests.Maui
-      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Tests.Maui -c Debug -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Debug/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -1102,10 +1102,10 @@ jobs:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Debug -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Debug/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
@@ -1140,10 +1140,10 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Debug -f net6.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Debug/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
@@ -1178,10 +1178,10 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Debug -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Debug/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
@@ -1236,16 +1236,16 @@ jobs:
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Debug -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Debug/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Debug/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
     - name: Archive core dump
       if: ${{ failure() && runner.os != 'Windows' }}
       uses: actions/upload-artifact@v4
@@ -1452,10 +1452,10 @@ jobs:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Tests.XUnit
-      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/Tests.XUnit -c Debug -f net6.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net6.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Debug/net6.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
@@ -1491,10 +1491,10 @@ jobs:
     - name: Clear nuget cache
       run: dotnet nuget locals all --clear
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Debug -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Debug/net6.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join

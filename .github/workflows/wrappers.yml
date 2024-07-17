@@ -46,7 +46,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-macos
       if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -63,7 +63,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-catalyst-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-catalyst
       if: matrix.os == 'ubuntu' && steps.check-cache-catalyst.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-x86_64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-x86_64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-linux-x86_64
       if: matrix.os == 'ubuntu' && steps.check-cache-linux-x86_64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -97,7 +97,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-armhf-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-armhf-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-linux-armhf
       if: matrix.os == 'ubuntu' && steps.check-cache-linux-armhf.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -114,7 +114,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-aarch64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-aarch64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-linux-aarch64
       if: matrix.os == 'ubuntu' && steps.check-cache-linux-aarch64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -131,7 +131,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-armeabi-v7a-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-android-armeabi-v7a
       if: matrix.os == 'ubuntu' && steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -148,7 +148,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-arm64-v8a-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-android-arm64-v8a
       if: matrix.os == 'ubuntu' && steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -165,7 +165,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-android-x86
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -182,7 +182,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86_64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-android-x86_64
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -199,7 +199,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-Win32-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-Win32
       if: matrix.os == 'windows' && steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -216,7 +216,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-x64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-x64
       if: matrix.os == 'windows' && steps.check-cache-windows-x64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -233,7 +233,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-ARM64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-ARM64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-ARM64
       if: matrix.os == 'windows' && steps.check-cache-windows-ARM64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -250,7 +250,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-Win32-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-uwp-Win32
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -267,7 +267,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-x64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-uwp-x64
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -284,7 +284,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-uwp-ARM
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -301,7 +301,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM64-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-windows-uwp-ARM64
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -318,7 +318,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-iOS-Device-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-iOS-Device-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-iOS-Device
       if: matrix.os == 'ubuntu' && steps.check-cache-iOS-Device.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -335,7 +335,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-iOS-Simulator-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-iOS-Simulator-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-iOS-Simulator
       if: matrix.os == 'ubuntu' && steps.check-cache-iOS-Simulator.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -352,7 +352,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-tvOS-Device-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-tvOS-Device-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-tvOS-Device
       if: matrix.os == 'ubuntu' && steps.check-cache-tvOS-Device.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -369,7 +369,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-tvOS-Simulator-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-tvOS-Simulator-Debug-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for wrappers-tvOS-Simulator
       if: matrix.os == 'ubuntu' && steps.check-cache-tvOS-Simulator.outputs.cache-hit == 'true'
       uses: actions/upload-artifact@v4
@@ -404,10 +404,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+      run: ./wrappers/build-macos.sh --configuration=Debug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v4
       with:
@@ -433,10 +433,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-catalyst-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -Configuration Debug -EnableLTO
     - name: Store artifacts for wrappers-catalyst
       uses: actions/upload-artifact@v4
       with:
@@ -462,7 +462,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-${{ matrix.platform }}-${{ matrix.target }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-${{ matrix.platform }}-${{ matrix.target }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Setup Xcode
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
@@ -470,7 +470,7 @@ jobs:
         xcode-version: '14'
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: 'pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -Configuration Release '
+      run: 'pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -Configuration Debug '
     - name: Store artifacts for wrappers-${{ matrix.platform }}-${{ matrix.target }}
       uses: actions/upload-artifact@v4
       with:
@@ -505,13 +505,13 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Install Ninja
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: sudo apt install ninja-build
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: ./wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+      run: ./wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Debug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
     - name: Store artifacts for wrappers-linux-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
@@ -544,10 +544,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: './wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release '
+      run: './wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Debug '
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
@@ -581,14 +581,14 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Setup MSVC
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
       shell: pwsh
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Debug -EnableLTO
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
@@ -621,14 +621,14 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Setup MSVC
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
       shell: pwsh
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Debug -EnableLTO
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v4
       with:
