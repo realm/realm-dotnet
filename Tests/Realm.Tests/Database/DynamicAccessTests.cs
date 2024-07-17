@@ -996,8 +996,8 @@ namespace Realms.Tests.Database
             var testObj = new Person { FirstName = "Luigi" };
             var testList = new List<RealmValue> { 1, "test", true };
 
-            // Additional properties should be empty in the beginning
-            // Assert.That(person.DynamicApi.GetAdditionalProperties(), Is.Empty);
+            //Additional properties should be empty in the beginning
+            Assert.That(person.ObjectSchema.GetExtraProperties(), Is.Empty);
 
             // Basic set/get
             realm.Write(() =>
@@ -1083,7 +1083,7 @@ namespace Realms.Tests.Database
             });
 
             // TryUnset property in schema
-            // We need to get a new core method to check if a certain property in the extra
+            // We need to get a new core method to check if a certain property is in the extra
             // properties
             //realm.Write(() =>
             //{
