@@ -77,6 +77,8 @@ namespace Realms.Schema
 
         internal Type? Type { get; private set; }
 
+        internal ReadOnlyDictionary<string, Property> Properties => _properties;
+
         /// <summary>
         /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
@@ -84,7 +86,7 @@ namespace Realms.Schema
         /// <value>The type of ObjectSchema.</value>
         public ObjectType BaseType { get; }
 
-        private ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
+        internal ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
         {
             Name = name;
             BaseType = schemaType;
