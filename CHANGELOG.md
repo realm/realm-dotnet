@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.3.0 (2024-07-17)
 
 ### Deprecations
 * The `Logger` has been deprecated in favor of `RealmLogger`, which `Logger` currently derives from. (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
