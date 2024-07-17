@@ -239,7 +239,7 @@ extern "C" {
 
     //realm_string_collection_t is equivalent to MarshaledVector<realm_string_t> but that cannot be used
     //TODO need to see if we can do this differently
-    REALM_EXPORT realm_string_collection_t object_get_additional_properties(Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT realm_string_collection_t object_get_extra_properties(Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             auto props = object.get_obj().get_additional_properties();

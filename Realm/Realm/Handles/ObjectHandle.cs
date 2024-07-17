@@ -64,8 +64,8 @@ namespace Realms
             public static extern IntPtr set_collection_value_by_name(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
 
             //TODO Need to check if this works with .NET Framework
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_additional_properties", CallingConvention = CallingConvention.Cdecl)]
-            public static extern MarshaledVector<StringValue> get_additional_properties(ObjectHandle handle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_extra_properties", CallingConvention = CallingConvention.Cdecl)]
+            public static extern MarshaledVector<StringValue> get_extra_properties(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -375,11 +375,11 @@ namespace Realms
             return propertyFound;
         }
 
-        public IEnumerable<string> GetAdditionalProperties()
+        public IEnumerable<string> GetExtraProperties()
         {
             EnsureIsOpen();
 
-            var value = NativeMethods.get_additional_properties(this, out var nativeException);
+            var value = NativeMethods.get_extra_properties(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return value.ToEnumerable().Select(v => v.ToDotnetString()!);
