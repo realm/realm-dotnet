@@ -1,0 +1,156 @@
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2023 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License")
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using NUnit.Framework;
+
+namespace Realms.Tests.Database
+{
+    [TestFixture]
+    [Preserve(AllMembers = true)]
+    public class RelaxedSchemaTests : RealmInstanceTest
+    {
+        protected override RealmConfiguration CreateConfiguration(string path)
+        {
+            var newConfig = base.CreateConfiguration(path);
+            newConfig.RelaxedSchema = true;
+            return newConfig;
+        }
+
+        [Test]
+        public void FlexibleSchema_BaseTest()
+        {
+            var person = _realm.Write(() =>
+            {
+                return _realm.Add(new Person());
+            });
+
+            var testObj = new Person { FirstName = "Luigi" };
+            var testList = new List<RealmValue> { 1, "test", true };
+
+            //Additional properties should be empty in the beginning
+            Assert.That(person.ExtendedObjectSchema.ExtraProperties, Is.Empty);
+
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.False);
+
+            // Basic set/get
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Set("propString", "testval");
+                person.DynamicApi.Set("propInt", 10);
+                person.DynamicApi.Set("propObj", testObj);
+                person.DynamicApi.Set("propList", testList);
+                person.DynamicApi.Set("propNull", RealmValue.Null);
+            });
+
+            Assert.That(person.DynamicApi.Get<string>("propString"), Is.EqualTo("testval"));
+            Assert.That(person.DynamicApi.Get<int>("propInt"), Is.EqualTo(10));
+            Assert.That(person.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
+            Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
+            Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
+
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.True);
+
+            bool found;
+
+            found = person.DynamicApi.TryGet<string>("propString", out var stringVal);
+            Assert.That(found, Is.True);
+            Assert.That(stringVal, Is.EqualTo("testval"));
+
+            found = person.DynamicApi.TryGet<IList<RealmValue>>("propList", out var listVal);
+            Assert.That(found, Is.True);
+            Assert.That(listVal, Is.EqualTo(testList));
+
+            // Change type
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Set("propString", 23);
+            });
+
+            Assert.That(person.DynamicApi.Get<int>("propString"), Is.EqualTo(23));
+
+            // Get unknown property
+            Assert.That(() => person.DynamicApi.Get<int>("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+            Assert.That(() => person.DynamicApi.Get("unknonProp"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: unknonProp"));
+
+            // TryGet unknown property
+            found = person.DynamicApi.TryGet("unknonProp", out var rvUnKnownValue);
+            Assert.That(found, Is.False);
+            Assert.That(rvUnKnownValue, Is.EqualTo(RealmValue.Null));
+
+            found = person.DynamicApi.TryGet<int>("unknonProp", out var intUnknownVal);
+            Assert.That(found, Is.False);
+            Assert.That(intUnknownVal, Is.EqualTo(default(int)));
+
+            found = person.DynamicApi.TryGet<IList<RealmValue>>("unknonProp", out var listUnknonwVal);
+            Assert.That(found, Is.False);
+            Assert.That(listUnknonwVal, Is.EqualTo(default(IList<RealmValue>)));
+
+            // Unset property
+            _realm.Write(() =>
+            {
+                person.DynamicApi.Unset("propString");
+            });
+            Assert.That(() => person.DynamicApi.Get("propString"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propString"));
+
+            Assert.That(() => _realm.Write(() =>
+            {
+                person.DynamicApi.Unset("propString");
+            }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: propString"));
+
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.False);
+
+            // Unset property in schema
+            Assert.That(() => _realm.Write(() =>
+            {
+                person.DynamicApi.Unset("FirstName");
+            }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: FirstName"));
+
+            // TryUnset property
+            _realm.Write(() =>
+            {
+                bool unsetVal = person.DynamicApi.TryUnset("propInt");
+                Assert.That(unsetVal, Is.True);
+            });
+            Assert.That(() => person.DynamicApi.Get("propInt"), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Property not found: propInt"));
+
+            _realm.Write(() =>
+            {
+                bool unsetVal = person.DynamicApi.TryUnset("propInt");
+                Assert.That(unsetVal, Is.False);
+            });
+
+            // TryUnset property in schema
+            // We need to get a new core method to check if a certain property is in the extra
+            // properties
+            //realm.Write(() =>
+            //{
+            //    bool unsetVal = person.DynamicApi.TryUnset("FirstName");
+            //    Assert.That(unsetVal, Is.False);
+            //});
+
+            // Get all extra properties keys
+            Assert.That(person.ExtendedObjectSchema.ExtraProperties.Select(p => p.Name), Is.EquivalentTo(new[] { "propObj", "propList", "propNull" }));
+        }
+
+    }
+}
