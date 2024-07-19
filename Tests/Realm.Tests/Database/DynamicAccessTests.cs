@@ -997,7 +997,7 @@ namespace Realms.Tests.Database
             var testList = new List<RealmValue> { 1, "test", true };
 
             //Additional properties should be empty in the beginning
-            Assert.That(person.ExtendedObjectSchema.GetExtraProperties(), Is.Empty);
+            Assert.That(person.ExtendedObjectSchema.ExtraProperties, Is.Empty);
 
             Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.False);
 
@@ -1098,7 +1098,7 @@ namespace Realms.Tests.Database
             //});
 
             // Get all extra properties keys
-            Assert.That(person.ExtendedObjectSchema.GetExtraProperties(), Is.EquivalentTo(new[] { "propObj", "propList", "propNull" }));
+            Assert.That(person.ExtendedObjectSchema.ExtraProperties.Select(p => p.Name), Is.EquivalentTo(new[] { "propObj", "propList", "propNull" }));
         }
 
         #endregion

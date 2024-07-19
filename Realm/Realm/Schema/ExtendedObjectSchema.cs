@@ -18,6 +18,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Realms.Native;
 
 namespace Realms.Schema
@@ -33,10 +34,9 @@ namespace Realms.Schema
             _objectHandle = objectHandle;
         }
 
-        public IEnumerable<string> GetExtraProperties()
-        {
-            return _objectHandle.GetExtraProperties();
-        }
+        public IEnumerable<Property> ExtraProperties =>
+            _objectHandle.GetExtraProperties()
+            .Select(name => new Property(name, PropertyType.RealmValue));
 
         public bool HasProperty(string propertyName)
         {
