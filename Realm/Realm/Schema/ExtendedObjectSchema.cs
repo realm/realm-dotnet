@@ -37,5 +37,10 @@ namespace Realms.Schema
         {
             return _objectHandle.GetExtraProperties();
         }
+
+        public bool HasProperty(string propertyName)
+        {
+            return _objectHandle.HasProperty(propertyName);
+        }
     }
 }

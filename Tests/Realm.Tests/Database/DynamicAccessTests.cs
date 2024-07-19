@@ -999,6 +999,8 @@ namespace Realms.Tests.Database
             //Additional properties should be empty in the beginning
             Assert.That(person.ExtendedObjectSchema.GetExtraProperties(), Is.Empty);
 
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.False);
+
             // Basic set/get
             realm.Write(() =>
             {
@@ -1014,6 +1016,8 @@ namespace Realms.Tests.Database
             Assert.That(person.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
             Assert.That(person.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
             Assert.That(person.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
+
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.True);
 
             bool found;
 
@@ -1061,6 +1065,8 @@ namespace Realms.Tests.Database
             {
                 person.DynamicApi.Unset("propString");
             }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: propString"));
+
+            Assert.That(person.ExtendedObjectSchema.HasProperty("propString"), Is.False);
 
             // Unset property in schema
             Assert.That(() => realm.Write(() =>

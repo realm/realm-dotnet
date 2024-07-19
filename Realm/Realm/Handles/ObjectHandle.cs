@@ -67,6 +67,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_extra_properties", CallingConvention = CallingConvention.Cdecl)]
             public static extern MarshaledVector<StringValue> get_extra_properties(ObjectHandle handle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_has_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool has_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -383,6 +386,19 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return value.ToEnumerable().Select(v => v.ToDotnetString()!);
+        }
+
+        internal bool HasProperty(string propertyName)
+        {
+            EnsureIsOpen();
+
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            var value = NativeMethods.has_property(this, propertyNameNative, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return value;
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)

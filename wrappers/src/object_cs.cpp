@@ -238,6 +238,14 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT bool object_has_property(Object& object, realm_string_t property_name,
+        NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return object.get_obj().has_property(capi_to_std(property_name));
+        });
+    }
+
     //realm_string_collection_t is equivalent to MarshaledVector<realm_string_t> but that cannot be used
     //TODO need to see if we can do this differently
     REALM_EXPORT realm_string_collection_t object_get_extra_properties(Object& object, NativeException::Marshallable& ex)
