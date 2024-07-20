@@ -405,6 +405,11 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+    - name: Setup Cmake
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be
+      with:
+        cmake-version: 3.29.0
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
@@ -434,6 +439,11 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
+    - name: Setup Cmake
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be
+      with:
+        cmake-version: 3.29.0
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -Configuration Release -EnableLTO
@@ -468,6 +478,11 @@ jobs:
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
       with:
         xcode-version: '14'
+    - name: Setup Cmake
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be
+      with:
+        cmake-version: 3.29.0
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: 'pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -Configuration Release '

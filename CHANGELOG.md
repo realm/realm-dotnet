@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.3.0 (2024-07-17)
 
 ### Deprecations
 * The `Logger` has been deprecated in favor of `RealmLogger`, which `Logger` currently derives from. (PR [#3634](https://github.com/realm/realm-dotnet/pull/3634))
@@ -24,6 +24,8 @@
     ```csharp
     RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm, "A warning message");
     ```
+* On Windows devices Device Sync will additionally look up SSL certificates in the Windows Trusted Root Certification Authorities certificate store when establishing a connection. (Core 14.11.0)
+* Role and permissions changes no longer require a client reset to update the local realm. (Core 14.11.0)
 
 ### Fixed
 * A `ForCurrentlyOutstandingWork` progress notifier would not immediately call its callback after registration. Instead you would have to wait for some data to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. (Core 14.8.0)
@@ -41,6 +43,11 @@
 * Fixed removing backlinks from the wrong objects if the link came from a nested list, nested dictionary, top-level dictionary, or list of `RealmValue`, and the source table had more than 256 objects. This could manifest as `array_backlink.cpp:112: Assertion failed: int64_t(value >> 1) == key.value` when removing an object. (Core 14.10.3)
 * Fixed the collapse/rejoin of clusters which contained nested collections with links. This could manifest as `array.cpp:319: Array::move() Assertion failed: begin <= end [2, 1]` when removing an object. (Core 14.10.3)
 * `Session.WaitForUpload()` was inconsistent in how it handled commits which did not produce any changesets to upload. Previously it would sometimes complete immediately if all commits waiting to be uploaded were empty, and at other times it would wait for a server roundtrip. It will now always complete immediately. (Core 14.10.3)
+* When a property is remapped, calling `.Filter("... SORT/DISTINCT(mapped-to-name)")` with the internal name could throw an error like `Cannot sort on key path 'NAME': property 'PersonObject.NAME' does not exist`. (Core 14.10.4)
+* Sync client can crash if a session is resumed while the session is being suspended. (Core 14.11.0)
+* If a sync session is interrupted by a disconnect or restart while downloading a bootstrap, stale data from the previous bootstrap may be included when the session reconnects and downloads the bootstrap. This can lead to objects stored in the database that do not match the actual state of the server and potentially leading to compensating writes. (Core 14.11.0)
+* Fixed unnecessary server roundtrips when there is no download to acknowledge. (Core 14.11.0)
+
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

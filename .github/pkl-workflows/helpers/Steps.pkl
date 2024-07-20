@@ -60,6 +60,14 @@ const function setupXcode(version: String): gha.Step = new {
   }
 }
 
+const function setupCmake(version: String): gha.Step = new {
+  name = "Setup Cmake"
+  uses = Actions.setupCmake
+  with {
+    ["cmake-version"] = version
+  }
+}
+
 const function setupMSVC(edition: String): gha.Step = new {
   name = "Setup MSVC"
   run = "Start-Process \"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vs_installer.exe\" -ArgumentList 'modify --installPath \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.\(edition)' -Wait -PassThru"

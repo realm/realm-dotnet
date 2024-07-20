@@ -52,6 +52,9 @@ jobs {
   } |> wrappersJob(new JobConfig {
       cmd = "./wrappers/build-macos.sh"
       platform = "macos"
+      intermediateSteps {
+        Steps.setupCmake("3.29.0")
+      }
     })
   ["catalyst"] = new Job {
     `runs-on` = "macos-12"
@@ -59,6 +62,9 @@ jobs {
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build-apple-platform.ps1 Catalyst"
       platform = "catalyst"
+      intermediateSteps {
+        Steps.setupCmake("3.29.0")
+      }
     })
   ["apple-platform"] = new MatrixJob {
     strategy {
@@ -75,6 +81,7 @@ jobs {
       platform = "${{ matrix.platform }}-${{ matrix.target }}"
       intermediateSteps {
         Steps.setupXcode("14")
+        Steps.setupCmake("3.29.0")
       }
       ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(job_CheckCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
     })
