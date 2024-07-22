@@ -24,7 +24,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Tests.Database;
@@ -861,7 +860,7 @@ namespace Realms.Tests.Sync
                     o.RealmValueProperty = new Dictionary<string, RealmValue>
                     {
                         { "list", new List<RealmValue> { 1, 2, 3 } },
-                        { "dictionary", new Dictionary<string, RealmValue>() { { "key1", 1 } } },
+                        { "dictionary", new Dictionary<string, RealmValue> { { "key1", 1 } } },
                     };
                     return o;
                 });
@@ -903,17 +902,86 @@ namespace Realms.Tests.Sync
                 var list2 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
                 var dictionary2 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
 
-                Assert.That(list1, new NotConstraint(Contains.Item((RealmValue)1)));
+                Assert.That(list1, Does.Not.Contain((RealmValue)1));
                 Assert.That(list1, Contains.Item((RealmValue)2));
                 Assert.That(list1, Contains.Item((RealmValue)3));
                 Assert.That(list1, Contains.Item((RealmValue)4));
                 Assert.That(list1, Contains.Item((RealmValue)5));
                 Assert.That(list1, Is.EqualTo(list2).Using(_rvComparer));
 
-                Assert.That(dictionary1, new NotConstraint(Contains.Key("key1")));
+                Assert.That(dictionary1, Does.Not.ContainKey("key1"));
                 Assert.That(dictionary1, Contains.Key("key2"));
                 Assert.That(dictionary1, Contains.Key("key3"));
                 Assert.That(dictionary1, Is.EqualTo(dictionary2).Using(_rvComparer));
+            });
+        }
+
+        [Test]
+        public void NestedCollections_MergeNewObjects()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = ObjectId.GenerateNewId();
+
+                var realm1 = await GetFLXIntegrationRealmAsync();
+                await realm1.All<SyncAllTypesObject>().Where(o => o.ObjectIdProperty == partition).SubscribeAsync();
+                realm1.SyncSession.Stop();
+
+                var realm2 = await GetFLXIntegrationRealmAsync();
+                await realm2.All<SyncAllTypesObject>().Where(o => o.ObjectIdProperty == partition).SubscribeAsync();
+                realm2.SyncSession.Stop();
+
+                var id = ObjectId.GenerateNewId();
+                realm1.Write(() =>
+                {
+                    realm1.Add(new SyncAllTypesObject
+                    {
+                        Id = id,
+                        RealmValueProperty = new RealmValue[] { 5, "abc" },
+                        StringProperty = "client 1",
+                        ObjectIdProperty = partition
+                    });
+                });
+
+                realm2.Write(() =>
+                {
+                    realm2.Add(new SyncAllTypesObject
+                    {
+                        Id = id,
+                        RealmValueProperty = new RealmValue[] { 100, "def" },
+                        StringProperty = "client 2",
+                        ObjectIdProperty = partition
+                    });
+                });
+
+                realm1.SyncSession.Start();
+                realm2.SyncSession.Start();
+
+                await WaitForUploadAsync(realm1);
+                await WaitForUploadAsync(realm2);
+                await WaitForDownloadAsync(realm1);
+                await WaitForDownloadAsync(realm2);
+
+                var objs1 = realm1.All<SyncAllTypesObject>();
+                var objs2 = realm2.All<SyncAllTypesObject>();
+
+                Assert.That(objs1.Count(), Is.EqualTo(1));
+                Assert.That(objs2.Count(), Is.EqualTo(1));
+
+                var obj1 = objs1.Single();
+                var obj2 = objs2.Single();
+
+                Assert.That(obj1.RealmValueProperty.AsList().Count, Is.EqualTo(2));
+                Assert.That(obj2.RealmValueProperty.AsList().Count, Is.EqualTo(2));
+
+                Assert.That(obj1.StringProperty, Is.EqualTo(obj2.StringProperty));
+
+                var expected = obj1.StringProperty == "client 1"
+                    ? new RealmValue[] { 5, "abc" }
+                    : new RealmValue[] { 100, "def" };
+
+                Assert.That(obj1.RealmValueProperty.AsList(), Is.EqualTo(expected));
+                Assert.That(obj2.RealmValueProperty.AsList(), Is.EqualTo(expected));
             });
         }
 
