@@ -107,6 +107,7 @@ jobs:
         delete-branch: true
         base: main
         commit-message: Prepare for vNext
+        labels: no-jira-ticket
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@9234b8714dda9a08f3d1df5b2a6a3abd7b695353
       with:
