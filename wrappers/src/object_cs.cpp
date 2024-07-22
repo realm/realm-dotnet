@@ -157,6 +157,9 @@ extern "C" {
             case type_List:
                 *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(prop_name)));
                 break;
+            case type_Dictionary:
+                *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj().get_dictionary_ptr(prop_name)));
+                break;
             default:
                 *value = to_capi(std::move(val));
                 break;
@@ -299,24 +302,24 @@ extern "C" {
         return handle_errors(ex, [&]()-> void* {
             verify_can_set(object);
 
-            auto prop = capi_to_std(property_name);
-
-            Path path = { PathElement(prop) };
+            auto prop_name = capi_to_std(property_name);
 
             switch (type)
             {
                 case realm::binding::realm_value_type::RLM_TYPE_LIST:
                 {
                 
-                    object.get_obj().set_collection(prop, CollectionType::List);
-                    //TODO We probably need to ask for methods that do not require to build a path
-                    auto innerList = new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(path));
+                    object.get_obj().set_collection(prop_name, CollectionType::List);
+                    auto innerList = new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(prop_name));
                     innerList->remove_all();
                     return innerList;
                 }
                 case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
                 {
-                    REALM_TERMINATE("Invalid collection type");
+                    object.get_obj().set_collection(prop_name, CollectionType::Dictionary);
+                    auto innerDict = new object_store::Dictionary(object.realm(), object.get_obj().get_dictionary_ptr(prop_name));
+                    innerDict->remove_all();
+                    return innerDict;
                 }
                 default:
                     REALM_TERMINATE("Invalid collection type");
