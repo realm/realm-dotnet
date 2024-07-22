@@ -16,17 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
-#if TEST_WEAVER
-using TestRealmObject = Realms.RealmObject;
-#else
-using TestRealmObject = Realms.IRealmObject;
-#endif
 
 namespace Realms.Tests.Database
 {
@@ -37,22 +37,22 @@ namespace Realms.Tests.Database
 
         private static readonly DateTimeOffset _someDate = new(1234, 5, 6, 7, 8, 9, TimeSpan.Zero);
 
-        public static char[] CharValues = new[] { (char)0, 'a', 'b', char.MinValue };
-        public static byte[] ByteValues = new[] { (byte)0, (byte)1, byte.MaxValue, byte.MinValue };
-        public static int[] IntValues = new[] { 0, 1, -1, int.MaxValue, int.MinValue };
-        public static short[] ShortValues = new[] { (short)0, (short)1, (short)-1, short.MaxValue, short.MinValue };
-        public static long[] LongValues = new[] { 0, 1, -1, long.MaxValue, long.MinValue };
-        public static float[] FloatValues = new[] { 0, 1, -1, float.MaxValue, float.MinValue };
-        public static double[] DoubleValues = new[] { 0, 1, -1, double.MaxValue, double.MinValue };
-        public static Decimal128[] Decimal128Values = new[] { 0, 1, -1, Decimal128.MaxValue, Decimal128.MinValue };
-        public static decimal[] DecimalValues = new[] { 0, 1, -1, decimal.MaxValue, decimal.MinValue };
-        public static bool[] BoolValues = new[] { false, true };
-        public static DateTimeOffset[] DateValues = new[] { _someDate, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
-        public static Guid[] GuidValues = new[] { Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"), Guid.Empty };
-        public static ObjectId[] ObjectIdValues = new[] { new ObjectId("5f63e882536de46d71877979"), ObjectId.Empty };
-        public static string[] StringValues = new[] { "a", "abc", string.Empty };
-        public static byte[][] DataValues = new[] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
-        public static IRealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
+        public static char[] CharValues = { (char)0, 'a', 'b', char.MinValue };
+        public static byte[] ByteValues = { 0, 1, byte.MaxValue, byte.MinValue };
+        public static int[] IntValues = { 0, 1, -1, int.MaxValue, int.MinValue };
+        public static short[] ShortValues = { 0, 1, -1, short.MaxValue, short.MinValue };
+        public static long[] LongValues = { 0, 1, -1, long.MaxValue, long.MinValue };
+        public static float[] FloatValues = { 0, 1, -1, float.MaxValue, float.MinValue };
+        public static double[] DoubleValues = { 0, 1, -1, double.MaxValue, double.MinValue };
+        public static Decimal128[] Decimal128Values = { 0, 1, -1, Decimal128.MaxValue, Decimal128.MinValue };
+        public static decimal[] DecimalValues = { 0, 1, -1, decimal.MaxValue, decimal.MinValue };
+        public static bool[] BoolValues = { false, true };
+        public static DateTimeOffset[] DateValues = { _someDate, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
+        public static Guid[] GuidValues = { Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"), Guid.Empty };
+        public static ObjectId[] ObjectIdValues = { new("5f63e882536de46d71877979"), ObjectId.Empty };
+        public static string[] StringValues = { "a", "abc", string.Empty };
+        public static byte[][] DataValues = { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
+        public static IRealmObject[] ObjectValues = { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
         [Test]
         public void CharTests(
@@ -654,9 +654,10 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_Reference_IsChangedCorrectly()
         {
-            var rvo = new RealmValueObject();
-
-            rvo.RealmValueProperty = 10;
+            var rvo = new RealmValueObject
+            {
+                RealmValueProperty = 10
+            };
 
             _realm.Write(() =>
             {
@@ -677,9 +678,10 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WhenManaged_CanChangeType()
         {
-            var rvo = new RealmValueObject();
-
-            rvo.RealmValueProperty = 10;
+            var rvo = new RealmValueObject
+            {
+                RealmValueProperty = 10
+            };
 
             _realm.Write(() =>
             {
@@ -717,7 +719,7 @@ namespace Realms.Tests.Database
         {
             var notifiedPropertyNames = new List<string?>();
 
-            var handler = new PropertyChangedEventHandler((sender, e) =>
+            var handler = new PropertyChangedEventHandler((_, e) =>
             {
                 notifiedPropertyNames.Add(e.PropertyName);
             });
@@ -759,7 +761,7 @@ namespace Realms.Tests.Database
         {
             var notifiedPropertyNames = new List<string?>();
 
-            var handler = new PropertyChangedEventHandler((sender, e) =>
+            var handler = new PropertyChangedEventHandler((_, e) =>
             {
                 notifiedPropertyNames.Add(e.PropertyName);
             });
@@ -1180,6 +1182,6 @@ namespace Realms.Tests.Database
                    IntProperty == other.IntProperty &&
                    StringProperty == other.StringProperty;
 
-        public override string? ToString() => $"{IntProperty} - {StringProperty}";
+        public override string ToString() => $"{IntProperty} - {StringProperty}";
     }
 }
