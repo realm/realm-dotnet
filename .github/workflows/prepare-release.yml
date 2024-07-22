@@ -56,3 +56,4 @@ jobs:
           body: An automated PR for next release.
           commit-message: Prepare for ${{ steps.update-changelog.outputs.new-version }}
           token: ${{ secrets.REALM_CI_PAT }}
+          labels: no-jira-ticket

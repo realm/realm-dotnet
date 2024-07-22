@@ -25,7 +25,7 @@ jobs {
       ...uploadToNuGet()
       ...Steps.uploadToNPM("latest")
       ...mergeReleasePR()
-      publishGithubReleasee()
+      publishGithubRelease()
       ...updateChangelogForvNext()
       postReleaseToSlack()
     }
@@ -77,7 +77,7 @@ local function mergePR(numberExpression: String): Step = new {
   }
 }
 
-local function publishGithubReleasee(): Step = new {
+local function publishGithubRelease(): Step = new {
   name = "Publish Github Release"
   uses = Actions.publishGithubRelease
   with {
@@ -125,6 +125,7 @@ local function updateChangelogForvNext(): Listing<Step> = new {
       ["delete-branch"] = true
       ["base"] = Common.mainBranch
       ["commit-message"] = "Prepare for vNext"
+      ["labels"] = "no-jira-ticket"
     }
   }
   mergePR("${{ steps.\(create_pr_step).outputs.pull-request-number }}")
