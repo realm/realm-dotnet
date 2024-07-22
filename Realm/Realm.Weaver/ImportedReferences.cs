@@ -80,6 +80,8 @@ namespace RealmWeaver
 
         public TypeReference IAsymmetricObject { get; private set; }
 
+        public TypeReference IMappedObject { get; private set; }
+
         public TypeReference ManagedAccessor { get; private set; }
 
         public TypeReference EmbeddedObject { get; private set; }
@@ -230,6 +232,7 @@ namespace RealmWeaver
             RealmValue = new TypeReference("Realms", "RealmValue", Module, realmAssembly, valueType: true);
             IEmbeddedObject = new TypeReference("Realms", "IEmbeddedObject", Module, realmAssembly, valueType: false);
             IAsymmetricObject = new TypeReference("Realms", "IAsymmetricObject", Module, realmAssembly, valueType: false);
+            IMappedObject = new TypeReference("Realms", "IMappedObject", Module, realmAssembly, valueType: false);
             RealmValue_GetNull = new MethodReference("get_Null", RealmValue, RealmValue) { HasThis = false };
 
             {

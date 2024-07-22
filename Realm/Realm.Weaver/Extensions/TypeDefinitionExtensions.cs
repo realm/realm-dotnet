@@ -43,6 +43,9 @@ internal static class TypeDefinitionExtensions
     public static bool IsIAsymmetricObjectImplementor(this TypeDefinition type, ImportedReferences references) =>
         IsImplementorOf(type, references.IAsymmetricObject);
 
+    public static bool IsIMappedObjectImplementor(this TypeDefinition type, ImportedReferences references) =>
+        IsImplementorOf(type, references.IMappedObject);
+
     public static bool IsImplementorOf(TypeDefinition @this, params TypeReference[] targetInterfaces)
     {
         foreach (var @interface in @this.Interfaces)

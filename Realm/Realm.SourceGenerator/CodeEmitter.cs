@@ -38,16 +38,11 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
-            foreach (var classInfo in parsingResults.ClassInfo)
+            foreach (var classInfo in parsingResults.ClassInfo.Where(ShouldEmit))
             {
-                if (!ShouldEmit(classInfo))
-                {
-                    continue;
-                }
-
                 try
                 {
-                    var generatedSource = new ClassCodeBuilder(classInfo, _generatorConfig).GenerateSource();
+                    var generatedSource = ClassCodeBuilderBase.CreateBuilder(classInfo, _generatorConfig).GenerateSource();
 
                     // Replace all occurrences of at least 3 newlines with only 2
                     var formattedSource = Regex.Replace(generatedSource, @$"[{Environment.NewLine}]{{3,}}", $"{Environment.NewLine}{Environment.NewLine}");
