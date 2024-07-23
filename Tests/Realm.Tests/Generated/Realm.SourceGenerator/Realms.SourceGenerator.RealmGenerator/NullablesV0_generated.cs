@@ -83,10 +83,6 @@ namespace Realms.Tests.Sync
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ExtendedObjectSchema ExtendedObjectSchema => Accessor.ExtendedObjectSchema!;
-
-        /// <inheritdoc />
-        [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         /// <inheritdoc />
