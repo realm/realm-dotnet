@@ -45,23 +45,28 @@ namespace Realms
 
         public IntPtr GetPropertyIndex(string propertyName)
         {
-            if (PropertyIndices.TryGetValue(propertyName, out var result))
-            {
-                return result;
-            }
-
-            throw new MissingMemberException(Schema.Name, propertyName);
+            TryGetPropertyIndexInternal(propertyName, out var propertyIndex, throwOnMissing: true);
+            return propertyIndex;
         }
 
-        //TODO Should merge with the previous one?
-        public IntPtr? GetPropertyIndexNullable(string propertyName)
+        public bool TryGetPropertyIndex(string propertyName, out IntPtr propertyIndex)
         {
-            if (PropertyIndices.TryGetValue(propertyName, out var result))
+            return TryGetPropertyIndexInternal(propertyName, out propertyIndex, throwOnMissing: false);
+        }
+
+        private bool TryGetPropertyIndexInternal(string propertyName, out IntPtr propertyIndex, bool throwOnMissing)
+        {
+            if (PropertyIndices.TryGetValue(propertyName, out propertyIndex))
             {
-                return result;
+                return true;
             }
 
-            return null;
+            if (throwOnMissing)
+            {
+                throw new MissingMemberException(Schema.Name, propertyName);
+            }
+
+            return false;
         }
     }
 }

@@ -215,7 +215,7 @@ namespace Realms
             }
             else
             {
-                if (metadata.GetPropertyIndexNullable(propertyName) is IntPtr propertyIndex)
+                if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex))
                 {
                     NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
                     nativeException.ThrowIfNecessary();
@@ -243,7 +243,7 @@ namespace Realms
 
             //TODO Can we merge the two branches...?
 
-            if (metadata.GetPropertyIndexNullable(propertyName) is IntPtr propertyIndex)
+            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex))
             {
                 // We need to special-handle objects because they need to be managed before we can set them.
                 if (value.Type == RealmValueType.Object)
