@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using NUnit.Framework;
 
@@ -75,6 +76,43 @@ namespace Realms.Tests.Database
             Assert.That(_person.DynamicApi.Get("propList").As<IList<RealmValue>>, Is.EqualTo(testList));
             Assert.That(_person.DynamicApi.Get("propDict").As<IDictionary<string, RealmValue>>(), Is.EqualTo(testDict));
             Assert.That(_person.DynamicApi.Get("propNull"), Is.EqualTo(RealmValue.Null));
+        }
+
+        [Test]
+        public void GetSet_OnEmbeddedObject()
+        {
+            var obj = new ObjectWithEmbeddedProperties { AllTypesObject = new EmbeddedAllTypesObject() };
+            var embeddedObj = obj.AllTypesObject;
+
+            var testObj = new Person { FirstName = "Luigi" };
+            var testList = new List<RealmValue> { 1, "test", true };
+            var testDict = new Dictionary<string, RealmValue> { { "t1", true }, { "t2", "string" } };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+
+                embeddedObj.DynamicApi.Set("propString", "testval");
+                embeddedObj.DynamicApi.Set("propInt", 10);
+                embeddedObj.DynamicApi.Set("propObj", testObj);
+                embeddedObj.DynamicApi.Set("propList", testList);
+                embeddedObj.DynamicApi.Set("propDict", testDict);
+                embeddedObj.DynamicApi.Set("propNull", RealmValue.Null);
+            });
+
+            Assert.That(embeddedObj.DynamicApi.Get<string>("propString"), Is.EqualTo("testval"));
+            Assert.That(embeddedObj.DynamicApi.Get<int>("propInt"), Is.EqualTo(10));
+            Assert.That(embeddedObj.DynamicApi.Get<Person>("propObj"), Is.EqualTo(testObj));
+            Assert.That(embeddedObj.DynamicApi.Get<IList<RealmValue>>("propList"), Is.EqualTo(testList));
+            Assert.That(embeddedObj.DynamicApi.Get<IDictionary<string, RealmValue>>("propDict"), Is.EqualTo(testDict));
+            Assert.That(embeddedObj.DynamicApi.Get<RealmValue>("propNull"), Is.EqualTo(RealmValue.Null));
+
+            Assert.That(embeddedObj.DynamicApi.Get("propString").As<string>(), Is.EqualTo("testval"));
+            Assert.That(embeddedObj.DynamicApi.Get("propInt").As<int>(), Is.EqualTo(10));
+            Assert.That(embeddedObj.DynamicApi.Get("propObj").As<Person>, Is.EqualTo(testObj));
+            Assert.That(embeddedObj.DynamicApi.Get("propList").As<IList<RealmValue>>, Is.EqualTo(testList));
+            Assert.That(embeddedObj.DynamicApi.Get("propDict").As<IDictionary<string, RealmValue>>(), Is.EqualTo(testDict));
+            Assert.That(embeddedObj.DynamicApi.Get("propNull"), Is.EqualTo(RealmValue.Null));
         }
 
         [Test]
@@ -245,27 +283,88 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void TryUnset_OnSchemaProperty_ReturnsFalse()
+        public void ObjectSchema_HasProperty_ReturnsCorrectBoolean()
         {
-            // TryUnset property in schema
-            // We need to get a new core method to check if a certain property is in the extra
-            // properties
-            //realm.Write(() =>
-            //{
-            //    bool unsetVal = person.DynamicApi.TryUnset("FirstName");
-            //    Assert.That(unsetVal, Is.False);
-            //});
+            Assert.That(_person.ObjectSchema.HasProperty("prop"), Is.False);
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Set("prop", "testval");
+            });
+            Assert.That(_person.ObjectSchema.HasProperty("prop"), Is.True);
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Unset("prop");
+            });
+            Assert.That(_person.ObjectSchema.HasProperty("prop"), Is.False);
+        }
+
+        [Test]
+        public void ObjectSchema_Enumerator_EnumeratesExtraProperties()
+        {
+            Assert.That(_person.ObjectSchema.Where(p => p.IsExtraProperty), Is.Empty);
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Set("prop1", "testval");
+                _person.DynamicApi.Set("prop2", 10);
+            });
+
+            Assert.That(_person.ObjectSchema.Where(p => p.IsExtraProperty).Select(p => p.Name),
+                Is.EquivalentTo(new[] { "prop1", "prop2" }));
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Unset("prop1");
+            });
+
+            Assert.That(_person.ObjectSchema.Where(p => p.IsExtraProperty).Select(p => p.Name),
+                Is.EquivalentTo(new[] { "prop2" }));
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Unset("prop2");
+            });
+
+            Assert.That(_person.ObjectSchema.Where(p => p.IsExtraProperty), Is.Empty);
+        }
+
+        [Test]
+        public void ObjectSchema_TryFindProperty_ReturnsExtraProperties()
+        {
+            bool foundProperty;
+            Schema.Property property;
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Set("prop1", "testval");
+            });
+
+            foundProperty = _person.ObjectSchema.TryFindProperty("prop1", out property);
+            Assert.That(foundProperty, Is.True);
+            Assert.That(property.IsExtraProperty, Is.True);
+            Assert.That(property.Name, Is.EqualTo("prop1"));
+
+            _realm.Write(() =>
+            {
+                _person.DynamicApi.Unset("prop1");
+            });
+
+            foundProperty = _person.ObjectSchema.TryFindProperty("prop1", out property);
+            Assert.That(foundProperty, Is.False);
         }
 
         /* Missing tests:
-         * - extendedSchema.HasProperty
-         * - extendedSchema.ExtraProperties
-         * - enumerated extended schema
-         * - extended schema with schema property not in data model
+         * - extended schema with schema property not in data model (need sync for this)
          * - open realm with/without relaxed schema config
-         * 
-         * 
+         * - subscribeForNotifications/property changes tests
+         * - keypath filtering
+         * - queries support using extra properties
+         * - support for asymmetric objects
+         * - all sync tests
          */
+
 
     }
 }

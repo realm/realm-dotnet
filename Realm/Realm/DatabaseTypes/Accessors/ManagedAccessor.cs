@@ -59,8 +59,17 @@ namespace Realms
         /// <inheritdoc/>
         public bool IsFrozen => Realm.IsFrozen;
 
+        //TODO This needs to be done in another way, probably with some lazy initizalization
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => Metadata.Schema;
+        public ObjectSchema ObjectSchema
+        {
+            get
+            {
+                var objSchemaCopy = Metadata.Schema.GetBuilder().Build();
+                objSchemaCopy.ObjectHandle = ObjectHandle;
+                return objSchemaCopy;
+            }
+        }
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;

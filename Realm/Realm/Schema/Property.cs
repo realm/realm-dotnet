@@ -101,6 +101,9 @@ namespace Realms.Schema
         /// </summary>
         public IndexType IndexType { get; }
 
+        //TODO Docs
+        public bool IsExtraProperty { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Property"/> struct.
         /// </summary>
@@ -111,7 +114,8 @@ namespace Realms.Schema
         /// <param name="isPrimaryKey">A flag indicating whether this property is a primary key. Sets <see cref="IsPrimaryKey"/>.</param>
         /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="managedName">The managed name of the property. Sets <see cref="ManagedName"/>.</param>
-        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None, string? managedName = null)
+        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None, 
+            string? managedName = null)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
@@ -176,6 +180,15 @@ namespace Realms.Schema
             LinkOriginPropertyName = nativeProperty.link_origin_property_name.ToDotnetString(treatEmptyAsNull: true);
             IsPrimaryKey = nativeProperty.is_primary;
             IndexType = nativeProperty.index;
+        }
+
+        //TODO Check if we can do better
+        internal Property(string name)
+        {
+            Name = name;
+            ManagedName = name;
+            Type = PropertyType.RealmValue | PropertyType.Nullable;
+            IsExtraProperty = true;
         }
 
         internal SchemaProperty ToNative(Arena arena) => new()
@@ -409,6 +422,13 @@ namespace Realms.Schema
             Argument.NotNullOrEmpty(originPropertyName, nameof(originPropertyName));
 
             return new Property(name, PropertyType.Array | PropertyType.LinkingObjects, originObjectType, originPropertyName, managedName: managedName);
+        }
+
+        internal static Property ExtraProperty(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return new Property(name);
         }
 
         internal static Property FromPropertyInfo(PropertyInfo prop)

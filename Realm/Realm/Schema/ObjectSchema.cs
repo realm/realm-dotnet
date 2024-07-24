@@ -24,6 +24,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Realms.Helpers;
 using Realms.Native;
 
@@ -73,18 +74,20 @@ namespace Realms.Schema
         /// <value>The number of persistent properties for the object.</value>
         public int Count => _properties.Count;
 
-        internal Property? PrimaryKeyProperty { get; }
-
-        internal Type? Type { get; private set; }
-
-        internal ReadOnlyDictionary<string, Property> Properties => _properties;
-
         /// <summary>
         /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
         /// </summary>
         /// <value>The type of ObjectSchema.</value>
         public ObjectType BaseType { get; }
+
+        internal Property? PrimaryKeyProperty { get; }
+
+        internal Type? Type { get; private set; }
+
+        internal ReadOnlyDictionary<string, Property> Properties => _properties;
+
+        internal ObjectHandle? ObjectHandle { get; set; }
 
         internal ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
         {
@@ -129,7 +132,23 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return _properties.TryGetValue(name, out property);
+            if (_properties.TryGetValue(name, out property))
+            {
+                return true;
+            }
+            else if (ObjectHandle?.HasProperty(name) is true) //TODO && relaxed_schema
+            {
+                property = Property.ExtraProperty(name);
+                return true;
+            }
+
+            return false;
+        }
+
+        //TODO Docs + Improve
+        public bool HasProperty(string name)
+        {
+            return TryFindProperty(name, out _);
         }
 
         /// <summary>
@@ -152,8 +171,20 @@ namespace Realms.Schema
             return builder;
         }
 
+        //TODO Check for correctness
         /// <inheritdoc/>
-        public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
+        public IEnumerator<Property> GetEnumerator()
+        {
+            var schemaEnumerable = _properties.Values.AsEnumerable();
+
+            if (ObjectHandle is not null) //TODO && relaxed_schema
+            {
+                var extraEnumerable = ObjectHandle.GetExtraProperties().Select(Property.ExtraProperty);
+                schemaEnumerable = schemaEnumerable.Concat(extraEnumerable);
+            }
+
+            return schemaEnumerable.GetEnumerator();
+        }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
