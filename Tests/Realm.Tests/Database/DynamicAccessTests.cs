@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
@@ -480,6 +479,7 @@ namespace Realms.Tests.Database
             RunTestInAllModes((realm, _) =>
             {
                 var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(AllTypesObject)));
+
                 Assert.Throws<MissingMemberException>(() => allTypesObject.DynamicApi.Get<string>("idontexist"));
             });
         }
@@ -572,6 +572,7 @@ namespace Realms.Tests.Database
                 realm.Write(() =>
                 {
                     var ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject));
+
                     Assert.Throws<MissingMemberException>(() => ato.DynamicApi.Set("idontexist", "foo"));
                 });
             });

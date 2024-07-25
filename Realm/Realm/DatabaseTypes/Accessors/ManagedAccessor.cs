@@ -84,17 +84,7 @@ namespace Realms
 #pragma warning restore CS8618
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
-            _objectSchema = new(() =>
-            {
-                if (Realm!.Config.RelaxedSchema)
-                {
-                    var objSchemaCopy = Metadata!.Schema.GetBuilder().Build();
-                    objSchemaCopy.ObjectHandle = ObjectHandle;
-                    return objSchemaCopy;
-                }
-
-                return Metadata!.Schema;
-            });
+            _objectSchema = new(() => Realm!.Config.RelaxedSchema ? Metadata!.Schema.MakeCopyWithHandle(ObjectHandle!) : Metadata!.Schema);
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]

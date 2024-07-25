@@ -111,6 +111,15 @@ namespace Realms.Schema
             }
         }
 
+        internal ObjectSchema(ObjectSchema schema, ObjectHandle objectHandle)
+        {
+            Name = schema.Name;
+            BaseType = schema.BaseType;
+            PrimaryKeyProperty = schema.PrimaryKeyProperty;
+            ObjectHandle = objectHandle;
+            _properties = schema.Properties;
+        }
+
         //TODO This seems to not have references, need to try to remove it and see if anything fails
         internal ObjectSchema(in SchemaObject native)
         {
@@ -208,6 +217,9 @@ namespace Realms.Schema
             properties = MarshaledVector<SchemaProperty>.AllocateFrom(this.Select(p => p.ToNative(arena)).ToArray(), arena),
             primary_key = StringValue.AllocateFrom(PrimaryKeyProperty?.Name, arena)
         };
+
+        // TODO We could remove this or the new constructor
+        internal ObjectSchema MakeCopyWithHandle(ObjectHandle handle) => new(this, handle);
 
         /// <summary>
         /// A mutable builder that allows you to construct an <see cref="ObjectSchema"/> instance.
