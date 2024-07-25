@@ -45,16 +45,12 @@ namespace Realms
 
         public IntPtr GetPropertyIndex(string propertyName)
         {
-            TryGetPropertyIndexInternal(propertyName, out var propertyIndex, throwOnMissing: true);
+            TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             return propertyIndex;
         }
 
-        public bool TryGetPropertyIndex(string propertyName, out IntPtr propertyIndex)
-        {
-            return TryGetPropertyIndexInternal(propertyName, out propertyIndex, throwOnMissing: false);
-        }
-
-        private bool TryGetPropertyIndexInternal(string propertyName, out IntPtr propertyIndex, bool throwOnMissing)
+        //TODO Should we keep this and get rid of the other one?
+        public bool TryGetPropertyIndex(string propertyName, out IntPtr propertyIndex, bool throwOnMissing)
         {
             if (PropertyIndices.TryGetValue(propertyName, out propertyIndex))
             {

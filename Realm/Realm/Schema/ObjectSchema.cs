@@ -24,7 +24,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using Realms.Helpers;
 using Realms.Native;
 
@@ -87,6 +86,10 @@ namespace Realms.Schema
 
         internal ReadOnlyDictionary<string, Property> Properties => _properties;
 
+        /// <summary>
+        /// Gets or sets the ObjectHandle. This should be set only if the realm is opened with
+        /// the relaxed schema enabled.
+        /// </summary>
         internal ObjectHandle? ObjectHandle { get; set; }
 
         internal ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
@@ -136,7 +139,7 @@ namespace Realms.Schema
             {
                 return true;
             }
-            else if (ObjectHandle?.HasProperty(name) is true) //TODO && relaxed_schema
+            else if (ObjectHandle?.HasProperty(name) is true)
             {
                 property = Property.ExtraProperty(name);
                 return true;
@@ -171,13 +174,14 @@ namespace Realms.Schema
             return builder;
         }
 
-        //TODO Check for correctness
+        // TODO Check for correctness
+        // Should we get the schema from core too?
         /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator()
         {
             var schemaEnumerable = _properties.Values.AsEnumerable();
 
-            if (ObjectHandle is not null) //TODO && relaxed_schema
+            if (ObjectHandle is not null)
             {
                 var extraEnumerable = ObjectHandle.GetExtraProperties().Select(Property.ExtraProperty);
                 schemaEnumerable = schemaEnumerable.Concat(extraEnumerable);

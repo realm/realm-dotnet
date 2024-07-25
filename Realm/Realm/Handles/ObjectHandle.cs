@@ -202,11 +202,9 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            //TODO Can we merge the two branches...?
-
-            if (!realm.Config.RelaxedSchema)
+            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex,
+                throwOnMissing: !realm.Config.RelaxedSchema))
             {
-                var propertyIndex = metadata.GetPropertyIndex(propertyName);
                 NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
                 nativeException.ThrowIfNecessary();
 
@@ -215,25 +213,14 @@ namespace Realms
             }
             else
             {
-                if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex))
-                {
-                    NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
-                    nativeException.ThrowIfNecessary();
+                using Arena arena = new();
+                var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-                    value = new RealmValue(result, realm, this, propertyIndex);
-                    return true;
-                }
-                else
-                {
-                    using Arena arena = new();
-                    var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+                var propFound = NativeMethods.get_value_by_name(this, propertyNameNative, out var result, throwOnMissingProperty, out var nativeException);
+                nativeException.ThrowIfNecessary();
 
-                    var propFound = NativeMethods.get_value_by_name(this, propertyNameNative, out var result, throwOnMissingProperty, out var nativeException);
-                    nativeException.ThrowIfNecessary();
-
-                    value = new RealmValue(result, realm, this);
-                    return propFound;
-                }
+                value = new RealmValue(result, realm, this);
+                return propFound;
             }
         }
 
@@ -241,9 +228,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            //TODO Can we merge the two branches...?
-
-            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex))
+            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: !realm.Config.RelaxedSchema))
             {
                 // We need to special-handle objects because they need to be managed before we can set them.
                 if (value.Type == RealmValueType.Object)
@@ -311,7 +296,7 @@ namespace Realms
                 handles?.Dispose();
                 nativeException.ThrowIfNecessary();
             }
-            else if(realm.Config.RelaxedSchema)
+            else
             {
                 using Arena arena = new();
                 var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);

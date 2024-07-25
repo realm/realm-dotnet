@@ -39,6 +39,8 @@ namespace Realms
     {
         private readonly Lazy<int> _hashCode;
 
+        private readonly Lazy<ObjectSchema> _objectSchema;
+
         private NotificationTokenHandle? _notificationToken;
 
         private Action<string>? _onNotifyPropertyChanged;
@@ -59,17 +61,8 @@ namespace Realms
         /// <inheritdoc/>
         public bool IsFrozen => Realm.IsFrozen;
 
-        //TODO This needs to be done in another way, probably with some lazy initizalization
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema
-        {
-            get
-            {
-                var objSchemaCopy = Metadata.Schema.GetBuilder().Build();
-                objSchemaCopy.ObjectHandle = ObjectHandle;
-                return objSchemaCopy;
-            }
-        }
+        public ObjectSchema ObjectSchema => _objectSchema.Value;
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
@@ -91,6 +84,17 @@ namespace Realms
 #pragma warning restore CS8618
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
+            _objectSchema = new(() =>
+            {
+                if (Realm!.Config.RelaxedSchema)
+                {
+                    var objSchemaCopy = Metadata!.Schema.GetBuilder().Build();
+                    objSchemaCopy.ObjectHandle = ObjectHandle;
+                    return objSchemaCopy;
+                }
+
+                return Metadata!.Schema;
+            });
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
