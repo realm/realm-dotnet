@@ -14,6 +14,8 @@ brew install pkl
 
 ## Building the workflows
 
+Run `pwsh .github/build-workflows.ps1` or the following bash script if you don't have/use powershell:
+
 ```bash
 cd $SolutionDir/.github/pkl-workflows
 for file in *.pkl ; do pkl eval $file -o  ../workflows/$(echo $file | sed s/pkl/yml/) ; done

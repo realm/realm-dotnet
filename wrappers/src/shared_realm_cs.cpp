@@ -48,7 +48,7 @@ using namespace realm::util;
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using ReleaseGCHandleT = void(void* managed_handle);
-using LogMessageT = void(realm_string_t message, util::Logger::Level level);
+using LogMessageT = void(util::Logger::Level level, realm_string_t category_name, realm_string_t message);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
@@ -99,7 +99,7 @@ namespace binding {
     protected:
         void do_log(const LogCategory& category, Level level, const std::string& message) override final
         {
-            s_log_message(to_capi(message), level);
+            s_log_message(level, to_capi(category.get_name()), to_capi(message));
         }
     };
 }
@@ -295,8 +295,31 @@ REALM_EXPORT void shared_realm_install_callbacks(
     LogCategory::realm.set_default_level_threshold(Logger::Level::info);
 }
 
-REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
-    LogCategory::realm.set_default_level_threshold(level);
+REALM_EXPORT Logger::Level shared_realm_get_log_level(uint16_t* category_name_buf, size_t category_name_len) {
+    Utf16StringAccessor category_name(category_name_buf, category_name_len);
+    return LogCategory::get_category(category_name).get_default_level_threshold();
+}
+
+REALM_EXPORT void shared_realm_set_log_level(Logger::Level level, uint16_t* category_name_buf, size_t category_name_len) {
+    Utf16StringAccessor category_name(category_name_buf, category_name_len);
+    LogCategory::get_category(category_name).set_default_level_threshold(level);
+}
+
+REALM_EXPORT TypeErasedMarshaledVector shared_realm_get_log_category_names() {
+    const auto names = LogCategory::get_category_names();
+    // Declare the vector as static in order to make it a globally allocated
+    // and keep the vector alive beyond this call.
+    static std::vector<realm_string_t> result;
+
+    // Check if it is empty before populating the result to prevent appending
+    // names on each invocation since the vector is global.
+    if (result.empty()) {
+        for (const auto name : names) {
+            result.push_back(to_capi(name));
+        }
+    }
+
+    return TypeErasedMarshaledVector::for_marshalling(result);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)

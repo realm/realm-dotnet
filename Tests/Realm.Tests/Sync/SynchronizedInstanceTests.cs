@@ -214,8 +214,8 @@ namespace Realms.Tests.Sync
 
                 await PopulateData(config);
 
-                var logger = new Logger.InMemoryLogger();
-                Logger.Default = logger;
+                var logger = new RealmLogger.InMemoryLogger();
+                RealmLogger.Default = logger;
 
                 config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = _ => throw new Exception("Exception in OnProgress");
@@ -726,9 +726,9 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncTimeouts_ArePassedCorrectlyToCore()
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
-            Logger.LogLevel = LogLevel.Debug;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
+            RealmLogger.SetLogLevel(LogLevel.Debug);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -802,8 +802,8 @@ namespace Realms.Tests.Sync
                 logs[level] = new();
             }
 
-            var regex = new Regex("Connection\\[\\d+]: Session\\[\\d+]");
-            var logger = Logger.Function((level, msg) =>
+            var regex = new Regex("Connection\\[\\d+] Session\\[\\d+]");
+            var logger = RealmLogger.Function((level, msg) =>
             {
                 if (regex.IsMatch(msg))
                 {
@@ -811,8 +811,8 @@ namespace Realms.Tests.Sync
                 }
             });
 
-            Logger.LogLevel = LogLevel.Info;
-            Logger.Default = logger;
+            RealmLogger.SetLogLevel(LogLevel.Info);
+            RealmLogger.Default = logger;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -824,7 +824,7 @@ namespace Realms.Tests.Sync
                 Assert.That(initialInfoLogs, Is.GreaterThan(0));
                 Assert.That(logs[LogLevel.Debug].Count, Is.EqualTo(0));
 
-                Logger.LogLevel = LogLevel.Debug;
+                RealmLogger.SetLogLevel(LogLevel.Debug);
 
                 realm.Write(() =>
                 {

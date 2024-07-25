@@ -77,15 +77,18 @@ internal partial class SyncSocketProvider : IDisposable
 
         provider._onWebSocketConnection?.Invoke(webSocket.Options);
 
-        var builder = new UriBuilder();
-        builder.Scheme = endpoint.is_ssl ? "wss" : "ws";
-        builder.Host = endpoint.address;
-        builder.Port = endpoint.port;
+        var builder = new UriBuilder
+        {
+            Scheme = endpoint.is_ssl ? "wss" : "ws",
+            Host = endpoint.address!,
+            Port = endpoint.port
+        };
+
         if (endpoint.path)
         {
             var pathAndQuery = ((string)endpoint.path)!.Split('?');
-            builder.Path = pathAndQuery.ElementAtOrDefault(0);
-            builder.Query = pathAndQuery.ElementAtOrDefault(1);
+            builder.Path = pathAndQuery.ElementAtOrDefault(0) ?? string.Empty;
+            builder.Query = pathAndQuery.ElementAtOrDefault(1) ?? String.Empty;
         }
 
         var socket = new Socket(webSocket, observer, provider._workQueue, builder.Uri);
@@ -128,18 +131,11 @@ internal partial class SyncSocketProvider : IDisposable
         NativeMethods.install_callbacks(post, dispose, create_timer, cancel_timer, websocket_connect, websocket_write, websocket_close);
     }
 
-    private struct Status
+    private struct Status(ErrorCode code, string? reason)
     {
-        internal ErrorCode Code;
-        internal string? Reason;
-        internal static readonly Status OperationAborted = new(ErrorCode.OperationAborted, "Operation canceled");
-        internal static readonly Status OK = new() { Code = ErrorCode.Ok };
-
-        public Status(ErrorCode code, string reason)
-        {
-            Code = code;
-            Reason = reason;
-        }
+        internal readonly string? Reason = reason;
+        internal readonly ErrorCode Code = code;
+        internal static readonly Status OK = new(ErrorCode.Ok, null);
     }
 
     /// <summary>
@@ -160,7 +156,7 @@ internal partial class SyncSocketProvider : IDisposable
 
     internal SyncSocketProvider(Action<ClientWebSocketOptions>? onWebSocketConnection)
     {
-        Logger.LogDefault(LogLevel.Debug, "Creating SyncSocketProvider.");
+        RealmLogger.Default.Log(LogLevel.Debug, "Creating SyncSocketProvider.");
         _onWebSocketConnection = onWebSocketConnection;
         _workQueue = Channel.CreateUnbounded<IWork>(new() { SingleReader = true });
         _workThread = Task.Run(WorkThread);
@@ -170,7 +166,7 @@ internal partial class SyncSocketProvider : IDisposable
 
     public void Dispose()
     {
-        Logger.LogDefault(LogLevel.Debug, "Destroying SyncSocketProvider.");
+        RealmLogger.Default.Log(LogLevel.Debug, "Destroying SyncSocketProvider.");
         _workQueue.Writer.Complete();
         _cts.Cancel();
         _cts.Dispose();

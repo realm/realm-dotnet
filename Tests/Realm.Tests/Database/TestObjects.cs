@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using MongoDB.Bson;
-using Realms.Tests.Database;
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
@@ -29,6 +23,12 @@ using TestRealmObject = Realms.RealmObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using MongoDB.Bson;
+using Realms.Tests.Database;
 
 namespace Realms.Tests
 {
@@ -522,7 +522,7 @@ namespace Realms.Tests
     {
         [MapTo("_id")]
         [PrimaryKey]
-        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
         public char CharProperty { get; set; }
 

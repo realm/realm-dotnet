@@ -29,10 +29,10 @@ namespace Realms.Tests.Database
     {
         private readonly RealmValueComparer _rvComparer = new();
 
-        public static Func<int, List<RealmValue>> ListGenerator = i => new List<RealmValue> { $"inner{i}", i };
-        public static Func<int, Dictionary<string, RealmValue>> DictGenerator = i => new Dictionary<string, RealmValue> { { "s1", i }, { "s2", $"ah{i}" } };
+        private static readonly Func<int, List<RealmValue>> ListGenerator = i => new List<RealmValue> { $"inner{i}", i };
+        private static readonly Func<int, Dictionary<string, RealmValue>> DictGenerator = i => new Dictionary<string, RealmValue> { { "s1", i }, { "s2", $"ah{i}" } };
 
-        public static Func<int, RealmValue>[] CollectionGenerators = new Func<int, RealmValue>[]
+        public static Func<int, RealmValue>[] CollectionGenerators =
         {
             i => (RealmValue)ListGenerator(i),
             i => (RealmValue)DictGenerator(i),
@@ -139,12 +139,13 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
+            // ReSharper disable once EqualExpressionComparison
 #pragma warning disable CS1718 // Comparison made to same variable
             Assert.That(rv == rv, Is.True);
 #pragma warning restore CS1718 // Comparison made to same variable
             Assert.That(rv.Equals(rv), Is.True);
 
-            // They contains the same values, but the collections do not point to the same object reference
+            // They contain the same values, but the collections do not point to the same object reference
             Assert.That(rv == rv2, Is.False);
             Assert.That(rv.Equals(rv2), Is.False);
 
@@ -633,12 +634,13 @@ namespace Realms.Tests.Database
                 rv = PersistAndFind(rv).RealmValueProperty;
             }
 
+            // ReSharper disable once EqualExpressionComparison
 #pragma warning disable CS1718 // Comparison made to same variable
             Assert.That(rv == rv, Is.True);
 #pragma warning restore CS1718 // Comparison made to same variable
             Assert.That(rv.Equals(rv), Is.True);
 
-            // They contains the same values, but the collections do not point to the same object reference
+            // They contain the same values, but the collections do not point to the same object reference
             Assert.That(rv == rv2, Is.False);
             Assert.That(rv.Equals(rv2), Is.False);
 

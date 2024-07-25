@@ -18,21 +18,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Serializers;
-#if !NETCOREAPP2_1_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-#endif
 
 namespace Baas
 {
@@ -229,6 +229,26 @@ namespace Baas
             return result;
         }
 
+        private class BaasArgs
+        {
+            public string? BaasaasApiKey { get; set; }
+
+            public string? BaasUrl { get; set; }
+
+            public string? BaasCluster { get; set; }
+
+            public string? BaasApiKey { get; set; }
+
+            public string? BaasPrivateApiKey { get; set; }
+
+            public string? BaasProjectId { get; set; }
+
+            public string BaasDifferentiator { get; set; } = "local";
+
+            [MemberNotNullWhen(false, nameof(BaasCluster), nameof(BaasApiKey), nameof(BaasPrivateApiKey), nameof(BaasProjectId))]
+            public bool UseDocker => BaasCluster == null;
+        }
+
         public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
         {
             if (args == null)
@@ -236,32 +256,30 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, remaining) = ExtractArguments(args, "baasaas-api-key", "baas-url", "baas-cluster",
-                "baas-api-key", "baas-private-api-key", "baas-projectid", "baas-differentiator");
+            var (extracted, remaining) = ExtractArguments<BaasArgs>(args);
 
-            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+            var differentiator = extracted.BaasDifferentiator;
 
             BaasClient client;
             Uri baseUri;
 
-            if (extracted.TryGetValue("baasaas-api-key", out var baasaasApiKey) && !string.IsNullOrEmpty(baasaasApiKey))
+            if (!string.IsNullOrEmpty(extracted.BaasaasApiKey))
             {
-                baseUri = await GetOrDeployContainer(baasaasApiKey, differentiator, output);
+                baseUri = await GetOrDeployContainer(extracted.BaasaasApiKey!, differentiator, output);
                 client = await Docker(baseUri, differentiator, output);
             }
             else
             {
-                if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
+                if (string.IsNullOrEmpty(extracted.BaasUrl))
                 {
                     return (null, null, remaining);
                 }
 
-                baseUri = new Uri(baseUrl);
-                var baasCluster = extracted.GetValueOrDefault("baascluster");
+                baseUri = new Uri(extracted.BaasUrl!);
 
-                client = string.IsNullOrEmpty(baasCluster)
+                client = extracted.UseDocker
                     ? await Docker(baseUri, differentiator, output)
-                    : await Atlas(baseUri, differentiator, output, baasCluster!, extracted["baasapikey"], extracted["baasprivateapikey"], extracted["baasprojectid"]);
+                    : await Atlas(baseUri, differentiator, output, extracted.BaasCluster, extracted.BaasApiKey, extracted.BaasPrivateApiKey, extracted.BaasProjectId);
             }
 
             return (client, baseUri, remaining);
@@ -274,16 +292,16 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var (extracted, _) = ExtractArguments(args, "baasaas-api-key", "baas-differentiator");
+            var (extracted, _) = ExtractArguments<BaasArgs>(args);
 
-            var differentiator = extracted.GetValueOrDefault("baas-differentiator", "local");
+            var differentiator = extracted.BaasDifferentiator;
 
-            if (!extracted.TryGetValue("baasaas-api-key", out var baaSaasApiKey) || string.IsNullOrEmpty(baaSaasApiKey))
+            if (string.IsNullOrEmpty(extracted.BaasaasApiKey))
             {
-                throw new InvalidOperationException("Need a BaaSaas API key to terminate containers");
+                throw new InvalidOperationException("Need a Baasaas API key to terminate containers");
             }
 
-            await StopContainer(baaSaasApiKey, differentiator, output);
+            await StopContainer(extracted.BaasaasApiKey!, differentiator, output);
         }
 
         public string GetSyncDatabaseName(string appType = AppConfigType.Default) => $"Sync_{Differentiator}_{appType}";
@@ -805,35 +823,40 @@ namespace Baas
             return content;
         }
 
-        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        // Extract arguments and populate a type T with the extracted values. Only string readwrite properties
+        // will be considered.
+        public static (T Extracted, string[] RemainingArgs) ExtractArguments<T>(string[] args)
+            where T : new()
         {
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var extracted = new Dictionary<string, string>();
-            var remainingArgs = new List<string>();
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!toExtract.Any(name => ExtractArg(i, name)))
-                {
-                    remainingArgs.Add(args[i]);
-                }
-            }
+            var argsToExtract = typeof(T).GetProperties()
+                .Where(p => p.PropertyType == typeof(string) && p is { CanRead: true, CanWrite: true })
+                .Select(p => (ArgName: GetArgName(p.Name), PropertyInfo: p))
+                .ToArray();
 
-            return (extracted, remainingArgs.ToArray());
+            var extracted = new T();
+            return (extracted, args.Where(a => !argsToExtract.Any(kvp => ExtractArg(a, kvp))).ToArray());
 
-            bool ExtractArg(int index, string name)
+            bool ExtractArg(string arg, (string ArgName, PropertyInfo Info) prop)
             {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
+                if (arg.StartsWith($"--{prop.ArgName}="))
                 {
-                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    prop.Info.SetValue(extracted, arg.Replace($"--{prop.ArgName}=", string.Empty));
                     return true;
                 }
 
                 return false;
+            }
+
+            static string GetArgName(string propertyName)
+            {
+                return Regex.Replace(propertyName, "(?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z0-9])", "-$1", RegexOptions.Compiled)
+                    .Trim()
+                    .ToLower();
             }
         }
 
@@ -1099,10 +1122,8 @@ namespace Baas
 
             private async Task<ContainerInfo> WaitForContainer(string containerId, int maxRetries = 100)
             {
-                while (maxRetries > 0)
+                for (var i = 0; i < maxRetries; i++)
                 {
-                    maxRetries -= 1;
-
                     try
                     {
                         var containers = await GetContainers();
@@ -1125,7 +1146,7 @@ namespace Baas
                     await Task.Delay(2000);
                 }
 
-                throw new Exception($"Container with id={containerId} was not found or ready after 100 retries");
+                throw new Exception($"Container with id={containerId} was not found or ready after {maxRetries} retries");
             }
 
             private async Task<T> CallEndpointAsync<T>(HttpMethod method, string relativePath, object? payload = null)

@@ -55,8 +55,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Migration_FromLittleEndianGuidFile([Values(true, false)] bool useLegacyRepresentation)
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
@@ -94,8 +94,8 @@ namespace Realms.Tests.Database
         [Test]
         public void PopulatingANewFile([Values(true, false)] bool useLegacyRepresentation)
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
@@ -171,8 +171,8 @@ namespace Realms.Tests.Database
         [Test]
         public void UnmigratedRealm_WhenOpenedAsReadonly_LogsAMessageAndDoesntChangeFile()
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
             TestHelpers.CopyBundledFileToDocuments("guids.realm", _configuration.DatabasePath);
 
             _configuration.IsReadOnly = true;
@@ -213,8 +213,8 @@ namespace Realms.Tests.Database
                 // Open the Realm to migrate it
             }
 
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
             _configuration.IsReadOnly = true;
 
@@ -243,8 +243,8 @@ namespace Realms.Tests.Database
         {
             // This tests that a file that doesn't appear to have little-endian guids is not migrated
             // See comment in guid_representation_migration.cpp/flip_guid
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
             TestHelpers.CopyBundledFileToDocuments("bad-guids.realm", _configuration.DatabasePath);
 
@@ -273,8 +273,8 @@ namespace Realms.Tests.Database
             // This tests that a file that contains both ambiguous (xxxxxxxx-xxxx-4x4x-xxxx-xxxxxxxx) and unambiguous guids
             // does get migrated.
             // See comment in guid_representation_migration.cpp/flip_guid
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
             TestHelpers.CopyBundledFileToDocuments("mixed-guids.realm", _configuration.DatabasePath);
 
@@ -301,8 +301,8 @@ namespace Realms.Tests.Database
         [Test]
         public void SynchronizedRealm_DoesntMigrate([Values(true, false)] bool useLegacyRepresentation)
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;

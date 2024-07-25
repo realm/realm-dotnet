@@ -58,7 +58,7 @@ namespace Realms.Sync
                 }
                 catch (Exception ex)
                 {
-                    Logger.Default.Log(LogLevel.Warn, $"An error occurred while reporting progress: {ex}");
+                    RealmLogger.Default.Log(LogLevel.Warn, $"An error occurred while reporting progress: {ex}");
                 }
             });
         }

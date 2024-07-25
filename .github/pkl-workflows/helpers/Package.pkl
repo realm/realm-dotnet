@@ -116,4 +116,27 @@ local const function buildDocs(condition: String): Listing<gha.Step> = new {
     }
     run = "C:\\docfx\\docfx Docs/docfx.json"
   }
+  new {
+    name = "Update Improve this doc links"
+    `if` = condition
+    run = """
+      Get-ChildItem Docs/_site -Filter *.html -Recurse -File |
+      ForEach-Object {
+        $content = ($_ | Get-Content -Raw)
+        $content = $content -replace "/Docs/apispec/new\\?filename", "/Docs/apispec?filename"
+        Set-Content $_.FullName $content
+      }
+      """
+    shell = "pwsh"
+  }
+  new {
+    name = "Archive docs"
+    `if` = condition
+    run = """
+      Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+      """
+  }
+  (Steps.uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip")) {
+    `if` = condition
+  }
 }

@@ -50,6 +50,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.Object("LinkDifferentType", "Person", managedName: "LinkDifferentType"),
             Realms.Schema.Property.Object("LinkAnotherType", "Owner", managedName: "LinkAnotherType"),
             Realms.Schema.Property.Backlinks("Backlink", "TestNotificationObject", "LinkSameType", managedName: "Backlink"),
+            Realms.Schema.Property.Object("EmbeddedObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedObject"),
         }.Build();
 
         #region IRealmObject implementation
@@ -141,6 +142,7 @@ namespace Realms.Tests.Database
                     newAccessor.Realm.Add(oldAccessor.LinkAnotherType, update);
                 }
                 newAccessor.LinkAnotherType = oldAccessor.LinkAnotherType;
+                newAccessor.EmbeddedObject = oldAccessor.EmbeddedObject;
             }
 
             if (_propertyChanged != null)
@@ -342,6 +344,8 @@ namespace Realms.Tests.Database
             Realms.Tests.Owner? LinkAnotherType { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
+
+            Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -516,6 +520,12 @@ namespace Realms.Tests.Database
                     return _backlink;
                 }
             }
+
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject
+            {
+                get => (Realms.Tests.EmbeddedIntPropertyObject?)GetValue("EmbeddedObject");
+                set => SetValue("EmbeddedObject", value);
+            }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -598,6 +608,17 @@ namespace Realms.Tests.Database
 
             public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
+            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObject;
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject
+            {
+                get => _embeddedObject;
+                set
+                {
+                    _embeddedObject = value;
+                    RaisePropertyChanged("EmbeddedObject");
+                }
+            }
+
             public TestNotificationObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
@@ -612,6 +633,7 @@ namespace Realms.Tests.Database
                     "LinkDifferentType" => _linkDifferentType,
                     "LinkAnotherType" => _linkAnotherType,
                     "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    "EmbeddedObject" => _embeddedObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -634,6 +656,9 @@ namespace Realms.Tests.Database
                         return;
                     case "LinkAnotherType":
                         LinkAnotherType = (Realms.Tests.Owner?)val;
+                        return;
+                    case "EmbeddedObject":
+                        EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -702,6 +727,7 @@ namespace Realms.Tests.Database
                 WriteDictionary(context, args, "DictionaryRemappedType", value.DictionaryRemappedType);
                 WriteValue(context, args, "LinkDifferentType", value.LinkDifferentType);
                 WriteValue(context, args, "LinkAnotherType", value.LinkAnotherType);
+                WriteValue(context, args, "EmbeddedObject", value.EmbeddedObject);
 
                 context.Writer.WriteEndDocument();
             }
@@ -726,6 +752,9 @@ namespace Realms.Tests.Database
                         break;
                     case "LinkAnotherType":
                         instance.LinkAnotherType = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Owner?>()!.DeserializeById(context);
+                        break;
+                    case "EmbeddedObject":
+                        instance.EmbeddedObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedIntPropertyObject?>().Deserialize(context);
                         break;
                     case "ListSameType":
                     case "SetSameType":

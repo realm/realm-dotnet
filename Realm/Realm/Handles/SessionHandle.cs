@@ -42,7 +42,7 @@ namespace Realms.Sync
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes, double progressEstimate);
+            public delegate void SessionProgressCallback(IntPtr progress_token_ptr, double progressEstimate);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
@@ -325,7 +325,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
+                RealmLogger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
             }
         }
 
@@ -359,7 +359,7 @@ namespace Realms.Sync
             catch (Exception ex)
             {
                 var handlerType = syncConfig is null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnBeforeReset during a client reset: {ex}");
+                RealmLogger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnBeforeReset during a client reset: {ex}");
 
                 var exHandle = GCHandle.Alloc(ex);
                 return GCHandle.ToIntPtr(exHandle);
@@ -397,7 +397,7 @@ namespace Realms.Sync
             catch (Exception ex)
             {
                 var handlerType = syncConfig is null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnAfterReset during a client reset: {ex}");
+                RealmLogger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnAfterReset during a client reset: {ex}");
 
                 var exHandle = GCHandle.Alloc(ex);
                 return GCHandle.ToIntPtr(exHandle);
@@ -405,13 +405,10 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
-        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes, double progressEstimate)
+        private static void HandleSessionProgress(IntPtr tokenPtr, double progressEstimate)
         {
             var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
-
-            // This is used to provide a reasonable progress estimate until the core work is done
-            double managedProgressEstimate = transferableBytes > 0.0 ? transferredBytes / transferableBytes : 1.0;
-            token?.Notify(managedProgressEstimate);
+            token?.Notify(progressEstimate);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
@@ -463,7 +460,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while raising a property changed event: {ex}");
+                RealmLogger.Default.Log(LogLevel.Error, $"An error has occurred while raising a property changed event: {ex}");
             }
         }
 

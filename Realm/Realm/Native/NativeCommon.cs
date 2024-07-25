@@ -96,7 +96,7 @@ namespace Realms
             {
                 if (Interlocked.CompareExchange(ref _isInitialized, 0, 1) == 1)
                 {
-                    Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
+                    RealmLogger.Default.Log(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
 
                     var sw = new Stopwatch();
                     sw.Start();
@@ -106,12 +106,12 @@ namespace Realms
                     SharedRealmHandle.ForceCloseNativeRealms();
 
                     sw.Stop();
-                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                    RealmLogger.Default.Log(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
+                RealmLogger.Default.Log(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
             }
         }
 

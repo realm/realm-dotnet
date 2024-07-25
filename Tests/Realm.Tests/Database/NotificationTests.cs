@@ -53,8 +53,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
-            var logger = new Logger.InMemoryLogger();
-            Logger.Default = logger;
+            var logger = new RealmLogger.InMemoryLogger();
+            RealmLogger.Default = logger;
             _realm.NotifyError(new Exception());
 
             Assert.That(logger.GetLog(), Does.Contain("exception").And.Contains("Realm.Error"));
@@ -74,6 +74,53 @@ namespace Realms.Tests.Database
                 _realm.Refresh();
                 Assert.That(changes, Is.Not.Null);
                 Assert.That(changes!.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+            }
+        }
+
+        [Test]
+        public void Results_WhenEmbeddedObjectIsModified_Notifies()
+        {
+            var query = _realm.All<TestNotificationObject>();
+            var actualChanges = new List<ChangeSet?>();
+            void OnNotification(IRealmCollection<TestNotificationObject> collection, ChangeSet? changes) => actualChanges.Add(changes);
+
+            Assert.That(query.Count, Is.EqualTo(0));
+
+            using (query.SubscribeForNotifications(OnNotification))
+            {
+                _realm.Refresh();
+
+                // Notification from subscribing.
+                Assert.That(actualChanges.Count, Is.EqualTo(1));
+
+                var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(2));
+                Assert.That(actualChanges[1], Is.Not.Null);
+                Assert.That(actualChanges[1]!.InsertedIndices, Is.EquivalentTo(new[] { 0 }));
+
+                _realm.Write(() =>
+                {
+                    testObject.EmbeddedObject = new EmbeddedIntPropertyObject { Int = 1 };
+                });
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(3));
+                Assert.That(actualChanges[2], Is.Not.Null);
+                Assert.That(actualChanges[2]!.NewModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+                Assert.That(actualChanges[2]!.ModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+
+                _realm.Write(() =>
+                {
+                    testObject.EmbeddedObject!.Int++;
+                });
+
+                _realm.Refresh();
+                Assert.That(actualChanges.Count, Is.EqualTo(4));
+                Assert.That(actualChanges[3], Is.Not.Null);
+                Assert.That(actualChanges[3]!.NewModifiedIndices, Is.EquivalentTo(new[] { 0 }));
+                Assert.That(actualChanges[3]!.ModifiedIndices, Is.EquivalentTo(new[] { 0 }));
             }
         }
 
