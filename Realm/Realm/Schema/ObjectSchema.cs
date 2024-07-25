@@ -123,6 +123,7 @@ namespace Realms.Schema
             }
         }
 
+        // TODO Fix docs
         /// <summary>
         /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
         /// Failure to find means it is not regarded as a property to persist in a <see cref="Realm"/>.
@@ -148,7 +149,7 @@ namespace Realms.Schema
             return false;
         }
 
-        //TODO Docs + Improve
+        // TODO Docs
         public bool HasProperty(string name)
         {
             return TryFindProperty(name, out _);

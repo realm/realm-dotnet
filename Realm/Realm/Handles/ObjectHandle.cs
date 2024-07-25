@@ -197,7 +197,7 @@ namespace Realms
             return TryGetValueInternal(propertyName, metadata, realm, out value, throwOnMissingProperty: false);
         }
 
-        internal bool TryGetValueInternal(string propertyName, Metadata metadata, Realm realm, out RealmValue value,
+        private bool TryGetValueInternal(string propertyName, Metadata metadata, Realm realm, out RealmValue value,
             bool throwOnMissingProperty)
         {
             EnsureIsOpen();
@@ -351,7 +351,7 @@ namespace Realms
             return TryUnsetPropertyInternal(propertyName, throwOnUnsuccessful: false);
         }
 
-        public bool TryUnsetPropertyInternal(string propertyName, bool throwOnUnsuccessful)
+        private bool TryUnsetPropertyInternal(string propertyName, bool throwOnUnsuccessful)
         {
             EnsureIsOpen();
 
@@ -373,7 +373,7 @@ namespace Realms
             return value.ToEnumerable().Select(v => v.ToDotnetString()!);
         }
 
-        internal bool HasProperty(string propertyName)
+        public bool HasProperty(string propertyName)
         {
             EnsureIsOpen();
 
