@@ -150,6 +150,8 @@ namespace Baas
 
         private readonly HttpClient _client = new();
 
+        private readonly string? _mongodbConnString;
+
         private readonly string? _clusterName;
 
         private readonly TextWriter _output;
@@ -190,18 +192,24 @@ namespace Baas
             BsonSerializer.RegisterSerializer(new ObjectSerializer(_ => true));
         }
 
-        private BaasClient(Uri baseUri, string differentiator, TextWriter output, string? clusterName = null)
+        private BaasClient(
+            Uri baseUri,
+            string differentiator,
+            TextWriter output,
+            string? clusterName = null,
+            string? mongodbConnString = null)
         {
             _client.BaseAddress = new Uri(baseUri, "api/admin/v3.0/");
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
             _clusterName = clusterName;
+            _mongodbConnString = mongodbConnString;
             Differentiator = differentiator;
             _output = output;
         }
 
-        public static async Task<BaasClient> Docker(Uri baseUri, string differentiator, TextWriter output)
+        public static async Task<BaasClient> Docker(Uri baseUri, string differentiator, TextWriter output, string? mongodbConnString)
         {
-            var result = new BaasClient(baseUri, differentiator, output);
+            var result = new BaasClient(baseUri, differentiator, output, mongodbConnString: mongodbConnString);
 
             await result.Authenticate("local-userpass", new
             {
@@ -217,7 +225,7 @@ namespace Baas
 
         public static async Task<BaasClient> Atlas(Uri baseUri, string differentiator, TextWriter output, string clusterName, string apiKey, string privateApiKey, string groupId)
         {
-            var result = new BaasClient(baseUri, differentiator, output, clusterName);
+            var result = new BaasClient(baseUri, differentiator, output, clusterName: clusterName);
             await result.Authenticate("mongodb-cloud", new
             {
                 username = apiKey,
@@ -234,6 +242,8 @@ namespace Baas
             public string? BaasaasApiKey { get; set; }
 
             public string? BaasUrl { get; set; }
+
+            public string? MongodbConnectionString { get; set; }
 
             public string? BaasCluster { get; set; }
 
@@ -266,7 +276,7 @@ namespace Baas
             if (!string.IsNullOrEmpty(extracted.BaasaasApiKey))
             {
                 baseUri = await GetOrDeployContainer(extracted.BaasaasApiKey!, differentiator, output);
-                client = await Docker(baseUri, differentiator, output);
+                client = await Docker(baseUri, differentiator, output, extracted.MongodbConnectionString);
             }
             else
             {
@@ -278,7 +288,7 @@ namespace Baas
                 baseUri = new Uri(extracted.BaasUrl!);
 
                 client = extracted.UseDocker
-                    ? await Docker(baseUri, differentiator, output)
+                    ? await Docker(baseUri, differentiator, output, extracted.MongodbConnectionString)
                     : await Atlas(baseUri, differentiator, output, extracted.BaasCluster, extracted.BaasApiKey, extracted.BaasPrivateApiKey, extracted.BaasProjectId);
             }
 
@@ -673,10 +683,12 @@ namespace Baas
 
         private async Task<string> CreateMongodbService(BaasApp app, object syncConfig)
         {
-            var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
-            object mongoConfig = _clusterName == null ? new { uri = "mongodb://localhost:26000" } : new { clusterName = _clusterName };
+            var datasourceType = _clusterName == null ? "mongodb" : "mongodb-atlas";
+            object mongoConfig = _clusterName == null
+                ? new { uri = _mongodbConnString ?? "mongodb://localhost:26000" }
+                : new { clusterName = _clusterName };
 
-            var mongoServiceId = await CreateService(app, "BackingDB", serviceName, mongoConfig);
+            var mongoServiceId = await CreateService(app, "BackingDB", datasourceType, mongoConfig);
 
             // The cluster linking must be separated from enabling sync because Atlas
             // takes a few seconds to provision a user for BaaS, meaning enabling sync
