@@ -65,7 +65,7 @@ struct Configuration
 
     bool automatically_migrate_embedded;
 
-    bool flexible_schema;
+    bool relaxed_schema;
 };
 
 struct SyncConfiguration
