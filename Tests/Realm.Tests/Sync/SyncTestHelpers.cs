@@ -185,7 +185,7 @@ namespace Realms.Tests.Sync
             if (_baaSaasApiKey != null)
             {
                 BaasUri = await BaasClient.GetOrDeployContainer(_baaSaasApiKey, differentiator, TestHelpers.Output);
-                _baasClient = await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output);
+                _baasClient = await BaasClient.Docker(BaasUri, differentiator, TestHelpers.Output, null);
             }
             else if (!string.IsNullOrEmpty(cluster) &&
                 !string.IsNullOrEmpty(apiKey) &&
@@ -194,12 +194,8 @@ namespace Realms.Tests.Sync
             {
                 _baasClient = await BaasClient.Atlas(BaasUri!, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
-            else
-            {
-                _baasClient = await BaasClient.Docker(BaasUri!, "local", TestHelpers.Output);
-            }
 
-            _apps = await _baasClient.GetOrCreateApps();
+            _apps = await _baasClient!.GetOrCreateApps();
         }
 
         public static Task SetRecoveryModeOnServer(string appConfigType, bool enabled)
