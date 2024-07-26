@@ -314,7 +314,7 @@ REALM_EXPORT TypeErasedMarshaledVector shared_realm_get_log_category_names() {
     // Check if it is empty before populating the result to prevent appending
     // names on each invocation since the vector is global.
     if (result.empty()) {
-        for (const auto name : names) {
+        for (const StringData name : names) {
             result.push_back(to_capi(name));
         }
     }
