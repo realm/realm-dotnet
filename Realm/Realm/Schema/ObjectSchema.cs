@@ -145,13 +145,25 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            if (_properties.TryGetValue(name, out property))
+            if (TryFindModelProperty(name, out property))
             {
                 return true;
             }
+            //TODO This is not 100% correct, because this will return also schema properties, not only extra ones
+            // We need to return both schema and extra properties here.
             else if (ObjectHandle?.HasProperty(name) is true)
             {
                 property = Property.ExtraProperty(name);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal bool TryFindModelProperty(string name, out Property property)
+        {
+            if (_properties.TryGetValue(name, out property))
+            {
                 return true;
             }
 

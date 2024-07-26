@@ -33,9 +33,12 @@ namespace Realms
     {
         private readonly ManagedAccessor _managedAccessor;
 
+        private readonly bool _isRelaxedSchema;
+
         internal DynamicObjectApi(ManagedAccessor managedAccessor)
         {
             _managedAccessor = managedAccessor;
+            _isRelaxedSchema = managedAccessor.Realm.Config.RelaxedSchema;
         }
 
         /// <summary>
@@ -60,7 +63,13 @@ namespace Realms
         //TODO Add docs
         public RealmValue Get(string propertyName)
         {
-            if (GetProperty(propertyName) is Property property)
+            /* It would be nice if we could just call managedAccesor.GetValue but...
+             * - RealmValue does not support sets
+             * - What happens with backlinks?
+             * 
+             * Because of this we have two different lanes: for model properties and extra properties
+             */
+            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
             {
                 if (property.Type.IsComputed())
                 {
@@ -103,9 +112,10 @@ namespace Realms
             return false;
         }
 
+        // TODO Should we rewrite Get to use TryGet...?
         public bool TryGet(string propertyName, out RealmValue propertyValue)
         {
-            if (GetProperty(propertyName) is Property property)
+            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
             {
                 if (property.Type.IsComputed())
                 {
@@ -143,7 +153,7 @@ namespace Realms
         /// <param name="value">The new value of the property.</param>
         public void Set(string propertyName, RealmValue value)
         {
-            if (GetProperty(propertyName) is Property property)
+            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
             {
                 if (property.Type.IsComputed())
                 {
@@ -205,7 +215,7 @@ namespace Realms
         /// </returns>
         public IQueryable<IRealmObjectBase> GetBacklinks(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsComputed);
 
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
@@ -255,7 +265,7 @@ namespace Realms
         /// </remarks>
         public IList<T> GetList<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsList);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsList);
 
             var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
@@ -277,7 +287,7 @@ namespace Realms
         /// </remarks>
         public ISet<T> GetSet<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsSet);
 
             var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
@@ -299,7 +309,7 @@ namespace Realms
         /// </remarks>
         public IDictionary<string, T> GetDictionary<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsDictionary);
 
             var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
@@ -307,10 +317,17 @@ namespace Realms
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property? GetProperty(string propertyName)
+        private Property? GetModelProperty(string propertyName, bool throwOnMissing)
         {
-            if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
+            Argument.NotNull(propertyName, nameof(propertyName));
+
+            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
             {
+                if (throwOnMissing)
+                {
+                    throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
+                }
+
                 return null;
             }
 
@@ -318,11 +335,11 @@ namespace Realms
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
+        private Property GetModelProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
         {
             Argument.NotNull(propertyName, nameof(propertyName));
 
-            if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
+            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
             {
                 throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
             }

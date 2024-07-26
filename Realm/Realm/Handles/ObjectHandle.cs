@@ -32,6 +32,13 @@ namespace Realms
     {
         private static class NativeMethods
         {
+            //TODO A test to see if this works with .NET Framework
+            [StructLayout(LayoutKind.Sequential)]
+            public struct StringsContainer
+            {
+                public MarshaledVector<StringValue> Strings;
+            }
+
 #pragma warning disable IDE0049 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
 
@@ -65,7 +72,7 @@ namespace Realms
 
             //TODO Need to check if this works with .NET Framework
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_extra_properties", CallingConvention = CallingConvention.Cdecl)]
-            public static extern MarshaledVector<StringValue> get_extra_properties(ObjectHandle handle, out NativeException ex);
+            public static extern StringsContainer get_extra_properties(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_has_property", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool has_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
@@ -370,7 +377,7 @@ namespace Realms
             var value = NativeMethods.get_extra_properties(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return value.ToEnumerable().Select(v => v.ToDotnetString()!);
+            return value.Strings.ToEnumerable().Select(v => v.ToDotnetString()!);
         }
 
         public bool HasProperty(string propertyName)
