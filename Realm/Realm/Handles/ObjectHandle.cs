@@ -32,13 +32,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-            //TODO A test to see if this works with .NET Framework
-            [StructLayout(LayoutKind.Sequential)]
-            public struct StringsContainer
-            {
-                public MarshaledVector<StringValue> Strings;
-            }
-
 #pragma warning disable IDE0049 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
 
