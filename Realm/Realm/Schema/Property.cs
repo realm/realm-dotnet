@@ -186,6 +186,7 @@ namespace Realms.Schema
             LinkOriginPropertyName = nativeProperty.link_origin_property_name.ToDotnetString(treatEmptyAsNull: true);
             IsPrimaryKey = nativeProperty.is_primary;
             IndexType = nativeProperty.index;
+            IsExtraProperty = nativeProperty.is_extra_property;
         }
 
         internal SchemaProperty ToNative(Arena arena) => new()

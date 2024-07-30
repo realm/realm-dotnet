@@ -37,6 +37,7 @@ struct SchemaProperty
     PropertyType type;
     bool is_primary;
     IndexType index;
+    bool is_extra_property;
     
     static SchemaProperty for_marshalling(const Property&);
 };

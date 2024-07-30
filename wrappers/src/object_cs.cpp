@@ -178,6 +178,37 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT bool object_get_property(const Object& object, realm_string_t property_name, SchemaProperty* property, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto prop_name = capi_to_std(property_name);
+            auto prop = object.get_object_schema().property_for_name(prop_name);
+            if (prop != nullptr)
+            {
+                *property = SchemaProperty::for_marshalling(*prop);
+                return true;
+            }
+
+            if (object.get_obj().has_property(prop_name))
+            {
+                *property = SchemaProperty{
+                    property_name,
+                    property_name,
+                    realm_string_t { },
+                    realm_string_t { },
+                    PropertyType::Mixed | PropertyType::Nullable,
+                    false,
+                    IndexType::None,
+                    true,
+                };
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
     REALM_EXPORT void object_set_value(Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {

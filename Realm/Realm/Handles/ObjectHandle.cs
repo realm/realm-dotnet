@@ -63,7 +63,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value_by_name", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_collection_value_by_name(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
 
-            //TODO Need to check if this works with .NET Framework
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_extra_properties", CallingConvention = CallingConvention.Cdecl)]
             public static extern StringsContainer get_extra_properties(ObjectHandle handle, out NativeException ex);
 
@@ -119,6 +118,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_schema", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool get_property(ObjectHandle objectHandle, StringValue propertyName, out SchemaProperty property, out NativeException ex);
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Naming Styles
         }
@@ -184,6 +185,26 @@ namespace Realms
             }
 
             return result!;
+        }
+
+        public bool TryGetProperty(string propertyName, out Property property)
+        {
+            EnsureIsOpen();
+
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            var propertyFound = NativeMethods.get_property(this, propertyNameNative, out var schemaProp, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            if (propertyFound)
+            {
+                property = new Property(schemaProp);
+                return true;
+            }
+
+            property = default;
+            return false;
         }
 
         public RealmValue GetValue(string propertyName, Metadata metadata, Realm realm)

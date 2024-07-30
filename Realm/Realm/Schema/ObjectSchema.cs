@@ -120,18 +120,6 @@ namespace Realms.Schema
             _properties = schema.Properties;
         }
 
-        //TODO This seems to not have references, need to try to remove it and see if anything fails
-        internal ObjectSchema(in SchemaObject native)
-        {
-            Name = native.name!;
-            BaseType = native.table_type;
-            _properties = new(native.properties.ToEnumerable().ToDictionary(p => (string)p.name!, p => new Property(p)));
-            if (native.primary_key)
-            {
-                PrimaryKeyProperty = _properties[native.primary_key!];
-            }
-        }
-
         // TODO Fix docs
         /// <summary>
         /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
@@ -145,15 +133,13 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
+            if (ObjectHandle is not null)
+            {
+                return ObjectHandle.TryGetProperty(name, out property);
+            }
+
             if (TryFindModelProperty(name, out property))
             {
-                return true;
-            }
-            //TODO This is not 100% correct, because this will return also schema properties, not only extra ones
-            // We need to return both schema and extra properties here.
-            else if (ObjectHandle?.HasProperty(name) is true)
-            {
-                property = Property.ExtraProperty(name);
                 return true;
             }
 
@@ -173,7 +159,12 @@ namespace Realms.Schema
         // TODO Docs
         public bool HasProperty(string name)
         {
-            return TryFindProperty(name, out _);
+            if (ObjectHandle is not null)
+            {
+                return ObjectHandle.HasProperty(name);
+            }
+
+            return _properties.ContainsKey(name);
         }
 
         /// <summary>
@@ -196,18 +187,21 @@ namespace Realms.Schema
             return builder;
         }
 
-        // TODO Check for correctness
-        // Should we get the schema from core too?
         /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator()
         {
-            var schemaEnumerable = _properties.Values.AsEnumerable();
-
             if (ObjectHandle is not null)
             {
+                //TODO We should do this in one call, not two
                 var extraEnumerable = ObjectHandle.GetExtraProperties().Select(Property.ExtraProperty);
-                schemaEnumerable = schemaEnumerable.Concat(extraEnumerable);
+
+                var onDiskSchema = ObjectHandle.GetSchema();
+                extraEnumerable = extraEnumerable.Concat(onDiskSchema.First());
+
+                return extraEnumerable.GetEnumerator();
             }
+
+            var schemaEnumerable = _properties.Values.AsEnumerable();
 
             return schemaEnumerable.GetEnumerator();
         }
