@@ -43,13 +43,6 @@ namespace Realms
             Schema = schema;
         }
 
-        public IntPtr GetPropertyIndex(string propertyName)
-        {
-            TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
-            return propertyIndex;
-        }
-
-        //TODO Should we keep this and get rid of the other one?
         public bool TryGetPropertyIndex(string propertyName, out IntPtr propertyIndex, bool throwOnMissing)
         {
             if (PropertyIndices.TryGetValue(propertyName, out propertyIndex))

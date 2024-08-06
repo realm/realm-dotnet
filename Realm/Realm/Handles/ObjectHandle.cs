@@ -420,7 +420,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
 
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -446,7 +446,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -459,7 +459,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -472,7 +472,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -485,7 +485,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(Root!, objPtr);
@@ -505,7 +505,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -516,7 +516,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
