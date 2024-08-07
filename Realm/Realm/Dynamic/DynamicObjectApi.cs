@@ -63,40 +63,8 @@ namespace Realms
         //TODO Add docs
         public RealmValue Get(string propertyName)
         {
-            /* It would be nice if we could just call managedAccesor.GetValue but...
-             * - RealmValue does not support sets
-             * - What happens with backlinks?
-             * 
-             * Because of this we have two different lanes: for model properties and extra properties
-             */
-            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
-            {
-                if (property.Type.IsComputed())
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
-                }
-
-                if (property.Type.IsCollection(out var collectionType))
-                {
-                    var collectionMethodName = collectionType switch
-                    {
-                        PropertyType.Array => "GetList",
-                        PropertyType.Set => "GetSet",
-                        PropertyType.Dictionary => "GetDictionary",
-                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
-                    };
-
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
-                }
-
-                return _managedAccessor.GetValue(propertyName);
-            }
-            else
-            {
-                return _managedAccessor.GetValue(propertyName);
-            }
+            TryGet(propertyName, out var value);
+            return value;
         }
 
         public bool TryGet<T>(string propertyName, out T? propertyValue)
@@ -112,9 +80,11 @@ namespace Realms
             return false;
         }
 
-        // TODO Should we rewrite Get to use TryGet...?
         public bool TryGet(string propertyName, out RealmValue propertyValue)
         {
+            // It would be nice if we could just call managedAccesor.GetValue but RealmValue does not support sets
+            // With this, developers still need to use the specific methods like GetList to get collections, should we merge this? Probably yes
+            // (but sets still would need to have a separate lane...)
             if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
             {
                 if (property.Type.IsComputed())
