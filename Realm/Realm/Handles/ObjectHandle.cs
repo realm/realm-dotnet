@@ -166,7 +166,8 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        public ObjectSchema GetSchema(bool includeExtraProperties = false)
+        //TODO This one should return an object schema not a RealmSchema
+        public RealmSchema GetSchema(bool includeExtraProperties = false)
         {
             EnsureIsOpen();
 
@@ -176,7 +177,7 @@ namespace Realms
 
             try
             {
-                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
+                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), includeExtraProperties, out var nativeException);
                 nativeException.ThrowIfNecessary();
             }
             finally
@@ -384,6 +385,7 @@ namespace Realms
             return propertyFound;
         }
 
+        //TODO This is not used atm. We could remove it
         public IEnumerable<string> GetExtraProperties()
         {
             EnsureIsOpen();

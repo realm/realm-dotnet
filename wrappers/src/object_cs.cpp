@@ -173,8 +173,22 @@ extern "C" {
     {
         handle_errors(ex, [&]() {
             auto& object_schema = object.get_object_schema();
-            Schema schema({object_schema});
-            send_schema_to_managed(schema, managed_callback);
+
+            std::vector<SchemaProperty> schema_properties;
+            SchemaObject converted_schema;
+
+            if (include_extra_properties)
+            {
+                converted_schema = SchemaObject::for_marshalling(object_schema, schema_properties, object.get_obj().get_additional_properties());
+            }
+            else
+            {
+                converted_schema = SchemaObject::for_marshalling(object_schema, schema_properties);
+            }
+
+            std::vector<SchemaObject> schema_objects;
+            schema_objects.push_back(converted_schema);
+            s_get_native_schema({ schema_objects }, managed_callback);
         });
     }
 
@@ -191,16 +205,18 @@ extern "C" {
 
             if (object.get_obj().has_property(prop_name))
             {
-                *property = SchemaProperty{
-                    property_name,
-                    property_name,
-                    realm_string_t { },
-                    realm_string_t { },
-                    PropertyType::Mixed | PropertyType::Nullable,
-                    false,
-                    IndexType::None,
-                    true,
-                };
+                *property = SchemaProperty::extra_property(prop_name);
+
+                //*property = SchemaProperty{
+                //    property_name,
+                //    property_name,
+                //    realm_string_t { },
+                //    realm_string_t { },
+                //    PropertyType::Mixed | PropertyType::Nullable,
+                //    false,
+                //    IndexType::None,
+                //    true,
+                //};
 
                 return true;
             }

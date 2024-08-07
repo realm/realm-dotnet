@@ -192,13 +192,8 @@ namespace Realms.Schema
         {
             if (ObjectHandle is not null)
             {
-                //TODO We should do this in one call, not two
-                var extraEnumerable = ObjectHandle.GetExtraProperties().Select(Property.ExtraProperty);
-
-                var onDiskSchema = ObjectHandle.GetSchema();
-                extraEnumerable = extraEnumerable.Concat(onDiskSchema.First());
-
-                return extraEnumerable.GetEnumerator();
+                //TODO Write it better
+                return ObjectHandle.GetSchema(includeExtraProperties: true).First().GetEnumerator();
             }
 
             var schemaEnumerable = _properties.Values.AsEnumerable();
