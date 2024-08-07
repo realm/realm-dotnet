@@ -50,7 +50,7 @@ struct SchemaObject
     realm_string_t primary_key;
     ObjectSchema::ObjectType table_type;
     
-    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&, std::vector<StringData>& extra_properties);
+    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&, const std::vector<StringData>& extra_properties);
 };
 
 struct NativeSchema
@@ -100,7 +100,7 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::extra_property(const realm_stri
 }
 
 REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties,
-    std::vector<StringData>& extra_properties = std::vector<StringData>())
+    const std::vector<StringData>& extra_properties = std::vector<StringData>())
 {
     properties.reserve(object.persisted_properties.size() + object.computed_properties.size());
     for (const auto& property : object.persisted_properties) {
