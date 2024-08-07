@@ -169,7 +169,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, bool include_extra_properties, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             auto& object_schema = object.get_object_schema();
@@ -280,8 +280,6 @@ extern "C" {
         });
     }
 
-    //realm_string_collection_t is equivalent to MarshaledVector<realm_string_t> but that cannot be used
-    //TODO need to see if we can do this differently
     REALM_EXPORT realm_string_collection_t object_get_extra_properties(Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

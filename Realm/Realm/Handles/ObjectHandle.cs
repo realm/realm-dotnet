@@ -116,7 +116,7 @@ namespace Realms
             public static extern IntPtr freeze(ObjectHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_schema", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
+            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, bool include_extra_properties, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_property", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool get_property(ObjectHandle objectHandle, StringValue propertyName, out SchemaProperty property, out NativeException ex);
@@ -166,7 +166,7 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        public RealmSchema GetSchema()
+        public ObjectSchema GetSchema(bool includeExtraProperties = false)
         {
             EnsureIsOpen();
 
