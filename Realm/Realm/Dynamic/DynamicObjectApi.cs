@@ -61,10 +61,37 @@ namespace Realms
         }
 
         //TODO Add docs
+        //TODO Should we rewrite this to use TryGet? For this we'd need to expose TryGetInternal from the objectHandle through the managed accessor
         public RealmValue Get(string propertyName)
         {
-            TryGet(propertyName, out var value);
-            return value;
+            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
+            {
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType))
+                {
+                    var collectionMethodName = collectionType switch
+                    {
+                        PropertyType.Array => "GetList",
+                        PropertyType.Set => "GetSet",
+                        PropertyType.Dictionary => "GetDictionary",
+                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
+                    };
+
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                }
+
+                return _managedAccessor.GetValue(propertyName);
+            }
+            else
+            {
+                return _managedAccessor.GetValue(propertyName);
+            }
         }
 
         public bool TryGet<T>(string propertyName, out T? propertyValue)
