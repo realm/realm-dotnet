@@ -40,7 +40,7 @@ struct SchemaProperty
     bool is_extra_property;
     
     static SchemaProperty for_marshalling(const Property&);
-    static SchemaProperty extra_property(const StringData&);
+    static SchemaProperty extra_property(const realm_string_t&);
 };
 
 struct SchemaObject
@@ -85,11 +85,11 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
     };
 }
 
-REALM_FORCEINLINE SchemaProperty SchemaProperty::extra_property(const StringData& property_name)
+REALM_FORCEINLINE SchemaProperty SchemaProperty::extra_property(const realm_string_t& property_name)
 {
     return {
-        to_capi(property_name),
-        to_capi(property_name),
+        property_name,
+        property_name,
         realm_string_t { },
         realm_string_t { },
         PropertyType::Mixed | PropertyType::Nullable,
@@ -110,7 +110,7 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema&
         properties.push_back(SchemaProperty::for_marshalling(property));
     }
     for (const auto& property_name : extra_properties) {
-        properties.push_back(SchemaProperty::extra_property(property_name));
+        properties.push_back(SchemaProperty::extra_property(to_capi(property_name)));
     }
 
     return {

@@ -205,19 +205,7 @@ extern "C" {
 
             if (object.get_obj().has_property(prop_name))
             {
-                *property = SchemaProperty::extra_property(prop_name);
-
-                //*property = SchemaProperty{
-                //    property_name,
-                //    property_name,
-                //    realm_string_t { },
-                //    realm_string_t { },
-                //    PropertyType::Mixed | PropertyType::Nullable,
-                //    false,
-                //    IndexType::None,
-                //    true,
-                //};
-
+                *property = SchemaProperty::extra_property(property_name);
                 return true;
             }
 
