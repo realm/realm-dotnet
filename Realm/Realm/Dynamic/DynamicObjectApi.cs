@@ -41,6 +41,15 @@ namespace Realms
             _isRelaxedSchema = managedAccessor.Realm.Config.RelaxedSchema;
         }
 
+        //TODO Add docs
+        //TODO Should we rewrite this to use TryGet? For this we'd need to expose TryGetInternal from the objectHandle through the managed accessor
+        public RealmValue Get(string propertyName)
+        {
+            CheckGetPropertySuitability(propertyName);
+
+            return _managedAccessor.GetValue(propertyName);
+        }
+
         /// <summary>
         /// Gets the value of the property <paramref name="propertyName"/> and casts it to
         /// <typeparamref name="T"/>.
@@ -60,26 +69,11 @@ namespace Realms
             return Get(propertyName).As<T>();
         }
 
-        //TODO Add docs
-        //TODO Should we rewrite this to use TryGet? For this we'd need to expose TryGetInternal from the objectHandle through the managed accessor
-        public RealmValue Get(string propertyName)
+        public bool TryGet(string propertyName, out RealmValue propertyValue)
         {
-            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
-            {
-                if (property.Type.IsComputed())
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
-                }
+            CheckGetPropertySuitability(propertyName);
 
-                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
-                }
-            }
-
-            return _managedAccessor.GetValue(propertyName);
+            return _managedAccessor.TryGetValue(propertyName, out propertyValue);
         }
 
         public bool TryGet<T>(string propertyName, out T? propertyValue)
@@ -95,29 +89,6 @@ namespace Realms
             return false;
         }
 
-        public bool TryGet(string propertyName, out RealmValue propertyValue)
-        {
-            // It would be nice if we could just call managedAccesor.GetValue but RealmValue does not support sets
-            // With this, developers still need to use the specific methods like GetList to get collections, should we merge this? Probably yes
-            // (but sets still would need to have a separate lane...)
-            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
-            {
-                if (property.Type.IsComputed())
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
-                }
-
-                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
-                }
-            }
-
-            return _managedAccessor.TryGetValue(propertyName, out propertyValue);
-        }
-
         /// <summary>
         /// Sets the value of the property at <paramref name="propertyName"/> to
         /// <paramref name="value"/>.
@@ -126,7 +97,7 @@ namespace Realms
         /// <param name="value">The new value of the property.</param>
         public void Set(string propertyName, RealmValue value)
         {
-            if (GetModelProperty(propertyName, !_isRelaxedSchema) is Property property)
+            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
             {
                 if (property.Type.IsComputed())
                 {
@@ -153,16 +124,11 @@ namespace Realms
                 if (property.IsPrimaryKey)
                 {
                     _managedAccessor.SetValueUnique(propertyName, value);
-                }
-                else
-                {
-                    _managedAccessor.SetValue(propertyName, value);
+                    return;
                 }
             }
-            else
-            {
-                _managedAccessor.SetValue(propertyName, value);
-            }
+
+            _managedAccessor.SetValue(propertyName, value);
         }
 
         //TODO Add docs
@@ -287,6 +253,24 @@ namespace Realms
             var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
             return result;
+        }
+
+        private void CheckGetPropertySuitability(string propertyName)
+        {
+            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
+            {
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
