@@ -72,26 +72,14 @@ namespace Realms
                         $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
                 }
 
-                if (property.Type.IsCollection(out var collectionType))
+                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
                 {
-                    var collectionMethodName = collectionType switch
-                    {
-                        PropertyType.Array => "GetList",
-                        PropertyType.Set => "GetSet",
-                        PropertyType.Dictionary => "GetDictionary",
-                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
-                    };
-
                     throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
                 }
+            }
 
-                return _managedAccessor.GetValue(propertyName);
-            }
-            else
-            {
-                return _managedAccessor.GetValue(propertyName);
-            }
+            return _managedAccessor.GetValue(propertyName);
         }
 
         public bool TryGet<T>(string propertyName, out T? propertyValue)
@@ -120,26 +108,14 @@ namespace Realms
                         $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
                 }
 
-                if (property.Type.IsCollection(out var collectionType))
+                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
                 {
-                    var collectionMethodName = collectionType switch
-                    {
-                        PropertyType.Array => "GetList",
-                        PropertyType.Set => "GetSet",
-                        PropertyType.Dictionary => "GetDictionary",
-                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
-                    };
-
                     throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
                 }
+            }
 
-                return _managedAccessor.TryGetValue(propertyName, out propertyValue);
-            }
-            else
-            {
-                return _managedAccessor.TryGetValue(propertyName, out propertyValue);
-            }
+            return _managedAccessor.TryGetValue(propertyName, out propertyValue);
         }
 
         /// <summary>
