@@ -166,13 +166,12 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        //TODO This one should return an object schema not a RealmSchema
-        public RealmSchema GetSchema(bool includeExtraProperties = false)
+        public ObjectSchema GetSchema(bool includeExtraProperties = false)
         {
             EnsureIsOpen();
 
-            RealmSchema? result = null;
-            Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
+            ObjectSchema? result = null;
+            Action<Native.Schema> callback = (nativeSmallSchema) => result = new ObjectSchema(nativeSmallSchema.objects[0]);
             var callbackHandle = GCHandle.Alloc(callback);
 
             try

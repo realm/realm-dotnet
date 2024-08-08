@@ -120,6 +120,17 @@ namespace Realms.Schema
             _properties = schema.Properties;
         }
 
+        internal ObjectSchema(in SchemaObject native)
+        {
+            Name = native.name!;
+            BaseType = native.table_type;
+            _properties = new(native.properties.ToEnumerable().ToDictionary(p => (string)p.name!, p => new Property(p)));
+            if (native.primary_key)
+            {
+                PrimaryKeyProperty = _properties[native.primary_key!];
+            }
+        }
+
         // TODO Fix docs
         /// <summary>
         /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
@@ -192,8 +203,7 @@ namespace Realms.Schema
         {
             if (ObjectHandle is not null)
             {
-                //TODO Write it better
-                return ObjectHandle.GetSchema(includeExtraProperties: true).First().GetEnumerator();
+                return ObjectHandle.GetSchema(includeExtraProperties: true).GetEnumerator();
             }
 
             var schemaEnumerable = _properties.Values.AsEnumerable();
