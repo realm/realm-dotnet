@@ -101,6 +101,9 @@ namespace Realms.Schema
         /// </summary>
         public IndexType IndexType { get; }
 
+        //TODO Docs
+        public bool IsExtraProperty { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Property"/> struct.
         /// </summary>
@@ -111,7 +114,13 @@ namespace Realms.Schema
         /// <param name="isPrimaryKey">A flag indicating whether this property is a primary key. Sets <see cref="IsPrimaryKey"/>.</param>
         /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="managedName">The managed name of the property. Sets <see cref="ManagedName"/>.</param>
-        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None, string? managedName = null)
+        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None, 
+            string? managedName = null) : this(name, type, objectType, linkOriginPropertyName, isPrimaryKey, indexType, managedName, false)
+        {
+        }
+
+        internal Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None,
+    string? managedName = null, bool isExtraProperty = false)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
@@ -120,6 +129,7 @@ namespace Realms.Schema
             ObjectType = objectType;
             LinkOriginPropertyName = linkOriginPropertyName;
             ManagedName = managedName ?? name;
+            IsExtraProperty = isExtraProperty;
 
             var nonNullableType = type & ~PropertyType.Nullable;
             if (isPrimaryKey)
@@ -176,6 +186,7 @@ namespace Realms.Schema
             LinkOriginPropertyName = nativeProperty.link_origin_property_name.ToDotnetString(treatEmptyAsNull: true);
             IsPrimaryKey = nativeProperty.is_primary;
             IndexType = nativeProperty.index;
+            IsExtraProperty = nativeProperty.is_extra_property;
         }
 
         internal SchemaProperty ToNative(Arena arena) => new()
@@ -221,7 +232,7 @@ namespace Realms.Schema
                     break;
             }
 
-            return new Property(name, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName);
+            return new Property(name, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName, isExtraProperty: false);
         }
 
         /// <summary>
@@ -352,7 +363,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Nullable, managedName: managedName);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Nullable, managedName: managedName, isExtraProperty: false);
         }
 
         /// <summary>
@@ -365,7 +376,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Array | PropertyType.Nullable, managedName: managedName);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Array | PropertyType.Nullable, managedName: managedName, isExtraProperty: false);
         }
 
         /// <summary>
@@ -378,7 +389,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Set | PropertyType.Nullable, managedName: managedName);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Set | PropertyType.Nullable, managedName: managedName, isExtraProperty: false);
         }
 
         /// <summary>
@@ -391,7 +402,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Dictionary | PropertyType.Nullable, managedName: managedName);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Dictionary | PropertyType.Nullable, managedName: managedName, isExtraProperty: false);
         }
 
         /// <summary>
@@ -408,8 +419,11 @@ namespace Realms.Schema
             Argument.NotNullOrEmpty(originObjectType, nameof(originObjectType));
             Argument.NotNullOrEmpty(originPropertyName, nameof(originPropertyName));
 
-            return new Property(name, PropertyType.Array | PropertyType.LinkingObjects, originObjectType, originPropertyName, managedName: managedName);
+            return new Property(name, PropertyType.Array | PropertyType.LinkingObjects, originObjectType, originPropertyName, managedName: managedName, isExtraProperty: false);
         }
+
+        internal static Property ExtraProperty(string name) =>
+            new Property(name, PropertyType.RealmValue | PropertyType.Nullable, isExtraProperty: true);
 
         internal static Property FromPropertyInfo(PropertyInfo prop)
         {
@@ -432,7 +446,7 @@ namespace Realms.Schema
             var objectTypeName = objectType?.GetMappedOrOriginalName();
             var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
             var indexType = prop.GetCustomAttribute<IndexedAttribute>()?.Type ?? IndexType.None;
-            return new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: prop.Name);
+            return new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: prop.Name, isExtraProperty: false);
         }
 
         private static Property PrimitiveCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isPrimaryKey = false, IndexType indexType = IndexType.None,
@@ -441,14 +455,14 @@ namespace Realms.Schema
             Argument.Ensure(type != RealmValueType.Null, $"{nameof(type)} can't be {RealmValueType.Null}", nameof(type));
             Argument.Ensure(type != RealmValueType.Object, $"{nameof(type)} can't be {RealmValueType.Object}. Use Property.Object instead.", nameof(type));
 
-            return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName);
+            return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName, isExtraProperty: false);
         }
 
         private static Property ObjectCore(string name, string objectType, PropertyType typeModifier = default, string? managedName = null)
         {
             Argument.NotNullOrEmpty(objectType, nameof(objectType));
 
-            return new Property(name, PropertyType.Object | typeModifier, objectType, managedName: managedName);
+            return new Property(name, PropertyType.Object | typeModifier, objectType, managedName: managedName, isExtraProperty: false);
         }
     }
 }

@@ -73,10 +73,6 @@ namespace Realms.Schema
         /// <value>The number of persistent properties for the object.</value>
         public int Count => _properties.Count;
 
-        internal Property? PrimaryKeyProperty { get; }
-
-        internal Type? Type { get; private set; }
-
         /// <summary>
         /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
@@ -84,7 +80,19 @@ namespace Realms.Schema
         /// <value>The type of ObjectSchema.</value>
         public ObjectType BaseType { get; }
 
-        private ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
+        internal Property? PrimaryKeyProperty { get; }
+
+        internal Type? Type { get; private set; }
+
+        internal ReadOnlyDictionary<string, Property> Properties => _properties;
+
+        /// <summary>
+        /// Gets or sets the ObjectHandle. This should be set only if the realm is opened with
+        /// the relaxed schema enabled.
+        /// </summary>
+        internal ObjectHandle? ObjectHandle { get; set; }
+
+        internal ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
         {
             Name = name;
             BaseType = schemaType;
@@ -103,6 +111,15 @@ namespace Realms.Schema
             }
         }
 
+        internal ObjectSchema(ObjectSchema schema, ObjectHandle objectHandle)
+        {
+            Name = schema.Name;
+            BaseType = schema.BaseType;
+            PrimaryKeyProperty = schema.PrimaryKeyProperty;
+            ObjectHandle = objectHandle;
+            _properties = schema.Properties;
+        }
+
         internal ObjectSchema(in SchemaObject native)
         {
             Name = native.name!;
@@ -114,6 +131,7 @@ namespace Realms.Schema
             }
         }
 
+        // TODO Fix docs
         /// <summary>
         /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
         /// Failure to find means it is not regarded as a property to persist in a <see cref="Realm"/>.
@@ -126,7 +144,38 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return _properties.TryGetValue(name, out property);
+            if (ObjectHandle is not null)
+            {
+                return ObjectHandle.TryGetProperty(name, out property);
+            }
+
+            if (TryFindModelProperty(name, out property))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        internal bool TryFindModelProperty(string name, out Property property)
+        {
+            if (_properties.TryGetValue(name, out property))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // TODO Docs
+        public bool HasProperty(string name)
+        {
+            if (ObjectHandle is not null)
+            {
+                return ObjectHandle.HasProperty(name);
+            }
+
+            return _properties.ContainsKey(name);
         }
 
         /// <summary>
@@ -150,7 +199,17 @@ namespace Realms.Schema
         }
 
         /// <inheritdoc/>
-        public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
+        public IEnumerator<Property> GetEnumerator()
+        {
+            if (ObjectHandle is not null)
+            {
+                return ObjectHandle.GetSchema(includeExtraProperties: true).GetEnumerator();
+            }
+
+            var schemaEnumerable = _properties.Values.AsEnumerable();
+
+            return schemaEnumerable.GetEnumerator();
+        }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -169,6 +228,9 @@ namespace Realms.Schema
             properties = MarshaledVector<SchemaProperty>.AllocateFrom(this.Select(p => p.ToNative(arena)).ToArray(), arena),
             primary_key = StringValue.AllocateFrom(PrimaryKeyProperty?.Name, arena)
         };
+
+        // TODO We could remove this or the new constructor
+        internal ObjectSchema MakeCopyWithHandle(ObjectHandle handle) => new(this, handle);
 
         /// <summary>
         /// A mutable builder that allows you to construct an <see cref="ObjectSchema"/> instance.

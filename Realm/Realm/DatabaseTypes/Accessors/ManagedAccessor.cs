@@ -39,6 +39,8 @@ namespace Realms
     {
         private readonly Lazy<int> _hashCode;
 
+        private readonly Lazy<ObjectSchema> _objectSchema;
+
         private NotificationTokenHandle? _notificationToken;
 
         private Action<string>? _onNotifyPropertyChanged;
@@ -60,7 +62,7 @@ namespace Realms
         public bool IsFrozen => Realm.IsFrozen;
 
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => Metadata.Schema;
+        public ObjectSchema ObjectSchema => _objectSchema.Value;
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
@@ -82,6 +84,7 @@ namespace Realms
 #pragma warning restore CS8618
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
+            _objectSchema = new(() => Realm!.Config.RelaxedSchema ? Metadata!.Schema.MakeCopyWithHandle(ObjectHandle!) : Metadata!.Schema);
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
@@ -109,9 +112,27 @@ namespace Realms
         }
 
         /// <inheritdoc/>
+        public bool TryGetValue(string propertyName, out RealmValue value)
+        {
+            return ObjectHandle.TryGetValue(propertyName, Metadata, Realm, out value);
+        }
+
+        /// <inheritdoc/>
         public void SetValue(string propertyName, RealmValue val)
         {
             ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
+        }
+
+        //TODO Add docs
+        public void UnsetProperty(string propertyName)
+        {
+            ObjectHandle.UnsetProperty(propertyName);
+        }
+
+        //TODO Add docs
+        public bool TryUnsetProperty(string propertyName)
+        {
+            return ObjectHandle.TryUnsetProperty(propertyName);
         }
 
         /// <inheritdoc/>

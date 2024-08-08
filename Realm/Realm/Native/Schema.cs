@@ -59,5 +59,7 @@ namespace Realms.Native
         public NativeBool is_primary;
 
         public IndexType index;
+
+        public NativeBool is_extra_property;
     }
 }

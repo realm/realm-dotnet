@@ -37,8 +37,10 @@ struct SchemaProperty
     PropertyType type;
     bool is_primary;
     IndexType index;
+    bool is_extra_property;
     
     static SchemaProperty for_marshalling(const Property&);
+    static SchemaProperty extra_property(const realm_string_t&);
 };
 
 struct SchemaObject
@@ -48,7 +50,7 @@ struct SchemaObject
     realm_string_t primary_key;
     ObjectSchema::ObjectType table_type;
     
-    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
+    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&, const std::vector<StringData>& extra_properties);
 };
 
 struct NativeSchema
@@ -83,7 +85,22 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
     };
 }
 
-REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties)
+REALM_FORCEINLINE SchemaProperty SchemaProperty::extra_property(const realm_string_t& property_name)
+{
+    return {
+        property_name,
+        property_name,
+        realm_string_t { },
+        realm_string_t { },
+        PropertyType::Mixed | PropertyType::Nullable,
+        false,
+        IndexType::None,
+        true,
+    };
+}
+
+REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties,
+    const std::vector<StringData>& extra_properties = std::vector<StringData>())
 {
     properties.reserve(object.persisted_properties.size() + object.computed_properties.size());
     for (const auto& property : object.persisted_properties) {
@@ -91,6 +108,9 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema&
     }
     for (const auto& property : object.computed_properties) {
         properties.push_back(SchemaProperty::for_marshalling(property));
+    }
+    for (const auto& property_name : extra_properties) {
+        properties.push_back(SchemaProperty::extra_property(to_capi(property_name)));
     }
 
     return {

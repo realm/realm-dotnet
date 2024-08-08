@@ -33,9 +33,21 @@ namespace Realms
     {
         private readonly ManagedAccessor _managedAccessor;
 
+        private readonly bool _isRelaxedSchema;
+
         internal DynamicObjectApi(ManagedAccessor managedAccessor)
         {
             _managedAccessor = managedAccessor;
+            _isRelaxedSchema = managedAccessor.Realm.Config.RelaxedSchema;
+        }
+
+        //TODO Add docs
+        //TODO Should we rewrite this to use TryGet? For this we'd need to expose TryGetInternal from the objectHandle through the managed accessor
+        public RealmValue Get(string propertyName)
+        {
+            CheckGetPropertySuitability(propertyName);
+
+            return _managedAccessor.GetValue(propertyName);
         }
 
         /// <summary>
@@ -54,29 +66,27 @@ namespace Realms
         /// </remarks>
         public T Get<T>(string propertyName)
         {
-            var property = GetProperty(propertyName);
+            return Get(propertyName).As<T>();
+        }
 
-            if (property.Type.IsComputed())
+        public bool TryGet(string propertyName, out RealmValue propertyValue)
+        {
+            CheckGetPropertySuitability(propertyName);
+
+            return _managedAccessor.TryGetValue(propertyName, out propertyValue);
+        }
+
+        public bool TryGet<T>(string propertyName, out T? propertyValue)
+        {
+            var foundValue = TryGet(propertyName, out var val);
+            if (foundValue)
             {
-                throw new NotSupportedException(
-                    $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                propertyValue = val.As<T>();
+                return true;
             }
 
-            if (property.Type.IsCollection(out var collectionType))
-            {
-                var collectionMethodName = collectionType switch
-                {
-                    PropertyType.Array => "GetList",
-                    PropertyType.Set => "GetSet",
-                    PropertyType.Dictionary => "GetDictionary",
-                    _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
-                };
-
-                throw new NotSupportedException(
-                    $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
-            }
-
-            return _managedAccessor.GetValue(propertyName).As<T>();
+            propertyValue = default;
+            return false;
         }
 
         /// <summary>
@@ -87,38 +97,50 @@ namespace Realms
         /// <param name="value">The new value of the property.</param>
         public void Set(string propertyName, RealmValue value)
         {
-            var property = GetProperty(propertyName);
+            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
+            {
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
+                }
 
-            if (property.Type.IsComputed())
-            {
-                throw new NotSupportedException(
-                    $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
+                if (property.Type.IsCollection(out _))
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
+                }
+
+                if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
+                {
+                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
+                }
+
+                if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
+                {
+                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny()?.GetType().Name} ({value}).");
+                }
+
+                if (property.IsPrimaryKey)
+                {
+                    _managedAccessor.SetValueUnique(propertyName, value);
+                    return;
+                }
             }
 
-            if (property.Type.IsCollection(out _))
-            {
-                throw new NotSupportedException(
-                    $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
-            }
+            _managedAccessor.SetValue(propertyName, value);
+        }
 
-            if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
-            {
-                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
-            }
+        //TODO Add docs
+        public void Unset(string propertyName)
+        {
+            _managedAccessor.UnsetProperty(propertyName);
+        }
 
-            if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
-            {
-                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny()?.GetType().Name} ({value}).");
-            }
-
-            if (property.IsPrimaryKey)
-            {
-                _managedAccessor.SetValueUnique(propertyName, value);
-            }
-            else
-            {
-                _managedAccessor.SetValue(propertyName, value);
-            }
+        //TODO Add docs
+        public bool TryUnset(string propertyName)
+        {
+            return _managedAccessor.TryUnsetProperty(propertyName);
         }
 
         /// <summary>
@@ -132,7 +154,7 @@ namespace Realms
         /// </returns>
         public IQueryable<IRealmObjectBase> GetBacklinks(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsComputed);
 
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
@@ -182,7 +204,7 @@ namespace Realms
         /// </remarks>
         public IList<T> GetList<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsList);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsList);
 
             var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
@@ -204,7 +226,7 @@ namespace Realms
         /// </remarks>
         public ISet<T> GetSet<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsSet);
 
             var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
@@ -226,30 +248,55 @@ namespace Realms
         /// </remarks>
         public IDictionary<string, T> GetDictionary<T>(string propertyName)
         {
-            var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
+            var property = GetModelProperty(propertyName, PropertyTypeEx.IsDictionary);
 
             var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
             result.IsDynamic = true;
             return result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetProperty(string propertyName)
+        private void CheckGetPropertySuitability(string propertyName)
         {
-            if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
+            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
             {
-                throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
+                {
+                    throw new NotSupportedException(
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Property? GetModelProperty(string propertyName, bool throwOnMissing)
+        {
+            Argument.NotNull(propertyName, nameof(propertyName));
+
+            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
+            {
+                if (throwOnMissing)
+                {
+                    throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
+                }
+
+                return null;
             }
 
             return property;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
+        private Property GetModelProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
         {
             Argument.NotNull(propertyName, nameof(propertyName));
 
-            if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
+            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
             {
                 throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
             }
