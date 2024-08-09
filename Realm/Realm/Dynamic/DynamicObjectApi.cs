@@ -132,15 +132,9 @@ namespace Realms
         }
 
         //TODO Add docs
-        public void Unset(string propertyName)
+        public bool Unset(string propertyName)
         {
-            _managedAccessor.UnsetProperty(propertyName);
-        }
-
-        //TODO Add docs
-        public bool TryUnset(string propertyName)
-        {
-            return _managedAccessor.TryUnsetProperty(propertyName);
+            return _managedAccessor.UnsetProperty(propertyName);
         }
 
         /// <summary>

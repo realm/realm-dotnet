@@ -124,15 +124,9 @@ namespace Realms
         }
 
         //TODO Add docs
-        public void UnsetProperty(string propertyName)
+        public bool UnsetProperty(string propertyName)
         {
-            ObjectHandle.UnsetProperty(propertyName);
-        }
-
-        //TODO Add docs
-        public bool TryUnsetProperty(string propertyName)
-        {
-            return ObjectHandle.TryUnsetProperty(propertyName);
+            return ObjectHandle.UnsetProperty(propertyName);
         }
 
         /// <inheritdoc/>

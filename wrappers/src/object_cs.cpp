@@ -258,15 +258,14 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT bool object_unset_property(Object& object, realm_string_t property_name,
-        bool throw_on_unsuccessful, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_unset_property(Object& object, realm_string_t property_name, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
             auto prop_name = capi_to_std(property_name);
 
-            //This should be has_additional_property
-            if (!throw_on_unsuccessful && !object.get_obj().has_property(prop_name))
+            //TODO This is not correct, it should be "has_additional_property", but the method is not there yet
+            if (!object.get_obj().has_property(prop_name))
             {
                 return false;
             }

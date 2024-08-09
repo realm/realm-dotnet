@@ -49,7 +49,7 @@ namespace Realms
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_unset_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern bool unset_property(ObjectHandle handle, StringValue propertyName, bool throw_on_unsuccessful, out NativeException ex);
+            public static extern bool unset_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value_by_name", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool get_value_by_name(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, bool throw_on_missing_property, out NativeException ex);
@@ -362,24 +362,14 @@ namespace Realms
             }
         }
 
-        public void UnsetProperty(string propertyName)
-        {
-            TryUnsetPropertyInternal(propertyName, throwOnUnsuccessful: true);
-        }
-
-        public bool TryUnsetProperty(string propertyName)
-        {
-            return TryUnsetPropertyInternal(propertyName, throwOnUnsuccessful: false);
-        }
-
-        private bool TryUnsetPropertyInternal(string propertyName, bool throwOnUnsuccessful)
+        public bool UnsetProperty(string propertyName)
         {
             EnsureIsOpen();
 
             using Arena arena = new();
             var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-            var propertyFound = NativeMethods.unset_property(this, propertyNameNative, throwOnUnsuccessful, out var nativeException);
+            var propertyFound = NativeMethods.unset_property(this, propertyNameNative, out var nativeException);
             nativeException.ThrowIfNecessary();
             return propertyFound;
         }

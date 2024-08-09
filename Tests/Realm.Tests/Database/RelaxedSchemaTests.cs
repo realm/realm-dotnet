@@ -237,12 +237,12 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Unset_OnUnknownProperty_Throws()
+        public void Unset_OnUnknownProperty_DoesNotThrow()
         {
             Assert.That(() => _realm.Write(() =>
             {
                 _person.DynamicApi.Unset("prop");
-            }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: prop"));
+            }), Throws.Nothing);
         }
 
         [Test]
@@ -252,33 +252,6 @@ namespace Realms.Tests.Database
             {
                 _person.DynamicApi.Unset("FirstName");
             }), Throws.TypeOf<ArgumentException>().With.Message.EqualTo("Could not erase property: FirstName"));
-        }
-
-        [Test]
-        public void TryUnset_OnExtraProperty_RemovesPropertyAndReturnsTrue()
-        {
-            _realm.Write(() =>
-            {
-                _person.DynamicApi.Set("prop", "testval");
-            });
-            Assert.That(_person.DynamicApi.Get<string>("prop"), Is.EqualTo("testval"));
-
-            _realm.Write(() =>
-            {
-                bool val = _person.DynamicApi.TryUnset("prop");
-                Assert.That(val, Is.True);
-            });
-            Assert.That(_person.DynamicApi.TryGet("prop", out _), Is.False);
-        }
-
-        [Test]
-        public void TryUnset_OnUnknownProperty_ReturnsFalse()
-        {
-            _realm.Write(() =>
-            {
-                bool val = _person.DynamicApi.TryUnset("missingProp");
-                Assert.That(val, Is.False);
-            });
         }
 
         [Test]
