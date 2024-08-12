@@ -29,25 +29,10 @@ namespace Realms
     /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
     /// </summary>
     /// <see cref="RealmObjectBase.DynamicApi"/>
-    public class DynamicObjectApi
+    public abstract class DynamicObjectApi
     {
-        private readonly ManagedAccessor _managedAccessor;
-
-        private readonly bool _isRelaxedSchema;
-
-        internal DynamicObjectApi(ManagedAccessor managedAccessor)
-        {
-            _managedAccessor = managedAccessor;
-            _isRelaxedSchema = managedAccessor.Realm.Config.RelaxedSchema;
-        }
-
         //TODO Add docs
-        public RealmValue Get(string propertyName)
-        {
-            CheckGetPropertySuitability(propertyName);
-
-            return _managedAccessor.GetValue(propertyName);
-        }
+        public abstract RealmValue Get(string propertyName);
 
         /// <summary>
         /// Gets the value of the property <paramref name="propertyName"/> and casts it to
@@ -63,32 +48,13 @@ namespace Realms
         /// Casting to <see cref="RealmValue"/> is always valid. When the property is of type
         /// object, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
-        public T Get<T>(string propertyName)
-        {
-            return Get(propertyName).As<T>();
-        }
+        public abstract T Get<T>(string propertyName);
 
         //TODO Add docs
-        public bool TryGet(string propertyName, out RealmValue propertyValue)
-        {
-            CheckGetPropertySuitability(propertyName);
-
-            return _managedAccessor.TryGetValue(propertyName, out propertyValue);
-        }
+        public abstract bool TryGet(string propertyName, out RealmValue propertyValue);
 
         //TODO Add docs
-        public bool TryGet<T>(string propertyName, out T? propertyValue)
-        {
-            var foundValue = TryGet(propertyName, out var val);
-            if (foundValue)
-            {
-                propertyValue = val.As<T>();
-                return true;
-            }
-
-            propertyValue = default;
-            return false;
-        }
+        public abstract bool TryGet<T>(string propertyName, out T? propertyValue);
 
         /// <summary>
         /// Sets the value of the property at <paramref name="propertyName"/> to
@@ -96,47 +62,10 @@ namespace Realms
         /// </summary>
         /// <param name="propertyName">The name of the property to set.</param>
         /// <param name="value">The new value of the property.</param>
-        public void Set(string propertyName, RealmValue value)
-        {
-            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
-            {
-                if (property.Type.IsComputed())
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
-                }
-
-                if (property.Type.IsCollection(out _))
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
-                }
-
-                if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
-                {
-                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
-                }
-
-                if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
-                {
-                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny()?.GetType().Name} ({value}).");
-                }
-
-                if (property.IsPrimaryKey)
-                {
-                    _managedAccessor.SetValueUnique(propertyName, value);
-                    return;
-                }
-            }
-
-            _managedAccessor.SetValue(propertyName, value);
-        }
+        public abstract void Set(string propertyName, RealmValue value);
 
         //TODO Add docs
-        public bool Unset(string propertyName)
-        {
-            return _managedAccessor.UnsetProperty(propertyName);
-        }
+        public abstract bool Unset(string propertyName);
 
         /// <summary>
         /// Gets the value of a backlink property. This property must have been declared
@@ -147,20 +76,7 @@ namespace Realms
         /// A queryable collection containing all objects pointing to this one via the
         /// property specified in <see cref="BacklinkAttribute.Property"/>.
         /// </returns>
-        public IQueryable<IRealmObjectBase> GetBacklinks(string propertyName)
-        {
-            var property = GetModelProperty(propertyName, PropertyTypeEx.IsComputed);
-
-            var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
-
-            var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType!];
-            if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
-            {
-                return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
-            }
-
-            return new RealmResults<IRealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
-        }
+        public abstract IQueryable<IRealmObjectBase> GetBacklinks(string propertyName);
 
         /// <summary>
         /// Gets a collection of all the objects that link to this object in the specified relationship.
@@ -171,18 +87,7 @@ namespace Realms
         /// A queryable collection containing all objects of <paramref name="fromObjectType"/> that link
         /// to the current object via <paramref name="fromPropertyName"/>.
         /// </returns>
-        public IQueryable<IRealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
-        {
-            Argument.Ensure(_managedAccessor.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
-
-            var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
-            if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
-            {
-                return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
-            }
-
-            return new RealmResults<IRealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
-        }
+        public abstract IQueryable<IRealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName);
 
         /// <summary>
         /// Gets a <see cref="IList{T}"/> property.
@@ -197,14 +102,7 @@ namespace Realms
         /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
         /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
-        public IList<T> GetList<T>(string propertyName)
-        {
-            var property = GetModelProperty(propertyName, PropertyTypeEx.IsList);
-
-            var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
-            result.IsDynamic = true;
-            return result;
-        }
+        public abstract IList<T> GetList<T>(string propertyName);
 
         /// <summary>
         /// Gets a <see cref="ISet{T}"/> property.
@@ -219,14 +117,7 @@ namespace Realms
         /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
         /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
-        public ISet<T> GetSet<T>(string propertyName)
-        {
-            var property = GetModelProperty(propertyName, PropertyTypeEx.IsSet);
-
-            var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
-            result.IsDynamic = true;
-            return result;
-        }
+        public abstract ISet<T> GetSet<T>(string propertyName);
 
         /// <summary>
         /// Gets a <see cref="IDictionary{TKey, TValue}"/> property.
@@ -241,67 +132,6 @@ namespace Realms
         /// Casting the values to <see cref="RealmValue"/> is always valid. When the collection
         /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
-        public IDictionary<string, T> GetDictionary<T>(string propertyName)
-        {
-            var property = GetModelProperty(propertyName, PropertyTypeEx.IsDictionary);
-
-            var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
-            result.IsDynamic = true;
-            return result;
-        }
-
-        private void CheckGetPropertySuitability(string propertyName)
-        {
-            if (GetModelProperty(propertyName, throwOnMissing: !_isRelaxedSchema) is Property property)
-            {
-                if (property.Type.IsComputed())
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
-                }
-
-                if (property.Type.IsCollection(out var collectionType) && collectionType == PropertyType.Set)
-                {
-                    throw new NotSupportedException(
-                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use GetSet instead.");
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property? GetModelProperty(string propertyName, bool throwOnMissing)
-        {
-            Argument.NotNull(propertyName, nameof(propertyName));
-
-            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
-            {
-                if (throwOnMissing)
-                {
-                    throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
-                }
-
-                return null;
-            }
-
-            return property;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetModelProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
-        {
-            Argument.NotNull(propertyName, nameof(propertyName));
-
-            if (!_managedAccessor.ObjectSchema.TryFindModelProperty(propertyName, out var property))
-            {
-                throw new MissingMemberException(_managedAccessor.ObjectSchema.Name, propertyName);
-            }
-
-            if (!typeCheck(property.Type))
-            {
-                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which can't be accessed using {methodName}.");
-            }
-
-            return property;
-        }
+        public abstract IDictionary<string, T> GetDictionary<T>(string propertyName);
     }
 }

@@ -87,7 +87,7 @@ namespace Realms
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
             _objectSchema = new(() => Realm!.Config.RelaxedSchema ? Metadata!.Schema.MakeCopyWithHandle(ObjectHandle!) : Metadata!.Schema);
-            _dynamicObjectApi = new(() => new(this));
+            _dynamicObjectApi = new(() => new DynamicManagedObjectApi(this));
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
@@ -114,7 +114,7 @@ namespace Realms
             return ObjectHandle.GetValue(propertyName, Metadata, Realm);
         }
 
-        /// <inheritdoc/>
+        /// AddDocs
         public bool TryGetValue(string propertyName, out RealmValue value)
         {
             return ObjectHandle.TryGetValue(propertyName, Metadata, Realm, out value);

@@ -37,6 +37,9 @@ namespace Realms
 
         private Action<string>? _onNotifyPropertyChanged;
 
+        //TODO we could initialize this lazily
+        protected Dictionary<string, RealmValue> _extraProperties = new();
+
         /// <inheritdoc/>
         public bool IsManaged => false;
 
@@ -92,6 +95,10 @@ namespace Realms
 
         /// <inheritdoc/>
         public abstract void SetValueUnique(string propertyName, RealmValue val);
+
+        public abstract bool TryGet(string propertyName, out RealmValue value);
+
+        public abstract bool Unset(string propertyName);
 
         /// <inheritdoc/>
         public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
@@ -167,6 +174,31 @@ namespace Realms
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new NotSupportedException("This should not be used for now");
+        }
+
+        public override bool TryGet(string propertyName, out RealmValue value)
+        {
+            return _extraProperties.TryGetValue(propertyName, out value);
+        }
+
+        public override bool Unset(string propertyName)
+        {
+            return _extraProperties.Remove(propertyName);
+        }
+
+        public bool TryGetExtraProperty(string propertyName, out RealmValue value)
+        {
+            return _extraProperties.TryGetValue(propertyName, out value);
+        }
+
+        public RealmValue GetExtraProperty(string propertyName)
+        {
+            return _extraProperties[propertyName];
+        }
+
+        public void SetExtraProperty(string propertyName, RealmValue val)
+        {
+            _extraProperties[propertyName] = val;
         }
     }
 }

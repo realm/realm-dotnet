@@ -340,6 +340,8 @@ namespace Realms.Tests.Database
          * - move unmanaged object to managed with extra properties and relaxed schema on (should copy properties)
          * - move unmanaged object to managed with extra properties and relaxed schema off (should throw)
          * - tests for unmanaged object dynamic api 
+         * 
+         * - serialization/deserialization
          */
 
 
