@@ -29,7 +29,7 @@ namespace Realms
     /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
     /// </summary>
     /// <see cref="RealmObjectBase.DynamicApi"/>
-    public readonly struct DynamicObjectApi
+    public class DynamicObjectApi
     {
         private readonly ManagedAccessor _managedAccessor;
 
@@ -42,7 +42,6 @@ namespace Realms
         }
 
         //TODO Add docs
-        //TODO Should we rewrite this to use TryGet? For this we'd need to expose TryGetInternal from the objectHandle through the managed accessor
         public RealmValue Get(string propertyName)
         {
             CheckGetPropertySuitability(propertyName);
@@ -69,6 +68,7 @@ namespace Realms
             return Get(propertyName).As<T>();
         }
 
+        //TODO Add docs
         public bool TryGet(string propertyName, out RealmValue propertyValue)
         {
             CheckGetPropertySuitability(propertyName);
@@ -76,6 +76,7 @@ namespace Realms
             return _managedAccessor.TryGetValue(propertyName, out propertyValue);
         }
 
+        //TODO Add docs
         public bool TryGet<T>(string propertyName, out T? propertyValue)
         {
             var foundValue = TryGet(propertyName, out var val);

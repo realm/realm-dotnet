@@ -41,6 +41,8 @@ namespace Realms
 
         private readonly Lazy<ObjectSchema> _objectSchema;
 
+        private readonly Lazy<DynamicObjectApi> _dynamicObjectApi;
+
         private NotificationTokenHandle? _notificationToken;
 
         private Action<string>? _onNotifyPropertyChanged;
@@ -71,7 +73,7 @@ namespace Realms
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         /// <inheritdoc/>
-        public DynamicObjectApi DynamicApi => new(this);
+        public DynamicObjectApi DynamicApi => _dynamicObjectApi.Value;
 
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
@@ -85,6 +87,7 @@ namespace Realms
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
             _objectSchema = new(() => Realm!.Config.RelaxedSchema ? Metadata!.Schema.MakeCopyWithHandle(ObjectHandle!) : Metadata!.Schema);
+            _dynamicObjectApi = new(() => new(this));
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]

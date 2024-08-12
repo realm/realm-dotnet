@@ -334,7 +334,12 @@ namespace Realms.Tests.Database
          * - keypath filtering
          * - queries support using extra properties
          * - support for asymmetric objects
+         * - support for unmanaged object
          * - all sync tests
+         * 
+         * - move unmanaged object to managed with extra properties and relaxed schema on (should copy properties)
+         * - move unmanaged object to managed with extra properties and relaxed schema off (should throw)
+         * - tests for unmanaged object dynamic api 
          */
 
 
