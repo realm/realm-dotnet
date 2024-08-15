@@ -138,6 +138,11 @@ typedef struct realm_string {
     size_t size;
 } realm_string_t;
 
+typedef struct realm_string_collection {
+    const realm_string_t* data;
+    size_t size;
+} realm_string_collection_t;
+
 typedef struct realm_binary {
     const uint8_t* data;
     size_t size;

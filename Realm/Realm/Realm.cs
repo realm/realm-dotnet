@@ -535,9 +535,9 @@ namespace Realms
             return ret;
         }
 
-        internal RealmMetadata MergeSchema(RealmSchema schema)
+        internal RealmMetadata MergeSchema(ObjectSchema schema)
         {
-            Metadata.Add(schema.Select(CreateRealmObjectMetadata));
+            Metadata.Add(CreateRealmObjectMetadata(schema));
             return Metadata;
         }
 
@@ -1438,8 +1438,8 @@ namespace Realms
 
             public RealmMetadata(IEnumerable<Metadata> objectsMetadata)
             {
-                stringToRealmObjectMetadataDict = new Dictionary<string, Metadata>();
-                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, Metadata>();
+                stringToRealmObjectMetadataDict = new ();
+                tableKeyToRealmObjectMetadataDict = new ();
 
                 Add(objectsMetadata);
             }
@@ -1466,23 +1466,28 @@ namespace Realms
             {
                 foreach (var objectMetadata in objectsMetadata)
                 {
-                    if (stringToRealmObjectMetadataDict.ContainsKey(objectMetadata.Schema.Name))
-                    {
-                        Argument.AssertDebug($"Trying to add object schema to the string mapping that is already present: {objectMetadata.Schema.Name}");
-                    }
-                    else
-                    {
-                        stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
-                    }
+                    Add(objectMetadata);
+                }
+            }
 
-                    if (tableKeyToRealmObjectMetadataDict.ContainsKey(objectMetadata.TableKey))
-                    {
-                        Argument.AssertDebug($"Trying to add object schema to the table key mapping that is already present: {objectMetadata.Schema.Name} - {objectMetadata.TableKey}");
-                    }
-                    else
-                    {
-                        tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
-                    }
+            public void Add(Metadata objectMetadata)
+            {
+                if (stringToRealmObjectMetadataDict.ContainsKey(objectMetadata.Schema.Name))
+                {
+                    Argument.AssertDebug($"Trying to add object schema to the string mapping that is already present: {objectMetadata.Schema.Name}");
+                }
+                else
+                {
+                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
+                }
+
+                if (tableKeyToRealmObjectMetadataDict.ContainsKey(objectMetadata.TableKey))
+                {
+                    Argument.AssertDebug($"Trying to add object schema to the table key mapping that is already present: {objectMetadata.Schema.Name} - {objectMetadata.TableKey}");
+                }
+                else
+                {
+                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
                 }
             }
         }

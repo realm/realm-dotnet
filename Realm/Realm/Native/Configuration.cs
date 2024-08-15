@@ -55,5 +55,7 @@ namespace Realms.Native
         internal NativeBool invoke_migration_callback;
 
         internal NativeBool automatically_migrate_embedded;
+
+        internal NativeBool relaxed_schema;
     }
 }

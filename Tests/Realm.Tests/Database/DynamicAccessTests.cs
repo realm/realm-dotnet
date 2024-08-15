@@ -139,6 +139,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(propertyName), Is.EqualTo(realmValue));
+                Assert.That(allTypesObject.DynamicApi.Get(propertyName), Is.EqualTo(realmValue));
             });
         }
 
@@ -496,18 +497,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void GetProperty_WhenPropertyIsList_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
-
-                var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.ObjectIdList)))!;
-                Assert.That(ex.Message, Does.Contain("IList<ObjectId>").And.Contains("GetList"));
-            });
-        }
-
-        [Test]
         public void GetProperty_WhenPropertyIsSet_Throws()
         {
             RunTestInAllModes((realm, _) =>
@@ -516,18 +505,6 @@ namespace Realms.Tests.Database
 
                 var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.BooleanSet)))!;
                 Assert.That(ex.Message, Does.Contain("ISet<Boolean>").And.Contains("GetSet"));
-            });
-        }
-
-        [Test]
-        public void GetProperty_WhenPropertyIsDictionary_Throws()
-        {
-            RunTestInAllModes((realm, _) =>
-            {
-                var allTypesObject = realm.Write(() => realm.DynamicApi.CreateObject(nameof(SyncCollectionsObject), ObjectId.GenerateNewId()));
-
-                var ex = Assert.Throws<NotSupportedException>(() => allTypesObject.DynamicApi.Get<RealmValue>(nameof(SyncCollectionsObject.DecimalDict)))!;
-                Assert.That(ex.Message, Does.Contain("IDictionary<string, Decimal128>").And.Contains("GetDictionary"));
             });
         }
 

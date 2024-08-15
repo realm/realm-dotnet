@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Extensions;
@@ -46,8 +48,26 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_unset_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool unset_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool get_value_by_name(ObjectHandle handle, StringValue propertyName, out PrimitiveValue value, bool throw_on_missing_property, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_value_by_name(ObjectHandle handle, StringValue propertyName, PrimitiveValue value, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_collection_value(ObjectHandle handle, IntPtr propertyIndex, RealmValueType type, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_collection_value_by_name", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_collection_value_by_name(ObjectHandle handle, StringValue propertyName, RealmValueType type, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_extra_properties", CallingConvention = CallingConvention.Cdecl)]
+            public static extern StringsContainer get_extra_properties(ObjectHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_has_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool has_property(ObjectHandle handle, StringValue propertyName, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -96,8 +116,10 @@ namespace Realms
             public static extern IntPtr freeze(ObjectHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_schema", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
+            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, bool include_extra_properties, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool get_property(ObjectHandle objectHandle, StringValue propertyName, out SchemaProperty property, out NativeException ex);
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Naming Styles
         }
@@ -144,28 +166,17 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        public RealmValue GetValue(string propertyName, Metadata metadata, Realm realm)
+        public ObjectSchema GetSchema(bool includeExtraProperties = false)
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
-            NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            return new RealmValue(result, realm, this, propertyIndex);
-        }
-
-        public RealmSchema GetSchema()
-        {
-            EnsureIsOpen();
-
-            RealmSchema? result = null;
-            Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
+            ObjectSchema? result = null;
+            Action<Native.Schema> callback = (nativeSmallSchema) => result = new ObjectSchema(nativeSmallSchema.objects[0]);
             var callbackHandle = GCHandle.Alloc(callback);
 
             try
             {
-                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
+                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), includeExtraProperties, out var nativeException);
                 nativeException.ThrowIfNecessary();
             }
             finally
@@ -176,77 +187,215 @@ namespace Realms
             return result!;
         }
 
+        public bool TryGetProperty(string propertyName, out Property property)
+        {
+            EnsureIsOpen();
+
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            var propertyFound = NativeMethods.get_property(this, propertyNameNative, out var schemaProp, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            if (propertyFound)
+            {
+                property = new Property(schemaProp);
+                return true;
+            }
+
+            property = default;
+            return false;
+        }
+
+        public RealmValue GetValue(string propertyName, Metadata metadata, Realm realm)
+        {
+            TryGetValueInternal(propertyName, metadata, realm, out var value, throwOnMissingProperty: true);
+            return value;
+        }
+
+        public bool TryGetValue(string propertyName, Metadata metadata, Realm realm, out RealmValue value)
+        {
+            return TryGetValueInternal(propertyName, metadata, realm, out value, throwOnMissingProperty: false);
+        }
+
+        private bool TryGetValueInternal(string propertyName, Metadata metadata, Realm realm, out RealmValue value,
+            bool throwOnMissingProperty)
+        {
+            EnsureIsOpen();
+
+            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex,
+                throwOnMissing: !realm.Config.RelaxedSchema))
+            {
+                NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
+                nativeException.ThrowIfNecessary();
+
+                value = new RealmValue(result, realm, this, propertyIndex);
+                return true;
+            }
+            else
+            {
+                using Arena arena = new();
+                var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+                var propFound = NativeMethods.get_value_by_name(this, propertyNameNative, out var result, throwOnMissingProperty, out var nativeException);
+                nativeException.ThrowIfNecessary();
+
+                value = new RealmValue(result, realm, this);
+                return propFound;
+            }
+        }
+
         public void SetValue(string propertyName, Metadata metadata, in RealmValue value, Realm realm)
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
-
-            // We need to special-handle objects because they need to be managed before we can set them.
-            if (value.Type == RealmValueType.Object)
+            if (metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: !realm.Config.RelaxedSchema))
             {
-                switch (value.AsIRealmObject())
+                // We need to special-handle objects because they need to be managed before we can set them.
+                if (value.Type == RealmValueType.Object)
                 {
-                    case IRealmObject realmObj when !realmObj.IsManaged:
-                        realm.Add(realmObj);
-                        break;
-                    case IEmbeddedObject embeddedObj:
-                        if (embeddedObj.IsManaged)
-                        {
-                            NativeMethods.get_value(this, propertyIndex, out var existingValue, out var ex);
-                            ex.ThrowIfNecessary();
-                            if (existingValue.TryGetObjectHandle(realm, out var existingObjectHandle) &&
-                                embeddedObj.GetObjectHandle()!.ObjEquals(existingObjectHandle))
+                    switch (value.AsIRealmObject())
+                    {
+                        case IRealmObject realmObj when !realmObj.IsManaged:
+                            realm.Add(realmObj);
+                            break;
+                        case IEmbeddedObject embeddedObj:
+                            if (embeddedObj.IsManaged)
                             {
-                                // We're trying to set an object to the same value - treat it as a no-op.
-                                return;
+                                NativeMethods.get_value(this, propertyIndex, out var existingValue, out var ex);
+                                ex.ThrowIfNecessary();
+                                if (existingValue.TryGetObjectHandle(realm, out var existingObjectHandle) &&
+                                    embeddedObj.GetObjectHandle()!.ObjEquals(existingObjectHandle))
+                                {
+                                    // We're trying to set an object to the same value - treat it as a no-op.
+                                    return;
+                                }
+
+                                throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                             }
 
-                            throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
-                        }
+                            if (GetProperty(propertyName, metadata).Type.IsRealmValue())
+                            {
+                                throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                            }
 
-                        if (GetProperty(propertyName, metadata).Type.IsRealmValue())
-                        {
-                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
-                        }
+                            var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
+                            realm.ManageEmbedded(embeddedObj, embeddedHandle);
+                            return;
 
-                        var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
-                        realm.ManageEmbedded(embeddedObj, embeddedHandle);
-                        return;
-
-                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
-                    // a RealmValue property on the object.
-                    // This is because:
-                    // * For plain asymmetric objects (not contained within a RealmValue), the weaver
-                    //   raises a compilation error since asymmetric objects can't be linked to.
-                    case IAsymmetricObject:
-                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        // Asymmetric objects can't reach this path unless the user explicitly sets them as
+                        // a RealmValue property on the object.
+                        // This is because:
+                        // * For plain asymmetric objects (not contained within a RealmValue), the weaver
+                        //   raises a compilation error since asymmetric objects can't be linked to.
+                        case IAsymmetricObject:
+                            throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                    }
                 }
-            }
-            else if (value.Type.IsCollection())
-            {
-                var collectionPtr = NativeMethods.set_collection_value(this, propertyIndex, value.Type, out var collNativeException);
-                collNativeException.ThrowIfNecessary();
-
-                switch (value.Type)
+                else if (value.Type.IsCollection())
                 {
-                    case RealmValueType.List:
-                        CollectionHelpers.PopulateCollection(realm, new ListHandle(Root!, collectionPtr), value);
-                        break;
-                    case RealmValueType.Dictionary:
-                        CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
-                        break;
-                    default:
-                        break;
+                    var collectionPtr = NativeMethods.set_collection_value(this, propertyIndex, value.Type, out var collNativeException);
+                    collNativeException.ThrowIfNecessary();
+
+                    switch (value.Type)
+                    {
+                        case RealmValueType.List:
+                            CollectionHelpers.PopulateCollection(realm, new ListHandle(Root!, collectionPtr), value);
+                            break;
+                        case RealmValueType.Dictionary:
+                            CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return;
                 }
 
-                return;
+                var (primitive, handles) = value.ToNative();
+                NativeMethods.set_value(this, propertyIndex, primitive, out var nativeException);
+                handles?.Dispose();
+                nativeException.ThrowIfNecessary();
             }
+            else
+            {
+                using Arena arena = new();
+                var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
 
-            var (primitive, handles) = value.ToNative();
-            NativeMethods.set_value(this, propertyIndex, primitive, out var nativeException);
-            handles?.Dispose();
+                if (value.Type == RealmValueType.Object)
+                {
+                    switch (value.AsIRealmObject())
+                    {
+                        case IRealmObject realmObj when !realmObj.IsManaged:
+                            realm.Add(realmObj);
+                            break;
+                        case IEmbeddedObject:
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        case IAsymmetricObject:
+                            throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                    }
+                }
+                else if (value.Type.IsCollection())
+                {
+                    var collectionPtr = NativeMethods.set_collection_value_by_name(this, propertyNameNative, value.Type, out var collNativeException);
+                    collNativeException.ThrowIfNecessary();
+
+                    switch (value.Type)
+                    {
+                        case RealmValueType.List:
+                            CollectionHelpers.PopulateCollection(realm, new ListHandle(Root!, collectionPtr), value);
+                            break;
+                        case RealmValueType.Dictionary:
+                            CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return;
+                }
+
+                var (primitive, handles) = value.ToNative();
+                NativeMethods.set_value_by_name(this, propertyNameNative, primitive, out var nativeException);
+                handles?.Dispose();
+                nativeException.ThrowIfNecessary();
+            }
+        }
+
+        public bool UnsetProperty(string propertyName)
+        {
+            EnsureIsOpen();
+
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            var propertyFound = NativeMethods.unset_property(this, propertyNameNative, out var nativeException);
             nativeException.ThrowIfNecessary();
+            return propertyFound;
+        }
+
+        //TODO This is not used atm. We could remove it
+        public IEnumerable<string> GetExtraProperties()
+        {
+            EnsureIsOpen();
+
+            var value = NativeMethods.get_extra_properties(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return value.Strings.ToEnumerable().Select(v => v.ToDotnetString()!);
+        }
+
+        public bool HasProperty(string propertyName)
+        {
+            EnsureIsOpen();
+
+            using Arena arena = new();
+            var propertyNameNative = StringValue.AllocateFrom(propertyName, arena);
+
+            var value = NativeMethods.has_property(this, propertyNameNative, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return value;
         }
 
         public long AddInt64(IntPtr propertyIndex, long value)
@@ -262,7 +411,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
 
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -288,7 +437,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -301,7 +450,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -314,7 +463,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -327,7 +476,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(Root!, objPtr);
@@ -347,7 +496,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -358,7 +507,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = metadata.GetPropertyIndex(propertyName);
+            metadata.TryGetPropertyIndex(propertyName, out var propertyIndex, throwOnMissing: true);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 

@@ -64,6 +64,8 @@ struct Configuration
     bool invoke_migration_callback;
 
     bool automatically_migrate_embedded;
+
+    bool relaxed_schema;
 };
 
 struct SyncConfiguration

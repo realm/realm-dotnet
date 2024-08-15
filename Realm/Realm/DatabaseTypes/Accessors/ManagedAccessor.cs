@@ -39,6 +39,10 @@ namespace Realms
     {
         private readonly Lazy<int> _hashCode;
 
+        private readonly Lazy<ObjectSchema> _objectSchema;
+
+        private readonly Lazy<DynamicObjectApi> _dynamicObjectApi;
+
         private NotificationTokenHandle? _notificationToken;
 
         private Action<string>? _onNotifyPropertyChanged;
@@ -60,7 +64,7 @@ namespace Realms
         public bool IsFrozen => Realm.IsFrozen;
 
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => Metadata.Schema;
+        public ObjectSchema ObjectSchema => _objectSchema.Value;
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
@@ -69,7 +73,7 @@ namespace Realms
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         /// <inheritdoc/>
-        public DynamicObjectApi DynamicApi => new(this);
+        public DynamicObjectApi DynamicApi => _dynamicObjectApi.Value;
 
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
@@ -82,6 +86,8 @@ namespace Realms
 #pragma warning restore CS8618
         {
             _hashCode = new(() => ObjectHandle!.GetObjHash());
+            _objectSchema = new(() => Realm!.Config.RelaxedSchema ? Metadata!.Schema.MakeCopyWithHandle(ObjectHandle!) : Metadata!.Schema);
+            _dynamicObjectApi = new(() => new DynamicManagedObjectApi(this));
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
@@ -108,10 +114,22 @@ namespace Realms
             return ObjectHandle.GetValue(propertyName, Metadata, Realm);
         }
 
+        /// AddDocs
+        public bool TryGetValue(string propertyName, out RealmValue value)
+        {
+            return ObjectHandle.TryGetValue(propertyName, Metadata, Realm, out value);
+        }
+
         /// <inheritdoc/>
         public void SetValue(string propertyName, RealmValue val)
         {
             ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
+        }
+
+        //TODO Add docs
+        public bool UnsetProperty(string propertyName)
+        {
+            return ObjectHandle.UnsetProperty(propertyName);
         }
 
         /// <inheritdoc/>

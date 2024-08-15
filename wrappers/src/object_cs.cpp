@@ -107,7 +107,7 @@ extern "C" {
             auto val = object.get_obj().get_any(prop.column_key);
             if (val.is_null())
             {
-                *value = to_capi(std::move(val));
+                *value = to_capi(val);
                 return;
             }
             
@@ -128,12 +128,88 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_value_by_name(const Object& object, realm_string_t property_name, realm_value_t* value, bool throw_on_missing_property,
+        NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            auto prop_name = capi_to_std(property_name);
+
+            if (!throw_on_missing_property && !object.get_obj().has_property(prop_name))
+            {
+                *value = realm_value_t{};
+                return false;
+            }
+
+            auto val = object.get_obj().get_any(prop_name);
+
+            if (val.is_null())
+            {
+                *value = to_capi(val);
+                return true;
+            }
+
+            switch (val.get_type()) {
+            case type_TypedLink:
+                *value = to_capi(val.get<ObjLink>(), object.realm());
+                break;
+            case type_List:
+                *value = to_capi(new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(prop_name)));
+                break;
+            case type_Dictionary:
+                *value = to_capi(new object_store::Dictionary(object.realm(), object.get_obj().get_dictionary_ptr(prop_name)));
+                break;
+            default:
+                *value = to_capi(std::move(val));
+                break;
+            }
+
+            return true;
+        });
+    }
+
+    REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, bool include_extra_properties, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             auto& object_schema = object.get_object_schema();
-            Schema schema({object_schema});
-            send_schema_to_managed(schema, managed_callback);
+
+            std::vector<SchemaProperty> schema_properties;
+            SchemaObject converted_schema;
+
+            if (include_extra_properties)
+            {
+                converted_schema = SchemaObject::for_marshalling(object_schema, schema_properties, object.get_obj().get_additional_properties());
+            }
+            else
+            {
+                converted_schema = SchemaObject::for_marshalling(object_schema, schema_properties);
+            }
+
+            std::vector<SchemaObject> schema_objects;
+            schema_objects.push_back(converted_schema);
+            s_get_native_schema({ schema_objects }, managed_callback);
+        });
+    }
+
+    REALM_EXPORT bool object_get_property(const Object& object, realm_string_t property_name, SchemaProperty* property, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto prop_name = capi_to_std(property_name);
+            auto prop = object.get_object_schema().property_for_name(prop_name);
+            if (prop != nullptr)
+            {
+                *property = SchemaProperty::for_marshalling(*prop);
+                return true;
+            }
+
+            if (object.get_obj().has_property(prop_name))
+            {
+                *property = SchemaProperty::extra_property(property_name);
+                return true;
+            }
+
+            return false;
         });
     }
 
@@ -174,6 +250,55 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void object_set_value_by_name(Object& object, realm_string_t property_name, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
+            object.get_obj().set_any(capi_to_std(property_name), from_capi(value));
+        });
+    }
+
+    REALM_EXPORT bool object_unset_property(Object& object, realm_string_t property_name, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_set(object);
+            auto prop_name = capi_to_std(property_name);
+
+            //TODO This is not correct, it should be "has_additional_property", but the method is not there yet
+            if (!object.get_obj().has_property(prop_name))
+            {
+                return false;
+            }
+
+            object.get_obj().erase_prop(prop_name);
+            return true;
+        });
+    }
+
+    REALM_EXPORT bool object_has_property(Object& object, realm_string_t property_name,
+        NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return object.get_obj().has_property(capi_to_std(property_name));
+        });
+    }
+
+    REALM_EXPORT realm_string_collection_t object_get_extra_properties(Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto props = object.get_obj().get_additional_properties();
+
+            size_t size = props.size();
+            realm_string_t* array = new realm_string_t[size];
+
+            for (size_t i = 0; i < size; ++i) {
+                array[i] = to_capi(props[i]);
+            }
+
+            return realm_string_collection_t{ array, size };
+        });
+    }
+
     REALM_EXPORT void* object_set_collection_value(Object& object, size_t property_ndx, realm_value_type type, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]()-> void* {
@@ -199,6 +324,37 @@ extern "C" {
             }
             default:
                 REALM_TERMINATE("Invalid collection type");
+            }
+        });
+    }
+
+    REALM_EXPORT void* object_set_collection_value_by_name(Object& object, 
+        realm_string_t property_name, realm_value_type type, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]()-> void* {
+            verify_can_set(object);
+
+            auto prop_name = capi_to_std(property_name);
+
+            switch (type)
+            {
+                case realm::binding::realm_value_type::RLM_TYPE_LIST:
+                {
+                
+                    object.get_obj().set_collection(prop_name, CollectionType::List);
+                    auto innerList = new List(object.realm(), object.get_obj().get_list_ptr<Mixed>(prop_name));
+                    innerList->remove_all();
+                    return innerList;
+                }
+                case realm::binding::realm_value_type::RLM_TYPE_DICTIONARY:
+                {
+                    object.get_obj().set_collection(prop_name, CollectionType::Dictionary);
+                    auto innerDict = new object_store::Dictionary(object.realm(), object.get_obj().get_dictionary_ptr(prop_name));
+                    innerDict->remove_all();
+                    return innerDict;
+                }
+                default:
+                    REALM_TERMINATE("Invalid collection type");
             }
         });
     }
