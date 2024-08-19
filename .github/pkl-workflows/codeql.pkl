@@ -58,7 +58,7 @@ jobs {
         }
       }
       ...Steps.setupAndroid()
-      ...Steps.setupWorkloads("tvos ios maccatalyst android", "8.0.x")
+      Steps.setupDotnet("8.0.x")
       ...Steps.msbuild(new Steps.MSBuildConfig {
         projects = Common.packages.map((pkg) -> "Realm/\(pkg)").toListing()
         properties {

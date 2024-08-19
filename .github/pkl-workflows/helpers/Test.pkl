@@ -99,7 +99,7 @@ function weaver(): gha.StepJobBase = testJob(
   },
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.setupWorkloads(null, "6.0.x")
+    Steps.setupDotnet("6.0.x")
     ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
@@ -129,7 +129,7 @@ function sourceGeneration(): gha.StepJobBase = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.setupWorkloads(null, "6.0.x")
+    Steps.setupDotnet("6.0.x")
     ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping{}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
@@ -212,11 +212,11 @@ function iOS_Maui(): gha.StepJobBase = testJob(
     title = "Maui.iOS"
     transformResults = true
   },
-  "macos-13",
+  "macos-14",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.setupWorkloads("maui", null)
+    ...Steps.setupMaui()
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig{
@@ -256,11 +256,11 @@ function macOS_Maui(): gha.StepJobBase = testJob(
     title = "Maui.MacCatalyst"
     transformResults = true
   },
-  "macos-13",
+  "macos-14",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.setupWorkloads("maui", null)
+    ...Steps.setupMaui()
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", null, getTestProps(false))
     new {
@@ -347,7 +347,7 @@ function android_Maui(): gha.StepJobBase = testJob(
   (config) -> new Listing<gha.Step> {
     Steps.setupJDK()
     ...prepareTests(config)
-    ...Steps.setupWorkloads("maui", null)
+    ...Steps.setupMaui()
     ...Steps.dotnetPublish("Tests/Tests.Maui", "net8.0-android", /* runtime */ null, getTestProps(false))
     ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
       apkPath = "${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk"

@@ -47,20 +47,9 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Setup JDK
-      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
-      with:
-        distribution: microsoft
-        java-version: 17
-    - name: Setup Android
-      uses: android-actions/setup-android@e1f5280adf78cf863c0fa43ffabc64a9cd08153f
-    - name: Install SDK platform 21
-      run: sdkmanager --install "platforms;android-21"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
-    - name: Setup workloads
-      run: dotnet workload install tvos ios maccatalyst android
     - name: Set version suffix
       id: set-version-suffix
       run: |-
@@ -680,7 +669,7 @@ jobs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -699,7 +688,7 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
-    - name: Setup workloads
+    - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
@@ -772,7 +761,7 @@ jobs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     timeout-minutes: 60
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -791,7 +780,7 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
-    - name: Setup workloads
+    - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
@@ -950,7 +939,7 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
-    - name: Setup workloads
+    - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Publish Tests/Tests.Maui
       run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
@@ -1042,8 +1031,6 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
-    - name: Setup workloads
-      run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
     - name: Output executable path
@@ -1080,8 +1067,6 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 6.0.x
-    - name: Setup workloads
-      run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path

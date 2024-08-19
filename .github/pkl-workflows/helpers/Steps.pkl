@@ -107,11 +107,11 @@ const function fetchWrappers(wrappers: List<String>(every((wrapper) -> Common.wr
   }
 })
 
-const function setupWorkloads(workloads: String?, dotnetVersion: String?): Listing<gha.Step> = new {
-  setupDotnet(dotnetVersion)
+const function setupMaui(): Listing<gha.Step> = new {
+  setupDotnet(null)
   new {
-    name = "Setup workloads"
-    run = "dotnet workload install \(workloads ?? "android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}")"
+    name = "Setup Maui workload"
+    run = "dotnet workload install maui"
   }
 }
 

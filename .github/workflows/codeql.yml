@@ -56,8 +56,6 @@ jobs:
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: 8.0.x
-    - name: Setup workloads
-      run: dotnet workload install tvos ios maccatalyst android
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
