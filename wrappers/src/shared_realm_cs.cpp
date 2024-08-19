@@ -337,7 +337,6 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
 
     handle_errors(ex, [&]() {
         realm::_impl::RealmCoordinator::clear_all_caches();
-        app::App::clear_cached_apps();
     });
 }
 

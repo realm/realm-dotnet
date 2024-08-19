@@ -23,7 +23,7 @@ option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opp
 
 if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
   set(REALM_BUILD_LIB_ONLY ON)
-  set(REALM_ENABLE_SYNC ON)
+  set(REALM_ENABLE_SYNC OFF)
   set(REALM_ENABLE_ASSERTIONS ON CACHE BOOL "Enable release assertions")
 
   add_subdirectory(realm-core EXCLUDE_FROM_ALL)
