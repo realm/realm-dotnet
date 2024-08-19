@@ -473,9 +473,5 @@ namespace AssemblyToProcess
     {
         [PrimaryKey, MapTo("_id")]
         public Guid Id { get; set; } = Guid.NewGuid();
-
-        public IList<Sensor> SensorsList { get; } = null!;
-
-        public ISet<Sensor> SensorsSet { get; } = null!;
     }
 }

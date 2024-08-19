@@ -309,16 +309,10 @@ namespace AssemblyToProcess
         public double X { get; set; }
 
         public double Y { get; set; }
-
-        public Sensor? Sensor { get; set; }
     }
 
     public class Department : EmbeddedObject
     {
-        public IList<Sensor> SensorsList { get; } = null!;
-
-        public ISet<Sensor> SensorsSet { get; } = null!;
-
         public string? Name { get; set; }
     }
 }
