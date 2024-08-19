@@ -5,7 +5,6 @@ name: wrappers
 'on':
   workflow_call: {}
 env:
-  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   check-cache:

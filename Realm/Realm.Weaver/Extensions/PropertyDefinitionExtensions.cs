@@ -199,9 +199,6 @@ internal static class PropertyDefinitionExtensions
     public static bool ContainsRealmObject(this PropertyDefinition property, ImportedReferences references) =>
         property.PropertyType.Resolve().IsRealmObjectInheritor(references);
 
-    public static bool ContainsAsymmetricObject(this PropertyDefinition property, ImportedReferences references) =>
-        property.PropertyType.Resolve().IsAsymmetricObjectInheritor(references);
-
     public static bool ContainsEmbeddedObject(this PropertyDefinition property, ImportedReferences references) =>
         property.PropertyType.Resolve().IsEmbeddedObjectInheritor(references);
 

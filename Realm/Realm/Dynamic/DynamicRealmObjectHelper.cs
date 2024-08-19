@@ -27,7 +27,6 @@ namespace Realms.Dynamic
     {
         private static readonly DynamicRealmObjectHelper _embeddedInstance = new(ObjectSchema.ObjectType.EmbeddedObject);
         private static readonly DynamicRealmObjectHelper _objectInstance = new(ObjectSchema.ObjectType.RealmObject);
-        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new(ObjectSchema.ObjectType.AsymmetricObject);
 
         private readonly ObjectSchema.ObjectType _schemaType;
 
@@ -36,7 +35,6 @@ namespace Realms.Dynamic
             {
                 ObjectSchema.ObjectType.RealmObject => _objectInstance,
                 ObjectSchema.ObjectType.EmbeddedObject => _embeddedInstance,
-                ObjectSchema.ObjectType.AsymmetricObject => _asymmetricInstance,
                 _ => throw new NotSupportedException($"{schema.BaseType} type not supported, yet."),
             };
 
@@ -55,7 +53,6 @@ namespace Realms.Dynamic
             {
                 ObjectSchema.ObjectType.RealmObject => new DynamicRealmObject(),
                 ObjectSchema.ObjectType.EmbeddedObject => new DynamicEmbeddedObject(),
-                ObjectSchema.ObjectType.AsymmetricObject => new DynamicAsymmetricObject(),
                 _ => throw new NotSupportedException($"{_schemaType} type not supported, yet."),
             };
 

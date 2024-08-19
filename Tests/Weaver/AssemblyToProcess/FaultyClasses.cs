@@ -224,7 +224,7 @@ namespace AssemblyToProcess
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
-    // This class has no persisted properties. 
+    // This class has no persisted properties.
     public class NoPersistedProperties : RealmObject
     {
         public int PublicField;
@@ -302,17 +302,6 @@ namespace AssemblyToProcess
         public string GetterLessString { set { } }
 
         public string SetterLessString { get; } = null!;
-    }
-
-    public class Sensor : AsymmetricObject
-    {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        [Backlink(nameof(Measurement.Sensor))]
-        public IQueryable<Measurement> Measurements { get; } = null!;
-
-        public Measurement FirstMeasurement => Measurements.First();
     }
 
     public class Coordinates : EmbeddedObject

@@ -514,75 +514,6 @@ namespace Realms
             }
         }
 
-        /// <summary>
-        /// This <see cref="Realm"/> will start managing an <see cref="IAsymmetricObject"/> which has been created as a standalone object.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
-        /// so it has persistent properties.
-        /// </typeparam>
-        /// <param name="obj">Must be a standalone <see cref="IAsymmetricObject"/>, <c>null</c> not allowed.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place,
-        /// meaning that after it has run, <see cref="IAsymmetricObject"/> will be managed.
-        /// Once an <see cref="IAsymmetricObject"/> becomes managed dereferencing any property
-        /// of the original <see cref="IAsymmetricObject"/> reference throws an exception.
-        /// </remarks>
-        public void Add<T>(T obj)
-            where T : IAsymmetricObject
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(obj, nameof(obj));
-            Argument.Ensure(!obj.IsManaged, $"{nameof(obj)} must not be already managed by a Realm.", nameof(obj));
-
-            AddInternal(obj, obj.GetType(), update: false);
-        }
-
-        /// <summary>
-        /// Add a collection of standalone <see cref="IAsymmetricObject">AsymmetricObjects</see> to this <see cref="Realm"/>.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
-        /// so it has persistent properties.
-        /// </typeparam>
-        /// <param name="objs">A collection of <see cref="IAsymmetricObject"/> instances that will be added to this <see cref="Realm"/>.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
-        /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
-        /// Once an <see cref="IAsymmetricObject"/> becomes managed and the transaction is committed,
-        /// dereferencing any property of the original <see cref="IAsymmetricObject"/> reference throw an exception.
-        /// Hence, none of the properties of the elements in the collection can be dereferenced anymore after the transaction.
-        /// </remarks>
-        public void Add<T>(IEnumerable<T> objs)
-            where T : IAsymmetricObject
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(objs, nameof(objs));
-            foreach (var obj in objs)
-            {
-                Argument.Ensure(obj != null, $"{nameof(objs)} must not contain null values.", nameof(objs));
-                Argument.Ensure(!obj.IsManaged, $"{nameof(objs)} must not contain already managed objects by a Realm.", nameof(objs));
-            }
-
-            foreach (var obj in objs)
-            {
-                AddInternal(obj, obj.GetType(), update: false);
-            }
-        }
-
         internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
@@ -1239,12 +1170,6 @@ namespace Realms
         /// 1. The destination file cannot already exist.
         /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
         ///    and not the data as it was when the last transaction was committed.
-        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
-        ///    This is to be sure that the file can be used as a starting point for a newly installed application.
-        ///    The function will throw if there are pending uploads.
-        /// 4. Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled.
-        /// 5  Changing from flexible sync sync to partition based sync is not supported.
-        /// 6. Changing the partition to synchronize on is not supported.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
@@ -1675,7 +1600,6 @@ namespace Realms
 
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
                 Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
-                Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.AsymmetricObject, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
 
                 return new RealmResults<IRealmObject>(_realm, metadata);
             }

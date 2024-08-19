@@ -591,7 +591,6 @@ namespace Realms
             using var arena = new Arena();
             var nativeConfig = config.CreateNativeConfiguration(arena);
 
-            // TODO: community: remote useSync
             NativeMethods.write_copy(this, nativeConfig, out var nativeException);
             nativeException.ThrowIfNecessary();
         }

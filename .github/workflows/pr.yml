@@ -20,7 +20,6 @@ name: PR Build
     - .github/actions/**
     - Tests/Tests.Android/Properties/AndroidManifest.xml
 env:
-  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -184,8 +183,6 @@ jobs:
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Realm/Realm
       run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Build Realm/Realm.PlatformHelpers
-      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
@@ -202,13 +199,6 @@ jobs:
       with:
         name: Realm.${{ steps.get-version.outputs.package_version }}
         path: Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}.*nupkg
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - name: Store artifacts for Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
-        path: Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
@@ -291,11 +281,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v4
@@ -504,11 +489,6 @@ jobs:
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
@@ -547,11 +527,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Import test certificate
       run: |-
@@ -601,11 +576,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Clear nuget cache
       if: ${{ matrix.os.runner == 'win81' }}
@@ -687,11 +657,6 @@ jobs:
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
@@ -730,11 +695,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
@@ -783,11 +743,6 @@ jobs:
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
@@ -832,11 +787,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
@@ -891,11 +841,6 @@ jobs:
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
@@ -945,11 +890,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
@@ -1006,11 +946,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
@@ -1070,11 +1005,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
@@ -1217,7 +1147,7 @@ jobs:
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Archive core dump
       if: ${{ failure() && runner.os != 'Windows' }}
       uses: actions/upload-artifact@v4
@@ -1261,11 +1191,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.PlatformHelpers
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v4

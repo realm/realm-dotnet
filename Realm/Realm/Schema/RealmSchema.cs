@@ -32,7 +32,7 @@ namespace Realms.Schema
     /// dynamically, by evaluating a Realm from disk. To construct a new <see cref="RealmSchema"/> instance, use the
     /// <see cref="Builder">RealmSchema.Builder</see> API.
     /// <br/>
-    /// By default this will be all the <see cref="IRealmObject"/>s, <see cref="IEmbeddedObject"/>s and <see cref="IAsymmetricObject"/>s
+    /// By default, this will be all the <see cref="IRealmObject"/>s and <see cref="IEmbeddedObject"/>s
     /// in all your assemblies. Unless you restrict with <see cref="RealmConfigurationBase.Schema"/>. Just because a given class <em>may</em>
     /// be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
@@ -77,9 +77,9 @@ namespace Realms.Schema
 
             foreach (var type in types)
             {
-                if (!type.IsRealmObject() && !type.IsEmbeddedObject() && !type.IsAsymmetricObject())
+                if (!type.IsRealmObject() && !type.IsEmbeddedObject())
                 {
-                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject, AsymmetricObject or EmbeddedObject to be used in the Realm schema.");
+                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject or EmbeddedObject to be used in the Realm schema.");
                 }
 
                 if (_defaultTypes.Add(type) &&

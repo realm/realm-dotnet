@@ -187,7 +187,7 @@ namespace Realms
             {
                 switch (value.AsIRealmObject())
                 {
-                    case IRealmObject realmObj when !realmObj.IsManaged:
+                    case IRealmObject { IsManaged: false } realmObj:
                         realm.Add(realmObj);
                         break;
                     case IEmbeddedObject embeddedObj:
@@ -213,14 +213,6 @@ namespace Realms
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
-
-                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
-                    // a RealmValue property on the object.
-                    // This is because:
-                    // * For plain asymmetric objects (not contained within a RealmValue), the weaver
-                    //   raises a compilation error since asymmetric objects can't be linked to.
-                    case IAsymmetricObject:
-                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
             else if (value.Type.IsCollection())
@@ -235,8 +227,6 @@ namespace Realms
                         break;
                     case RealmValueType.Dictionary:
                         CollectionHelpers.PopulateCollection(realm, new DictionaryHandle(Root!, collectionPtr), value);
-                        break;
-                    default:
                         break;
                 }
 

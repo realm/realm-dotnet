@@ -105,33 +105,6 @@ namespace Realms
     }
 
     /// <summary>
-    /// Base interface for any asymmetric object that can be persisted in a <see cref="Realm"/>.
-    /// </summary>
-    /// <remarks>
-    /// The benefit of using <see cref="IAsymmetricObject"/> is that the performance of each sync operation is much higher.
-    /// The drawback is that an <see cref="IAsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
-    /// You should use this base when you have a write-heavy use case.
-    /// If, instead you want to persist an object that you can also query against, use <see cref="IRealmObject"/> instead.
-    /// <br/>
-    /// This interface will be implemented automatically by the Realm source generator as long as your
-    /// model class is declared as <c>partial</c>.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// public partial class SensorReading : IAsymmetricObject
-    /// {
-    ///     public DateTimeOffset TimeStamp { get; set; } = DateTimeOffset.UtcNow;
-    ///
-    ///     public double Value { get; set; }
-    /// }
-    /// </code>
-    /// </example>
-    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
-    public interface IAsymmetricObject : IRealmObjectBase
-    {
-    }
-
-    /// <summary>
     /// Base interface for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     /// <remarks>
@@ -152,8 +125,7 @@ namespace Realms
     {
         /// <summary>
         /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
-        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
-        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
+        /// <see cref="IEmbeddedObject">embedded object</see> or a standalone <see cref="IRealmObject">realm object</see>.
         /// </summary>
         /// <value>The parent object that owns this <see cref="IEmbeddedObject"/>.</value>
         public IRealmObjectBase? Parent { get; }

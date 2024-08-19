@@ -478,30 +478,4 @@ namespace AssemblyToProcess
 
         public ISet<Sensor> SensorsSet { get; } = null!;
     }
-
-    public class ContainedAsymmetricTest : AsymmetricObject
-    {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public string? JustAString { get; set; }
-    }
-
-    public class Measurement : AsymmetricObject
-    {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public Sensor? Sensor { get; set; }
-
-        public IList<ContainedAsymmetricTest> ListOfAsymmetrics { get; } = null!;
-
-        public ISet<ContainedAsymmetricTest> SetOfAsymmetrics { get; } = null!;
-
-        public string? Target { get; set; }
-
-        public string? UnitMeasure { get; set; }
-
-        public IList<double> Records { get; } = null!;
-    }
 }

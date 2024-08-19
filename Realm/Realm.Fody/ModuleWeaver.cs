@@ -16,13 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using Mono.Cecil.Cil;
 using RealmWeaver;
-using static RealmWeaver.Analytics;
 
 // ReSharper disable once CheckNamespace
 public class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
@@ -41,7 +39,7 @@ public class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);
 
-        var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
+        var executionResult = weaver.Execute();
         WriteInfo(executionResult.ToString());
     }
 
@@ -55,46 +53,6 @@ public class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Collections";
         yield return "System.ObjectModel";
         yield return "System.Threading";
-    }
-
-    private Config GetAnalyticsConfig(FrameworkName netFramework)
-    {
-        AnalyticsCollection analyticsCollection;
-        if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
-        {
-            analyticsCollection = collection;
-        }
-        else if (bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var disableAnalytics))
-        {
-            analyticsCollection = disableAnalytics ? AnalyticsCollection.Disabled : AnalyticsCollection.Full;
-        }
-        else if (Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null || Environment.GetEnvironmentVariable("CI") != null)
-        {
-            analyticsCollection = AnalyticsCollection.Disabled;
-        }
-        else
-        {
-#if DEBUG
-            analyticsCollection = AnalyticsCollection.DryRun;
-#else
-            analyticsCollection = AnalyticsCollection.Full;
-#endif
-        }
-
-        var framework = AnalyticsUtils.GetFrameworkAndVersion(ModuleDefinition);
-
-        return new(
-            targetOSName: AnalyticsUtils.GetTargetOsName(netFramework),
-            netFrameworkTarget: netFramework.Identifier,
-            netFrameworkTargetVersion: netFramework.Version.ToString(),
-            installationMethod: "Nuget",
-            frameworkName: framework.Name,
-            frameworkVersion: framework.Version,
-            compiler: "msbuild")
-        {
-            AnalyticsCollection = analyticsCollection,
-            AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
-        };
     }
 
     void ILogger.Debug(string message)

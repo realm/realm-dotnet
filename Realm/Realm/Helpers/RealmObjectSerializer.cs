@@ -304,7 +304,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         var type = typeof(TValue);
         Action<BsonSerializationContext, BsonSerializationArgs, object?> serialize = type switch
         {
-            _ when type.IsRealmObject() || type.IsAsymmetricObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
+            _ when type.IsRealmObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
             _ when type.IsEmbeddedObject() => RealmObjectSerializer.LookupSerializer(type)!.Serialize,
             _ => BsonSerializer.LookupSerializer<TValue>().Serialize
         };
@@ -325,7 +325,7 @@ public abstract class RealmObjectSerializerBase<T> : RealmObjectSerializerBase, 
         var type = typeof(TValue);
         Action<BsonSerializationContext, BsonSerializationArgs, object?> serialize = type switch
         {
-            _ when type.IsRealmObject() || type.IsAsymmetricObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
+            _ when type.IsRealmObject() => RealmObjectSerializer.LookupSerializer(type)!.SerializeId,
             _ when type.IsEmbeddedObject() => RealmObjectSerializer.LookupSerializer(type)!.Serialize,
             _ => BsonSerializer.LookupSerializer<TValue>().Serialize
         };

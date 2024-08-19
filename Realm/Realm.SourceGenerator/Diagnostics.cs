@@ -92,7 +92,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.ClassUnclearDefinition,
                 "Realm classes cannot implement multiple class interfaces",
-                $"Class {className} is declared as implementing multiple class interfaces. A class can implement only one interface between IRealmObject, IEmbeddedObject, IAsymmetricObject.",
+                $"Class {className} is declared as implementing multiple class interfaces. A class can implement only one interface between IRealmObject, IEmbeddedObject.",
                 location);
         }
 
@@ -317,7 +317,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.TypeNotSupported,
                 "Type not supported",
-                $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported. If that is supposed to be a model class, make sure it implements IRealmObject/IEmbeddedObject/IAsymmetricObject.",
+                $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported. If that is supposed to be a model class, make sure it implements IRealmObject/IEmbeddedObject.",
                 location);
         }
 

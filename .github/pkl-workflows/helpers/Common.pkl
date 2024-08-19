@@ -36,7 +36,6 @@ const wrapperBinaryNames: List<String> =
   + applePlatformTargets((platform, target) -> "\(platform)-\(target)")
 
 const defaultEnv: Mapping<String, String | Boolean> = new {
-  ["REALM_DISABLE_ANALYTICS"] = true
   ["DOTNET_NOLOGO"] = true
 }
 
@@ -44,7 +43,7 @@ const function applePlatformTargets(_transform: (String, String) -> String): Lis
 
 const ifNotCanceledCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
 
-const nugetPackages: List<String> = List("Realm", "Realm.PlatformHelpers")
+const nugetPackages: List<String> = List("Realm")
 const packages: List<String> = nugetPackages + List("Realm.UnityUtils", "Realm.UnityWeaver")
 
 const testTimeout: Int = 60

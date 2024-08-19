@@ -56,10 +56,6 @@
       <HintPath>$(RealmDllsPath)\Realm.dll</HintPath>
     </Reference>
 
-    <Reference Include="Realm.PlatformHelpers">
-      <HintPath>$(RealmDllsPath)\Realm.PlatformHelpers.dll</HintPath>
-    </Reference>
-
     <!--
     Since this is a compiled binary, the Unity weaver will not pick it up, which means we need to pre-weave it using the
     Fody Weaver.

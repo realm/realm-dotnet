@@ -265,9 +265,6 @@ namespace Realms
                 case IEmbeddedObject:
                     Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
                     throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
-                case IAsymmetricObject:
-                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
-                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
                 default:
                     throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }

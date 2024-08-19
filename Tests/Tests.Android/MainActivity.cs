@@ -22,7 +22,6 @@ using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
-using Realms.Tests.Sync;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
@@ -48,7 +47,7 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent?.GetStringArrayExtra("args") ?? Array.Empty<string>());
+            var arguments = Intent?.GetStringArrayExtra("args") ?? Array.Empty<string>();
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {

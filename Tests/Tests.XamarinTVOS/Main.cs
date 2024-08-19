@@ -40,7 +40,7 @@ namespace Realms.Tests.XamarinTVOS
                                     .ToArray();
             }
 
-            Args = Sync.SyncTestHelpers.ExtractBaasSettings(args);
+            Args = args;
             UIApplication.Main(args, null, typeof(AppDelegate));
         }
     }

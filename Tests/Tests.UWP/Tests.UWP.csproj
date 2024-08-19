@@ -204,10 +204,6 @@
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
-      <Project>{4C9BE4FA-9CB2-4091-B86A-4EC557A78991}</Project>
-      <Name>Realm.PlatformHelpers</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NUnit.Xamarin">

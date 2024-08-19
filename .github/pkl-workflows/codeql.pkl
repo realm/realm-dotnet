@@ -26,9 +26,6 @@ on {
     }
   }
 }
-env {
-  ["REALM_DISABLE_ANALYTICS"] = true
-}
 concurrency {
   group = "codeql-${{ github.head_ref || github.run_id }}"
   `cancel-in-progress` = true

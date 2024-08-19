@@ -107,10 +107,6 @@ namespace Realms.SourceGenerator
                 {
                     yield return ObjectType.EmbeddedObject;
                 }
-                else if (IsIAsymmetricObjectInterface(i))
-                {
-                    yield return ObjectType.AsymmetricObject;
-                }
             }
         }
 
@@ -120,13 +116,9 @@ namespace Realms.SourceGenerator
 
         public static bool IsEmbeddedObject(this ITypeSymbol symbol) => symbol.Interfaces.Any(IsIEmbeddedObjectInterface);
 
-        public static bool IsAsymmetricObject(this ITypeSymbol symbol) => symbol.Interfaces.Any(IsIAsymmetricObjectInterface);
-
         private static bool IsIRealmObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IRealmObject";
 
         private static bool IsIEmbeddedObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IEmbeddedObject";
-
-        private static bool IsIAsymmetricObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IAsymmetricObject";
 
         public static INamedTypeSymbol AsNamed(this ITypeSymbol symbol)
         {

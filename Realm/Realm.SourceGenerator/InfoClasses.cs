@@ -381,7 +381,6 @@ namespace Realms.SourceGenerator
         None,
         RealmObject,
         EmbeddedObject,
-        AsymmetricObject
     }
 
     internal enum CollectionType

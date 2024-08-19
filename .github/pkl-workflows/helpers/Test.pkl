@@ -376,7 +376,7 @@ function codeCoverage(wrappersJob: String): gha.StepJobBase = (testJob(
     ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "linux-x64", new Mapping { ["RealmTestsStandaloneExe"] = "true" })
     new gha.Step {
       name = "Run the tests"
-      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t \(executableExpression) -a '--result=\(outputFile) --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
+      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t \(executableExpression) -a '--result=\(outputFile) --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
     } |> enableCoreDumps(true)
     archiveCoreDump()
     ...Steps.publishCoverage("./report.lcov")

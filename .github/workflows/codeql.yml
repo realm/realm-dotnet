@@ -15,8 +15,6 @@ name: CodeQL
   push:
     branches:
     - main
-env:
-  REALM_DISABLE_ANALYTICS: true
 concurrency:
   group: codeql-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -65,8 +63,6 @@ jobs:
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Realm/Realm
       run: msbuild Realm/Realm -restore -p:Configuration=Release -p:UseSharedCompilation=false
-    - name: Build Realm/Realm.PlatformHelpers
-      run: msbuild Realm/Realm.PlatformHelpers -restore -p:Configuration=Release -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -restore -p:Configuration=Release -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityWeaver
