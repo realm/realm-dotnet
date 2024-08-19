@@ -245,7 +245,7 @@ namespace Realms.Tests.Database
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
         }
 
-        [Test]
+        [Test, Ignore("We have fewer log categories since we're manually removing the Sync-related ones")]
         public void Logger_MatchesCoreCategoryNames()
         {
             var coreCategoryNames = SharedRealmHandle.GetLogCategoryNames();
