@@ -21,7 +21,7 @@ jobs {
       Steps.downloadAllArtifacts()
       Steps.readVersionFromPackage()
       Steps.configureAWSCredentials("DOCS_S3_ACCESS_KEY", "DOCS_S3_SECRET_KEY", "us-east-2")
-      uploadDocs()
+//       uploadDocs()
       ...uploadToNuGet()
       ...Steps.uploadToNPM("latest")
       ...mergeReleasePR()

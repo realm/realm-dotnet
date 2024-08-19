@@ -29,31 +29,6 @@ jobs:
   build-wrappers:
     name: Wrappers
     uses: ./.github/workflows/wrappers.yml
-  deploy-baas:
-    name: Deploy BaaS
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
-      with:
-        dotnet-version: 8.0.x
-    - name: Deploy Apps
-      working-directory: Tools/DeployApps
-      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
-    strategy:
-      matrix:
-        differentiator:
-        - code-coverage
-      fail-fast: false
   build-packages:
     name: Package NuGet
     needs:
@@ -540,7 +515,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -restore -p:Configuration=Release -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true
     - name: Run the tests
-      run: './Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After '
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       if: always()
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
@@ -591,7 +566,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ''
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs
       shell: powershell
     - name: Publish Unit Test Results
       if: always()
@@ -773,7 +748,7 @@ jobs:
     - name: Build Tests/Tests.Maui
       run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: 'Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+      run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Transform Results
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
@@ -880,7 +855,7 @@ jobs:
         appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
         iphoneToSimulate: iPhone-15
-        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+        arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
         os: iOS
     - name: Transform Results
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
@@ -932,7 +907,7 @@ jobs:
         appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
         bundleId: io.realm.Tests-XamarinTVOS
         iphoneToSimulate: Apple-TV-1080p
-        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
+        arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
         os: tvOS
     - name: Publish Unit Test Results
       if: always()
@@ -1227,9 +1202,6 @@ jobs:
       with:
         name: wrappers-linux-x86_64
         path: wrappers/build
-    - name: Deploy Apps
-      working-directory: Tools/DeployApps
-      run: dotnet run deploy-apps --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}
     - name: Setup Coverlet & Report Generator
       run: |-
         dotnet tool install coverlet.console --tool-path tools
@@ -1245,7 +1217,7 @@ jobs:
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After --baasaas-api-key=${{ secrets.BAASAAS_API_KEY}} --baas-differentiator=code-coverage-${{ github.run_id }}-${{ github.run_attempt }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'
     - name: Archive core dump
       if: ${{ failure() && runner.os != 'Windows' }}
       uses: actions/upload-artifact@v4
@@ -1274,33 +1246,6 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-  cleanup-baas:
-    name: Cleanup BaaS
-    needs:
-    - test-code-coverage
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
-      with:
-        dotnet-version: 8.0.x
-    - name: Terminate Baas
-      working-directory: Tools/DeployApps
-      run: dotnet run terminate-baas --baasaas-api-key=${{ secrets.BAASAAS_API_KEY }} --baas-differentiator=${{ matrix.differentiator }}-${{ github.run_id }}-${{ github.run_attempt }}
-    strategy:
-      matrix:
-        differentiator:
-        - code-coverage
-      fail-fast: false
   verify-namespaces:
     name: Verify Namespaces
     needs:
