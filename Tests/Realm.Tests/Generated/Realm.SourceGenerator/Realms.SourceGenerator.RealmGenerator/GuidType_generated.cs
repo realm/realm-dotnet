@@ -8,7 +8,6 @@ using Realms;
 using Realms.Logging;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Sync;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;

@@ -152,12 +152,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
-      <Link>Sync\Baas\BaasClient.cs</Link>
-      <SubType></SubType>
-    </Compile>  
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />
   </ItemGroup>
 </Project>

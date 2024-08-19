@@ -33,7 +33,6 @@ using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
-using Realms.Sync;
 using Realms.Weaving;
 
 namespace Realms
@@ -108,9 +107,7 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfigurationBase"/>, the realm will be downloaded and fully
-        /// synchronized with the server prior to the completion of the returned Task object.
-        /// Otherwise this method will perform any migrations on a background thread before returning an
+        /// This method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
         /// </remarks>
         /// <returns>
@@ -140,13 +137,6 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase? config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfigurationBase)
-            {
-                // For synchronized Realms, shutdown the session, otherwise Compact will fail.
-                var session = realm.SyncSession;
-                session.CloseHandle(waitForShutdown: true);
-            }
-
             return realm.SharedRealmHandle.Compact();
         }
 
@@ -166,28 +156,9 @@ namespace Realms
             SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
-        /// <summary>
-        /// Sets the serializer to use the legacy serialization.
-        /// </summary>
-        /// <remarks>
-        /// In version 12.0.0 it was introduced a new automatic serialization and deserialization of Realm classes when using methods
-        /// on <see cref="Realms.Sync.MongoClient.Collection{TDocument}"/>, without the need to annotate classes with <see cref="MongoDB.Bson"/> attributes.
-        /// This new serialization changed the default serializer for various types (<see cref="DateTimeOffset"/> for instance), so
-        /// if you need to call this method if you prefer to use the old serialization.
-        /// Please remember to call this method before any kind of serialization is needed, otherwise it is not guaranteed to work as expected.
-        /// </remarks>
-        [Obsolete("It is recommended to use new serialization.")]
-        public static void SetLegacySerialization()
-        {
-            SerializationHelper.SetLegacySerialization();
-        }
-
         #endregion static
 
-        private WeakReference<SubscriptionSet>? _subscriptionRef;
-
         private State _state;
-        private SessionProvider? _sessionProvider;
         private Transaction? _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
@@ -238,74 +209,6 @@ namespace Realms
         /// </summary>
         /// <value>The Realm's configuration.</value>
         public RealmConfigurationBase Config { get; }
-
-        /// <summary>
-        /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
-        /// </summary>
-        /// <exception cref="NotSupportedException">
-        /// Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/> or
-        /// <see cref="PartitionSyncConfiguration"/>.
-        /// </exception>
-        /// <value>
-        /// The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas
-        /// if the Realm instance was created with a <see cref="FlexibleSyncConfiguration"/> or
-        /// <see cref="PartitionSyncConfiguration"/>. If this is a local or in-memory Realm, a
-        /// <see cref="NotSupportedException"/> will be thrown.
-        /// </value>
-        public Session SyncSession
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                if (Config is not SyncConfigurationBase)
-                {
-                    throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
-                }
-
-                _sessionProvider ??= new SessionProvider(SharedRealmHandle);
-
-                return _sessionProvider.GetSession();
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
-        /// </summary>
-        /// <exception cref="NotSupportedException">Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/>.</exception>
-        /// <value>
-        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
-        /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
-        /// this will throw a <see cref="NotSupportedException"/>.
-        /// </value>
-        public SubscriptionSet Subscriptions
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                if (Config is not FlexibleSyncConfiguration)
-                {
-                    throw new NotSupportedException("Realm.Subscriptions is only valid for flexible sync Realms (i.e. ones that are opened with FlexibleSyncConfiguration).");
-                }
-
-                // If the last subscription ref is alive and its version matches the current subscription
-                // version, we return it. Otherwise, we create a new set and replace the existing one.
-                if (_subscriptionRef != null && _subscriptionRef.TryGetTarget(out var existingSet))
-                {
-                    var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
-                    if (existingSet.Version >= currentVersion)
-                    {
-                        return existingSet;
-                    }
-                }
-
-                var handle = SharedRealmHandle.GetSubscriptions();
-                var set = new SubscriptionSet(handle);
-                _subscriptionRef = new WeakReference<SubscriptionSet>(set);
-                return set;
-            }
-        }
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata? metadata = null, bool isInMigration = false)
         {
@@ -1348,21 +1251,6 @@ namespace Realms
         {
             Argument.NotNull(config, nameof(config));
 
-            if (config is FlexibleSyncConfiguration && Config is not FlexibleSyncConfiguration)
-            {
-                throw new NotSupportedException("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled");
-            }
-
-            if (config is PartitionSyncConfiguration && Config is FlexibleSyncConfiguration)
-            {
-                throw new NotSupportedException("Changing from flexible sync sync to partition based sync is not supported when writing a Realm copy.");
-            }
-
-            if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
-            {
-                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
-            }
-
             SharedRealmHandle.WriteCopy(config);
         }
 
@@ -1387,47 +1275,6 @@ namespace Realms
         }
 
         #endregion Transactions
-
-        internal class SessionProvider
-        {
-            private readonly SharedRealmHandle _sharedRealmHandle;
-            private WeakReference<Session>? _weakSessionRef;
-            private Session? _strongSessionRef;
-
-            public SessionProvider(SharedRealmHandle sharedRealmHandle)
-            {
-                _sharedRealmHandle = sharedRealmHandle;
-            }
-
-            public Session GetSession()
-            {
-                if(_strongSessionRef?.IsClosed == false)
-                {
-                    return _strongSessionRef;
-                }
-
-                if (_weakSessionRef?.TryGetTarget(out var targetSession) == true && !targetSession.IsClosed)
-                {
-                    return targetSession;
-                }
-
-                var session = new Session(_sharedRealmHandle.GetSession(), OnSessionSubscribed, OnSessionUnsubscribed);
-
-                _weakSessionRef = new WeakReference<Session>(session);
-
-                return session;
-            }
-
-            private void OnSessionSubscribed(Session session)
-            {
-                _strongSessionRef = session;
-            }
-
-            private void OnSessionUnsubscribed()
-            {
-                _strongSessionRef = null;
-            }
-        }
 
         internal class RealmMetadata
         {

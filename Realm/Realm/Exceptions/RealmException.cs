@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Sync.Exceptions;
 
 namespace Realms.Exceptions
 {
@@ -103,11 +102,6 @@ namespace Realms.Exceptions
 
                 case RealmExceptionCodes.RLM_ERR_MIGRATION_FAILED:
                     return new RealmMigrationException(message);
-            }
-
-            if (categories.HasFlag(RealmExceptionCategories.RLM_ERR_CAT_APP_ERROR))
-            {
-                return new AppException(message, helpLink: null, httpStatusCode: 0);
             }
 
             if (categories.HasFlag(RealmExceptionCategories.RLM_ERR_CAT_FILE_ACCESS))

@@ -32,8 +32,6 @@ namespace Realms.Tests
 
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
             IDisposable? logger = null;
-            (args, logger) = Sync.SyncTestHelpers.SetLoggerFromArgs(args);
-            args = Sync.SyncTestHelpers.ExtractBaasSettings(args);
 
             autorun.Execute(args);
 

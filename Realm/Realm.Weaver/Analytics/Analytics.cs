@@ -165,10 +165,6 @@ namespace RealmWeaver
                         {
                             key = Feature.ObjectNotification;
                         }
-                        else if (reference.DeclaringType.IsSameAs(_references.SyncSession))
-                        {
-                            key = Feature.ConnectionNotification;
-                        }
                     }
 
                     if (key == null)

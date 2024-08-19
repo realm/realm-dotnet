@@ -23,8 +23,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Realms.Helpers;
 using Realms.Logging;
-using Realms.Native;
-using Realms.Sync;
 #if !NET5_0_OR_GREATER
 using System.IO;
 #endif
@@ -74,11 +72,6 @@ namespace Realms
 
                 SynchronizationContextScheduler.Initialize();
                 SharedRealmHandle.Initialize();
-                SessionHandle.Initialize();
-                SyncUserHandle.Initialize();
-                HttpClientTransport.Initialize();
-                AppHandle.Initialize();
-                SubscriptionSetHandle.Initialize();
 
                 SerializationHelper.Initialize();
             }
@@ -101,8 +94,6 @@ namespace Realms
                     var sw = new Stopwatch();
                     sw.Start();
 
-                    AppHandle.ForceCloseHandles();
-                    AsyncOpenTaskHandle.CancelInFlightTasks();
                     SharedRealmHandle.ForceCloseNativeRealms();
 
                     sw.Stop();

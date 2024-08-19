@@ -22,7 +22,6 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
-using Realms.Tests.Sync;
 #if TEST_WEAVER
 using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
@@ -35,7 +34,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class GuidRepresentationMigrationTests : SyncTestBase
+    public class GuidRepresentationMigrationTests : RealmTest
     {
         private RealmConfiguration _configuration = null!;
 
@@ -139,31 +138,6 @@ namespace Realms.Tests.Database
             var guid = Guid.Parse(guidString);
             var query = (RealmResults<GuidType>)realm.All<GuidType>().Where(t => t.RegularProperty == guid);
             var description = query.ResultsHandle.Description;
-
-            AssertQueryDescription(description, guidString, useLegacyRepresentation);
-        }
-
-        [Test]
-        public void FlexibleSync_Subscriptions_MatchesGuid([Values(true, false)] bool useLegacyRepresentation)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var config = GetFakeFLXConfig(setFakeSyncRoute: true);
-            config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
-            using var realm = GetRealm(config);
-
-            var guidString = "981b8fa2-c496-43b0-b401-48ce08b38e00";
-            var guid = Guid.Parse(guidString);
-
-            realm.Subscriptions.Update(() =>
-            {
-                var query = (RealmResults<GuidType>)realm.All<GuidType>().Where(t => t.RegularProperty == guid);
-                realm.Subscriptions.Add(query);
-            });
-
-            var description = realm.Subscriptions.Single().Query;
 
             AssertQueryDescription(description, guidString, useLegacyRepresentation);
         }
@@ -296,53 +270,6 @@ namespace Realms.Tests.Database
             Assert.That(actualBad!.Id, Is.EqualTo(expectedBadGuid));
 
             Assert.That(logger.GetLog(), Does.Contain("found to contain Guid values in little-endian format and was automatically migrated"));
-        }
-
-        [Test]
-        public void SynchronizedRealm_DoesntMigrate([Values(true, false)] bool useLegacyRepresentation)
-        {
-            var logger = new RealmLogger.InMemoryLogger();
-            RealmLogger.Default = logger;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var expected = GetGuidObjects().ToArray();
-
-            var config = GetFakeConfig(userId: "sync-guids-test-user", setFakeSyncRoute: true);
-            config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
-
-            TestHelpers.CopyBundledFileToDocuments("sync-guids.realm", config.DatabasePath);
-            using var realm = GetRealm(config);
-
-            var actual = realm.All<GuidType>().ToArray();
-
-            Assert.That(actual.Length, Is.EqualTo(expected.Length));
-
-            if (useLegacyRepresentation)
-            {
-                foreach (var expectedObj in expected)
-                {
-                    var actualObj = actual.Single(o => o.Id == expectedObj.Id);
-
-                    AssertEqual(expectedObj, actualObj);
-
-                    var actualFound = realm.Find<GuidType>(expectedObj.Id);
-                    Assert.That(actualObj, Is.EqualTo(actualFound));
-                }
-            }
-            else
-            {
-                foreach (var expectedObj in expected)
-                {
-                    var flipped = FlipGuid(expectedObj.Id);
-                    var actualObj = actual.Single(o => o.Id == flipped);
-                    Assert.That(actualObj.RegularProperty, Is.EqualTo(FlipGuid(expectedObj.RegularProperty)));
-                }
-            }
-
-            Assert.That(logger.GetLog(), Does.Not.Contain("migrated"));
         }
 
         protected override void CustomSetUp()

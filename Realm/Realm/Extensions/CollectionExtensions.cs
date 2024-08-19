@@ -22,10 +22,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Realms.Helpers;
-using Realms.Sync;
 
 namespace Realms;
 
@@ -497,66 +494,6 @@ public static class CollectionExtensions
         return realmDictionary.GetFilteredValueResults(predicate, arguments);
     }
 
-    /// <summary>
-    /// Adds a query to the set of active flexible sync subscriptions. The query will be joined via an OR statement
-    /// with any existing queries for the same type.
-    /// </summary>
-    /// <param name="query">The query that will be matched on the server.</param>
-    /// <param name="options">
-    /// The subscription options controlling the name and/or the type of insert that will be performed.
-    /// </param>
-    /// <param name="waitForSync">
-    /// A parameter controlling when this method should asynchronously wait for the server to send the objects
-    /// matching the subscription.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// An optional cancellation token to cancel waiting for synchronization with the server. Note that cancelling the
-    /// operation only cancels the wait itself and not the actual subscription, so the subscription will be added even
-    /// if the task is cancelled. To remove the subscription, you can use <see cref="SubscriptionSet.Remove{T}"/>.
-    /// </param>
-    /// <typeparam name="T">The type of objects in the query results.</typeparam>
-    /// <remarks>
-    /// Adding a query that already exists is a no-op.
-    /// <br/>
-    /// This method is roughly equivalent to calling <see cref="SubscriptionSet.Add{T}"/> and then
-    /// <see cref="SubscriptionSet.WaitForSynchronizationAsync"/>.
-    /// </remarks>
-    /// <returns>The original query after it has been added to the subscription set.</returns>
-    /// <seealso cref="SubscriptionSet"/>
-    public static async Task<IQueryable<T>> SubscribeAsync<T>(this IQueryable<T> query,
-        SubscriptionOptions? options = null,
-        WaitForSyncMode waitForSync = WaitForSyncMode.FirstTime,
-        CancellationToken? cancellationToken = null)
-        where T : IRealmObject
-    {
-        Argument.NotNull(query, nameof(query));
-
-        var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
-        if (realmResults.Realm.Config is not FlexibleSyncConfiguration)
-        {
-            throw new NotSupportedException(
-                "SubscribeAsync can only be called on queries created in a flexible sync Realm (i.e. one open with a FlexibleSyncConfiguration)");
-        }
-
-        var subscriptions = realmResults.Realm.Subscriptions;
-        var existingSub = options?.Name == null ? subscriptions.Find(query) : subscriptions.Find(options.Name);
-
-        Subscription newSub = null!;
-
-        subscriptions.Update(() =>
-        {
-            newSub = subscriptions.Add(realmResults, options);
-        });
-
-        if (ShouldWaitForSync(waitForSync, existingSub, newSub))
-        {
-            await subscriptions.WaitForSynchronizationAsync(cancellationToken);
-            await realmResults.Realm.SyncSession.WaitForDownloadAsync(cancellationToken);
-        }
-
-        return query;
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
         Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
@@ -568,25 +505,6 @@ public static class CollectionExtensions
         Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
     public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
         => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
-
-    private static bool ShouldWaitForSync(WaitForSyncMode mode, Subscription? oldSub, Subscription newSub)
-    {
-        switch (mode)
-        {
-            case WaitForSyncMode.Never:
-                return false;
-            case WaitForSyncMode.FirstTime:
-                // For FirstTimeSync mode we want to wait for sync only if we're adding a brand new sub
-                // or if the sub changed object type/query.
-                return oldSub == null ||
-                       oldSub.ObjectType != newSub.ObjectType ||
-                       oldSub.Query != newSub.Query;
-            case WaitForSyncMode.Always:
-                return true;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
-        }
-    }
 
     private static void PopulateCollectionCore<T>(ICollection<T>? source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object?> valueGetter)
     {

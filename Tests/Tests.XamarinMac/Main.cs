@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using AppKit;
-using Realms.Tests.Sync;
 
 namespace Realms.Tests.XamarinMac
 {
@@ -28,7 +27,7 @@ namespace Realms.Tests.XamarinMac
         public static void Main(string[] args)
         {
             NSApplication.Init();
-            Args = SyncTestHelpers.ExtractBaasSettings(args);
+            Args = args;
             NSApplication.Main(args);
         }
     }
