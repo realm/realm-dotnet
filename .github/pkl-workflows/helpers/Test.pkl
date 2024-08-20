@@ -220,7 +220,7 @@ function iOS_Maui(): gha.StepJobBase = testJob(
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig{
-      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-x64/Tests.Maui.app"
+      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
       bundleId = "io.realm.mauitests"
       iphoneToSimulate = "iPhone-15"
