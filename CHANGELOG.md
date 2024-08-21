@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Introduce a `ReconnectBackoffOptions` property on `SyncTimeoutOptions` that allows control over the delay the sync client applies before attempting to reconnect. (PR [#3661](https://github.com/realm/realm-dotnet/pull/3661)).
 
 ### Fixed
 * None
