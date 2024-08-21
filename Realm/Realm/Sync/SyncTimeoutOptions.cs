@@ -104,5 +104,13 @@ namespace Realms.Sync
         /// </remarks>
         /// <value>The window in which a drop in connectivity is considered transient.</value>
         public TimeSpan FastReconnectLimit { get; set; } = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// Gets or sets the options for the reconnection behavior of the sync client.
+        /// </summary>
+        /// <value>
+        /// The options controlling how long the sync client waits before attempting to reconnect.
+        /// </value>
+        public ReconnectBackoffOptions ReconnectBackoffOptions { get; set; } = new ();
     }
 }

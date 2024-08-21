@@ -174,11 +174,21 @@ namespace Realms.Sync
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong)config.DefaultRequestTimeout.TotalMilliseconds,
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),
-                sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
-                sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
-                sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
-                sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
-                sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
+                sync_timeout_options = new Native.SyncTimeoutOptions
+                {
+                    sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
+                    sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
+                    sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
+                    sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
+                    sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
+                    reconnect_backoff_options = new Native.ReconnectBackoffOptions
+                    {
+                        max_resumption_delay_interval_ms = (ulong)syncTimeouts.ReconnectBackoffOptions.MaxReconnectDelayInterval.TotalMilliseconds,
+                        resumption_delay_interval_ms = (ulong)syncTimeouts.ReconnectBackoffOptions.ReconnectDelayInterval.TotalMilliseconds,
+                        resumption_delay_backoff_multiplier = syncTimeouts.ReconnectBackoffOptions.ReconnectDelayBackoffMultiplier,
+                        delay_jitter_divisor = syncTimeouts.ReconnectBackoffOptions.DelayJitterDivisor
+                    }
+                },
                 use_cache = config.UseAppCache,
             };
 

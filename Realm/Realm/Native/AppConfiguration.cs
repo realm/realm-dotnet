@@ -22,6 +22,34 @@ using System.Runtime.InteropServices;
 namespace Realms.Sync.Native
 {
     [StructLayout(LayoutKind.Sequential)]
+    internal struct ReconnectBackoffOptions
+    {
+        internal UInt64 max_resumption_delay_interval_ms;
+
+        internal UInt64 resumption_delay_interval_ms;
+
+        internal int resumption_delay_backoff_multiplier;
+
+        internal int delay_jitter_divisor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SyncTimeoutOptions
+    {
+        internal UInt64 sync_connect_timeout_ms;
+
+        internal UInt64 sync_connection_linger_time_ms;
+
+        internal UInt64 sync_ping_keep_alive_period_ms;
+
+        internal UInt64 sync_pong_keep_alive_timeout_ms;
+
+        internal UInt64 sync_fast_reconnect_limit;
+
+        internal ReconnectBackoffOptions reconnect_backoff_options;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal struct AppConfiguration
     {
         [MarshalAs(UnmanagedType.LPWStr)]
@@ -83,15 +111,7 @@ namespace Realms.Sync.Native
 
         internal IntPtr managed_websocket_provider;
 
-        internal UInt64 sync_connect_timeout_ms;
-
-        internal UInt64 sync_connection_linger_time_ms;
-
-        internal UInt64 sync_ping_keep_alive_period_ms;
-
-        internal UInt64 sync_pong_keep_alive_timeout_ms;
-
-        internal UInt64 sync_fast_reconnect_limit;
+        internal SyncTimeoutOptions sync_timeout_options;
 
         [MarshalAs(UnmanagedType.U1)]
         internal bool use_cache;
