@@ -171,8 +171,8 @@ extern "C" {
             timeout_options.fast_reconnect_limit = managed_timeout_options.sync_fast_reconnect_limit;
             timeout_options.ping_keepalive_period = managed_timeout_options.sync_ping_keep_alive_period_ms;
             timeout_options.pong_keepalive_timeout = managed_timeout_options.sync_pong_keep_alive_timeout_ms;
-            timeout_options.reconnect_backoff_info.max_resumption_delay_interval = managed_timeout_options.reconnect_backoff_info.max_resumption_delay_interval_ms;
-            timeout_options.reconnect_backoff_info.resumption_delay_interval = managed_timeout_options.reconnect_backoff_info.resumption_delay_interval_ms;
+            timeout_options.reconnect_backoff_info.max_resumption_delay_interval = std::chrono::milliseconds(managed_timeout_options.reconnect_backoff_info.max_resumption_delay_interval_ms);
+            timeout_options.reconnect_backoff_info.resumption_delay_interval = std::chrono::milliseconds(managed_timeout_options.reconnect_backoff_info.resumption_delay_interval_ms);
             timeout_options.reconnect_backoff_info.resumption_delay_backoff_multiplier = managed_timeout_options.reconnect_backoff_info.resumption_delay_backoff_multiplier;
             timeout_options.reconnect_backoff_info.delay_jitter_divisor = managed_timeout_options.reconnect_backoff_info.delay_jitter_divisor;
 
