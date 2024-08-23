@@ -2,15 +2,32 @@
 
 ### Enhancements
 * Introduce a `ReconnectBackoffOptions` property on `SyncTimeoutOptions` that allows control over the delay the sync client applies before attempting to reconnect. (PR [#3661](https://github.com/realm/realm-dotnet/pull/3661)).
+* Role and permissions changes no longer require a client reset to update the local realm. (Core 14.11.0)
+* On Windows devices Device Sync will additionally look up SSL certificates in the Windows Trusted Root Certification Authorities certificate store when establishing a connection. (Core 14.11.0)
+* Sync log statements now include the app services connection id in their prefix (e.g `Connection[1:<connection id>] Session[1]: log message`) to make correlating sync activity to server logs easier during troubleshooting. (Core 14.11.2)
+* Improve sync bootstrap performance by reducing the number of table selections in the replication logs for embedded objects. (Core 14.12.0)
+* Released a read lock which was pinned for the duration of a mutable subscription even after commit. This frees resources earlier, and may improve performance of sync bootstraps where the starting state is large. (Core 14.12.0)
+* Client reset cycle detection now checks if the previous recovery attempt was made by the same core version, and if not attempts recovery again. (Core 14.12.0)
+* Updated bundled OpenSSL version to 3.3.1. (Core 14.12.0)
 
 ### Fixed
-* None
+* Sync download progress was only updated when bootstraps completed, making it always be 0 before the first completion and then forever 1. (Core 14.11.0)
+* Sync client can crash if a session is resumed while the session is being suspended. (Core 14.11.0)
+* If a sync session is interrupted by a disconnect or restart while downloading a bootstrap, stale data from the previous bootstrap may be included when the session reconnects and downloads the bootstrap. This can lead to objects stored in the database that do not match the actual state of the server and potentially leading to compensating writes. (Core 14.11.0)
+* Fixed unnecessary server roundtrips when there is no download to acknowledge. (Core 14.11.0)
+* App subscription callback was getting fired before the user profile was retrieved on login, leading to an empty user profile when using the callback. (Core 14.11.1)
+* Sync client may report duplicate compensating write errors. (Core 14.11.2)
+* Fixed an "invalid column key" exception when using a RQL "BETWEEN" query on an int or timestamp property across links. (Core 14.12.0)
+* Fixed conflict resolution bug related to ArrayErase and Clear instructions, which could sometimes cause an "Invalid prior_size" exception to prevent synchronization. (Core 14.12.0)
+* Fixed bug which would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence and potentially consistency errors as a result. (Core 14.12.0)
+* Fixed issues loading the native Realm libraries on Linux ARMv7 systems when they linked against our bundled OpenSSL resulting in errors like `unexpected reloc type 0x03`. (Core 14.12.0)
+* `Realm.Copy()` would sometimes incorrectly throw an exception claiming that there were unuploaded local changes when the source Realm is a synchronized Realm. (Core 14.12.0)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 14.12.0.
 
 ## 12.3.0 (2024-07-17)
 
