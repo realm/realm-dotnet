@@ -34,7 +34,8 @@ using Realms.Sync.Exceptions;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SynchronizedInstanceTests : SyncTestBase
+    public class 
+        : SyncTestBase
     {
         private const int OneMegabyte = 1024 * 1024;
         private const int NumberOfObjects = 4;
@@ -803,7 +804,7 @@ namespace Realms.Tests.Sync
             }
 
             var regex = new Regex("Connection\\[\\d+] Session\\[\\d+]");
-            var logger = RealmLogger.Function((level, msg) =>
+            var logger = RealmLogger.Function((level, category, msg) =>
             {
                 if (regex.IsMatch(msg))
                 {
