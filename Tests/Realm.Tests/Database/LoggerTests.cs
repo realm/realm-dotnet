@@ -43,19 +43,6 @@ namespace Realms.Tests.Database
             protected override void LogImpl(LogLevel level, LogCategory category, string message) => _logFunction(level, category, message);
         }
 
-        [Obsolete("Using obsolete logger.")]
-        private class ObsoleteUserDefinedLogger : Logger
-        {
-            private readonly Action<LogLevel, string> _logFunction;
-
-            public ObsoleteUserDefinedLogger(Action<LogLevel, string> logFunction)
-            {
-                _logFunction = logFunction;
-            }
-
-            protected override void LogImpl(LogLevel level, string message) => _logFunction(level, message);
-        }
-
         [SetUp]
         public void Setup()
         {
@@ -96,19 +83,6 @@ namespace Realms.Tests.Database
             RealmLogger.Default = new UserDefinedLogger((level, category, message) => messages.Add(RealmLogger.FormatLog(level, category, message)));
 
             RealmLogger.Default.Log(LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
-
-            Assert.That(messages.Count, Is.EqualTo(1));
-            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
-        }
-
-        [Test]
-        [Obsolete("Using obsolete logger class.")]
-        public void ObsoleteLogger_CanSetDefaultLoggerToUserDefinedLogger()
-        {
-            var messages = new List<string>();
-            Logger.Default = new ObsoleteUserDefinedLogger((level, message) => messages.Add(Logger.FormatLog(level, LogCategory.Realm.SDK, message)));
-
-            Logger.Default.Log(LogLevel.Warn, "A log message");
 
             Assert.That(messages.Count, Is.EqualTo(1));
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
@@ -156,18 +130,6 @@ namespace Realms.Tests.Database
             {
                 Assert.That(RealmLogger.GetLogLevel(category), Is.EqualTo(LogLevel.Error));
             }
-        }
-
-        [Test]
-        [Obsolete("Using LogLevel set accessor.")]
-        public void Logger_WhenUsingLogLevelSetter_OverwritesCategory()
-        {
-            var category = LogCategory.Realm.Storage;
-            RealmLogger.SetLogLevel(LogLevel.Error, category);
-            Assert.That(RealmLogger.GetLogLevel(category), Is.EqualTo(LogLevel.Error));
-
-            RealmLogger.LogLevel = LogLevel.All;
-            Assert.That(RealmLogger.GetLogLevel(category), Is.EqualTo(LogLevel.All));
         }
 
         [TestCase(LogLevel.Error)]
@@ -232,19 +194,6 @@ namespace Realms.Tests.Database
             AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
         }
 
-        [Test]
-        [Obsolete("Using function not accepting category.")]
-        public void Logger_CallsObsoleteCustomFunction()
-        {
-            var messages = new List<string>();
-            RealmLogger.Default = RealmLogger.Function((level, message) => messages.Add(RealmLogger.FormatLog(level, LogCategory.Realm.SDK, message)));
-
-            RealmLogger.Default.Log(LogLevel.Warn, "A log message");
-
-            Assert.That(messages.Count, Is.EqualTo(1));
-            AssertLogMessageContains(messages[0], LogLevel.Warn, LogCategory.Realm.SDK, "A log message");
-        }
-
         [Test, Ignore("We have fewer log categories since we're manually removing the Sync-related ones")]
         public void Logger_MatchesCoreCategoryNames()
         {
@@ -254,9 +203,9 @@ namespace Realms.Tests.Database
             Assert.That(sdkCategoriesMap.Count, Is.EqualTo(coreCategoryNames.Length));
             foreach (var name in coreCategoryNames)
             {
-                Assert.That(sdkCategoriesMap.TryGetValue(name!, out var category), Is.True);
+                Assert.That(sdkCategoriesMap.TryGetValue(name, out var category), Is.True);
                 Assert.That(category!.Name, Is.EqualTo(name));
-                Assert.That(LogCategory.FromName(name!), Is.SameAs(category));
+                Assert.That(LogCategory.FromName(name), Is.SameAs(category));
             }
         }
 

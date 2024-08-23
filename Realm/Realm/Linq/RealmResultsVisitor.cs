@@ -59,15 +59,7 @@ namespace Realms
             {
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                internal static readonly LazyMethod InstanceContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => QueryMethods.Contains(s, string.Empty, StringComparison.Ordinal));
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                internal static readonly LazyMethod LegacyLike = Capture<string>(s => s.Like(string.Empty, true));
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 internal static readonly LazyMethod Like = Capture<string>(s => QueryMethods.Like(s, string.Empty, true));
 
@@ -400,7 +392,7 @@ namespace Realms
                 {
                     queryMethod = (q, r, p, v) => q.StringEqual(r, p, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.Like.Value) || AreMethodsSame(node.Method, Methods.String.LegacyLike.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
                     member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
@@ -488,15 +480,6 @@ namespace Realms
 
         private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
         {
-#if !NETCOREAPP2_1_OR_GREATER
-            if (AreMethodsSame(method, Methods.String.InstanceContainsStringComparison.Value))
-            {
-                // This is an extension method, so the string to compare against is at position 1.
-                stringArgumentIndex = 1;
-                return true;
-            }
-#endif
-
             if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
             {
                 stringArgumentIndex = 1;
