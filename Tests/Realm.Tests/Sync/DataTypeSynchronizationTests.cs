@@ -902,14 +902,15 @@ namespace Realms.Tests.Sync
                 var list2 = obj1.RealmValueProperty.AsDictionary()["list"].AsList();
                 var dictionary2 = obj1.RealmValueProperty.AsDictionary()["dictionary"].AsDictionary();
 
-                Assert.That(list1, Does.Not.Contain((RealmValue)1));
+                Assert.That(list1, Does.Not.Contains((RealmValue)1));
                 Assert.That(list1, Contains.Item((RealmValue)2));
                 Assert.That(list1, Contains.Item((RealmValue)3));
                 Assert.That(list1, Contains.Item((RealmValue)4));
                 Assert.That(list1, Contains.Item((RealmValue)5));
                 Assert.That(list1, Is.EqualTo(list2).Using(_rvComparer));
 
-                Assert.That(dictionary1, Does.Not.ContainKey("key1"));
+                // Unity Nunit doesn't support Does.Not.ContainKey, so use a more simplistic expression here
+                Assert.That(dictionary1.ContainsKey("key1"), Is.False);
                 Assert.That(dictionary1, Contains.Key("key2"));
                 Assert.That(dictionary1, Contains.Key("key3"));
                 Assert.That(dictionary1, Is.EqualTo(dictionary2).Using(_rvComparer));
