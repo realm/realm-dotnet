@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Introduce a `ReconnectBackoffOptions` property on `SyncTimeoutOptions` that allows control over the delay the sync client applies before attempting to reconnect. (PR [#3661](https://github.com/realm/realm-dotnet/pull/3661)).
 * Role and permissions changes no longer require a client reset to update the local realm. (Core 14.11.0)
 * On Windows devices Device Sync will additionally look up SSL certificates in the Windows Trusted Root Certification Authorities certificate store when establishing a connection. (Core 14.11.0)
 * Sync log statements now include the app services connection id in their prefix (e.g `Connection[1:<connection id>] Session[1]: log message`) to make correlating sync activity to server logs easier during troubleshooting. (Core 14.11.2)

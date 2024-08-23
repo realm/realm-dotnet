@@ -83,6 +83,15 @@ namespace Realms.Sync.Native
 
         internal IntPtr managed_websocket_provider;
 
+        internal SyncTimeoutOptions sync_timeout_options;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool use_cache;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SyncTimeoutOptions
+    {
         internal UInt64 sync_connect_timeout_ms;
 
         internal UInt64 sync_connection_linger_time_ms;
@@ -93,7 +102,18 @@ namespace Realms.Sync.Native
 
         internal UInt64 sync_fast_reconnect_limit;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool use_cache;
+        internal ReconnectBackoffOptions reconnect_backoff_options;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ReconnectBackoffOptions
+    {
+        internal UInt64 max_resumption_delay_interval_ms;
+
+        internal UInt64 resumption_delay_interval_ms;
+
+        internal int resumption_delay_backoff_multiplier;
+
+        internal int delay_jitter_divisor;
     }
 }

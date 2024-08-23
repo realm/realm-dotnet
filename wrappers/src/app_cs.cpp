@@ -61,6 +61,28 @@ namespace realm {
         std::function<StringCallbackT> s_string_callback;
         std::function<ApiKeysCallbackT> s_api_keys_callback;
 
+        struct SyncTimeoutOptions {
+            uint64_t sync_connect_timeout_ms;
+
+            uint64_t sync_connection_linger_time_ms;
+
+            uint64_t sync_ping_keep_alive_period_ms;
+
+            uint64_t sync_pong_keep_alive_timeout_ms;
+
+            uint64_t sync_fast_reconnect_limit;
+
+            struct {
+                uint64_t max_resumption_delay_interval_ms;
+
+                uint64_t resumption_delay_interval_ms;
+
+                int resumption_delay_backoff_multiplier;
+
+                int delay_jitter_divisor;
+            } reconnect_backoff_info;
+        };
+
         struct AppConfiguration
         {
             uint16_t* app_id;
@@ -82,15 +104,7 @@ namespace realm {
 
             void* managed_websocket_provider;
 
-            uint64_t sync_connect_timeout_ms;
-
-            uint64_t sync_connection_linger_time_ms;
-
-            uint64_t sync_ping_keep_alive_period_ms;
-
-            uint64_t sync_pong_keep_alive_timeout_ms;
-
-            uint64_t sync_fast_reconnect_limit;
+            SyncTimeoutOptions sync_timeout_options;
 
             bool use_cache;
         };
@@ -149,11 +163,18 @@ extern "C" {
             }
 
             config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
-            config.sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
-            config.sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
-            config.sync_client_config.timeouts.fast_reconnect_limit = app_config.sync_fast_reconnect_limit;
-            config.sync_client_config.timeouts.ping_keepalive_period = app_config.sync_ping_keep_alive_period_ms;
-            config.sync_client_config.timeouts.pong_keepalive_timeout = app_config.sync_pong_keep_alive_timeout_ms;
+
+            auto& timeout_options = config.sync_client_config.timeouts;
+            const auto& managed_timeout_options = app_config.sync_timeout_options;
+            timeout_options.connection_linger_time = managed_timeout_options.sync_connection_linger_time_ms;
+            timeout_options.connect_timeout = managed_timeout_options.sync_connect_timeout_ms;
+            timeout_options.fast_reconnect_limit = managed_timeout_options.sync_fast_reconnect_limit;
+            timeout_options.ping_keepalive_period = managed_timeout_options.sync_ping_keep_alive_period_ms;
+            timeout_options.pong_keepalive_timeout = managed_timeout_options.sync_pong_keep_alive_timeout_ms;
+            timeout_options.reconnect_backoff_info.max_resumption_delay_interval = std::chrono::milliseconds(managed_timeout_options.reconnect_backoff_info.max_resumption_delay_interval_ms);
+            timeout_options.reconnect_backoff_info.resumption_delay_interval = std::chrono::milliseconds(managed_timeout_options.reconnect_backoff_info.resumption_delay_interval_ms);
+            timeout_options.reconnect_backoff_info.resumption_delay_backoff_multiplier = managed_timeout_options.reconnect_backoff_info.resumption_delay_backoff_multiplier;
+            timeout_options.reconnect_backoff_info.delay_jitter_divisor = managed_timeout_options.reconnect_backoff_info.delay_jitter_divisor;
 
             if (app_config.managed_websocket_provider) {
                 config.sync_client_config.socket_provider = make_websocket_provider(app_config.managed_websocket_provider);
