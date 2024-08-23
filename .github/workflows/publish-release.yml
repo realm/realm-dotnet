@@ -9,14 +9,21 @@ env:
 jobs:
   main:
     name: Publish Release
-    environment: Production
+    environment:
+      name: Production
+      url: ${{ steps.pages-deploy.outputs.page_url }}
+
     runs-on: windows-latest
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
         submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
+
     - name: Download all artifacts
       uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
       with:
@@ -24,6 +31,7 @@ jobs:
         commit: ${{ github.sha }}
         path: Realm/packages/
         workflow_conclusion: completed
+
     - name: Read version
       id: get-version
       run: |-
@@ -31,33 +39,33 @@ jobs:
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4.0.2
-      with:
-        aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
-        aws-region: us-east-2
+
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.package_version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}/Realm.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
     - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
       with:
         node-version: 16.x
         registry-url: https://registry.npmjs.org
+
     - name: NPM publish io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz --tag latest
+
     - name: Find Release PR
       id: find-pull-request
       uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0
       with:
         branch: ${{ github.ref }}
+
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@9234b8714dda9a08f3d1df5b2a6a3abd7b695353
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.find-pull-request.outputs.number }}
         method: squash
+
     - name: Publish Github Release
       uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
       with:
@@ -68,6 +76,7 @@ jobs:
         tag: ${{ steps.get-version.outputs.package_version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
+
     - name: Update Changelog
       run: |-
         echo "## vNext (TBD)
@@ -86,6 +95,7 @@ jobs:
         " | cat - CHANGELOG.md >> temp
         mv temp CHANGELOG.md
       shell: bash
+
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
@@ -97,12 +107,27 @@ jobs:
         base: main
         commit-message: Prepare for vNext
         labels: no-jira-ticket
+
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@9234b8714dda9a08f3d1df5b2a6a3abd7b695353
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
+
+    - name: Extract docs
+      run: |-
+        Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
+
+    - name: Upload docs artifact
+      uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+      with:
+        path: 'Realm/packages/_site'
+
+    - name: Deploy docs to GitHub Pages
+      id: pages-deploy
+      uses: actions/deploy-pages@v4
+
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
