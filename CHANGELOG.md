@@ -1,4 +1,4 @@
-## 12.4.0 (2024-08-23)
+## 12.4.0 (2024-08-25)
 
 ### Enhancements
 * Introduce a `ReconnectBackoffOptions` property on `SyncTimeoutOptions` that allows control over the delay the sync client applies before attempting to reconnect. (PR [#3661](https://github.com/realm/realm-dotnet/pull/3661)).
