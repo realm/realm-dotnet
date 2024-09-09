@@ -28,10 +28,7 @@
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
-#include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/sync/app.hpp>
-#include <realm/sync/subscriptions.hpp>
 #include <realm/exceptions.hpp>
 #include <realm/util/logger.hpp>
 #include <realm/util/platform_info.hpp>
@@ -42,7 +39,6 @@
 
 using namespace realm;
 using namespace realm::binding;
-using namespace realm::sync;
 using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
@@ -51,8 +47,6 @@ using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(util::Logger::Level level, realm_string_t category_name, realm_string_t message);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
 using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
 

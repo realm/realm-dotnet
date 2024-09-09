@@ -23,13 +23,8 @@
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
-#include <realm/sync/config.hpp>
-#include <realm/object-store/sync/app_user.hpp>
 
 namespace realm::binding {
-using SharedSyncUser = std::shared_ptr<app::User>;
 
 struct Configuration
 {

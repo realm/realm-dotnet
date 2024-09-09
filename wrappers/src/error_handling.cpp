@@ -29,8 +29,6 @@
 #include <realm/alloc_slab.hpp>
 #include <realm/object-store/object_accessor.hpp>
 
-using namespace realm::app;
-
 namespace realm {
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
@@ -52,17 +50,6 @@ namespace realm {
         }
         catch (const ManagedExceptionDuringCallback& e) {
             return NativeException(e, CustomError::None, e.m_managed_error);
-        }
-        catch (const AppError& e) {
-            REALM_ASSERT_DEBUG(e.additional_status_code == util::none);
-            REALM_ASSERT_DEBUG(e.link_to_server_logs == "");
-
-            return NativeException(e);
-        }
-        catch (const SyncError& e) {
-            REALM_ASSERT_DEBUG(false);
-
-            return NativeException(e.status.code(), e.status.reason());
         }
         catch (const Exception& e) {
             return NativeException(e);
