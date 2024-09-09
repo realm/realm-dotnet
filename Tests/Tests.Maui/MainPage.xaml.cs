@@ -67,7 +67,7 @@ public partial class MainPage : ContentPage
             var result = await Task.Run(() =>
             {
                 var autorun = new AutoRun(typeof(TestHelpers).Assembly);
-                var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(MauiProgram.Args);
+                var arguments = MauiProgram.Args;
 
                 using var reader = new StringReader(string.Empty);
                 using var writer = new DebugWriter((msg, style, newLine) =>

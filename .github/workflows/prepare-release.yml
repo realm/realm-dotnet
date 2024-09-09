@@ -23,12 +23,6 @@ jobs:
           pkgVersion=$(grep "\bVERSION:" dependencies.yml | cut -d: -f2)
           echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
         shell: bash
-      - name: Update Analytics.cs
-        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
-        with:
-          find: 'CoreVersion = "\w*"'
-          replace: 'CoreVersion = "${{ steps.get-core-version.outputs.core-version }}"'
-          include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog
         uses: realm/ci-actions/update-changelog@6418e15ed9bbdb19b7d456a347e5623779f95cdf

@@ -27,7 +27,6 @@ using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
-using Realms.Sync;
 
 namespace Realms
 {
@@ -95,15 +94,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Configuration configuration, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
-                out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync_async(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
-                IntPtr task_completion_source,
-                out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_managed_state_handle", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_managed_state_handle(SharedRealmHandle sharedRealm, IntPtr managedStateHandle, out NativeException ex);
 
@@ -169,7 +159,7 @@ namespace Realms
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, NativeBool useSync, out NativeException ex);
+            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
@@ -222,15 +212,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool remove_all(SharedRealmHandle sharedRealm, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_subscriptions(SharedRealmHandle realm, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions_version", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Int64 get_subscriptions_version(SharedRealmHandle realm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
@@ -423,21 +404,6 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration)
-        {
-            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            return new SharedRealmHandle(result);
-        }
-
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, IntPtr tcsHandle)
-        {
-            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, tcsHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new AsyncOpenTaskHandle(asyncTaskPtr);
-        }
-
         public static SharedRealmHandle ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
         {
             var result = NativeMethods.resolve_realm_reference(referenceHandle, out var nativeException);
@@ -622,12 +588,10 @@ namespace Realms
 
         public void WriteCopy(RealmConfigurationBase config)
         {
-            var useSync = config is SyncConfigurationBase;
-
             using var arena = new Arena();
             var nativeConfig = config.CreateNativeConfiguration(arena);
 
-            NativeMethods.write_copy(this, nativeConfig, useSync, out var nativeException);
+            NativeMethods.write_copy(this, nativeConfig, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -748,27 +712,6 @@ namespace Realms
             var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(this, result);
-        }
-
-        public SessionHandle GetSession()
-        {
-            var ptr = NativeMethods.get_session(this, out var ex);
-            ex.ThrowIfNecessary();
-            return new SessionHandle(this, ptr);
-        }
-
-        public SubscriptionSetHandle GetSubscriptions()
-        {
-            var ptr = NativeMethods.get_subscriptions(this, out var ex);
-            ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(this, ptr);
-        }
-
-        public long GetSubscriptionsVersion()
-        {
-            var result = NativeMethods.get_subscriptions_version(this, out var ex);
-            ex.ThrowIfNecessary();
-            return result;
         }
 
         public async Task<bool> RefreshAsync()

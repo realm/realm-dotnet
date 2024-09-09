@@ -28,10 +28,7 @@
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
-#include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/sync/app.hpp>
-#include <realm/sync/subscriptions.hpp>
 #include <realm/exceptions.hpp>
 #include <realm/util/logger.hpp>
 #include <realm/util/platform_info.hpp>
@@ -42,7 +39,6 @@
 
 using namespace realm;
 using namespace realm::binding;
-using namespace realm::sync;
 using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
@@ -51,14 +47,8 @@ using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(util::Logger::Level level, realm_string_t category_name, realm_string_t message);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
 using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
-
-using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-using SharedSubscriptionSet = std::shared_ptr<SubscriptionSet>;
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -104,7 +94,7 @@ namespace binding {
     };
 }
 
-Realm::Config get_shared_realm_config(Configuration configuration, std::optional<SyncConfiguration> sync_configuration = {})
+Realm::Config get_shared_realm_config(Configuration configuration)
 {
     Realm::Config config;
     config.path = capi_to_std(configuration.path);
@@ -173,71 +163,6 @@ Realm::Config get_shared_realm_config(Configuration configuration, std::optional
     }
 
     config.cache = configuration.enable_cache;
-
-    if (sync_configuration) {
-        config.schema_mode = sync_configuration->schema_mode;
-
-        if (sync_configuration->is_flexible_sync) {
-            config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, realm::SyncConfig::FLXSyncEnabled{});
-        }
-        else {
-            std::string partition(Utf16StringAccessor(sync_configuration->partition, sync_configuration->partition_len));
-            config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, partition);
-        }
-
-        config.sync_config->error_handler = [configuration_handle](SharedSyncSession session, SyncError error) {
-            std::vector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
-            std::vector<realm_sync_error_compensating_write_info_t> compensating_writes;
-
-            for (const auto& p : error.user_info) {
-                user_info_pairs.push_back(std::make_pair(to_capi(p.first), to_capi(p.second)));
-            }
-
-            for (const auto& cw : error.compensating_writes_info) {
-                compensating_writes.push_back(realm_sync_error_compensating_write_info_t{
-                    to_capi(cw.reason),
-                    to_capi(cw.object_name),
-                    to_capi(cw.primary_key)
-                });
-            }
-
-            realm_sync_error marshaled_error{
-                error.status.code(),
-                to_capi(error.simple_message),
-                to_capi(error.logURL),
-                error.is_client_reset_requested(),
-                user_info_pairs,
-                compensating_writes,
-            };
-
-            s_session_error_callback(new SharedSyncSession(session), marshaled_error, configuration_handle->handle());
-        };
-
-        config.sync_config->stop_policy = sync_configuration->session_stop_policy;
-        config.sync_config->client_resync_mode = sync_configuration->client_resync_mode;
-        config.sync_config->cancel_waits_on_nonfatal_error = sync_configuration->cancel_waits_on_nonfatal_error;
-
-        if (sync_configuration->client_resync_mode == ClientResyncMode::DiscardLocal ||
-            sync_configuration->client_resync_mode == ClientResyncMode::Recover ||
-            sync_configuration->client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
-
-            config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
-                auto error = s_notify_before_callback(before_frozen, configuration_handle->handle());
-                if (error) {
-                    throw ManagedExceptionDuringCallback("Managed exception happened in a BeforeReset callback.", error);
-                }
-            };
-
-            config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
-                auto after = Realm::get_shared_realm(std::move(after_reference));
-                auto error = s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover);
-                if (error) {
-                    throw ManagedExceptionDuringCallback("Managed exception happened in an AfterReset callback.", error);
-                }
-            };
-        }
-
-    }
 
     return config;
 }
@@ -359,34 +284,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
     });
 }
 
-REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, void* task_completion_source, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration);
-
-        auto task = Realm::get_synchronized_realm(config);
-        task->start([task_completion_source](ThreadSafeReference ref, std::exception_ptr error) {
-            if (error) {
-                auto native_ex = realm::convert_exception(error).for_marshalling();
-                s_open_realm_callback(task_completion_source, nullptr, std::move(native_ex));
-            }
-            else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { ErrorCodes::Error::OK});
-            }
-        });
-
-        return new SharedAsyncOpenTask(task);
-    });
-}
-
-REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration);
-        return new_realm(Realm::get_shared_realm(std::move(config)));
-    });
-}
-
 REALM_EXPORT void shared_realm_set_managed_state_handle(SharedRealm& realm, void* managed_state_handle, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -434,7 +331,6 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
 
     handle_errors(ex, [&]() {
         realm::_impl::RealmCoordinator::clear_all_caches();
-        app::App::clear_cached_apps();
     });
 }
 
@@ -591,13 +487,10 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReference* reference)
     delete reference;
 }
 
-REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, bool use_sync, NativeException::Marshallable& ex)
+REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Realm::Config config;
-
-        // force_sync_history tells Core to synthesize/copy the sync history from the source.
-        config.force_sync_history = use_sync;
 
         config.path = capi_to_std(configuration.path);
         if (configuration.encryption_key.items) {
@@ -795,28 +688,6 @@ REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeExcept
             }
         }
         return true;
-    });
-}
-
-REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        return new SharedSyncSession(realm->sync_session());
-    });
-}
-
-REALM_EXPORT SharedSubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        auto p = new SubscriptionSet(realm->get_latest_subscription_set());
-        return new SharedSubscriptionSet(p);
-    });
-}
-
-REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        return realm->get_latest_subscription_set().version();
     });
 }
 

@@ -112,7 +112,7 @@
   {
     "Id": "RLM024",
     "Severity": 3,
-    "Message": "UnsupportedRequiredTypes.UnsupportedProp is of type 'int[]' which is not yet supported. If that is supposed to be a model class, make sure it implements IRealmObject/IEmbeddedObject/IAsymmetricObject.",
+    "Message": "UnsupportedRequiredTypes.UnsupportedProp is of type 'int[]' which is not yet supported. If that is supposed to be a model class, make sure it implements IRealmObject/IEmbeddedObject.",
     "Location": {
       "StartLine": 62,
       "StartColumn": 9,

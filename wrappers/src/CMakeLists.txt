@@ -12,14 +12,7 @@ set(SOURCES
     scheduler_cs.cpp
     schema_cs.cpp
     shared_realm_cs.cpp
-    app_cs.cpp
-    async_open_task_cs.cpp
-    subscription_set_cs.cpp
-    sync_session_cs.cpp
-    sync_user_cs.cpp
-    transport_cs.cpp
     guid_representation_migration.cpp
-    websocket_cs.cpp
 )
 
 set(HEADERS
@@ -31,11 +24,7 @@ set(HEADERS
     realm_export_decls.hpp
     schema_cs.hpp
     shared_realm_cs.hpp
-    app_cs.hpp
-    sync_session_cs.hpp
-    transport_cs.hpp
     notifications_cs.hpp
-    websocket_cs.hpp
 )
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")

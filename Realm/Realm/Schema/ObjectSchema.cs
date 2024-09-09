@@ -50,11 +50,6 @@ namespace Realms.Schema
             /// The value represents a <see cref="EmbeddedObject"/> schema type.
             /// </summary>
             EmbeddedObject = 1,
-
-            /// <summary>
-            /// The value represents a <see cref="AsymmetricObject"/> schema type.
-            /// </summary>
-            AsymmetricObject = 2,
         }
 
         private static readonly ConcurrentDictionary<Type, ObjectSchema> _cache = new();
@@ -209,8 +204,8 @@ namespace Realms.Schema
             /// provided <paramref name="type"/>.
             /// </summary>
             /// <param name="type">
-            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>,
-            /// an <see cref="EmbeddedObject"/>, or an <see cref="AsymmetricObject"/> inheritor.
+            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/> or
+            /// an <see cref="EmbeddedObject"/> inheritor.
             /// </param>
             /// <remarks>
             /// If you want to use strongly typed API, such as <see cref="Realm.Add{T}(T, bool)">Realm.Add&lt;T&gt;</see> or
@@ -253,8 +248,8 @@ namespace Realms.Schema
             public Builder(Type type)
             {
                 Argument.NotNull(type, nameof(type));
-                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject() || type.IsAsymmetricObject(),
-                    $"The class {type.FullName} must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject", nameof(type));
+                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(),
+                    $"The class {type.FullName} must descend directly from either RealmObject or EmbeddedObject", nameof(type));
 
                 RealmSchemaType = type.GetRealmSchemaType();
 

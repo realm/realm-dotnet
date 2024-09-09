@@ -5,7 +5,6 @@ name: Publish Release
 'on':
   workflow_dispatch: {}
 env:
-  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   main:
@@ -32,24 +31,8 @@ jobs:
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4.0.2
-      with:
-        aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
-        aws-region: us-east-2
-    - name: Upload docs
-      run: |-
-        Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
-        $versions = "${{ steps.get-version.outputs.package_version }}", "latest"
-        Foreach ($ver in $versions)
-        {
-          aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
-        }
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.package_version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}/Realm.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
       with:
         node-version: 16.x
@@ -75,7 +58,7 @@ jobs:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.package_version }}.tgz
         bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         name: ${{ steps.get-version.outputs.package_version }}
-        commit: main
+        commit: community
         tag: ${{ steps.get-version.outputs.package_version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
@@ -105,7 +88,7 @@ jobs:
         title: Prepare for vNext
         body: Update Changelog for vNext
         delete-branch: true
-        base: main
+        base: community
         commit-message: Prepare for vNext
         labels: no-jira-ticket
     - name: Merge Pull Request
@@ -121,3 +104,38 @@ jobs:
         sdk: .NET
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
         version: ${{ steps.get-version.outputs.package_version }}
+  deploy-docs:
+    name: Deploy Docs
+    needs:
+    - main
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Download all artifacts
+      uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
+      with:
+        workflow: pr.yml
+        commit: ${{ github.sha }}
+        path: Realm/packages/
+        workflow_conclusion: completed
+    - name: Expand docs
+      run: Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
+      shell: pwsh
+    - name: Upload pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ github.workspace }}/Realm/packages/_site
+    - name: Deploy pages
+      id: deploy-pages
+      uses: actions/deploy-pages@v4

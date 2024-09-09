@@ -40,7 +40,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RunAsyncTest_Timeouts()
         {
-            Assert.Throws<TimeoutException>(() => TestHelpers.RunAsyncTest(async () => await Task.Delay(100), timeout: 50));
+            Assert.Throws<TimeoutException>(() => TestHelpers.RunAsyncTest(async () => await Task.Delay(1000), timeout: 50));
         }
     }
 }

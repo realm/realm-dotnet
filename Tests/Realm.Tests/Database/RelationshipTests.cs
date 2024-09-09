@@ -21,8 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestRealmObject = Realms.IRealmObject;

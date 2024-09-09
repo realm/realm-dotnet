@@ -22,8 +22,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new {
   `timeout-minutes` = 30
   steps {
     ...Steps.checkout(false)
-    ...Steps.setupAndroid()
-    ...Steps.setupWorkloads("tvos ios maccatalyst android", "8.0.x")
+    Steps.setupDotnet("8.0.x")
     setVersionSuffix
     ...Steps.fetchWrappers(null)
     ...Steps.msbuild(new Steps.MSBuildConfig {

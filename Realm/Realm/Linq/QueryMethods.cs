@@ -118,9 +118,6 @@ namespace Realms
         ///     }
         /// }
         /// </code>
-        ///
-        /// Note that if you're using Sync, the name of the embedded object type must match exactly the <c>title</c> of
-        /// the embedded object defined in the GeoJson Schema on the server.
         /// </example>
         public static bool GeoWithin(IEmbeddedObject? point, GeoShapeBase geoShape)
         {

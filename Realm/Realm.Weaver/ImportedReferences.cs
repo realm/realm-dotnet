@@ -78,13 +78,9 @@ namespace RealmWeaver
 
         public TypeReference IEmbeddedObject { get; private set; }
 
-        public TypeReference IAsymmetricObject { get; private set; }
-
         public TypeReference ManagedAccessor { get; private set; }
 
         public TypeReference EmbeddedObject { get; private set; }
-
-        public TypeReference AsymmetricObject { get; private set; }
 
         public MethodReference RealmObject_get_IsManaged { get; private set; }
 
@@ -139,8 +135,6 @@ namespace RealmWeaver
         public MethodReference CollectionExtensions_PopulateCollection { get; private set; }
 
         public MethodReference CollectionExtensions_PopulateDictionary { get; private set; }
-
-        public TypeReference SyncSession { get; private set; }
 
         protected ModuleDefinition Module { get; }
 
@@ -225,11 +219,9 @@ namespace RealmWeaver
             ManagedAccessor = new TypeReference("Realms", "ManagedAccessor", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
             EmbeddedObject = new TypeReference("Realms", "EmbeddedObject", Module, realmAssembly);
-            AsymmetricObject = new TypeReference("Realms", "AsymmetricObject", Module, realmAssembly);
             RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
             RealmValue = new TypeReference("Realms", "RealmValue", Module, realmAssembly, valueType: true);
             IEmbeddedObject = new TypeReference("Realms", "IEmbeddedObject", Module, realmAssembly, valueType: false);
-            IAsymmetricObject = new TypeReference("Realms", "IAsymmetricObject", Module, realmAssembly, valueType: false);
             RealmValue_GetNull = new MethodReference("get_Null", RealmValue, RealmValue) { HasThis = false };
 
             {
@@ -346,8 +338,6 @@ namespace RealmWeaver
 
                 RealmSchema_AddDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
             }
-
-            SyncSession = new TypeReference("Realms.Sync", "Session", Module, realmAssembly);
 
             var collectionExtensions = new TypeReference("Realms", "CollectionExtensions", Module, realmAssembly);
             CollectionExtensions_PopulateCollection = new MethodReference("PopulateCollection", Types.Void, collectionExtensions) { HasThis = false };

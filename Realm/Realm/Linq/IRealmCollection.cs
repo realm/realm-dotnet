@@ -86,7 +86,7 @@ namespace Realms
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/>, describing the persisted properties of the
-        /// <see cref="IRealmObject"/>, <see cref="IEmbeddedObject"/>, or <see cref="IAsymmetricObject"/> instances
+        /// <see cref="IRealmObject"/> or <see cref="IEmbeddedObject"/> instances
         /// contained in the collection. If the collection contains primitive values, <see cref="ObjectSchema"/> will
         /// be <c>null</c>.
         /// </summary>

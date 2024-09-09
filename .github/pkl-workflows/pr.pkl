@@ -4,10 +4,6 @@ amends "GithubAction/GithubAction.pkl"
 
 import "helpers/Common.pkl"
 
-local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
-  "code-coverage"
-}
-
 local netCoreFrameworks: Listing<Common.NetFramework> = new {
   "net6.0"
 }
@@ -41,4 +37,4 @@ concurrency {
   `cancel-in-progress` = true
 }
 
-jobs = Common.defaultBuildJobs(baasDifferentiators, netCoreFrameworks)
+jobs = Common.defaultBuildJobs(netCoreFrameworks)

@@ -23,3 +23,5 @@ const createPR = "peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2
 const publishGithubRelease = "ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5" // 1.14.0
 const releaseToSlack = "realm/ci-actions/release-to-slack@6418e15ed9bbdb19b7d456a347e5623779f95cdf"
 const setupCmake = "jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be" // 2.0.2
+const uploadPagesArtifact = "actions/upload-pages-artifact@v3"
+const deployPages = "actions/deploy-pages@v4"

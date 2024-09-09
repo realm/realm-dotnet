@@ -55,10 +55,7 @@ internal static class TypeReferenceExtensions
         || @this.IsRealmObjectDescendant(references);
 
     public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references) =>
-        IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
-
-    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references) =>
-        IsDescendantOf(@this, references.AsymmetricObject);
+        IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject);
 
     public static bool IsEmbeddedObjectDescendant(this TypeReference @this, ImportedReferences references) =>
         IsDescendantOf(@this, references.EmbeddedObject);

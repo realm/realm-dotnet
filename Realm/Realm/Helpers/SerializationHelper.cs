@@ -28,7 +28,6 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
 using Realms.Serialization;
-using Realms.Sync;
 
 namespace Realms.Helpers
 {
@@ -79,8 +78,6 @@ namespace Realms.Helpers
             _ = new DateTimeOffsetSerializer();
             _ = new StringSerializer();
             _ = new ByteArraySerializer();
-
-            _ = new EnumSerializer<Credentials.AuthProvider>();
 
             _ = new ArraySerializer<bool>();
             _ = new ArraySerializer<byte>();

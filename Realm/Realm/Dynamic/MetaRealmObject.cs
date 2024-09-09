@@ -160,7 +160,6 @@ namespace Realms.Dynamic
 
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                // no AsymmetricObjects involved here
                 expression = IsTargetEmbedded(property)
                     ? Expression.Call(RealmObjectGetBacklinksForHandle_EmbeddedObject, self, Expression.Constant(binder.Name), expression)
                     : Expression.Call(RealmObjectGetBacklinksForHandle_RealmObject, self, Expression.Constant(binder.Name), expression);
@@ -270,7 +269,6 @@ namespace Realms.Dynamic
             {
                 ObjectSchema.ObjectType.RealmObject => typeof(DynamicRealmObject),
                 ObjectSchema.ObjectType.EmbeddedObject => typeof(DynamicEmbeddedObject),
-                ObjectSchema.ObjectType.AsymmetricObject => typeof(DynamicAsymmetricObject),
                 _ => throw new NotSupportedException($"{schema.BaseType} not supported yet."),
             };
 
@@ -285,7 +283,6 @@ namespace Realms.Dynamic
             {
                 ObjectSchema.ObjectType.RealmObject => GetCollectionGetter<DynamicRealmObject>(collectionType),
                 ObjectSchema.ObjectType.EmbeddedObject => GetCollectionGetter<DynamicEmbeddedObject>(collectionType),
-                ObjectSchema.ObjectType.AsymmetricObject => GetCollectionGetter<DynamicAsymmetricObject>(collectionType),
                 _ => throw new NotSupportedException($"{metadata.Schema.BaseType} not supported yet."),
             };
 

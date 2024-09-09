@@ -18,7 +18,6 @@
 
 extern alias propertychanged;
 extern alias realm;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -475,7 +474,6 @@ namespace RealmWeaver
             var expectedWarnings = new[]
             {
                 "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
-                "Sensor.FirstMeasurement is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.",
                 "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
                 "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
@@ -501,7 +499,7 @@ namespace RealmWeaver
                 "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
                 "NotSupportedProperties.DateTimeProperty is a DateTime which is not supported - use DateTimeOffset instead.",
                 "NotSupportedProperties.NullableDateTimeProperty is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.",
+                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject.",
                 "NotSupportedProperties.People is declared as List<Person> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<Person>, otherwise annotate the property with the [Ignored] attribute.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
                 "InvalidBacklinkRelationships.ParentRelationship has [Backlink] applied, but is not IQueryable.",
@@ -524,15 +522,6 @@ namespace RealmWeaver
                 "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
                 "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm.",
                 "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
-                "Measurement.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
-                "Coordinates.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
-                "Measurement.ListOfAsymmetrics is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "Measurement.SetOfAsymmetrics is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "ResearchFacility.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "Department.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "ResearchFacility.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "Department.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
-                "Sensor.Measurements has [Backlink] applied which is not allowed on AsymmetricObject."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

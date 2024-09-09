@@ -29,19 +29,12 @@ internal static class TypeDefinitionExtensions
     public static bool IsRealmObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
         type.BaseType.IsSameAs(references.RealmObject);
 
-    public static bool IsAsymmetricObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.BaseType.IsSameAs(references.AsymmetricObject);
-
     public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) =>
         type.IsRealmObjectInheritor(references) ||
-        type.IsEmbeddedObjectInheritor(references) ||
-        type.IsAsymmetricObjectInheritor(references);
+        type.IsEmbeddedObjectInheritor(references);
 
     public static bool IsIEmbeddedObjectImplementor(this TypeDefinition type, ImportedReferences references) =>
         IsImplementorOf(type, references.IEmbeddedObject);
-
-    public static bool IsIAsymmetricObjectImplementor(this TypeDefinition type, ImportedReferences references) =>
-        IsImplementorOf(type, references.IAsymmetricObject);
 
     public static bool IsImplementorOf(TypeDefinition @this, params TypeReference[] targetInterfaces)
     {

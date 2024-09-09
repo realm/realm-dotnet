@@ -35,20 +35,12 @@ namespace Realms.Logging
     /// │   ├─► Query
     /// │   ├─► Object
     /// │   └─► Notification
-    /// ├─► Sync
-    /// │   ├─► Client
-    /// │   │   ├─► Session
-    /// │   │   ├─► Changeset
-    /// │   │   ├─► Network
-    /// │   │   └─► Reset
-    /// │   └─► Server
-    /// ├─► App
     /// └─► SDK
     /// </code>
     /// </summary>
     /// <example>
     /// <code>
-    /// LogCategory.Realm.Sync.Client
+    /// LogCategory.Realm.Storage.Transaction
     /// </code>
     /// </example>
     public class LogCategory
@@ -71,14 +63,6 @@ namespace Realms.Logging
             { Realm.Storage.Query.Name, Realm.Storage.Query },
             { Realm.Storage.Object.Name, Realm.Storage.Object },
             { Realm.Storage.Notification.Name, Realm.Storage.Notification },
-            { Realm.Sync.Name, Realm.Sync },
-            { Realm.Sync.Client.Name, Realm.Sync.Client },
-            { Realm.Sync.Client.Session.Name, Realm.Sync.Client.Session },
-            { Realm.Sync.Client.Changeset.Name, Realm.Sync.Client.Changeset },
-            { Realm.Sync.Client.Network.Name, Realm.Sync.Client.Network },
-            { Realm.Sync.Client.Reset.Name, Realm.Sync.Client.Reset },
-            { Realm.Sync.Server.Name, Realm.Sync.Server },
-            { Realm.App.Name, Realm.App },
             { Realm.SDK.Name, Realm.SDK },
         };
 
@@ -108,16 +92,6 @@ namespace Realms.Logging
             public StorageLogCategory Storage { get; }
 
             /// <summary>
-            /// Gets the category for receiving log messages pertaining to Atlas Device Sync.
-            /// </summary>
-            public SyncLogCategory Sync { get; }
-
-            /// <summary>
-            /// Gets the category for receiving log messages pertaining to Atlas App.
-            /// </summary>
-            public LogCategory App { get; }
-
-            /// <summary>
             /// Gets the category for receiving log messages pertaining to the SDK.
             /// </summary>
             public LogCategory SDK { get; }
@@ -125,8 +99,6 @@ namespace Realms.Logging
             internal RealmLogCategory() : base("Realm", null)
             {
                 Storage = new StorageLogCategory(this);
-                Sync = new SyncLogCategory(this);
-                App = new LogCategory("App", this);
                 SDK = new LogCategory("SDK", this);
             }
         }
@@ -164,63 +136,6 @@ namespace Realms.Logging
                 Query = new LogCategory("Query", this);
                 Object = new LogCategory("Object", this);
                 Notification = new LogCategory("Notification", this);
-            }
-        }
-
-        /// <summary>
-        /// The category for receiving log messages pertaining to Atlas Device Sync.
-        /// </summary>
-        public class SyncLogCategory : LogCategory
-        {
-            /// <summary>
-            /// Gets the category for receiving log messages pertaining to sync client operations.
-            /// </summary>
-            public ClientLogCategory Client { get; }
-
-            /// <summary>
-            /// Gets the category for receiving log messages pertaining to sync server operations.
-            /// </summary>
-            public LogCategory Server { get; }
-
-            internal SyncLogCategory(LogCategory parent) : base("Sync", parent)
-            {
-                Client = new ClientLogCategory(this);
-                Server = new LogCategory("Server", this);
-            }
-        }
-
-        /// <summary>
-        /// The category for receiving log messages pertaining to sync client operations.
-        /// </summary>
-        public class ClientLogCategory : LogCategory
-        {
-            /// <summary>
-            /// Gets the category for receiving log messages pertaining to the sync session.
-            /// </summary>
-            public LogCategory Session { get; }
-
-            /// <summary>
-            /// Gets the category for receiving log messages when receiving, uploading, and
-            /// integrating changesets.
-            /// </summary>
-            public LogCategory Changeset { get; }
-
-            /// <summary>
-            /// Gets the category for receiving log messages pertaining to low-level network activity.
-            /// </summary>
-            public LogCategory Network { get; }
-
-            /// <summary>
-            /// Gets the category for receiving log messages when there are client reset operations.
-            /// </summary>
-            public LogCategory Reset { get; }
-
-            internal ClientLogCategory(LogCategory parent) : base("Client", parent)
-            {
-                Session = new LogCategory("Session", this);
-                Changeset = new LogCategory("Changeset", this);
-                Network = new LogCategory("Network", this);
-                Reset = new LogCategory("Reset", this);
             }
         }
     }

@@ -65,10 +65,9 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         /// <remarks>
-        /// This will always be available for models that use the Realm source generator tool (i.e. inheriting from <see cref="IRealmObject"/>,
-        /// <see cref="IEmbeddedObject"/>, or <see cref="IAsymmetricObject"/>). It will be <c>null</c> for unmanaged objects if the models have
-        /// been processed by the Fody weaver (i.e. inheriting from <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or
-        /// <see cref="AsymmetricObject"/>).
+        /// This will always be available for models that use the Realm source generator tool (i.e. inheriting from <see cref="IRealmObject"/> or
+        /// <see cref="IEmbeddedObject"/>). It will be <c>null</c> for unmanaged objects if the models have
+        /// been processed by the Fody weaver (i.e. inheriting from <see cref="RealmObject"/> or <see cref="EmbeddedObject"/>).
         /// </remarks>
         ObjectSchema? ObjectSchema { get; }
 
@@ -149,8 +148,7 @@ namespace Realms
 
         /// <summary>
         /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
-        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
-        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
+        /// <see cref="IEmbeddedObject">embedded object</see> or a standalone <see cref="IRealmObject">realm object</see>.
         /// </summary>
         /// <returns>The parent of the embedded object.</returns>
         IRealmObjectBase? GetParent();

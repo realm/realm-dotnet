@@ -33,7 +33,6 @@ using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
-using Realms.Sync;
 using Realms.Weaving;
 
 namespace Realms
@@ -108,9 +107,7 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfigurationBase"/>, the realm will be downloaded and fully
-        /// synchronized with the server prior to the completion of the returned Task object.
-        /// Otherwise this method will perform any migrations on a background thread before returning an
+        /// This method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
         /// </remarks>
         /// <returns>
@@ -140,13 +137,6 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase? config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfigurationBase)
-            {
-                // For synchronized Realms, shutdown the session, otherwise Compact will fail.
-                var session = realm.SyncSession;
-                session.CloseHandle(waitForShutdown: true);
-            }
-
             return realm.SharedRealmHandle.Compact();
         }
 
@@ -166,28 +156,9 @@ namespace Realms
             SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
-        /// <summary>
-        /// Sets the serializer to use the legacy serialization.
-        /// </summary>
-        /// <remarks>
-        /// In version 12.0.0 it was introduced a new automatic serialization and deserialization of Realm classes when using methods
-        /// on <see cref="Realms.Sync.MongoClient.Collection{TDocument}"/>, without the need to annotate classes with <see cref="MongoDB.Bson"/> attributes.
-        /// This new serialization changed the default serializer for various types (<see cref="DateTimeOffset"/> for instance), so
-        /// if you need to call this method if you prefer to use the old serialization.
-        /// Please remember to call this method before any kind of serialization is needed, otherwise it is not guaranteed to work as expected.
-        /// </remarks>
-        [Obsolete("It is recommended to use new serialization.")]
-        public static void SetLegacySerialization()
-        {
-            SerializationHelper.SetLegacySerialization();
-        }
-
         #endregion static
 
-        private WeakReference<SubscriptionSet>? _subscriptionRef;
-
         private State _state;
-        private SessionProvider? _sessionProvider;
         private Transaction? _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
@@ -238,74 +209,6 @@ namespace Realms
         /// </summary>
         /// <value>The Realm's configuration.</value>
         public RealmConfigurationBase Config { get; }
-
-        /// <summary>
-        /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
-        /// </summary>
-        /// <exception cref="NotSupportedException">
-        /// Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/> or
-        /// <see cref="PartitionSyncConfiguration"/>.
-        /// </exception>
-        /// <value>
-        /// The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas
-        /// if the Realm instance was created with a <see cref="FlexibleSyncConfiguration"/> or
-        /// <see cref="PartitionSyncConfiguration"/>. If this is a local or in-memory Realm, a
-        /// <see cref="NotSupportedException"/> will be thrown.
-        /// </value>
-        public Session SyncSession
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                if (Config is not SyncConfigurationBase)
-                {
-                    throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
-                }
-
-                _sessionProvider ??= new SessionProvider(SharedRealmHandle);
-
-                return _sessionProvider.GetSession();
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
-        /// </summary>
-        /// <exception cref="NotSupportedException">Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/>.</exception>
-        /// <value>
-        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
-        /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
-        /// this will throw a <see cref="NotSupportedException"/>.
-        /// </value>
-        public SubscriptionSet Subscriptions
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                if (Config is not FlexibleSyncConfiguration)
-                {
-                    throw new NotSupportedException("Realm.Subscriptions is only valid for flexible sync Realms (i.e. ones that are opened with FlexibleSyncConfiguration).");
-                }
-
-                // If the last subscription ref is alive and its version matches the current subscription
-                // version, we return it. Otherwise, we create a new set and replace the existing one.
-                if (_subscriptionRef != null && _subscriptionRef.TryGetTarget(out var existingSet))
-                {
-                    var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
-                    if (existingSet.Version >= currentVersion)
-                    {
-                        return existingSet;
-                    }
-                }
-
-                var handle = SharedRealmHandle.GetSubscriptions();
-                var set = new SubscriptionSet(handle);
-                _subscriptionRef = new WeakReference<SubscriptionSet>(set);
-                return set;
-            }
-        }
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata? metadata = null, bool isInMigration = false)
         {
@@ -608,75 +511,6 @@ namespace Realms
             foreach (var obj in objs)
             {
                 AddInternal(obj, obj.GetType(), update);
-            }
-        }
-
-        /// <summary>
-        /// This <see cref="Realm"/> will start managing an <see cref="IAsymmetricObject"/> which has been created as a standalone object.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
-        /// so it has persistent properties.
-        /// </typeparam>
-        /// <param name="obj">Must be a standalone <see cref="IAsymmetricObject"/>, <c>null</c> not allowed.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place,
-        /// meaning that after it has run, <see cref="IAsymmetricObject"/> will be managed.
-        /// Once an <see cref="IAsymmetricObject"/> becomes managed dereferencing any property
-        /// of the original <see cref="IAsymmetricObject"/> reference throws an exception.
-        /// </remarks>
-        public void Add<T>(T obj)
-            where T : IAsymmetricObject
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(obj, nameof(obj));
-            Argument.Ensure(!obj.IsManaged, $"{nameof(obj)} must not be already managed by a Realm.", nameof(obj));
-
-            AddInternal(obj, obj.GetType(), update: false);
-        }
-
-        /// <summary>
-        /// Add a collection of standalone <see cref="IAsymmetricObject">AsymmetricObjects</see> to this <see cref="Realm"/>.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
-        /// so it has persistent properties.
-        /// </typeparam>
-        /// <param name="objs">A collection of <see cref="IAsymmetricObject"/> instances that will be added to this <see cref="Realm"/>.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
-        /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
-        /// Once an <see cref="IAsymmetricObject"/> becomes managed and the transaction is committed,
-        /// dereferencing any property of the original <see cref="IAsymmetricObject"/> reference throw an exception.
-        /// Hence, none of the properties of the elements in the collection can be dereferenced anymore after the transaction.
-        /// </remarks>
-        public void Add<T>(IEnumerable<T> objs)
-            where T : IAsymmetricObject
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(objs, nameof(objs));
-            foreach (var obj in objs)
-            {
-                Argument.Ensure(obj != null, $"{nameof(objs)} must not contain null values.", nameof(objs));
-                Argument.Ensure(!obj.IsManaged, $"{nameof(objs)} must not contain already managed objects by a Realm.", nameof(objs));
-            }
-
-            foreach (var obj in objs)
-            {
-                AddInternal(obj, obj.GetType(), update: false);
             }
         }
 
@@ -1336,32 +1170,11 @@ namespace Realms
         /// 1. The destination file cannot already exist.
         /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
         ///    and not the data as it was when the last transaction was committed.
-        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
-        ///    This is to be sure that the file can be used as a starting point for a newly installed application.
-        ///    The function will throw if there are pending uploads.
-        /// 4. Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled.
-        /// 5  Changing from flexible sync sync to partition based sync is not supported.
-        /// 6. Changing the partition to synchronize on is not supported.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
-
-            if (config is FlexibleSyncConfiguration && Config is not FlexibleSyncConfiguration)
-            {
-                throw new NotSupportedException("Writing a copy to a flexible sync realm is not supported unless flexible sync is already enabled");
-            }
-
-            if (config is PartitionSyncConfiguration && Config is FlexibleSyncConfiguration)
-            {
-                throw new NotSupportedException("Changing from flexible sync sync to partition based sync is not supported when writing a Realm copy.");
-            }
-
-            if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
-            {
-                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
-            }
 
             SharedRealmHandle.WriteCopy(config);
         }
@@ -1387,47 +1200,6 @@ namespace Realms
         }
 
         #endregion Transactions
-
-        internal class SessionProvider
-        {
-            private readonly SharedRealmHandle _sharedRealmHandle;
-            private WeakReference<Session>? _weakSessionRef;
-            private Session? _strongSessionRef;
-
-            public SessionProvider(SharedRealmHandle sharedRealmHandle)
-            {
-                _sharedRealmHandle = sharedRealmHandle;
-            }
-
-            public Session GetSession()
-            {
-                if(_strongSessionRef?.IsClosed == false)
-                {
-                    return _strongSessionRef;
-                }
-
-                if (_weakSessionRef?.TryGetTarget(out var targetSession) == true && !targetSession.IsClosed)
-                {
-                    return targetSession;
-                }
-
-                var session = new Session(_sharedRealmHandle.GetSession(), OnSessionSubscribed, OnSessionUnsubscribed);
-
-                _weakSessionRef = new WeakReference<Session>(session);
-
-                return session;
-            }
-
-            private void OnSessionSubscribed(Session session)
-            {
-                _strongSessionRef = session;
-            }
-
-            private void OnSessionUnsubscribed()
-            {
-                _strongSessionRef = null;
-            }
-        }
 
         internal class RealmMetadata
         {
@@ -1828,7 +1600,6 @@ namespace Realms
 
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
                 Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
-                Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.AsymmetricObject, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
 
                 return new RealmResults<IRealmObject>(_realm, metadata);
             }

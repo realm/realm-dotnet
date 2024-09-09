@@ -5,7 +5,6 @@ name: Publish Prerelease
 'on':
   workflow_dispatch: {}
 env:
-  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   main:
@@ -44,8 +43,6 @@ jobs:
         aws-region: us-east-1
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}/Realm.${{ steps.get-version.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
-    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}
-      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
       with:
         node-version: 16.x

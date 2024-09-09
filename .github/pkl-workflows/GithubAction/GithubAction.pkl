@@ -545,6 +545,11 @@ class Permissions {
 }
 typealias Permission = "read"|"write"|"none"
 
+class Environment {
+  name: String
+  url: String?
+}
+
 // Concurrency
 class Concurrency {
   group: String
@@ -569,7 +574,7 @@ abstract class JobBase {
   outputs: Mapping<String, String>?
   `timeout-minutes`: Int?
   permissions: (*Permissions|"read-all"|"write-all")?
-  environment: String?
+  environment: (*Environment|String)?
 }
 
 abstract class StepJobBase extends JobBase {

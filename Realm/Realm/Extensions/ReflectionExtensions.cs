@@ -49,17 +49,10 @@ namespace Realms
 
         public static bool IsEmbeddedObject(this Type type) => typeof(IEmbeddedObject).IsAssignableFrom(type);
 
-        public static bool IsAsymmetricObject(this Type type) => typeof(IAsymmetricObject).IsAssignableFrom(type);
-
         public static bool IsRealmObject(this Type type) => typeof(IRealmObject).IsAssignableFrom(type);
 
         public static ObjectSchema.ObjectType GetRealmSchemaType(this Type type)
         {
-            if (type.IsAsymmetricObject())
-            {
-                return ObjectSchema.ObjectType.AsymmetricObject;
-            }
-
             if (type.IsEmbeddedObject())
             {
                 return ObjectSchema.ObjectType.EmbeddedObject;

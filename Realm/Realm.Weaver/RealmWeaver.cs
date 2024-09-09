@@ -178,20 +178,12 @@ namespace RealmWeaver
             _propertyChanged_DoNotNotify_Ctor = new Lazy<MethodReference>(GetOrAddPropertyChanged_DoNotNotify);
         }
 
-        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
+        public WeaveModuleResult Execute()
         {
-            var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
-
-            var result = ExecuteInternal(out var weaveResults);
-            analytics.AnalyzeRealmClassProperties(weaveResults);
-
-            // Don't wait for submission
-            _ = analytics.SubmitAnalytics();
-
-            return result;
+            return ExecuteInternal();
         }
 
-        private WeaveModuleResult ExecuteInternal(out WeaveTypeResult[] weaveResults)
+        private WeaveModuleResult ExecuteInternal()
         {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -199,20 +191,18 @@ namespace RealmWeaver
             // specific code in another assembly, but we still want to report what target the user is building for
             if (_references.Realm == null)
             {
-                weaveResults = Array.Empty<WeaveTypeResult>();
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             }
 
             var isWoven = _moduleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
             if (isWoven)
             {
-                weaveResults = Array.Empty<WeaveTypeResult>();
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            weaveResults = matchingTypes.Select(matchingType =>
+            var weaveResults = matchingTypes.Select(matchingType =>
             {
                 var type = matchingType.Type;
                 var isGenerated = matchingType.IsGenerated;
@@ -234,12 +224,9 @@ namespace RealmWeaver
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful).ToArray();
-            if (failedResults.Any())
-            {
-                return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
-            }
-
-            return WeaveModuleResult.Success(weaveResults);
+            return failedResults.Any()
+                ? WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}")
+                : WeaveModuleResult.Success(weaveResults);
         }
 
         private static void RemoveBackingFields(TypeDefinition type, HashSet<MetadataToken> backingFields)
@@ -570,11 +557,6 @@ namespace RealmWeaver
                     return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
                 }
 
-                if (prop.ContainsAsymmetricObject(_references))
-                {
-                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.");
-                }
-
                 return WeavePropertyResult.Skipped("Property is not autoimplemented");
             }
 
@@ -619,10 +601,6 @@ namespace RealmWeaver
                         return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                     }
                 }
-                else if (elementType.IsAsymmetricObjectDescendant(_references))
-                {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.");
-                }
 
                 if (prop.SetMethod != null)
                 {
@@ -656,10 +634,6 @@ namespace RealmWeaver
                         break;
                 }
             }
-            else if (prop.ContainsAsymmetricObject(_references))
-            {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.");
-            }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
                 if (prop.SetMethod == null)
@@ -681,11 +655,6 @@ namespace RealmWeaver
                 if (prop.SetMethod != null)
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has a setter but also has [Backlink] applied, which only supports getters.");
-                }
-
-                if (type.IsAsymmetricObjectDescendant(_references))
-                {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied which is not allowed on AsymmetricObject.");
                 }
 
                 var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
@@ -724,7 +693,7 @@ namespace RealmWeaver
             }
             else
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject.");
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);

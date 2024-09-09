@@ -26,24 +26,6 @@ using System.Threading.Tasks;
 
 namespace Realms.Logging
 {
-    /// <inheritdoc/>
-    [Obsolete("Use RealmLogger instead. If using a custom logger, RealmLogger.LogImpl() additionally receives the log category.")]
-    public abstract class Logger : RealmLogger
-    {
-        /// <summary>
-        /// The internal implementation being called from <see cref="RealmLogger.Log(LogLevel, string)"/>.
-        /// </summary>
-        /// <param name="level">The criticality level for the message.</param>
-        /// <param name="message">The message to log.</param>
-        protected abstract void LogImpl(LogLevel level, string message);
-
-        /// <inheritdoc/>
-        protected override void LogImpl(LogLevel level, LogCategory category, string message)
-        {
-            LogImpl(level, message);
-        }
-    }
-
     /// <summary>
     /// A logger that logs messages originating from Realm. The default logger can be replaced by setting <see cref="Default"/>.
     /// <br/>
@@ -101,31 +83,7 @@ namespace Realms.Logging
         /// <returns>
         /// A <see cref="RealmLogger"/> instance that will invoke <paramref name="logFunction"/> for each message.
         /// </returns>
-        [Obsolete("Use Function(Action<LogLevel, LogCategory, string> logFunction).")]
-        public static RealmLogger Function(Action<LogLevel, string> logFunction) => new FunctionLogger((level, _, message) => logFunction(level, message));
-
-        /// <summary>
-        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
-        /// </summary>
-        /// <param name="logFunction">Function to proxy log calls to.</param>
-        /// <returns>
-        /// A <see cref="RealmLogger"/> instance that will invoke <paramref name="logFunction"/> for each message.
-        /// </returns>
         public static RealmLogger Function(Action<LogLevel, LogCategory, string> logFunction) => new FunctionLogger(logFunction);
-
-        /// <summary>
-        /// Gets or sets the verbosity of log messages for all log categories via <see cref="LogCategory.Realm"/>.
-        /// </summary>
-        /// <value>The log level for Realm-originating messages.</value>
-        [Obsolete("Use GetLogLevel() and SetLogLevel().")]
-        public static LogLevel LogLevel
-        {
-            get => GetLogLevel();
-            set
-            {
-                SetLogLevel(value);
-            }
-        }
 
         /// <summary>
         /// Gets the verbosity of log messages for the given category.
@@ -232,37 +190,25 @@ namespace Realms.Logging
             }
         }
 
-        private class FileLogger : RealmLogger
+        private class FileLogger(string filePath, Encoding? encoding = null)
+            : RealmLogger
         {
             private readonly object _locker = new();
-            private readonly string _filePath;
-            private readonly Encoding _encoding;
-
-            public FileLogger(string filePath, Encoding? encoding = null)
-            {
-                _filePath = filePath;
-                _encoding = encoding ?? Encoding.UTF8;
-            }
+            private readonly Encoding _encoding = encoding ?? Encoding.UTF8;
 
             protected override void LogImpl(LogLevel level, LogCategory category, string message)
             {
                 lock (_locker)
                 {
-                    System.IO.File.AppendAllText(_filePath, FormatLog(level, category, message) + Environment.NewLine, _encoding);
+                    System.IO.File.AppendAllText(filePath, FormatLog(level, category, message) + Environment.NewLine, _encoding);
                 }
             }
         }
 
-        private class FunctionLogger : RealmLogger
+        private class FunctionLogger(Action<LogLevel, LogCategory, string> logFunction)
+            : RealmLogger
         {
-            private readonly Action<LogLevel, LogCategory, string> _logFunction;
-
-            public FunctionLogger(Action<LogLevel, LogCategory, string> logFunction)
-            {
-                _logFunction = logFunction;
-            }
-
-            protected override void LogImpl(LogLevel level, LogCategory category, string message) => _logFunction(level, category, message);
+            protected override void LogImpl(LogLevel level, LogCategory category, string message) => logFunction(level, category, message);
         }
 
         private class NullLogger : RealmLogger

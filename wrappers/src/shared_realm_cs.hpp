@@ -19,18 +19,12 @@
 #pragma once
 
 #include "schema_cs.hpp"
-#include "sync_session_cs.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
-#include <realm/sync/config.hpp>
-#include <realm/object-store/sync/app_user.hpp>
 
 namespace realm::binding {
-using SharedSyncUser = std::shared_ptr<app::User>;
 
 struct Configuration
 {
@@ -64,24 +58,6 @@ struct Configuration
     bool invoke_migration_callback;
 
     bool automatically_migrate_embedded;
-};
-
-struct SyncConfiguration
-{
-    SharedSyncUser* user;
-
-    uint16_t* partition;
-    size_t partition_len;
-
-    SyncSessionStopPolicy session_stop_policy;
-
-    SchemaMode schema_mode;
-
-    bool is_flexible_sync;
-
-    ClientResyncMode client_resync_mode;
-
-    bool cancel_waits_on_nonfatal_error;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

@@ -318,7 +318,7 @@ namespace Realms.Tests.Database
             })!;
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
-            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject or EmbeddedObject"));
         }
 
         [TestCase(false, true)]
@@ -733,7 +733,6 @@ namespace Realms.Tests.Database
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
             Assert.That(allTypesSchema!.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
             Assert.That(hasExpectedProp);

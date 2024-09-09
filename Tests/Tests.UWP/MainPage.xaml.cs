@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using NUnit.Runner.Services;
-using Realms.Tests.Sync;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Navigation;
@@ -56,7 +55,7 @@ namespace Realms.Tests.UWP
 
                 if (e.Parameter != null && e.Parameter is string launchParams)
                 {
-                    var args = await SyncTestHelpers.ExtractBaasSettingsAsync(TestHelpers.SplitArguments(launchParams));
+                    var args = TestHelpers.SplitArguments(launchParams);
                     if (TestHelpers.IsHeadlessRun(args))
                     {
                         _nunit.Options.AutoRun = true;

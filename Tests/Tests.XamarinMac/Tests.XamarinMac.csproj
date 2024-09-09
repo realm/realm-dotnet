@@ -94,10 +94,6 @@
     <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
-    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
-      <Project>{D08C71CE-0F5B-4855-A77C-58062A5ECB78}</Project>
-      <Name>Realm.PlatformHelpers</Name>
-    </ProjectReference>
     <NativeReference Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
