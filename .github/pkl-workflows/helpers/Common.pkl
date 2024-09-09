@@ -59,12 +59,13 @@ const function defaultBuildJobs(netCoreVersions: Listing<NetFramework>): Mapping
     }
   }
   [job_Unity] = Package.unity()
-  ...TestJobs.unity(new TestJobs.UnityTestConfig {
-    os = "linux"
-  })
-  ...TestJobs.unity(new TestJobs.UnityTestConfig {
-    os = "windows"
-  })
+// TODO: https://github.com/realm/realm-dotnet/issues/3667 the Unity licensing server needs to be fixed before we can reenable these
+//   ...TestJobs.unity(new TestJobs.UnityTestConfig {
+//     os = "linux"
+//   })
+//   ...TestJobs.unity(new TestJobs.UnityTestConfig {
+//     os = "windows"
+//   })
   ["test-net-framework"] = TestJobs.netFramework()
   ["test-uwp"] = TestJobs.uwp()
   ["test-net-core"] = TestJobs.netCore(netCoreVersions)

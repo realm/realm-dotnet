@@ -303,7 +303,7 @@ function uwp(): gha.StepJobBase = testJob(
     })
     new {
       name = "Run the tests"
-      run = "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs"
+      run = "./Tests/Tests.UWP/RunTests.ps1"
       shell = "powershell"
     }
     ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
