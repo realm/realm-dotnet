@@ -2331,7 +2331,7 @@ namespace Realms.Tests.Database
             var dog = new Dog();
             _realm.Write(() => _realm.Add(dog));
 
-            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Owners")))
+            using (query.SubscribeForNotifications(OnNotification, KeyPathsCollection.Of("Owners.*")))
             {
                 var owner = new Owner { Name = "Mario", ListOfDogs = { dog } };
                 _realm.Write(() => _realm.Add(owner));
