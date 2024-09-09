@@ -5,7 +5,7 @@ name: Main Build
 'on':
   push:
     branches:
-    - main
+    - community
   workflow_dispatch:
     inputs:
       publish-prerelease:

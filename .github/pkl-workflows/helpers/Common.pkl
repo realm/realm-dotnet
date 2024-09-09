@@ -21,7 +21,7 @@ const job_Unity: String = "build-unity"
 
 local const job_Wrappers: String = "build-wrappers"
 
-const mainBranch: String = "main"
+const mainBranch: String = "community"
 
 typealias NetFramework = "net6.0" | "net8.0" | String(startsWith("${{ matrix")) | String(startsWith("net8"))
 typealias NetRuntime = "win-x64" | "linux-x64" | "osx-x64" | "osx-arm64" | String(startsWith("${{ matrix"))
