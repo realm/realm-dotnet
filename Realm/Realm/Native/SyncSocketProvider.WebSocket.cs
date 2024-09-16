@@ -124,7 +124,7 @@ internal partial class SyncSocketProvider
 
             try
             {
-                await _webSocket.SendAsync(new(buffer), WebSocketMessageType.Binary, true, _cancellationToken);
+                await _webSocket.SendAsync(new(buffer, 0, (int)data.size), WebSocketMessageType.Binary, true, _cancellationToken);
             }
             catch (Exception e)
             {
