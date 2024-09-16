@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a possible disruption of sync traffic under heavy load when using managed web sockets where malformed binary messages cause the server to drop the connection and force the client to reconnect and upload again. (Issue [#3671](https://github.com/realm/realm-dotnet/issues/3671)).
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
