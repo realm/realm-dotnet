@@ -1,6 +1,6 @@
 module codeql
 
-amends "GithubAction/GithubAction.pkl"
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl"
 
 import "helpers/Common.pkl"
 import "helpers/Steps.pkl"
@@ -34,9 +34,9 @@ concurrency {
   `cancel-in-progress` = true
 }
 jobs {
-  ["analyze-csharp"] = new Job {
+  ["analyze-csharp"] {
     name = "Analyze C#"
-    `runs-on` = new WindowsLatest{}
+    `runs-on` = new WindowsLatest {}
     permissions {
       actions = "read"
       contents = "read"

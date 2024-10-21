@@ -1,6 +1,6 @@
 module common
 
-import "../GithubAction/GithubAction.pkl" as gha
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
 import "BaaS.pkl"
 import "Lint.pkl"
 import "Package.pkl"
@@ -24,9 +24,9 @@ local const job_Wrappers: String = "build-wrappers"
 
 const mainBranch: String = "main"
 
-typealias NetFramework = "net6.0" | "net8.0" | String(startsWith("${{ matrix")) | String(startsWith("net8"))
-typealias NetRuntime = "win-x64" | "linux-x64" | "osx-x64" | "osx-arm64" | String(startsWith("${{ matrix"))
-typealias SyncDifferentiator = "ios-maui" | "android-maui" | "tvos" | "macos-maui" | "code-coverage" | "uwp" | "net-framework" | String(startsWith("${{ matrix"))
+typealias NetFramework = "net6.0"|"net8.0"|String(startsWith("${{ matrix"))|String(startsWith("net8"))
+typealias NetRuntime = "win-x64"|"linux-x64"|"osx-x64"|"osx-arm64"|String(startsWith("${{ matrix"))
+typealias SyncDifferentiator = "ios-maui"|"android-maui"|"tvos"|"macos-maui"|"code-coverage"|"uwp"|"net-framework"|String(startsWith("${{ matrix"))
 
 const wrapperBinaryNames: List<String> =
   List("macos", "catalyst")
@@ -36,7 +36,7 @@ const wrapperBinaryNames: List<String> =
   + uwpArchs.map((arch) -> "windows-uwp-\(arch)")
   + applePlatformTargets((platform, target) -> "\(platform)-\(target)")
 
-const defaultEnv: Mapping<String, String | Boolean> = new {
+const defaultEnv: Mapping<String, String|Boolean|Number> = new {
   ["REALM_DISABLE_ANALYTICS"] = true
   ["DOTNET_NOLOGO"] = true
 }
@@ -50,13 +50,13 @@ const packages: List<String> = nugetPackages + List("Realm.UnityUtils", "Realm.U
 
 const testTimeout: Int = 60
 
-const function defaultBuildJobs(baasDifferentiators: Listing<SyncDifferentiator>, netCoreVersions: Listing<NetFramework>): Mapping<String, gha.JobBase> = new {
-  [job_Wrappers] = new gha.ReusableWorkflowJob {
+const function defaultBuildJobs(baasDifferentiators: Listing<SyncDifferentiator>, netCoreVersions: Listing<NetFramework>): Mapping<String, gha.Job> = new {
+  [job_Wrappers] = new gha.ReusableJob {
     uses = "./.github/workflows/wrappers.yml"
     name = "Wrappers"
   }
   [job_Baas] = BaaS.deploy(baasDifferentiators)
-  [job_Packages] = (Package.nuget("contains(github.head_ref, 'release')")){
+  [job_Packages] = (Package.nuget("contains(github.head_ref, 'release')")) {
     needs {
       job_Wrappers
     }
