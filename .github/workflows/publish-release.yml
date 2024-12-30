@@ -1,5 +1,5 @@
 # Do not modify!
-# This file was generated from a template using https://github.com/apple/pkl
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: Publish Release
 'on':
@@ -10,8 +10,9 @@ env:
 jobs:
   main:
     name: Publish Release
-    environment: Production
     runs-on: windows-latest
+    environment:
+      name: Production
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -27,11 +28,11 @@ jobs:
         workflow_conclusion: completed
     - name: Read version
       id: get-version
+      shell: bash
       run: |-
         cd Realm/packages
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
-      shell: bash
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -80,6 +81,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
     - name: Update Changelog
+      shell: bash
       run: |-
         echo "## vNext (TBD)
 
@@ -96,7 +98,6 @@ jobs:
         * Using Core x.y.z.
         " | cat - CHANGELOG.md >> temp
         mv temp CHANGELOG.md
-      shell: bash
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e

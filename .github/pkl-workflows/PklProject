@@ -1,5 +1,0 @@
-amends "pkl:Project"
-
-dependencies {
-  ["realm-gha"] = import("GithubAction/PklProject")
-}

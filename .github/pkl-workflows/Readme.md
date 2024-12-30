@@ -1,6 +1,6 @@
 # Preprocessing the GA workflows
 
-We're using [pkl](http://github.com/apple/pkl) to generate the github actions workflows.
+We're using [pkl](http://github.com/apple/pkl) to generate the GitHub actions workflows.
 
 ## Prerequisites
 
@@ -18,5 +18,5 @@ Run `pwsh .github/build-workflows.ps1` or the following bash script if you don't
 
 ```bash
 cd $SolutionDir/.github/pkl-workflows
-for file in *.pkl ; do pkl eval $file -o  ../workflows/$(echo $file | sed s/pkl/yml/) ; done
+pkl eval *.pkl -o ../workflows/%{moduleName}.yml
 ```
