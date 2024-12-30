@@ -48,7 +48,7 @@ jobs {
     }
   }
   ["macos"] = new Job {
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "MacOS"
   } |> wrappersJob(new JobConfig {
       cmd = "./wrappers/build-macos.sh"
@@ -58,7 +58,7 @@ jobs {
       }
     })
   ["catalyst"] = new Job {
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "Catalyst"
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build-apple-platform.ps1 Catalyst"
@@ -75,7 +75,7 @@ jobs {
       }
       `fail-fast` = false
     }
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "Apple Platform"
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}"
