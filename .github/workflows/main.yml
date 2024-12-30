@@ -704,7 +704,7 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
@@ -804,7 +804,7 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
@@ -916,7 +916,7 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code

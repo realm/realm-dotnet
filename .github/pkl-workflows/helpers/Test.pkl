@@ -164,7 +164,7 @@ function tvOS(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job
     syncDifferentiator = "tvos"
     syncDifferentiators = _syncDifferentiators
   },
-  "macos-12",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -191,7 +191,7 @@ function iOS_Xamarin(): gha.Job = testJob(
     needsPackages = true
     title = "Xamarin.iOS"
   },
-  "macos-12",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -243,7 +243,7 @@ function macOS_Xamarin(): gha.Job = testJob(
     needsPackages = true
     title = "Xamarin.macOS"
   },
-  "macos-12",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
