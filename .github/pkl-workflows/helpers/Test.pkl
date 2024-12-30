@@ -221,7 +221,7 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-13",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -267,7 +267,7 @@ function macOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): g
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-13",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)

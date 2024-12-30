@@ -468,7 +468,7 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
       with:
-        xcode-version: '14'
+        xcode-version: latest-stable
     - name: Setup Cmake
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be

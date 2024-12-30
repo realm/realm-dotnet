@@ -744,7 +744,7 @@ jobs:
     needs:
     - build-packages
     - deploy-baas
-    runs-on: macos-13
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
@@ -850,7 +850,7 @@ jobs:
     needs:
     - build-packages
     - deploy-baas
-    runs-on: macos-13
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
