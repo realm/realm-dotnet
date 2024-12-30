@@ -4,13 +4,17 @@
 * None
 
 ### Fixed
-* None
+* Fix crash during client app shutdown when Logger log level is set higher than Info. (Core 14.12.1)
+* If File::rw_lock() fails to open a file the exception message does not contain the filename. (Core 14.12.1)
+* Fallback to hashed filename will fail if length of basename is between 240 and 250. (Core 14.12.1)
+* Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone). (Core 14.13.0)
+* Migrating primary key to a new type without migration function would cause an assertion to fail. (Core 14.13.2)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 14.13.2.
 
 ## 12.4.1 (2024-09-16)
 
@@ -21,7 +25,7 @@
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 14.12.0.
 
 ## 12.4.0 (2024-08-25)
 
