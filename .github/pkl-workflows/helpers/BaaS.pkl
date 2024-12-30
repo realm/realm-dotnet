@@ -1,16 +1,17 @@
 module baas
 
-import "../GithubAction/GithubAction.pkl" as gha
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
 import "Common.pkl"
 import "Steps.pkl"
 
-function deploy(differentiators: Listing<Common.SyncDifferentiator>): gha.MatrixJob = new {
+function deploy(differentiators: Listing<Common.SyncDifferentiator>): gha.Job = new {
   name = "Deploy BaaS"
-  `runs-on` = new gha.UbuntuLatest{}
+  `runs-on` = new gha.UbuntuLatest {}
   strategy {
     matrix {
       ["differentiator"] = differentiators
     }
+    `fail-fast` = false
   }
   `if` = Common.ifNotCanceledCondition
   steps {
@@ -26,13 +27,14 @@ function deployStep(differentiator: Common.SyncDifferentiator?, shouldDeploy: Bo
   `working-directory` = "Tools/DeployApps"
 }) else List()
 
-function cleanup(differentiators: Listing<Common.SyncDifferentiator>): gha.MatrixJob = new {
+function cleanup(differentiators: Listing<Common.SyncDifferentiator>): gha.Job = new {
   name = "Cleanup BaaS"
-  `runs-on` = new gha.UbuntuLatest{}
+  `runs-on` = new gha.UbuntuLatest {}
   strategy {
     matrix {
       ["differentiator"] = differentiators
     }
+    `fail-fast` = false
   }
   `if` = Common.ifNotCanceledCondition
   steps {

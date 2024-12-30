@@ -1,6 +1,6 @@
 module release
 
-amends "GithubAction/GithubAction.pkl"
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl"
 
 import "helpers/Common.pkl"
 import "helpers/Steps.pkl"
@@ -12,10 +12,12 @@ on {
 }
 env = Common.defaultEnv
 jobs {
-  ["main"] = new Job {
+  ["main"] {
     `runs-on` = new WindowsLatest{}
     name = "Publish Release"
-    environment = "Production"
+    environment {
+      name = "Production"
+    }
     steps {
       Steps.checkoutWithoutMatchers(false)
       Steps.downloadAllArtifacts()

@@ -1,17 +1,17 @@
 # Do not modify!
-# This file was generated from a template using https://github.com/apple/pkl
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: CodeQL
 'on':
   pull_request:
+    branches:
+    - main
     paths:
     - '**.cs'
     - '**.cpp'
     - '**.hpp'
     - '**.csproj'
     - .github/workflows/codeql.yml
-    branches:
-    - main
   push:
     branches:
     - main
