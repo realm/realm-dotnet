@@ -75,12 +75,6 @@ namespace Realms.Tests.Sync
                         Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
                         AssertBundleId("Realm.Tests");
                     }
-                    else
-                    {
-                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple"), "Name");
-                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
-                        AssertBundleId("Tests.XamarinMac");
-                    }
 
                     break;
                 case "iOS":

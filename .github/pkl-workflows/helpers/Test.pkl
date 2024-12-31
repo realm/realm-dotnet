@@ -52,13 +52,8 @@ function netCore(frameworks: Listing<Common.NetFramework>): gha.Job = testJob(
       ["os"] = new {
         new { runner = "windows-latest" runtime = "win-x64" }
         new { runner = "ubuntu-latest" runtime = "linux-x64" }
-        new { runner = "macos-14" runtime = "osx-x64" }
-      }
-      ["include"] = new {
-        new {
-          ["framework"] = "net8.0"
-          ["os"] = new MatrixOS { runner = "macos-14" runtime = "osx-arm64" }
-        }
+        new { runner = "macos-13" runtime = "osx-x64" }
+        new { runner = "macos-latest" runtime = "osx-arm64" }
       }
     }
     `fail-fast` = false
@@ -157,62 +152,6 @@ function wovenClasses(): gha.Job = testJob(
   }
 )
 
-function tvOS(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.tvOS"
-    syncDifferentiator = "tvos"
-    syncDifferentiators = _syncDifferentiators
-  },
-  "macos-latest",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinTVOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.XamarinTVOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
-      bundleId = "io.realm.Tests-XamarinTVOS"
-      iphoneToSimulate = "Apple-TV-1080p"
-      os = "tvOS"
-    })
-    ...reportTestResults(config)
-  })
-
-function iOS_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.iOS"
-  },
-  "macos-latest",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.iOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.iOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.iOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
-      bundleId = "io.realm.dotnettests"
-      iphoneToSimulate = "iPhone-8"
-      os = "iOS"
-    })
-    ...reportTestResults(config)
-  })
-
 function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
@@ -235,27 +174,6 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
       iphoneToSimulate = "iPhone-15"
       os = "iOS"
     })
-    ...reportTestResults(config)
-  })
-
-function macOS_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.macOS"
-  },
-  "macos-latest",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinMac"
-      }
-    })
-    new {
-      name = "Run the tests"
-      run = "Tests/Tests.XamarinMac/bin/\(Common.configuration)/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
-    }
     ...reportTestResults(config)
   })
 
@@ -320,33 +238,6 @@ function uwp(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job 
       shell = "powershell"
     }
     ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
-  })
-
-function android_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.Android"
-  },
-  new gha.WindowsLatest {},
-  null,
-  (config) -> new Listing<gha.Step> {
-    Steps.setupJDK()
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.Android"
-      }
-      target = "SignAndroidPackage"
-      properties {
-        ["AndroidUseSharedRuntime"] = "False"
-        ["EmbedAssembliesIntoApk"] = "True"
-      }
-    })
-    ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
-      apkPath = "${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk"
-      appId = "io.realm.xamarintests"
-    })
-    ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
   })
 
 function android_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
@@ -630,7 +521,7 @@ local function archiveCoreDump(): gha.Step = (Steps.uploadArtifacts("crash-repor
 }
 
 local class MatrixOS {
-  runner: "windows-latest"|"ubuntu-latest"|"macos-13"|"macos-14"
+  runner: "windows-latest"|"ubuntu-latest"|"macos-13"|"macos-latest"
   runtime: Common.NetRuntime
 }
 
