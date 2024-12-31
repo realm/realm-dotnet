@@ -34,7 +34,7 @@ namespace SourceGeneratorTests
         {
             public Test()
             {
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
                 TestState.AdditionalReferences.Add(typeof(ObjectId).Assembly.Location);
                 TestState.AdditionalReferences.Add(typeof(Realms.Realm).Assembly.Location);
 
