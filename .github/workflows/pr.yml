@@ -606,7 +606,7 @@ jobs:
     strategy:
       matrix:
         framework:
-        - net6.0
+        - net8.0
         os:
         - runner: windows-latest
           runtime: win-x64
@@ -1135,11 +1135,11 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net8.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net8.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -1179,15 +1179,15 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net8.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net8.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results

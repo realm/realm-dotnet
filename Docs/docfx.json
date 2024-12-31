@@ -101,7 +101,7 @@
         "postProcessors": [],
         "noLangKeyword": false,
         "properties": {
-            "TargetFramework": "net6.0"
+            "TargetFramework": "net8.0"
         }
     }
 }

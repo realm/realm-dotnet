@@ -104,8 +104,8 @@ function weaver(): gha.Job = testJob(
   },
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.setupWorkloads(null, "6.0.x")
-    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
+    ...Steps.setupWorkloads(null, "8.0.x")
+    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net8.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -119,7 +119,7 @@ function xunit(): gha.Job = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net8.0", "win-x64", new Mapping {}).toList()
     new {
       name = "Run Tests"
       run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
@@ -135,7 +135,7 @@ function sourceGeneration(): gha.Job = testJob(
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
     ...Steps.setupWorkloads(null, "6.0.x")
-    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net8.0", "win-x64", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -488,7 +488,7 @@ function benchmark(): gha.Job = testJob(
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
     }
-    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", getTestProps(true))
+    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net8.0", "linux-x64", getTestProps(true))
     new {
       name = "Run the tests"
       run = "\(executableExpression)/PerformanceTests -f \"*\" --join"

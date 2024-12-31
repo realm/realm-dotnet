@@ -17,7 +17,7 @@ local baasDifferentiators: Listing<Common.SyncDifferentiator> = new {
 }
 
 local netCoreFrameworks: Listing<Common.NetFramework> = new {
-  "net6.0"
+  "net9.0"
   "net8.0"
 }
 

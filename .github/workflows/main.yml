@@ -614,7 +614,7 @@ jobs:
     strategy:
       matrix:
         framework:
-        - net6.0
+        - net9.0
         - net8.0
         os:
         - runner: windows-latest
@@ -1156,11 +1156,11 @@ jobs:
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net8.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net8.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -1200,15 +1200,15 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Setup workloads
       run: dotnet workload install android ${{ (runner.os != 'Linux' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net8.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net8.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -1467,11 +1467,11 @@ jobs:
         name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Tests.XUnit
-      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/Tests.XUnit -c Release -f net8.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net6.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net8.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   benchmark-linux:
@@ -1506,11 +1506,11 @@ jobs:
     - name: Clear nuget cache
       run: dotnet nuget locals all --clear
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net8.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net8.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
