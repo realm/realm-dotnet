@@ -10,7 +10,7 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <!-- Mono MSBuild (16.0) on macOS cannot target .NET 6 so we can only add the .NET 6 tfms for dotnet build/Windows MSBuild -->
     <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([MSBuild]::IsOsPlatform('macOS')) AND '$(MSBuildVersion)' &gt;= '17.0')">
-      $(TargetFrameworks);net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-tvos
+      $(TargetFrameworks);net8.0-ios;net8.0-android;net8.0-maccatalyst;net8.0-tvos
     </TargetFrameworks>
     <!-- dotnet build on macOS cannot target Xamarin.XYZ -->
     <!-- Additionally, the Xamarin targets are not available on Arm64 Windows -->
