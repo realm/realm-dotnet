@@ -802,7 +802,7 @@ namespace Realms.Tests.Sync
                 logs[level] = new();
             }
 
-            var regex = new Regex("Connection\\[\\d+] Session\\[\\d+]");
+            var regex = new Regex("Connection\\[\\d+(:[0-9a-f]*)?] Session\\[\\d+]");
             var logger = RealmLogger.Function((level, _, msg) =>
             {
                 if (regex.IsMatch(msg))

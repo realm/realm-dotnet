@@ -10,12 +10,7 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <!-- Mono MSBuild (16.0) on macOS cannot target .NET 6 so we can only add the .NET 6 tfms for dotnet build/Windows MSBuild -->
     <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([MSBuild]::IsOsPlatform('macOS')) AND '$(MSBuildVersion)' &gt;= '17.0')">
-      $(TargetFrameworks);net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-tvos
-    </TargetFrameworks>
-    <!-- dotnet build on macOS cannot target Xamarin.XYZ -->
-    <!-- Additionally, the Xamarin targets are not available on Arm64 Windows -->
-    <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR ($([MSBuild]::IsOsPlatform('macOS')) AND '$(MSBuildVersion)' &lt; '17.0')">
-      $(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20
+      $(TargetFrameworks);net8.0-ios;net8.0-android;net8.0-maccatalyst;net8.0-tvos
     </TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -44,18 +39,13 @@
     <Compile Include="**\*.uwp.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) OR $(TargetFramework.Contains('-android'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <Compile Include="**\*.android.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) OR $(TargetFramework.Contains('-ios')) OR $(TargetFramework.StartsWith('Xamarin.TVOS')) OR $(TargetFramework.Contains('-tvos')) OR $(TargetFramework.Contains('-maccatalyst'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) OR $(TargetFramework.Contains('-tvos')) OR $(TargetFramework.Contains('-maccatalyst'))">
     <Compile Include="**\*.ios.*.cs" />
     <Compile Include="**\*.ios.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac'))">
-    <Compile Include="**\*.mac.*.cs" />
-    <Compile Include="**\*.mac.cs" />
   </ItemGroup>
 
   <Import Project="..\AssemblyInfo.props " />

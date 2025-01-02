@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
@@ -30,28 +30,35 @@
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
-    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX')) AND Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
+    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj"
+      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
+      Condition="$([MSBuild]::IsOsPlatform('OSX')) AND Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x86_64\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x86_64\librealm-wrappers.so"
+      Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll"
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll"
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props"
+    Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
-  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props"
+    Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>

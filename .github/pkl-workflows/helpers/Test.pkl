@@ -52,13 +52,8 @@ function netCore(frameworks: Listing<Common.NetFramework>): gha.Job = testJob(
       ["os"] = new {
         new { runner = "windows-latest" runtime = "win-x64" }
         new { runner = "ubuntu-latest" runtime = "linux-x64" }
-        new { runner = "macos-14" runtime = "osx-x64" }
-      }
-      ["include"] = new {
-        new {
-          ["framework"] = "net8.0"
-          ["os"] = new MatrixOS { runner = "macos-14" runtime = "osx-arm64" }
-        }
+        new { runner = "macos-13" runtime = "osx-x64" }
+        new { runner = "macos-latest" runtime = "osx-arm64" }
       }
     }
     `fail-fast` = false
@@ -104,8 +99,8 @@ function weaver(): gha.Job = testJob(
   },
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.setupWorkloads(null, "6.0.x")
-    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
+    ...Steps.setupWorkloads(null, "8.0.x")
+    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net8.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -119,7 +114,7 @@ function xunit(): gha.Job = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net8.0", "win-x64", new Mapping {}).toList()
     new {
       name = "Run Tests"
       run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
@@ -135,7 +130,7 @@ function sourceGeneration(): gha.Job = testJob(
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
     ...Steps.setupWorkloads(null, "6.0.x")
-    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net8.0", "win-x64", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -157,62 +152,6 @@ function wovenClasses(): gha.Job = testJob(
   }
 )
 
-function tvOS(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.tvOS"
-    syncDifferentiator = "tvos"
-    syncDifferentiators = _syncDifferentiators
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinTVOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.XamarinTVOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
-      bundleId = "io.realm.Tests-XamarinTVOS"
-      iphoneToSimulate = "Apple-TV-1080p"
-      os = "tvOS"
-    })
-    ...reportTestResults(config)
-  })
-
-function iOS_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.iOS"
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.iOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.iOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.iOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
-      bundleId = "io.realm.dotnettests"
-      iphoneToSimulate = "iPhone-8"
-      os = "iOS"
-    })
-    ...reportTestResults(config)
-  })
-
 function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
@@ -221,7 +160,7 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-13",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -229,33 +168,12 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-x64/Tests.Maui.app"
+      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
       bundleId = "io.realm.mauitests"
       iphoneToSimulate = "iPhone-15"
       os = "iOS"
     })
-    ...reportTestResults(config)
-  })
-
-function macOS_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.macOS"
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinMac"
-      }
-    })
-    new {
-      name = "Run the tests"
-      run = "Tests/Tests.XamarinMac/bin/\(Common.configuration)/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
-    }
     ...reportTestResults(config)
   })
 
@@ -267,7 +185,7 @@ function macOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): g
     syncDifferentiators = _syncDifferentiators
     transformResults = true
   },
-  "macos-13",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -320,33 +238,6 @@ function uwp(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job 
       shell = "powershell"
     }
     ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
-  })
-
-function android_Xamarin(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.Android"
-  },
-  new gha.WindowsLatest {},
-  null,
-  (config) -> new Listing<gha.Step> {
-    Steps.setupJDK()
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.Android"
-      }
-      target = "SignAndroidPackage"
-      properties {
-        ["AndroidUseSharedRuntime"] = "False"
-        ["EmbedAssembliesIntoApk"] = "True"
-      }
-    })
-    ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
-      apkPath = "${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk"
-      appId = "io.realm.xamarintests"
-    })
-    ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
   })
 
 function android_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha.Job = testJob(
@@ -488,7 +379,7 @@ function benchmark(): gha.Job = testJob(
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
     }
-    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", getTestProps(true))
+    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net8.0", "linux-x64", getTestProps(true))
     new {
       name = "Run the tests"
       run = "\(executableExpression)/PerformanceTests -f \"*\" --join"
@@ -630,7 +521,7 @@ local function archiveCoreDump(): gha.Step = (Steps.uploadArtifacts("crash-repor
 }
 
 local class MatrixOS {
-  runner: "windows-latest"|"ubuntu-latest"|"macos-13"|"macos-14"
+  runner: "windows-latest"|"ubuntu-latest"|"macos-13"|"macos-latest"
   runtime: Common.NetRuntime
 }
 

@@ -17,6 +17,8 @@ if(ANDROID)
   else()
     STRING(REGEX REPLACE "-O[0-9z]" "-Oz" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
   endif()
+
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
 endif()
 
 option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)

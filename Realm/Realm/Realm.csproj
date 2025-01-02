@@ -164,11 +164,6 @@
       <PackagePath>runtimes\win10-x64\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\x64\realm-wrappers.dll</Link>
     </None>
-    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM\realm-wrappers.dll">
-      <Pack>true</Pack>
-      <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\ARM\realm-wrappers.dll</Link>
-    </None>
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM64\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-arm64\nativeassets\uap10.0</PackagePath>
