@@ -44,7 +44,7 @@ namespace RealmWeaver
                 referencedTypes = referencedTypes.Concat(types);
             }
 
-            var realmTypes = referencedTypes.Where(ShouldInclude)
+            var realmTypes = referencedTypes.Where(t => !t.IsIMappedObjectImplementor(_references) && ShouldInclude(t))
                                             .Select(_moduleDefinition.ImportReference)
                                             .Distinct()
                                             .ToArray();

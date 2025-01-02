@@ -557,6 +557,15 @@ public static class CollectionExtensions
         return query;
     }
 
+    // TODO (ni): add docs
+    public static T As<T>(this IDictionary<string, RealmValue> dict)
+        where T : IMappedObject, new()
+    {
+        var result = new T();
+        result.SetBackingStorage(dict);
+        return result;
+    }
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented",
         Justification = "This is only used by the weaver/source generated classes and should not be exposed to users.")]
