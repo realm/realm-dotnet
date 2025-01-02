@@ -18,7 +18,7 @@
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 14.13.2.
+* Using Core 14.13.0.
 
 ## 12.4.1 (2024-09-16)
 
