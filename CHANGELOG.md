@@ -1,5 +1,10 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* Support for UWP on arm32 has been removed due to the Windows SDK no longer supporting 32-bit ARM. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+* Support for Xamarin projects has been deprecated. While we still expect the SDK to work, we no longer actively test against Xamarin as it has been end-of-life'd by Microsoft since May. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+* Support for .NET 6 is deprecated. We still expect everything to work, but we'll retarget the SDK to the latest LTS version (8.0) in a future release. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+
 ### Enhancements
 * None
 
