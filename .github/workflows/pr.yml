@@ -1,5 +1,5 @@
 # Do not modify!
-# This file was generated from a template using https://github.com/apple/pkl
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: PR Build
 'on':
@@ -20,6 +20,7 @@ name: PR Build
     - .github/actions/**
     - Tests/Tests.Android/Properties/AndroidManifest.xml
 env:
+  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -30,13 +31,13 @@ jobs:
     uses: ./.github/workflows/wrappers.yml
   build-packages:
     name: Package NuGet
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-wrappers
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: windows-latest
+    timeout-minutes: 30
     outputs:
       package_version: ${{ steps.get-version.outputs.package_version }}
-    timeout-minutes: 30
-    runs-on: windows-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -52,6 +53,7 @@ jobs:
         dotnet-version: 8.0.x
     - name: Set version suffix
       id: set-version-suffix
+      shell: pwsh
       run: |-
         $suffix = ""
         if ($env:GITHUB_EVENT_NAME -eq "pull_request")
@@ -66,7 +68,6 @@ jobs:
           $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
         }
         echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
-      shell: pwsh
     - name: Fetch wrappers for macos
       uses: actions/download-artifact@v4
       with:
@@ -178,11 +179,11 @@ jobs:
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
+      shell: bash
       run: |-
         cd Realm/packages
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
-      shell: bash
     - name: Store artifacts for Realm.${{ steps.get-version.outputs.package_version }}
       uses: actions/upload-artifact@v4
       with:
@@ -230,6 +231,7 @@ jobs:
       run: C:\docfx\docfx Docs/docfx.json
     - name: Update Improve this doc links
       if: contains(github.head_ref, 'release')
+      shell: pwsh
       run: |-
         Get-ChildItem Docs/_site -Filter *.html -Recurse -File |
         ForEach-Object {
@@ -237,7 +239,6 @@ jobs:
           $content = $content -replace "/Docs/apispec/new\?filename", "/Docs/apispec?filename"
           Set-Content $_.FullName $content
         }
-      shell: pwsh
     - name: Archive docs
       if: contains(github.head_ref, 'release')
       run: Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
@@ -251,11 +252,11 @@ jobs:
         if-no-files-found: error
   build-unity:
     name: Package Unity
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 30
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -301,11 +302,11 @@ jobs:
         if-no-files-found: error
   test-net-framework:
     name: Test .NET Framework
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -340,11 +341,11 @@ jobs:
         fail-on-error: true
   test-uwp:
     name: Test UWP
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -361,20 +362,20 @@ jobs:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Import test certificate
+      shell: powershell
       run: |-
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
         $currentDirectory = Get-Location
         [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
         certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-      shell: powershell
     - name: Add msbuild to PATH
       if: ${{ runner.os == 'Windows' }}
       uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1
       shell: powershell
+      run: ./Tests/Tests.UWP/RunTests.ps1
     - name: Publish Unit Test Results
       if: always()
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
@@ -387,11 +388,28 @@ jobs:
         fail-on-error: true
   test-net-core:
     name: Test ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
+    strategy:
+      matrix:
+        framework:
+        - net6.0
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-14
+          runtime: osx-x64
+        include:
+        - framework: net8.0
+          os:
+            runner: macos-14
+            runtime: osx-arm64
+      fail-fast: false
     runs-on: ${{ matrix.os.runner }}
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -414,10 +432,10 @@ jobs:
       run: dotnet nuget locals all --clear
     - name: Extract .NET version
       id: get-net-version
+      shell: bash
       run: |2-
           NET_VERSION=$(echo '${{ matrix.framework }}.x' | sed 's/net//g')
           echo "version=$NET_VERSION" >> $GITHUB_OUTPUT
-      shell: bash
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
         dotnet-version: ${{ steps.get-net-version.outputs.version }}
@@ -425,8 +443,8 @@ jobs:
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}/Realm.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       env:
         DOTNET_DbgEnableMiniDump: 1
@@ -450,30 +468,13 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-    strategy:
-      matrix:
-        framework:
-        - net6.0
-        os:
-        - runner: windows-latest
-          runtime: win-x64
-        - runner: ubuntu-latest
-          runtime: linux-x64
-        - runner: macos-13
-          runtime: osx-x64
-        include:
-        - framework: net8.0
-          os:
-            runner: macos-14
-            runtime: osx-arm64
-      fail-fast: false
   test-macos-xamarin:
     name: Test Xamarin.macOS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: macos-12
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -508,11 +509,11 @@ jobs:
         fail-on-error: true
   test-macos-maui:
     name: Test Maui.MacCatalyst
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: macos-14
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -555,11 +556,11 @@ jobs:
         fail-on-error: true
   test-ios-xamarin:
     name: Test Xamarin.iOS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: macos-12
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -600,11 +601,11 @@ jobs:
         fail-on-error: true
   test-ios-maui:
     name: Test Maui.iOS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: macos-14
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -653,11 +654,11 @@ jobs:
         fail-on-error: true
   test-tvos:
     name: Test Xamarin.tvOS
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: macos-12
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -698,11 +699,11 @@ jobs:
         fail-on-error: true
   test-android-xamarin:
     name: Test Xamarin.Android
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Setup JDK
       uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
@@ -754,11 +755,11 @@ jobs:
         fail-on-error: true
   test-android-maui:
     name: Test Maui.Android
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Setup JDK
       uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
@@ -788,8 +789,8 @@ jobs:
       run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -818,11 +819,11 @@ jobs:
         fail-on-error: true
   test-woven-classes:
     name: Test Woven Classes
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -842,8 +843,8 @@ jobs:
       run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -859,8 +860,8 @@ jobs:
   test-source-generation:
     name: Test Source Generation
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -878,8 +879,8 @@ jobs:
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -895,8 +896,18 @@ jobs:
   test-weaver:
     name: Test Weaver
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
+    strategy:
+      matrix:
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-14
+          runtime: osx-arm64
+      fail-fast: false
     runs-on: ${{ matrix.os.runner }}
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -914,8 +925,8 @@ jobs:
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -928,23 +939,13 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-    strategy:
-      matrix:
-        os:
-        - runner: windows-latest
-          runtime: win-x64
-        - runner: ubuntu-latest
-          runtime: linux-x64
-        - runner: macos-14
-          runtime: osx-arm64
-      fail-fast: false
   test-code-coverage:
     name: Test Code Coverage
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-wrappers
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    timeout-minutes: 60
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -969,8 +970,8 @@ jobs:
       run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
       shell: bash
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       env:
         DOTNET_DbgEnableMiniDump: 1
@@ -1032,6 +1033,7 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - run: dotnet tool install ilspycmd -g --version 8.0.0.7345
     - name: Verify Namespaces
+      shell: pwsh
       run: |-
         $isFailure = $false
         Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
@@ -1057,7 +1059,6 @@ jobs:
         if ($isFailure) {
           exit 1
         }
-      shell: pwsh
   lint:
     name: Verify TODOs
     runs-on: ubuntu-latest

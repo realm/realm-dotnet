@@ -1,14 +1,22 @@
 # Do not modify!
-# This file was generated from a template using https://github.com/apple/pkl
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: wrappers
 'on':
   workflow_call: {}
 env:
+  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   check-cache:
     name: Check Cache
+    strategy:
+      matrix:
+        os:
+        - ubuntu
+        - windows
+      fail-fast: false
+    runs-on: ${{ matrix.os }}-latest
     env:
       CACHE_SKIP_SAVE: true
     outputs:
@@ -32,7 +40,6 @@ jobs:
       wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
       wrappers-tvOS-Device: ${{ steps.check-cache-tvOS-Device.outputs.cache-hit }}
       wrappers-tvOS-Simulator: ${{ steps.check-cache-tvOS-Simulator.outputs.cache-hit }}
-    runs-on: ${{ matrix.os }}-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -379,19 +386,13 @@ jobs:
         if-no-files-found: error
     - if: matrix.os == 'ubuntu'
       run: git clean -fdx
-    strategy:
-      matrix:
-        os:
-        - ubuntu
-        - windows
-      fail-fast: false
   macos:
     name: MacOS
+    if: needs.check-cache.outputs.wrappers-macos != 'true'
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-macos != 'true'
-    timeout-minutes: 90
     runs-on: macos-12
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -421,11 +422,11 @@ jobs:
         if-no-files-found: error
   catalyst:
     name: Catalyst
+    if: needs.check-cache.outputs.wrappers-catalyst != 'true'
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-catalyst != 'true'
-    timeout-minutes: 90
     runs-on: macos-12
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -455,11 +456,20 @@ jobs:
         if-no-files-found: error
   apple-platform:
     name: Apple Platform
+    if: needs.check-cache.outputs.wrappers-iOS-Device != 'true' || needs.check-cache.outputs.wrappers-iOS-Simulator != 'true' || needs.check-cache.outputs.wrappers-tvOS-Device != 'true' || needs.check-cache.outputs.wrappers-tvOS-Simulator != 'true'
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-iOS-Device != 'true' || needs.check-cache.outputs.wrappers-iOS-Simulator != 'true' || needs.check-cache.outputs.wrappers-tvOS-Device != 'true' || needs.check-cache.outputs.wrappers-tvOS-Simulator != 'true'
-    timeout-minutes: 90
+    strategy:
+      matrix:
+        platform:
+        - iOS
+        - tvOS
+        target:
+        - Device
+        - Simulator
+      fail-fast: false
     runs-on: macos-12
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -492,22 +502,20 @@ jobs:
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
-    strategy:
-      matrix:
-        platform:
-        - iOS
-        - tvOS
-        target:
-        - Device
-        - Simulator
-      fail-fast: false
   linux:
     name: Linux
+    if: needs.check-cache.outputs.wrappers-linux-x86_64 != 'true' || needs.check-cache.outputs.wrappers-linux-armhf != 'true' || needs.check-cache.outputs.wrappers-linux-aarch64 != 'true'
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-linux-x86_64 != 'true' || needs.check-cache.outputs.wrappers-linux-armhf != 'true' || needs.check-cache.outputs.wrappers-linux-aarch64 != 'true'
-    timeout-minutes: 90
+    strategy:
+      matrix:
+        arch:
+        - x86_64
+        - armhf
+        - aarch64
+      fail-fast: false
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -533,20 +541,21 @@ jobs:
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
+  android:
+    name: Android
+    if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
+    needs:
+    - check-cache
     strategy:
       matrix:
         arch:
+        - armeabi-v7a
+        - arm64-v8a
+        - x86
         - x86_64
-        - armhf
-        - aarch64
       fail-fast: false
-  android:
-    name: Android
-    needs:
-    - check-cache
-    if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
-    timeout-minutes: 90
     runs-on: ubuntu-20.04
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -569,21 +578,20 @@ jobs:
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
+  windows:
+    name: Windows
+    if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
+    needs:
+    - check-cache
     strategy:
       matrix:
         arch:
-        - armeabi-v7a
-        - arm64-v8a
-        - x86
-        - x86_64
+        - Win32
+        - x64
+        - ARM64
       fail-fast: false
-  windows:
-    name: Windows
-    needs:
-    - check-cache
-    if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
-    timeout-minutes: 90
     runs-on: windows-latest
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -598,8 +606,8 @@ jobs:
         key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Setup MSVC
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
       shell: pwsh
+      run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
@@ -610,20 +618,21 @@ jobs:
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
+  uwp:
+    name: UWP
+    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
+    needs:
+    - check-cache
     strategy:
       matrix:
         arch:
         - Win32
         - x64
+        - ARM
         - ARM64
       fail-fast: false
-  uwp:
-    name: UWP
-    needs:
-    - check-cache
-    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
-    timeout-minutes: 90
     runs-on: windows-latest
+    timeout-minutes: 90
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -638,8 +647,8 @@ jobs:
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Setup MSVC
       if: steps.check-cache.outputs.cache-hit != 'true'
-      run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
       shell: pwsh
+      run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
     - name: Build Wrappers
       if: steps.check-cache.outputs.cache-hit != 'true'
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
@@ -650,11 +659,3 @@ jobs:
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
-    strategy:
-      matrix:
-        arch:
-        - Win32
-        - x64
-        - ARM
-        - ARM64
-      fail-fast: false

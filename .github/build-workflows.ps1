@@ -1,3 +1,1 @@
-Get-ChildItem -Path './pkl-workflows' -Filter *.pkl -File -Name | ForEach-Object {
-    &pkl eval ./pkl-workflows/$_ -o "./workflows/$($_.Replace('pkl', 'yml'))"
-}
+pkl eval pkl-workflows/*.pkl -o workflows/%{moduleName}.yml

@@ -1,18 +1,18 @@
-import "../GithubAction/GithubAction.pkl" as gha
-import "Common.pkl"
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
 import "Actions.pkl"
+import "Common.pkl"
 
 const getVersionStepName = "get-version"
 const getVersionOutput = "package_version"
 
 const getVersionExpresssion = "${{ steps.\(getVersionStepName).outputs.\(getVersionOutput) }}"
 
-const function checkout(submodules: (Boolean | "recursive")): Listing<gha.Step> = new {
+const function checkout(submodules: (Boolean|"recursive")): Listing<gha.Step> = new {
   checkoutWithoutMatchers(submodules)
   registerProblemMatchers()
 }
 
-const function checkoutWithoutMatchers(submodules: (Boolean | "recursive")): gha.Step = new {
+const function checkoutWithoutMatchers(submodules: (Boolean|"recursive")): gha.Step = new {
   name = "Checkout Code"
   uses = Actions.checkout
   with {
@@ -136,7 +136,7 @@ const function setupAndroid(): Listing<gha.Step> = new {
   }
 }
 
-const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1" | "us-west-2" | "us-east-2"): gha.Step = new {
+const function configureAWSCredentials(accessKey: String, secretKey: String, region: "us-east-1"|"us-west-2"|"us-east-2"): gha.Step = new {
   name = "Configure AWS Credentials"
   uses = Actions.awsConfigureCredentials
   with {
@@ -157,7 +157,7 @@ const function readVersionFromPackage(): gha.Step = new {
   shell = "bash"
 }
 
-const function uploadToNPM(tag: "latest" | "alpha"): Listing<gha.Step> = new {
+const function uploadToNPM(tag: "latest"|"alpha"): Listing<gha.Step> = new {
   local packageName = "io.realm.unity-\(getVersionExpresssion).tgz"
 
   new {
@@ -186,18 +186,18 @@ const function uploadPackagesToSleet(versionExpression: String, expectShortPath:
   configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY", "us-east-1")
   for (package in Common.nugetPackages) {
     let (packageWithVersion = "\(package).\(versionExpression)")
-    let (packagePath = "\(if (expectShortPath) "" else "\(packageWithVersion)/")\(packageWithVersion).nupkg")
-      new {
-        name = "NuGet Publish \(packageWithVersion)"
-        run = "sleet push ${{ github.workspace }}/Realm/packages/\(packagePath) --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
-      }
+      let (packagePath = "\(if (expectShortPath) "" else "\(packageWithVersion)/")\(packageWithVersion).nupkg")
+        new {
+          name = "NuGet Publish \(packageWithVersion)"
+          run = "sleet push ${{ github.workspace }}/Realm/packages/\(packagePath) --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
+        }
   }
 }
 
 class MSBuildConfig {
   projects: Listing<String>
   target: String?
-  properties: Mapping<String, String> = new{}
+  properties: Mapping<String, String> = new {}
   standaloneExe: Boolean = false
 
   function getTargetForInvocation(): String = if (target != null) " -t:\(target)" else ""
@@ -280,9 +280,9 @@ const function cleanupWorkspace(): gha.Step = new {
 class SimulatorConfig {
   appPath: String
   bundleId: String
-  iphoneToSimulate: "Apple-TV-1080p" | "iPhone-8" | "iPhone-15"
+  iphoneToSimulate: "Apple-TV-1080p"|"iPhone-8"|"iPhone-15"
   arguments: String
-  os: "tvOS" | "iOS"
+  os: "tvOS"|"iOS"
 }
 
 class DeviceFarmConfig {
