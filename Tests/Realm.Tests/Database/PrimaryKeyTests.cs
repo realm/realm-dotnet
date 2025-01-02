@@ -154,57 +154,56 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
 
-            TestHelpers.RunDynamicTest(() =>
+#if !UNITY
+            dynamic dynamicObj = obj;
+
+            Assert.DoesNotThrow(() => SetDynamicValue(firstValue));
+
+            ex = Assert.Throws<InvalidOperationException>(() => SetDynamicValue(secondValue))!;
+
+            Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
+
+            void SetDynamicValue(object? value)
             {
-                dynamic dynamicObj = obj;
-
-                Assert.DoesNotThrow(() => SetDynamicValue(firstValue));
-
-                ex = Assert.Throws<InvalidOperationException>(() => SetDynamicValue(secondValue))!;
-
-                Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
-                Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
-                Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
-
-                void SetDynamicValue(object? value)
+                _realm.Write(() =>
                 {
-                    _realm.Write(() =>
+                    switch (value)
                     {
-                        switch (value)
-                        {
-                            case byte byteVal:
-                                dynamicObj.Id = byteVal;
-                                break;
-                            case char charVal:
-                                dynamicObj.Id = charVal;
-                                break;
-                            case short shortVal:
-                                dynamicObj.Id = shortVal;
-                                break;
-                            case int intVal:
-                                dynamicObj.Id = intVal;
-                                break;
-                            case long longVal:
-                                dynamicObj.Id = longVal;
-                                break;
-                            case string str:
-                                dynamicObj.Id = str;
-                                break;
-                            case ObjectId oid:
-                                dynamicObj.Id = oid;
-                                break;
-                            case Guid guid:
-                                dynamicObj.Id = guid;
-                                break;
-                            case null:
-                                dynamicObj.Id = null;
-                                break;
-                            default:
-                                throw new NotSupportedException($"Unable to use the dynamic API to set object of type {value?.GetType()}");
-                        }
-                    });
-                }
-            });
+                        case byte byteVal:
+                            dynamicObj.Id = byteVal;
+                            break;
+                        case char charVal:
+                            dynamicObj.Id = charVal;
+                            break;
+                        case short shortVal:
+                            dynamicObj.Id = shortVal;
+                            break;
+                        case int intVal:
+                            dynamicObj.Id = intVal;
+                            break;
+                        case long longVal:
+                            dynamicObj.Id = longVal;
+                            break;
+                        case string str:
+                            dynamicObj.Id = str;
+                            break;
+                        case ObjectId oid:
+                            dynamicObj.Id = oid;
+                            break;
+                        case Guid guid:
+                            dynamicObj.Id = guid;
+                            break;
+                        case null:
+                            dynamicObj.Id = null;
+                            break;
+                        default:
+                            throw new NotSupportedException($"Unable to use the dynamic API to set object of type {value?.GetType()}");
+                    }
+                });
+            }
+#endif
         }
 
         [TestCaseSource(nameof(PKTestCases))]
