@@ -7,7 +7,7 @@ import "helpers/Steps.pkl"
 import "helpers/Test.pkl" as TestJobs
 
 local netCoreFrameworks: Listing<Common.NetFramework> = new {
-  "net6.0"
+  "net9.0"
   "net8.0"
 }
 
@@ -38,7 +38,7 @@ env = Common.defaultEnv
 
 jobs = (Common.defaultBuildJobs(netCoreFrameworks)) {
   ["publish-packages-to-sleet"] {
-    `runs-on` = new UbuntuLatest{}
+    `runs-on` = new UbuntuLatest {}
     name = "Publish package to S3"
     needs = Common.job_Packages
     `if` = "${{ \(Common.ifNotCanceledCondition) && (github.event_name == 'push' || github.event.inputs.publish-prerelease) }}"

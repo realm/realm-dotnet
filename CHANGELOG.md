@@ -4,18 +4,44 @@
 * None
 
 ### Fixed
-* None
+* Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone). (Core 14.13.0)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 20.1.0.
 
 ## 20.0.0 (2024-09-09)
 
 ### Breaking Changes
 * Removed all functionality related to App Services/Atlas Device Sync.
+
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
+### Internal
+* Using Core 20.0.1.
+
+## 12.5.0 (2025-01-02)
+
+### Breaking Changes
+* Support for UWP on arm32 has been removed due to the Windows SDK no longer supporting 32-bit ARM. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+* Support for Xamarin projects has been deprecated. While we still expect the SDK to work, we no longer actively test against Xamarin as it has been end-of-life'd by Microsoft since May. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+* Support for .NET 6 is deprecated. We still expect everything to work, but we'll retarget the SDK to the latest LTS version (8.0) in a future release. (PR [#3683](https://github.com/realm/realm-dotnet/pull/3683))
+
+### Fixed
+* Fix crash during client app shutdown when Logger log level is set higher than Info. (Core 14.12.1)
+* If File::rw_lock() fails to open a file the exception message does not contain the filename. (Core 14.12.1)
+* Fallback to hashed filename will fail if length of basename is between 240 and 250. (Core 14.12.1)
+* Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone). (Core 14.13.0)
+
+### Compatibility
+* Realm Studio: 15.0.0 or later.
+
+### Internal
+* Using Core 14.13.0.
+
 ## 12.4.1 (2024-09-16)
 
 ### Fixed
@@ -27,6 +53,7 @@
 ### Internal
 * Using Core 20.0.1.
 * Using Core x.y.z.
+* Using Core 14.12.0.
 
 ## 12.4.0 (2024-08-25)
 

@@ -138,11 +138,6 @@ jobs:
       with:
         name: wrappers-windows-uwp-x64
         path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-ARM
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM
-        path: wrappers/build
     - name: Fetch wrappers for windows-uwp-ARM64
       uses: actions/download-artifact@v4
       with:
@@ -394,19 +389,16 @@ jobs:
     strategy:
       matrix:
         framework:
-        - net6.0
+        - net8.0
         os:
         - runner: windows-latest
           runtime: win-x64
         - runner: ubuntu-latest
           runtime: linux-x64
-        - runner: macos-14
+        - runner: macos-13
           runtime: osx-x64
-        include:
-        - framework: net8.0
-          os:
-            runner: macos-14
-            runtime: osx-arm64
+        - runner: macos-latest
+          runtime: osx-arm64
       fail-fast: false
     runs-on: ${{ matrix.os.runner }}
     timeout-minutes: 60
@@ -468,51 +460,12 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-  test-macos-xamarin:
-    name: Test Xamarin.macOS
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    runs-on: macos-12
-    timeout-minutes: 60
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      if: ${{ runner.os == 'Windows' }}
-      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
-    - name: Build Tests/Tests.XamarinMac
-      run: msbuild Tests/Tests.XamarinMac -restore -p:Configuration=Release -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
-    - name: Publish Unit Test Results
-      if: always()
-      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
-      with:
-        name: Results Xamarin.macOS
-        path: TestResults.xml
-        reporter: java-junit
-        list-suites: failed
-        path-replace-backslashes: true
-        fail-on-error: true
   test-macos-maui:
     name: Test Maui.MacCatalyst
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    runs-on: macos-14
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
@@ -554,57 +507,12 @@ jobs:
         list-suites: failed
         path-replace-backslashes: true
         fail-on-error: true
-  test-ios-xamarin:
-    name: Test Xamarin.iOS
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    runs-on: macos-12
-    timeout-minutes: 60
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      if: ${{ runner.os == 'Windows' }}
-      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
-    - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run on Simulator
-      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
-      with:
-        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
-        bundleId: io.realm.dotnettests
-        iphoneToSimulate: iPhone-8
-        arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '
-        os: iOS
-    - name: Publish Unit Test Results
-      if: always()
-      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
-      with:
-        name: Results Xamarin.iOS
-        path: TestResults.xml
-        reporter: java-junit
-        list-suites: failed
-        path-replace-backslashes: true
-        fail-on-error: true
   test-ios-maui:
     name: Test Maui.iOS
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    runs-on: macos-14
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
     - name: Checkout Code
@@ -648,107 +556,6 @@ jobs:
       with:
         name: Results Maui.iOS
         path: TestResults.xml_transformed.xml
-        reporter: java-junit
-        list-suites: failed
-        path-replace-backslashes: true
-        fail-on-error: true
-  test-tvos:
-    name: Test Xamarin.tvOS
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    runs-on: macos-12
-    timeout-minutes: 60
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      if: ${{ runner.os == 'Windows' }}
-      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
-    - name: Build Tests/Tests.XamarinTVOS
-      run: msbuild Tests/Tests.XamarinTVOS -restore -p:Configuration=Release -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run on Simulator
-      uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
-      with:
-        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
-        bundleId: io.realm.Tests-XamarinTVOS
-        iphoneToSimulate: Apple-TV-1080p
-        arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
-        os: tvOS
-    - name: Publish Unit Test Results
-      if: always()
-      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
-      with:
-        name: Results Xamarin.tvOS
-        path: TestResults.xml
-        reporter: java-junit
-        list-suites: failed
-        path-replace-backslashes: true
-        fail-on-error: true
-  test-android-xamarin:
-    name: Test Xamarin.Android
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-    - name: Setup JDK
-      uses: actions/setup-java@2e74cbce18569d23ca8b812590dbb83f13ac7c5a
-      with:
-        distribution: microsoft
-        java-version: 17
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      if: ${{ runner.os == 'Windows' }}
-      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
-    - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -restore -p:Configuration=Release -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4.0.2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
-    - name: Run the tests
-      id: run_tests
-      uses: ./.github/actions/run-android-device-farm-test
-      with:
-        apk-path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
-        app-id: io.realm.xamarintests
-        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-    - name: Publish Unit Test Results
-      if: always()
-      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
-      with:
-        name: Results Xamarin.Android
-        path: ${{ steps.run_tests.outputs.test-results-path }}
         reporter: java-junit
         list-suites: failed
         path-replace-backslashes: true
@@ -872,15 +679,12 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
-      with:
-        dotnet-version: 6.0.x
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net8.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net8.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -918,15 +722,12 @@ jobs:
       run: |-
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
-      with:
-        dotnet-version: 6.0.x
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net8.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net8.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -1031,7 +832,7 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - run: dotnet tool install ilspycmd -g --version 8.0.0.7345
+    - run: dotnet tool install ilspycmd -g --version 9.0.0.7833-preview3
     - name: Verify Namespaces
       shell: pwsh
       run: |-

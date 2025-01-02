@@ -11,7 +11,7 @@ const linuxArchs: List<String> = List("x86_64", "armhf", "aarch64")
 const applePlatforms: List<String> = List("iOS", "tvOS")
 const androidABIs: List<String> = List("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 const windowsArchs: List<String> = List("Win32", "x64", "ARM64")
-const uwpArchs: List<String> = List("Win32", "x64", "ARM", "ARM64")
+const uwpArchs: List<String> = List("Win32", "x64", "ARM64")
 
 const appleTargets: List<String> = List("Device", "Simulator")
 
@@ -23,7 +23,7 @@ local const job_Wrappers: String = "build-wrappers"
 
 const mainBranch: String = "community"
 
-typealias NetFramework = "net6.0"|"net8.0"|String(startsWith("${{ matrix"))|String(startsWith("net8"))
+typealias NetFramework = "net6.0"|"net8.0"|String(startsWith("${{ matrix"))|String(startsWith("net8"))|String(startsWith("net9"))
 typealias NetRuntime = "win-x64"|"linux-x64"|"osx-x64"|"osx-arm64"|String(startsWith("${{ matrix"))
 typealias SyncDifferentiator = "ios-maui"|"android-maui"|"tvos"|"macos-maui"|"code-coverage"|"uwp"|"net-framework"|String(startsWith("${{ matrix"))
 
@@ -70,12 +70,8 @@ const function defaultBuildJobs(netCoreVersions: Listing<NetFramework>): Mapping
   ["test-net-framework"] = TestJobs.netFramework()
   ["test-uwp"] = TestJobs.uwp()
   ["test-net-core"] = TestJobs.netCore(netCoreVersions)
-  ["test-macos-xamarin"] = TestJobs.macOS_Xamarin()
   ["test-macos-maui"] = TestJobs.macOS_Maui()
-  ["test-ios-xamarin"] = TestJobs.iOS_Xamarin()
   ["test-ios-maui"] = TestJobs.iOS_Maui()
-  ["test-tvos"] = TestJobs.tvOS()
-  ["test-android-xamarin"] = TestJobs.android_Xamarin()
   ["test-android-maui"] = TestJobs.android_Maui()
   ["test-woven-classes"] = TestJobs.wovenClasses()
   ["test-source-generation"] = TestJobs.sourceGeneration()

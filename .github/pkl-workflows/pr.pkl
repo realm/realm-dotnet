@@ -5,7 +5,7 @@ amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0
 import "helpers/Common.pkl"
 
 local netCoreFrameworks: Listing<Common.NetFramework> = new {
-  "net6.0"
+  "net8.0"
 }
 
 name = "PR Build"

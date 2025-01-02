@@ -34,7 +34,6 @@ jobs:
       wrappers-windows-ARM64: ${{ steps.check-cache-windows-ARM64.outputs.cache-hit }}
       wrappers-windows-uwp-Win32: ${{ steps.check-cache-windows-uwp-Win32.outputs.cache-hit }}
       wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
-      wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
       wrappers-windows-uwp-ARM64: ${{ steps.check-cache-windows-uwp-ARM64.outputs.cache-hit }}
       wrappers-iOS-Device: ${{ steps.check-cache-iOS-Device.outputs.cache-hit }}
       wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
@@ -284,23 +283,6 @@ jobs:
         if-no-files-found: error
     - if: matrix.os == 'windows'
       run: git clean -fdx
-    - name: Check Cache for windows-uwp-ARM
-      id: check-cache-windows-uwp-ARM
-      if: matrix.os == 'windows'
-      uses: actions/cache/restore@v4
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
-    - name: Store artifacts for wrappers-windows-uwp-ARM
-      if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM
-        path: wrappers/build/**
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - if: matrix.os == 'windows'
-      run: git clean -fdx
     - name: Check Cache for windows-uwp-ARM64
       id: check-cache-windows-uwp-ARM64
       if: matrix.os == 'windows'
@@ -391,7 +373,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-macos != 'true'
     needs:
     - check-cache
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 90
     steps:
     - name: Checkout Code
@@ -425,7 +407,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-catalyst != 'true'
     needs:
     - check-cache
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 90
     steps:
     - name: Checkout Code
@@ -468,7 +450,7 @@ jobs:
         - Device
         - Simulator
       fail-fast: false
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 90
     steps:
     - name: Checkout Code
@@ -486,7 +468,7 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
       with:
-        xcode-version: '14'
+        xcode-version: latest-stable
     - name: Setup Cmake
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be
@@ -620,7 +602,7 @@ jobs:
         if-no-files-found: error
   uwp:
     name: UWP
-    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
+    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
     needs:
     - check-cache
     strategy:
@@ -628,7 +610,6 @@ jobs:
         arch:
         - Win32
         - x64
-        - ARM
         - ARM64
       fail-fast: false
     runs-on: windows-latest
