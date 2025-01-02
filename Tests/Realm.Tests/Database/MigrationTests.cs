@@ -39,6 +39,45 @@ namespace Realms.Tests.Database
         private const string FileToMigrate = "ForMigrationsToCopyAndMigrate.realm";
 
         [Test]
+        public void AAAAAA_MigrationLocksFiles()
+        {
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+
+            using (var realm = GetRealm())
+            {
+            }
+
+            var config2 = config.ConfigWithPath(config.DatabasePath);
+            config2.SchemaVersion = 99;
+
+            // If the line below or line 49 is commented out, the file can be deleted as normal.
+            config2.MigrationCallback = (migration, oldSchemaVersion) => { };
+
+            using (var realm2 = GetRealm(config2))
+            {
+                // If you comment this out, the test will succeed, even with a migration callback
+                var people = realm2.All<Person>();
+            }
+
+            // Try to delete the Realm file - this is a copy of Realm.DeleteRealm
+            var fullpath = config2.DatabasePath;
+
+            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
+                .Select(ext => fullpath + ext)
+                .Where(File.Exists);
+
+            foreach (var file in filesToDelete)
+            {
+                Assert.DoesNotThrow(() => File.Delete(file), $"Failed to delete {file}");
+            }
+
+            if (Directory.Exists($"{fullpath}.management"))
+            {
+                Assert.DoesNotThrow(() => Directory.Delete($"{fullpath}.management", recursive: true), "Failed to delete management dir.");
+            }
+        }
+
+        [Test]
         public void TriggerMigrationBySchemaVersion()
         {
             var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
