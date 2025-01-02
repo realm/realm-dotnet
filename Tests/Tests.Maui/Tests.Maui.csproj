@@ -10,10 +10,7 @@
     <DisableFody>true</DisableFody>
     <Nullable>enable</Nullable>
     <UseMaui>true</UseMaui>
-
-    <!-- This sets the the UNITY constant in order to skip tests that wouldn't work on AOT targets, such as those using the dynamic keyword -->
-    <DefineConstants Condition="$(TargetFramework.Contains('-ios')) AND '$(Configuration)' == 'Release'">UNITY</DefineConstants>
-
+    
     <!-- Display name -->
     <ApplicationTitle>Tests.Maui</ApplicationTitle>
 

@@ -200,6 +200,20 @@ namespace Realms.Tests
             }
         }
 
+        public static void RunDynamicTest(Action action)
+        {
+            #if UNITY
+            return;
+            #endif
+
+            if (IsAOTTarget)
+            {
+                return;
+            }
+
+            action();
+        }
+
         public static Func<HttpMessageHandler> TestHttpHandlerFactory = () => new HttpClientHandler();
 
         private static readonly decimal _decimalValue = 1.23456789M;
