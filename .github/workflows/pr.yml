@@ -775,7 +775,7 @@ jobs:
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-x64/Tests.Maui.app
+        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-arm64/Tests.Maui.app
         bundleId: io.realm.mauitests
         iphoneToSimulate: iPhone-15
         arguments: '--headless --result=${{ github.workspace }}/TestResults.xml --labels=All '

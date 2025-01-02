@@ -631,7 +631,7 @@ namespace Realms.Tests.Database
             Assert.That(obj456!.StringValue, Is.EqualTo("123"));
         }
 
-        [Test, Ignore("Fails for obscure reason")]
+        [Test]
         public void Migration_ChangePrimaryKeyType()
         {
             var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())

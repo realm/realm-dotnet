@@ -168,7 +168,7 @@ function iOS_Maui(_syncDifferentiators: Listing<Common.SyncDifferentiator>): gha
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-x64/Tests.Maui.app"
+      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All \(baasTestArgs(config))"
       bundleId = "io.realm.mauitests"
       iphoneToSimulate = "iPhone-15"
