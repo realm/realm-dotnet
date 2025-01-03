@@ -1,16 +1,18 @@
 # Do not modify!
-# This file was generated from a template using https://github.com/apple/pkl
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: Publish Release
 'on':
   workflow_dispatch: {}
 env:
+  REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   main:
     name: Publish Release
-    environment: Production
     runs-on: windows-latest
+    environment:
+      name: Production
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -26,11 +28,11 @@ jobs:
         workflow_conclusion: completed
     - name: Read version
       id: get-version
+      shell: bash
       run: |-
         cd Realm/packages
         pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
-      shell: bash
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.package_version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}/Realm.${{ steps.get-version.outputs.package_version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
@@ -63,6 +65,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
     - name: Update Changelog
+      shell: bash
       run: |-
         echo "## vNext (TBD)
 
@@ -79,7 +82,6 @@ jobs:
         * Using Core x.y.z.
         " | cat - CHANGELOG.md >> temp
         mv temp CHANGELOG.md
-      shell: bash
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
@@ -112,10 +114,10 @@ jobs:
       contents: read
       id-token: write
       pages: write
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deploy-pages.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -130,8 +132,8 @@ jobs:
         path: Realm/packages/
         workflow_conclusion: completed
     - name: Expand docs
-      run: Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
       shell: pwsh
+      run: Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
     - name: Upload pages artifact
       uses: actions/upload-pages-artifact@v3
       with:

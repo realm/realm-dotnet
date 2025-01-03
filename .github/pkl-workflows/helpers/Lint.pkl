@@ -1,14 +1,14 @@
 module lint
 
-import "../GithubAction/GithubAction.pkl" as gha
-import "Steps.pkl"
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
 import "Common.pkl"
+import "Steps.pkl"
 
 const actionVerifyTODO = "nirinchev/verify-todo@ffa352ac028b4cdc8bc626471d33aa341b3ab7c9"
 
 function lint(): gha.Job = new {
   name = "Verify TODOs"
-  `runs-on` = new gha.UbuntuLatest{}
+  `runs-on` = new gha.UbuntuLatest {}
   steps {
     Steps.checkoutWithoutMatchers(false)
     new gha.Step {
@@ -24,7 +24,7 @@ function lint(): gha.Job = new {
 }
 
 function verifyNamespaces(): gha.Job = new {
-  `runs-on` = new gha.UbuntuLatest{}
+  `runs-on` = new gha.UbuntuLatest {}
   name = "Verify Namespaces"
   needs {
     Common.job_Packages
@@ -33,7 +33,7 @@ function verifyNamespaces(): gha.Job = new {
     Steps.checkoutWithoutMatchers(false)
     ...Steps.fetchPackages(null)
     new {
-      run = "dotnet tool install ilspycmd -g --version 8.0.0.7345"
+      run = "dotnet tool install ilspycmd -g --version 9.0.0.7833-preview3"
     }
     new {
       name = "Verify Namespaces"

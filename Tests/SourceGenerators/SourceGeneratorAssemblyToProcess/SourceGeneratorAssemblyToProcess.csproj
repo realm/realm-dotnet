@@ -1,18 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props"
+    Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup>
     <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
     <ProjectReference Include="..\..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
 
-    <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj"
+      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
     <!-- Removing the generated files from compilation, adding them back as non-content files -->
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
@@ -22,4 +24,3 @@
     <Compile Remove="ErrorClasses/*.cs" />
   </ItemGroup>
 </Project>
-

@@ -1,9 +1,9 @@
 module test
 
-import "../GithubAction/GithubAction.pkl" as gha
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
 import "Common.pkl"
-import "Steps.pkl"
 import "Package.pkl"
+import "Steps.pkl"
 
 local const actionReportTestResults = "dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5"
 
@@ -11,12 +11,12 @@ local const outputFile = "TestResults.xml"
 local const executableExpression = "${{ steps.dotnet-publish.outputs.executable-path }}"
 
 // Public test targets
-function netFramework(): gha.StepJobBase = testJob(
+function netFramework(): gha.Job = testJob(
   new TestConfig {
     title = ".NET Framework"
     needsPackages = true
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -36,28 +36,24 @@ function netFramework(): gha.StepJobBase = testJob(
     ...reportTestResults(config)
   })
 
-function netCore(frameworks: Listing<Common.NetFramework>): gha.StepJobBase = testJob(
+function netCore(frameworks: Listing<Common.NetFramework>): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}"
     shouldCleanWorkspace = true
   },
   "${{ matrix.os.runner }}",
-  new gha.MatrixStrategy {
+  new gha.Strategy {
     matrix {
       ["framework"] = frameworks
-      ["os"] = new Listing<MatrixOS> {
+      ["os"] = new {
         new { runner = "windows-latest" runtime = "win-x64" }
         new { runner = "ubuntu-latest" runtime = "linux-x64" }
         new { runner = "macos-13" runtime = "osx-x64" }
-      }
-      ["include"] = new Listing {
-        new Mapping {
-          ["framework"] = "net8.0"
-          ["os"] = new MatrixOS { runner = "macos-14" runtime = "osx-arm64" }
-        }
+        new { runner = "macos-latest" runtime = "osx-arm64" }
       }
     }
+    `fail-fast` = false
   },
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -82,65 +78,64 @@ function netCore(frameworks: Listing<Common.NetFramework>): gha.StepJobBase = te
     ...reportTestResults(config)
   })
 
-function weaver(): gha.StepJobBase = testJob(
+function weaver(): gha.Job = testJob(
   new TestConfig {
     title = "Weaver"
     shouldCleanWorkspace = true
   },
   "${{ matrix.os.runner }}",
-  new gha.MatrixStrategy {
+  new gha.Strategy {
     matrix {
-      ["os"] = new Listing<MatrixOS> {
+      ["os"] = new {
         new { runner = "windows-latest" runtime = "win-x64" }
         new { runner = "ubuntu-latest" runtime = "linux-x64" }
         new { runner = "macos-14" runtime = "osx-arm64" }
       }
     }
+    `fail-fast` = false
   },
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    Steps.setupDotnet("6.0.x")
-    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}", new Mapping{}).toList()
+    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net8.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
 
-function xunit(): gha.StepJobBase = testJob(
+function xunit(): gha.Job = testJob(
   new TestConfig {
     title = "xUnit Compatibility"
     needsPackages = true
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", new Mapping{}).toList()
+    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net8.0", "win-x64", new Mapping {}).toList()
     new {
       name = "Run Tests"
       run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
     }
   })
 
-function sourceGeneration(): gha.StepJobBase = testJob(
+function sourceGeneration(): gha.Job = testJob(
   new TestConfig {
     title = "Source Generation"
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    Steps.setupDotnet("6.0.x")
-    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64", new Mapping{}).toList()
+    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net8.0", "win-x64", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
 
-function wovenClasses(): gha.StepJobBase = testJob(
+function wovenClasses(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "Woven Classes"
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -152,74 +147,20 @@ function wovenClasses(): gha.StepJobBase = testJob(
   }
 )
 
-function tvOS(): gha.StepJobBase = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.tvOS"
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinTVOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig{
-      appPath = "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.XamarinTVOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
-      bundleId = "io.realm.Tests-XamarinTVOS"
-      iphoneToSimulate = "Apple-TV-1080p"
-      os = "tvOS"
-    })
-    ...reportTestResults(config)
-  })
-
-function iOS_Xamarin(): gha.StepJobBase = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.iOS"
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.iOS"
-      }
-      properties {
-        ["Platform"] = "iPhoneSimulator"
-      }
-    })
-    Steps.runSimulator(new Steps.SimulatorConfig{
-      appPath = "Tests/Tests.iOS/bin/iPhoneSimulator/\(Common.configuration)/Tests.iOS.app"
-      arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All "
-      bundleId = "io.realm.dotnettests"
-      iphoneToSimulate = "iPhone-8"
-      os = "iOS"
-    })
-    ...reportTestResults(config)
-  })
-
-function iOS_Maui(): gha.StepJobBase = testJob(
+function iOS_Maui(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "Maui.iOS"
     transformResults = true
   },
-  "macos-14",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
     ...Steps.setupMaui()
     Steps.setupXcode("latest-stable")
     Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
-    Steps.runSimulator(new Steps.SimulatorConfig{
+    Steps.runSimulator(new Steps.SimulatorConfig {
       appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
       bundleId = "io.realm.mauitests"
@@ -229,34 +170,13 @@ function iOS_Maui(): gha.StepJobBase = testJob(
     ...reportTestResults(config)
   })
 
-function macOS_Xamarin(): gha.StepJobBase = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.macOS"
-  },
-  "macos-12",
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.XamarinMac"
-      }
-    })
-    new {
-      name = "Run the tests"
-      run = "Tests/Tests.XamarinMac/bin/\(Common.configuration)/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
-    }
-    ...reportTestResults(config)
-  })
-
-function macOS_Maui(): gha.StepJobBase = testJob(
+function macOS_Maui(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "Maui.MacCatalyst"
     transformResults = true
   },
-  "macos-14",
+  "macos-latest",
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -270,12 +190,12 @@ function macOS_Maui(): gha.StepJobBase = testJob(
     ...reportTestResults(config)
   })
 
-function uwp(): gha.StepJobBase = testJob(
+function uwp(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "UWP"
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -309,40 +229,13 @@ function uwp(): gha.StepJobBase = testJob(
     ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
   })
 
-function android_Xamarin(): gha.StepJobBase = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "Xamarin.Android"
-  },
-  new gha.WindowsLatest{},
-  null,
-  (config) -> new Listing<gha.Step> {
-    Steps.setupJDK()
-    ...prepareTests(config)
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.Android"
-      }
-      target = "SignAndroidPackage"
-      properties {
-        ["AndroidUseSharedRuntime"] = "False"
-        ["EmbedAssembliesIntoApk"] = "True"
-      }
-    })
-    ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
-      apkPath = "${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk"
-      appId = "io.realm.xamarintests"
-    })
-    ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
-  })
-
-function android_Maui(): gha.StepJobBase = testJob(
+function android_Maui(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
     title = "Maui.Android"
     transformResults = true
   },
-  new gha.WindowsLatest{},
+  new gha.WindowsLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     Steps.setupJDK()
@@ -356,12 +249,12 @@ function android_Maui(): gha.StepJobBase = testJob(
     ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
   })
 
-function codeCoverage(wrappersJob: String): gha.StepJobBase = (testJob(
+function codeCoverage(wrappersJob: String): gha.Job = (testJob(
   new TestConfig {
     title = "Code Coverage"
     usedWrappers = List("linux-x86_64")
   },
-  new gha.UbuntuLatest{},
+  new gha.UbuntuLatest {},
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
@@ -382,10 +275,10 @@ function codeCoverage(wrappersJob: String): gha.StepJobBase = (testJob(
     ...Steps.publishCoverage("./report.lcov")
     ...reportTestResults(config)
   })) {
-    needs {
-      wrappersJob
-    }
+  needs {
+    wrappersJob
   }
+}
 
 function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<String, gha.Job> {
   ["build-unity-tests-\(config.os)"] = new gha.Job {
@@ -453,7 +346,7 @@ function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<
   }
 }
 
-function benchmark(): gha.StepJobBase = testJob(
+function benchmark(): gha.Job = testJob(
   new TestConfig {
     title = "Benchmark"
     shouldCleanWorkspace = true
@@ -471,7 +364,7 @@ function benchmark(): gha.StepJobBase = testJob(
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
     }
-    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", getTestProps(true))
+    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net8.0", "linux-x64", getTestProps(true))
     new {
       name = "Run the tests"
       run = "\(executableExpression)/PerformanceTests -f \"*\" --join"
@@ -500,17 +393,17 @@ function benchmark(): gha.StepJobBase = testJob(
   })
 
 class UnityTestConfig {
-  os: "windows" | "linux"
+  os: "windows"|"linux"
   settings: String = "Mono-Net4"
 
   function platform() = "\(os.capitalize())64"
-  function runsOn():gha.Machine = if (os == "windows") new gha.WindowsLatest{} else if (os == "linux") new gha.UbuntuLatest{} else throw("invalid os: \(os)")
+  function runsOn(): gha.Machine = if (os == "windows") new gha.WindowsLatest {} else if (os == "linux") new gha.UbuntuLatest {} else throw("invalid os: \(os)")
 }
 
 // Private helpers
-local function testJob(config: TestConfig, runsOn: gha.Machine | String, _strategy: gha.MatrixStrategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.StepJobBase = (if (_strategy != null) new gha.MatrixJob{
+local function testJob(config: TestConfig, runsOn: gha.Machine|String, _strategy: gha.Strategy?, _steps: Function1<TestConfig, Listing<gha.Step>>): gha.Job = (if (_strategy != null) new gha.Job {
   strategy = _strategy
-} else new gha.Job{}) {
+} else new gha.Job {}) {
   name = "Test \(config.title)"
   `runs-on` = runsOn
   when (config.needsPackages) {
@@ -607,7 +500,7 @@ local function archiveCoreDump(): gha.Step = (Steps.uploadArtifacts("crash-repor
 }
 
 local class MatrixOS {
-  runner: "windows-latest" | "ubuntu-latest" | "macos-13" | "macos-14"
+  runner: "windows-latest"|"ubuntu-latest"|"macos-13"|"macos-latest"
   runtime: Common.NetRuntime
 }
 

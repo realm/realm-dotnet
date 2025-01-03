@@ -1,10 +1,10 @@
 module wrappers
 
-amends "GithubAction/GithubAction.pkl"
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl"
 
+import "helpers/Actions.pkl"
 import "helpers/Common.pkl"
 import "helpers/Steps.pkl"
-import "helpers/Actions.pkl"
 
 local job_CheckCache = "check-cache"
 
@@ -18,7 +18,7 @@ on {
 env = Common.defaultEnv
 
 jobs {
-  [job_CheckCache] = new MatrixJob {
+  [job_CheckCache] {
     strategy {
       matrix {
         ["os"] {
@@ -26,6 +26,7 @@ jobs {
           "windows"
         }
       }
+      `fail-fast` = false
     }
     `runs-on` = "${{ matrix.os }}-latest"
     name = "Check Cache"
@@ -33,7 +34,7 @@ jobs {
       ["CACHE_SKIP_SAVE"] = true
     }
     outputs = Common.wrapperBinaryNames
-      .toMap((platform) -> "wrappers-\(platform)",(platform) -> "${{ steps.check-cache-\(platform).outputs.cache-hit }}")
+      .toMap((platform) -> "wrappers-\(platform)", (platform) -> "${{ steps.check-cache-\(platform).outputs.cache-hit }}")
       .toMapping()
     steps {
       Steps.checkoutWithoutMatchers("recursive")
@@ -47,7 +48,7 @@ jobs {
     }
   }
   ["macos"] = new Job {
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "MacOS"
   } |> wrappersJob(new JobConfig {
       cmd = "./wrappers/build-macos.sh"
@@ -57,7 +58,7 @@ jobs {
       }
     })
   ["catalyst"] = new Job {
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "Catalyst"
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build-apple-platform.ps1 Catalyst"
@@ -66,32 +67,34 @@ jobs {
         Steps.setupCmake("3.29.0")
       }
     })
-  ["apple-platform"] = new MatrixJob {
+  ["apple-platform"] = new Job {
     strategy {
       matrix {
         ["platform"] = Common.applePlatforms.toListing()
-        ["target"] { "Device" "Simulator"}
+        ["target"] { "Device" "Simulator" }
       }
+      `fail-fast` = false
     }
-    `runs-on` = "macos-12"
+    `runs-on` = "macos-latest"
     name = "Apple Platform"
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}"
       enableLTO = false
       platform = "${{ matrix.platform }}-${{ matrix.target }}"
       intermediateSteps {
-        Steps.setupXcode("14")
+        Steps.setupXcode("latest-stable")
         Steps.setupCmake("3.29.0")
       }
       ifCondition = "\(Common.applePlatformTargets((platform, target) -> "needs.\(job_CheckCache).outputs.wrappers-\(platform)-\(target) != 'true'").join(" || "))"
     })
-  ["linux"] = new MatrixJob {
+  ["linux"] = new Job {
     `runs-on` = new UbuntuLatest {}
     name = "Linux"
     strategy {
       matrix {
         ["arch"] = Common.linuxArchs.toListing()
       }
+      `fail-fast` = false
     }
   } |> wrappersJob(new JobConfig {
       cmd = "./wrappers/build-linux.sh -a=${{ matrix.arch }}"
@@ -105,13 +108,14 @@ jobs {
         }
       }
     })
-  ["android"] = new MatrixJob {
+  ["android"] = new Job {
     `runs-on` = "ubuntu-20.04"
     name = "Android"
     strategy {
       matrix {
         ["arch"] = Common.androidABIs.toListing()
       }
+      `fail-fast` = false
     }
   } |> wrappersJob(new JobConfig {
       cmd = "./wrappers/build-android.sh --ARCH=${{ matrix.arch }}"
@@ -119,13 +123,14 @@ jobs {
       enableLTO = false
       ifCondition = "\(Common.androidABIs.map((abi) -> "needs.check-cache.outputs.wrappers-android-\(abi) != 'true'").join(" || "))"
     })
-  ["windows"] = new MatrixJob {
-    `runs-on` = new WindowsLatest{}
+  ["windows"] = new Job {
+    `runs-on` = new WindowsLatest {}
     name = "Windows"
     strategy {
       matrix {
         ["arch"] = Common.windowsArchs.toListing()
       }
+      `fail-fast` = false
     }
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\""
@@ -135,13 +140,14 @@ jobs {
       }
       ifCondition = "\(Common.windowsArchs.map((arch) -> "needs.check-cache.outputs.wrappers-windows-\(arch) != 'true'").join(" || "))"
     })
-  ["uwp"] = new MatrixJob {
-    `runs-on` = new WindowsLatest{}
+  ["uwp"] = new Job {
+    `runs-on` = new WindowsLatest {}
     name = "UWP"
     strategy {
       matrix {
         ["arch"] = Common.uwpArchs.toListing()
       }
+      `fail-fast` = false
     }
   } |> wrappersJob(new JobConfig {
       cmd = "pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\""
@@ -174,7 +180,7 @@ local function cacheStep(platform: String, idSuffix: String?): Mixin<Step> = new
   }
 }
 
-local function wrappersJob(config: JobConfig): Mixin<StepJobBase> = new {
+local function wrappersJob(config: JobConfig): Mixin<Job> = new {
   `timeout-minutes` = WrappersBuildTimeout
   needs {
     job_CheckCache

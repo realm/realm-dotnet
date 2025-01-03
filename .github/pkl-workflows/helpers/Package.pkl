@@ -1,9 +1,9 @@
 module package
 
-import "../GithubAction/GithubAction.pkl" as gha
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.4#/GitHubAction.pkl" as gha
+import "Actions.pkl"
 import "Common.pkl"
 import "Steps.pkl"
-import "Actions.pkl"
 
 const unityPkgName = "io.realm.unity-${{ needs.\(Common.job_Packages).outputs.\(Steps.getVersionOutput) }}.tgz"
 
@@ -14,7 +14,7 @@ local const buildSuffixOutput = "build_suffix"
 
 function nuget(shouldBuildDocsCondition: String): gha.Job = new {
   name = "Package NuGet"
-  `runs-on` = new gha.WindowsLatest{}
+  `runs-on` = new gha.WindowsLatest {}
   `if` = Common.ifNotCanceledCondition
   outputs {
     [Steps.getVersionOutput] = Steps.getVersionExpresssion
@@ -36,7 +36,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new {
     Steps.readVersionFromPackage()
     for (pkgName in Common.packages) {
       let (finalPkgName = "\(pkgName).\(Steps.getVersionExpresssion)")
-      Steps.uploadArtifacts(finalPkgName, "Realm/packages/\(finalPkgName).*nupkg")
+        Steps.uploadArtifacts(finalPkgName, "Realm/packages/\(finalPkgName).*nupkg")
     }
     Steps.uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
     ...buildDocs(shouldBuildDocsCondition)
@@ -44,7 +44,7 @@ function nuget(shouldBuildDocsCondition: String): gha.Job = new {
 }
 function unity(): gha.Job = new {
   name = "Package Unity"
-  `runs-on` = new gha.WindowsLatest{}
+  `runs-on` = new gha.WindowsLatest {}
   `timeout-minutes` = 30
   `if` = Common.ifNotCanceledCondition
   needs {
