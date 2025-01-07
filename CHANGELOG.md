@@ -5,12 +5,14 @@
 
 ### Fixed
 * Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone). (Core 14.13.0)
+* Migrating primary key to a new type without migration function would cause an assertion to fail. (Core 20.1.1)
+* Opening a Realm on Pixel devices running Android 14+ could result in a hardlock. (Core 20.1.2)
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
 
 ### Internal
-* Using Core 20.1.0.
+* Using Core 20.1.2.
 
 ## 20.0.0 (2024-09-09)
 
