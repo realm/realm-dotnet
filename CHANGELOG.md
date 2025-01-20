@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Warning about 'Realm.PlatformHelpers.dll.meta' no longer reported on Unity package import.
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
