@@ -342,6 +342,7 @@ namespace RealmWeaver
 
         public void OnPostprocessBuild(BuildReport? report)
         {
+            if (UnityMajorVersion >= 6000) return;
             switch (report?.summary.platform)
             {
                 case BuildTarget.iOS:
@@ -351,7 +352,7 @@ namespace RealmWeaver
             }
         }
 
-        public void OnPreprocessBuild(BuildReport? report)
+        public void OnPreprocessBuild(BuildReport report)
         {
             bool enableForDevice;
             bool enableForSimulator;
