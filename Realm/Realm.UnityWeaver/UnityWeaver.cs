@@ -352,7 +352,7 @@ namespace RealmWeaver
             }
         }
 
-        public void OnPreprocessBuild(BuildReport report)
+        public void OnPreprocessBuild(BuildReport? report)
         {
             bool enableForDevice;
             bool enableForSimulator;
