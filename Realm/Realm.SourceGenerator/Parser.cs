@@ -42,6 +42,8 @@ namespace Realms.SourceGenerator
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
         {
+            // TODO (flx-poc): Add diagnostics for MappedObject (e.g. no [PrimaryKey], no [Indexed], etc.)
+
             var result = new ParsingResults();
             var classNames = new HashSet<string>();
             var duplicateClassNames = new HashSet<string>();

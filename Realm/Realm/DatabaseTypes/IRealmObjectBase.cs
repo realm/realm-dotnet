@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Realms.Schema;
@@ -157,6 +158,15 @@ namespace Realms
         /// </summary>
         /// <value>The parent object that owns this <see cref="IEmbeddedObject"/>.</value>
         public IRealmObjectBase? Parent { get; }
+    }
+
+    /// <summary>
+    /// An object that can be duck-type mapped from a dictionary/RealmValue field.
+    /// </summary>
+    /// TODO: figure out a proper name for this
+    public interface IMappedObject
+    {
+        void SetBackingStorage(IDictionary<string, RealmValue> dictionary);
     }
 
     /// <summary>

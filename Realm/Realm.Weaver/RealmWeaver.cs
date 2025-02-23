@@ -290,6 +290,12 @@ namespace RealmWeaver
         {
             _logger.Debug("Weaving generated " + type.Name);
 
+            if (type.IsIMappedObjectImplementor(_references))
+            {
+                // TODO (flx-poc): this should actually do something useful
+                return WeaveTypeResult.Success(type.Name, Enumerable.Empty<WeavePropertyResult>(), isGenerated: true);
+            }
+
             // The forward slash is used to indicate a nested class
             var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
 
