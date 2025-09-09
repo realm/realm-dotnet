@@ -1,8 +1,7 @@
-# Realm SDK for .NET
+# User Guides for Realm SDK for .NET
 Use the Realm SDK for .NET to develop cross-platform mobile and
 desktop apps with C# and MAUI.
 
-## Get Started with the .NET SDK
 These docs provide minimal-explanation code examples of how to work
 with the Realm SDK for .NET.
 Use the SDK's open-source database - Realm - as an object store on the
@@ -54,4 +53,7 @@ Find out how to [integrate the SDK with your Unity project](unity.md).
 Explore engineering and expert-provided example projects to learn best
 practices and common development patterns using the .NET SDK:
 
-- [Realm .NET Samples](https://github.com/realm/realm-dotnet-samples) GitHub repo
+- [Realm .NET Samples](https://github.com/realm/realm-dotnet-samples)
+  GitHub repo
+- [QuickJournal](examples/QuickJournal) example application
+- [SimpleToDo](examples/SimpleToDoAvalonia) example application

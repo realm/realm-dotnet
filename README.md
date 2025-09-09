@@ -6,8 +6,8 @@
 > For a version of `realm-dotnet` without sync features, install version 20 or see the "community" branch.
 
 <picture>
-    <source srcset="./media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
-    <img src="./media/logo.svg" alt="realm by MongoDB">
+    <source srcset="./media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm">
+    <img src="./media/logo.svg" alt="realm">
 </picture>
 
 Realm is a mobile database that runs directly on phones, tablets or wearables.
@@ -24,12 +24,13 @@ This repository holds the source code for the .NET / C# versions of Realm. Curre
 
 ## Getting Started
 
-Please see the detailed instructions in our [User Guide](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/install/) to add Realm to your solution.
+Please see the detailed instructions in our [Quick Start](/Guides/quick-start.md) to add Realm to your solution.
 
 ## Documentation
 
-The documentation can be found at [mongodb.com/docs/atlas/device-sdks/sdk/dotnet/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/).
-The API reference is located at [mongodb.com/docs/realm-sdks/dotnet/latest/](https://www.mongodb.com/docs/realm-sdks/dotnet/latest/).
+The documentation can be found in the [Guides/](/Guides/README.md) directory.
+
+Generate API reference docs from the [Docs/](/Docs/Readme.md) directory.
 
 ## Getting Help
 
