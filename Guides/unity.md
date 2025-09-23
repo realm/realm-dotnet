@@ -124,7 +124,7 @@ dropdown. Once the package manager model opens, click the + icon
 in the top left corner of the model. Select the Add package from
 tarball... option.
 
-Select your **"io.realm.unity-bundled-<version-number>.tgz"** file to
+Select your **"io.realm.unity-bundled-&lt;version-number&gt;.tgz"** file to
 begin importing your project.
 
 ## Import Realm
