@@ -107,7 +107,7 @@ to use in your project. If you are unsure of which release to use, you can use
 the one labeled **"latest release"** on the left row.
 
 Scroll down to the **"Assets"** dropdown of the release and click the link
-labeled **"io.realm.unity-<version-number>.tgz"** to download the SDK.
+labeled **"io.realm.unity-&lt;version-number&gt;.tgz"** to download the SDK.
 
 ##### Add the Tarball to Your Projects Package Manager
 Move your downloaded Realm .NET SDK tarball inside of your
