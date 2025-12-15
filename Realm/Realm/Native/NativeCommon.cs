@@ -23,7 +23,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Realms.Helpers;
 using Realms.Logging;
-#if !NET5_0_OR_GREATER
+#if NET5_0_OR_GREATER
+using System.Reflection;
+#else
 using System.IO;
 #endif
 
@@ -50,7 +52,26 @@ namespace Realms
                     {
                         if (libraryName == InteropConfig.DLL_NAME)
                         {
-                            libraryName = "@rpath/realm-wrappers.framework/realm-wrappers";
+                            var rpath = "@rpath";
+
+                            var runtimeVersion = Environment.Version;
+                            if (runtimeVersion.Major >= 10)
+                            {
+                                // .NET 10 breaking change: Realm can't use @rpath for runtime library location.
+                                // Solution: Use NSBundle.MainBundle.PrivateFrameworksPath
+                                // Currently it is evaluated through reflection, but could be replaced when platform code evaluation/injection improves in future versions.
+                                var nsBundleType = Assembly.Load("Microsoft.iOS").GetType("Foundation.NSBundle");
+                                var mainBundleProperty = nsBundleType?.GetProperty("MainBundle", BindingFlags.Public | BindingFlags.Static);
+                                var mainBundle = mainBundleProperty?.GetValue(null);
+                                var privateFrameworksPathProperty = nsBundleType?.GetProperty("PrivateFrameworksPath", BindingFlags.Public | BindingFlags.Instance);
+
+                                if (privateFrameworksPathProperty?.GetValue(mainBundle) is string privateFrameworksPath)
+                                {
+                                    rpath = privateFrameworksPath;
+                                }
+                            }
+
+                            libraryName = $"{rpath}/realm-wrappers.framework/realm-wrappers";
                         }
 
                         return NativeLibrary.Load(libraryName, assembly, searchPath);
