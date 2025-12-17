@@ -109,7 +109,7 @@ jobs {
       }
     })
   ["android"] = new Job {
-    `runs-on` = "ubuntu-latest"
+    `runs-on` = "ubuntu-22.04"
     name = "Android"
     strategy {
       matrix {
