@@ -54,14 +54,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   if(NOT WINDOWS_STORE)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
-elseif(ANDROID)
-  # Suppress invalid specialization warnings for the realm-core/s2 library
-  # This is needed for compatibility with newer compilers
-  # TODO: Remove when realm-core updates the s2 library to use modern C++ type traits
-  add_compile_options(
-    -Wno-invalid-specialization
-    -Wno-error=invalid-specialization
-  )
 endif()
 
 add_subdirectory(src)
