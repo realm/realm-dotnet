@@ -51,6 +51,14 @@ namespace Realms
                         if (libraryName == InteropConfig.DLL_NAME)
                         {
                             libraryName = "@rpath/realm-wrappers.framework/realm-wrappers";
+
+                            var runtimeVersion = Environment.Version;
+                            if (runtimeVersion.Major >= 10)
+                            {
+                                // .NET 10 breaking change: Application directory is no longer used when searching for DLLs
+                                // We need to explicitly add it to the search path
+                                searchPath |= DllImportSearchPath.ApplicationDirectory;
+                            }
                         }
 
                         return NativeLibrary.Load(libraryName, assembly, searchPath);
