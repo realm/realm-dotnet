@@ -51,6 +51,7 @@ namespace Realms
                         if (libraryName == InteropConfig.DLL_NAME)
                         {
                             libraryName = "@rpath/realm-wrappers.framework/realm-wrappers";
+                            return NativeLibrary.Load(libraryName, assembly, DllImportSearchPath.ApplicationDirectory);
                         }
 
                         return NativeLibrary.Load(libraryName, assembly, searchPath);
