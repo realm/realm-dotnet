@@ -122,21 +122,6 @@ jobs:
       with:
         name: wrappers-windows-ARM64
         path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-Win32
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-Win32
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-x64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-x64
-        path: wrappers/build
-    - name: Fetch wrappers for windows-uwp-ARM64
-      uses: actions/download-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM64
-        path: wrappers/build
     - name: Fetch wrappers for iOS-Device
       uses: actions/download-artifact@v4
       with:
@@ -324,53 +309,6 @@ jobs:
       with:
         name: Results .NET Framework
         path: TestResults.xml
-        reporter: java-junit
-        list-suites: failed
-        path-replace-backslashes: true
-        fail-on-error: true
-  test-uwp:
-    name: Test UWP
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    needs:
-    - build-packages
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register problem matchers
-      run: |-
-        echo "::add-matcher::.github/problem-matchers/csc.json"
-        echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v4
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Import test certificate
-      shell: powershell
-      run: |-
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $currentDirectory = Get-Location
-        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-    - name: Add msbuild to PATH
-      if: ${{ runner.os == 'Windows' }}
-      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
-    - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -restore -p:Configuration=Release -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run the tests
-      shell: powershell
-      run: ./Tests/Tests.UWP/RunTests.ps1
-    - name: Publish Unit Test Results
-      if: always()
-      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5
-      with:
-        name: Results UWP
-        path: ${{ env.TEST_RESULTS }}
         reporter: java-junit
         list-suites: failed
         path-replace-backslashes: true

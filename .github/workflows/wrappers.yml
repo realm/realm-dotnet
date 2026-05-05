@@ -32,9 +32,6 @@ jobs:
       wrappers-windows-Win32: ${{ steps.check-cache-windows-Win32.outputs.cache-hit }}
       wrappers-windows-x64: ${{ steps.check-cache-windows-x64.outputs.cache-hit }}
       wrappers-windows-ARM64: ${{ steps.check-cache-windows-ARM64.outputs.cache-hit }}
-      wrappers-windows-uwp-Win32: ${{ steps.check-cache-windows-uwp-Win32.outputs.cache-hit }}
-      wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
-      wrappers-windows-uwp-ARM64: ${{ steps.check-cache-windows-uwp-ARM64.outputs.cache-hit }}
       wrappers-iOS-Device: ${{ steps.check-cache-iOS-Device.outputs.cache-hit }}
       wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
       wrappers-tvOS-Device: ${{ steps.check-cache-tvOS-Device.outputs.cache-hit }}
@@ -244,57 +241,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-ARM64
-        path: wrappers/build/**
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - if: matrix.os == 'windows'
-      run: git clean -fdx
-    - name: Check Cache for windows-uwp-Win32
-      id: check-cache-windows-uwp-Win32
-      if: matrix.os == 'windows'
-      uses: actions/cache/restore@v4
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
-    - name: Store artifacts for wrappers-windows-uwp-Win32
-      if: matrix.os == 'windows' && steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: wrappers-windows-uwp-Win32
-        path: wrappers/build/**
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - if: matrix.os == 'windows'
-      run: git clean -fdx
-    - name: Check Cache for windows-uwp-x64
-      id: check-cache-windows-uwp-x64
-      if: matrix.os == 'windows'
-      uses: actions/cache/restore@v4
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
-    - name: Store artifacts for wrappers-windows-uwp-x64
-      if: matrix.os == 'windows' && steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: wrappers-windows-uwp-x64
-        path: wrappers/build/**
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - if: matrix.os == 'windows'
-      run: git clean -fdx
-    - name: Check Cache for windows-uwp-ARM64
-      id: check-cache-windows-uwp-ARM64
-      if: matrix.os == 'windows'
-      uses: actions/cache/restore@v4
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM64-Release-${{hashFiles('./wrappers/**')}}
-    - name: Store artifacts for wrappers-windows-uwp-ARM64
-      if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: wrappers-windows-uwp-ARM64
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
@@ -597,46 +543,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wrappers-windows-${{ matrix.arch }}
-        path: wrappers/build/**
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-  uwp:
-    name: UWP
-    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
-    needs:
-    - check-cache
-    strategy:
-      matrix:
-        arch:
-        - Win32
-        - x64
-        - ARM64
-      fail-fast: false
-    runs-on: windows-latest
-    timeout-minutes: 90
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Check Cache for windows-uwp-${{ matrix.arch }}
-      id: check-cache
-      uses: actions/cache@v4
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
-    - name: Setup MSVC
-      if: steps.check-cache.outputs.cache-hit != 'true'
-      shell: pwsh
-      run: Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
-    - name: Build Wrappers
-      if: steps.check-cache.outputs.cache-hit != 'true'
-      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
-    - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: wrappers-windows-uwp-${{ matrix.arch }}
         path: wrappers/build/**
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error

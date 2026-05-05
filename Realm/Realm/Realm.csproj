@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <RootNamespace>Realms</RootNamespace>
     <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -151,22 +151,6 @@
       <Pack>true</Pack>
       <PackagePath>runtimes\win-arm64\native</PackagePath>
       <Link>wrappers\Windows\ARM64\realm-wrappers.dll</Link>
-    </None>
-    <!-- WindowsStore -->
-    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll">
-      <Pack>true</Pack>
-      <PackagePath>runtimes\win10-x86\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\Win32\realm-wrappers.dll</Link>
-    </None>
-    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
-      <Pack>true</Pack>
-      <PackagePath>runtimes\win10-x64\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\x64\realm-wrappers.dll</Link>
-    </None>
-    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM64\realm-wrappers.dll">
-      <Pack>true</Pack>
-      <PackagePath>runtimes\win10-arm64\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\ARM64\realm-wrappers.dll</Link>
     </None>
   </ItemGroup>
   <ItemGroup>

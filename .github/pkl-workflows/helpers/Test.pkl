@@ -190,45 +190,6 @@ function macOS_Maui(): gha.Job = testJob(
     ...reportTestResults(config)
   })
 
-function uwp(): gha.Job = testJob(
-  new TestConfig {
-    needsPackages = true
-    title = "UWP"
-  },
-  new gha.WindowsLatest {},
-  null,
-  (config) -> new Listing<gha.Step> {
-    ...prepareTests(config)
-    new {
-      name = "Import test certificate"
-      run = """
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $currentDirectory = Get-Location
-        [IO.File]::WriteAllBytes("${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx
-        """
-      shell = "powershell"
-    }
-    ...buildTests(new Steps.MSBuildConfig {
-      projects {
-        "Tests/Tests.UWP"
-      }
-      properties {
-        ["AppxBundle"] = "Always"
-        ["PackageCertificateKeyFile"] = "${{ github.workspace }}\\Tests\\Tests.UWP\\Tests.UWP_TemporaryKey.pfx"
-        ["PackageCertificatePassword"] = "${{ secrets.Pfx_Password }}"
-        ["UseDotNetNativeToolchain"] = "false"
-        ["AppxBundlePlatforms"] = "x64"
-      }
-    })
-    new {
-      name = "Run the tests"
-      run = "./Tests/Tests.UWP/RunTests.ps1"
-      shell = "powershell"
-    }
-    ...reportTestResultsWithCustomFile("${{ env.TEST_RESULTS }}", config)
-  })
-
 function android_Maui(): gha.Job = testJob(
   new TestConfig {
     needsPackages = true
