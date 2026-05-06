@@ -48,9 +48,9 @@
 
 ## Phase 6 - Dokumentation
 
-- [ ] `README.md` auf MAUI als primaeren Entwicklungs- und Nutzungspfad ausrichten.
-- [ ] Guides und Build-Hinweise von Xamarin-, UWP- und Sync-Altlasten bereinigen.
-- [ ] Support-Matrix sowie `.NET 10`- und MAUI-Voraussetzungen dokumentieren.
+- [x] `README.md` auf MAUI als primaeren Entwicklungs- und Nutzungspfad ausrichten.
+- [x] Guides und Build-Hinweise von Xamarin-, UWP- und Sync-Altlasten bereinigen.
+- [x] Support-Matrix sowie `.NET 10`- und MAUI-Voraussetzungen dokumentieren.
 
 ## Phase 7 - Nachgelagertes Aufraeumen
 

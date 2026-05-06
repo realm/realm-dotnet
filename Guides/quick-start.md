@@ -1,63 +1,39 @@
 # Quick Start - .NET SDK
-This Quick Start demonstrates how to use Realm with the Realm .NET SDK.
+
+This Quick Start demonstrates how to use Realm with the .NET MAUI SDK.
+
+## Prerequisites
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (10.0.107 or later)
+- .NET MAUI workload: `dotnet workload install maui`
+- Platform tooling for your target (Xcode for iOS/macOS, Android SDK for Android)
 
 ## Install Realm
-Follow these steps to add the .NET SDK to your project.
 
-> **IMPORTANT:**
-> If you have a multi-platform solution, be sure to install the SDK
-> for *all of the platform projects*, even if the given project
-> doesn't contain any SDK-specific code.
->
+Add the Realm NuGet package to your MAUI project:
 
-### Mac
+```
+dotnet add package Realm
+```
 
-#### Open the NuGet Package Manager
-In the Solution Explorer, right-click your solution and select
-**Manage NuGet Packages...** to open the NuGet
-Package management window.
+Or via the NuGet Package Manager in Visual Studio: search for **Realm** and click **Install**.
 
 > **NOTE:**
-> Adding the package at the Solution level allows you to add it to
-> every project in one step.
->
+> With .NET MAUI's single-project model you only need to install Realm in the one shared project — it covers all target platforms automatically.
 
-#### Add the Realm Package
-In the search bar, search for **Realm**. Select the
-result and click Add Package.
+### Add the Realm Weaver to FodyWeavers.xml
 
-If you are using Xamarin, you may be prompted to select which projects
-use the Realm package.
-
-Select all of the projects, and then click Ok.
-
-### Windows
-
-#### Open the NuGet Package Manager
-In the Solution Explorer, right-click your solution and
-select **Manage NuGet Packages for Solution...**
-to open the NuGet Package management window.
-
-#### Add the Realm Package
-In the search bar, search for **Realm**. Select the
-result and click Install.
-
-When prompted, select all projects and click Ok.
-
-#### Add the Realm Weaver to FodyWeavers.xml
 > **NOTE:**
 > You can skip this step if you were *not* already using [Fody](https://github.com/Fody/Fody) in your project. Visual Studio will generate a properly-configured `FodyWeavers.xml` file for you when you first build.
->
 
-If your project was already using [Fody](https://github.com/Fody/Fody), you must manually add the
-Realm weaver to your `FodyWeavers.xml` file.
-
-When done, your `FodyWeavers.xml` file should look similar to:
+If your project was already using [Fody](https://github.com/Fody/Fody), add the Realm weaver manually:
 
 ```xml
 <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
   <Realm />
 </Weavers>
+```
+
 ```
 
 ## Import the SDK

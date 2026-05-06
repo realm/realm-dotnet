@@ -10,9 +10,20 @@
     <img src="./media/logo.svg" alt="realm">
 </picture>
 
-Realm is a mobile database that runs directly on phones, tablets or wearables.
+Realm is a mobile database that runs directly on phones, tablets, and desktops.
 
-This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Platform and Framework Compatibility](https://www.mongodb.com/docs/realm/sdk/dotnet/compatibility/) section in the documentation.
+This repository holds the source code for the .NET / C# version of Realm. The active development target is **.NET MAUI** on Android, iOS, macOS (Mac Catalyst), and Windows. For a full list of supported platforms, see the [Support Matrix](#support-matrix) below.
+
+## Support Matrix
+
+| Platform | Minimum version | Target framework |
+|---|---|---|
+| Android | API 21 (Android 5.0) | `net10.0-android` |
+| iOS | iOS 13.0 | `net10.0-ios` |
+| macOS (Mac Catalyst) | macOS 12.0 | `net10.0-maccatalyst` |
+| Windows | Windows 10 1809 (WinUI 3) | `net10.0-windows10.0.19041.0` |
+
+**SDK:** .NET 10 (`10.0.107` or later). Install the MAUI workload with `dotnet workload install maui`.
 
 ## Features
 
@@ -46,19 +57,21 @@ Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/cons
 
 ## Building Realm
 
-We highly recommend [using our pre-built binaries via NuGet](https://www.mongodb.com/docs/atlas/device-sdks/sdk/dotnet/install/#open-the-nuget-package-manager) but you can also build from source.
+We highly recommend [using our pre-built binaries via NuGet](https://www.nuget.org/packages/Realm) but you can also build from source.
 
-Prerequisites:
+**Prerequisites:**
 
-* Visual Studio 2019 Community or above.
-* Building iOS/macOS apps also requires Xcode 8.1 or above.
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (10.0.107 or later)
+- .NET MAUI workload: `dotnet workload install maui`
+- Xcode (latest stable) for iOS and macOS builds
+- Android SDK for Android builds (installed via Visual Studio or Android Studio)
 
-Instructions:
+**Instructions:**
 
 1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
-1. Open the `Realm.sln` in `Visual Studio`
-1. Build `Realm`, `Realm.Fody` and `Realm.SourceGenerator`
-1. Build and run the tests for the relevant platforms.
+1. Open `Realm.sln` in Visual Studio 2022 or later
+1. Build `Realm`, `Realm.Fody`, and `Realm.SourceGenerator`
+1. Build and run `Tests/Tests.Maui` for platform validation or `Tests/Realm.Tests` for shared regressions
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
@@ -66,10 +79,7 @@ If you are actively testing code against the Realm source, see also the unit tes
 
 Some minimal examples of Realm use can be found in the `examples` folder:
 
-* [QuickJournal](examples/QuickJournal): a quick journaling [MAUI](https://github.com/dotnet/maui) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
-* [SimpleToDo](examples/SimpleToDoAvalonia): a simple to-do list [Avalonia](https://github.com/AvaloniaUI/Avalonia) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
-
-It is possible to find additional (and more complex) examples that use [`Atlas Device Sync`](https://www.mongodb.com/docs/atlas/app-services/sync/) in the [`realm-dotnet-samples`](https://github.com/realm/realm-dotnet-samples) repo.
+* [QuickJournal](examples/QuickJournal): a journaling [.NET MAUI](https://dotnet.microsoft.com/apps/maui) application showing how Realm integrates with MVVM and data binding across Android, iOS, macOS, and Windows.
 
 ## Contributing
 
