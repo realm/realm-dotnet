@@ -16,13 +16,13 @@
 
 ## Phase 2 - Projektbaseline
 
-- [ ] `Tests/Tests.Maui/Tests.Maui.csproj` von `net8.0-*` auf `net10.0-*` anheben und als Referenzprojekt fuer aktive Plattformen und Native References verwenden.
+- [x] `Tests/Tests.Maui/Tests.Maui.csproj` von `net8.0-*` auf `net10.0-*` anheben und als Referenzprojekt fuer aktive Plattformen und Native References verwenden.
 - [x] `examples/QuickJournal/QuickJournal.csproj` von `net7.0` auf die Zwischenbasis angehoben.
-- [ ] `examples/QuickJournal/QuickJournal.csproj` von `net8.0-*` auf `net10.0-*` anheben.
+- [x] `examples/QuickJournal/QuickJournal.csproj` von `net8.0-*` auf `net10.0-*` anheben.
 - [x] `examples/QuickJournal/QuickJournal.csproj` von `Realm` 11.x auf die aktuelle Weiterentwicklung umgestellt.
-- [ ] Paketstaende zwischen `Tests/Tests.Maui`, `examples/QuickJournal` und `.NET 10`-kompatiblen MAUI-/Logging-Paketen harmonisieren.
-- [ ] Build-relevante Nebenprojekte wie `Tests/Benchmarks/PerformanceTests/PerformanceTests.csproj` auf `.NET 10` pruefen und anheben.
-- [ ] `examples/QuickJournal/README.md` auf veraltete MAUI-Hinweise pruefen und anpassen.
+- [x] Paketstaende zwischen `Tests/Tests.Maui`, `examples/QuickJournal` und `.NET 10`-kompatiblen MAUI-/Logging-Paketen harmonisieren.
+- [x] Build-relevante Nebenprojekte wie `Tests/Benchmarks/PerformanceTests/PerformanceTests.csproj` auf `.NET 10` pruefen und anheben.
+- [x] `examples/QuickJournal/README.md` auf veraltete MAUI-Hinweise pruefen und anpassen.
 
 ## Phase 3 - Laufzeit und Storage
 
