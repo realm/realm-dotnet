@@ -36,9 +36,9 @@
 - [x] `test-uwp` aus `.github/workflows/pr.yml` entfernt.
 - [x] `test-uwp` aus `.github/workflows/main.yml` entfernt.
 - [x] UWP-Wrapper-Artefakte und Buildpfade aus `.github/workflows/wrappers.yml` entfernt.
-- [ ] `.github/pkl-workflows` und generierte Workflows von `net8.0-*` auf `net10.0-*` umstellen.
-- [ ] Windows-x64-, Android-, iOS- und Catalyst-Wrapperpfade gegen `Tests/Tests.Maui/Tests.Maui.csproj` abgleichen.
-- [ ] Schnelle Core-Regressionen definieren, die zusaetzlich zur MAUI-Matrix bestehen bleiben.
+- [x] `.github/pkl-workflows` und generierte Workflows von `net8.0-*` auf `net10.0-*` umstellen.
+- [x] Windows-x64-, Android-, iOS- und Catalyst-Wrapperpfade gegen `Tests/Tests.Maui/Tests.Maui.csproj` abgleichen.
+- [x] Schnelle Core-Regressionen definieren, die zusaetzlich zur MAUI-Matrix bestehen bleiben.
 
 ## Phase 5 - Tests
 

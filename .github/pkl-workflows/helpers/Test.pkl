@@ -96,7 +96,7 @@ function weaver(): gha.Job = testJob(
   },
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net8.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net10.0", "${{ matrix.os.runtime }}", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -110,7 +110,7 @@ function xunit(): gha.Job = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net8.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/Tests.XUnit", "net10.0", "win-x64", new Mapping {}).toList()
     new {
       name = "Run Tests"
       run = "dotnet test \(executableExpression)/Tests.XUnit.dll --logger GitHubActions"
@@ -125,7 +125,7 @@ function sourceGeneration(): gha.Job = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...Steps.checkout(false)
-    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net8.0", "win-x64", new Mapping {}).toList()
+    ...Steps.dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net10.0", "win-x64", new Mapping {}).toList()
     ...dotnetRunTests(false)
     ...reportTestResults(config)
   })
@@ -139,7 +139,7 @@ function wovenClasses(): gha.Job = testJob(
   null,
   (config) -> new Listing<gha.Step> {
     ...prepareTests(config)
-    ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "win-x64", (getTestProps(true)) {
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "net10.0", "win-x64", (getTestProps(true)) {
       ["TestWeavedClasses"] = "true"
     })
     ...dotnetRunTests(false)
@@ -159,9 +159,9 @@ function iOS_Maui(): gha.Job = testJob(
     ...prepareTests(config)
     ...Steps.setupMaui()
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-ios", null, getTestProps(false))
+    Steps.dotnetBuild("Tests/Tests.Maui", "net10.0-ios", null, getTestProps(false))
     Steps.runSimulator(new Steps.SimulatorConfig {
-      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-ios/iossimulator-arm64/Tests.Maui.app"
+      appPath = "Tests/Tests.Maui/bin/\(Common.configuration)/net10.0-ios/iossimulator-arm64/Tests.Maui.app"
       arguments = "--headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
       bundleId = "io.realm.mauitests"
       iphoneToSimulate = "iPhone-15"
@@ -182,10 +182,10 @@ function macOS_Maui(): gha.Job = testJob(
     ...prepareTests(config)
     ...Steps.setupMaui()
     Steps.setupXcode("latest-stable")
-    Steps.dotnetBuild("Tests/Tests.Maui", "net8.0-maccatalyst", null, getTestProps(false))
+    Steps.dotnetBuild("Tests/Tests.Maui", "net10.0-maccatalyst", null, getTestProps(false))
     new {
       name = "Run the tests"
-      run = "Tests/Tests.Maui/bin/\(Common.configuration)/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
+      run = "Tests/Tests.Maui/bin/\(Common.configuration)/net10.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/\(outputFile) --labels=All"
     }
     ...reportTestResults(config)
   })
@@ -202,9 +202,9 @@ function android_Maui(): gha.Job = testJob(
     Steps.setupJDK()
     ...prepareTests(config)
     ...Steps.setupMaui()
-    ...Steps.dotnetPublish("Tests/Tests.Maui", "net8.0-android", /* runtime */ null, getTestProps(false))
+    ...Steps.dotnetPublish("Tests/Tests.Maui", "net10.0-android", /* runtime */ null, getTestProps(false))
     ...Steps.runDeviceFarm(new Steps.DeviceFarmConfig {
-      apkPath = "${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk"
+      apkPath = "${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net10.0-android/publish/io.realm.mauitests-Signed.apk"
       appId = "io.realm.mauitests"
     })
     ...reportTestResultsWithCustomFile("${{ steps.run_tests.outputs.test-results-path }}", config)
@@ -227,10 +227,10 @@ function codeCoverage(wrappersJob: String): gha.Job = (testJob(
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
         """
     }
-    ...Steps.dotnetPublish("Tests/Realm.Tests", "net8.0", "linux-x64", new Mapping { ["RealmTestsStandaloneExe"] = "true" })
+    ...Steps.dotnetPublish("Tests/Realm.Tests", "net10.0", "linux-x64", new Mapping { ["RealmTestsStandaloneExe"] = "true" })
     new gha.Step {
       name = "Run the tests"
-      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net8.0/linux-x64 -t \(executableExpression) -a '--result=\(outputFile) --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
+      run = "./tools/coverlet ./Tests/Realm.Tests/bin/\(Common.configuration)/net10.0/linux-x64 -t \(executableExpression) -a '--result=\(outputFile) --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
     } |> enableCoreDumps(true)
     archiveCoreDump()
     ...Steps.publishCoverage("./report.lcov")
@@ -325,7 +325,7 @@ function benchmark(): gha.Job = testJob(
       name = "Clear nuget cache"
       run = "dotnet nuget locals all --clear"
     }
-    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net8.0", "linux-x64", getTestProps(true))
+    ...Steps.dotnetPublish("Tests/Benchmarks/PerformanceTests", "net10.0", "linux-x64", getTestProps(true))
     new {
       name = "Run the tests"
       run = "\(executableExpression)/PerformanceTests -f \"*\" --join"
