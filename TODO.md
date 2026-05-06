@@ -54,6 +54,6 @@
 
 ## Phase 7 - Nachgelagertes Aufraeumen
 
-- [ ] Weitere Altlasten erst nach stabilem MAUI-Baseline-Stand priorisieren.
-- [ ] Fody- und Source-Generator-Themen getrennt von der MAUI-Umstellung behandeln.
-- [ ] Groessere Dependency-Upgrades erst nach gruener MAUI-Pipeline angehen.
+- [x] Weitere Altlasten erst nach stabilem MAUI-Baseline-Stand priorisieren.
+- [x] Fody- und Source-Generator-Themen getrennt von der MAUI-Umstellung behandeln.
+- [x] Groessere Dependency-Upgrades erst nach gruener MAUI-Pipeline angehen.

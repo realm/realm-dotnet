@@ -1,4 +1,4 @@
-# Do not modify!
+﻿# Do not modify!
 # This file was generated from a template using https://github.com/StefMa/pkl-gha
 
 name: Main Build
@@ -321,8 +321,7 @@ jobs:
     strategy:
       matrix:
         framework:
-        - net9.0
-        - net8.0
+        - net10.0
         os:
         - runner: windows-latest
           runtime: win-x64
@@ -580,11 +579,11 @@ jobs:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f net10.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true -p:TestWeavedClasses=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net10.0/win-x64/Realm.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -613,11 +612,11 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net8.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net10.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net8.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net10.0/win-x64/Realm.SourceGenerator.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -656,11 +655,11 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/csc.json"
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net8.0 -r ${{ matrix.os.runtime }}  --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net10.0 -r ${{ matrix.os.runtime }}  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net8.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net10.0/${{ matrix.os.runtime }}/Realm.Fody.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }} --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -701,16 +700,16 @@ jobs:
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net8.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f net10.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net8.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net10.0/linux-x64/Realm.Tests' >> $GITHUB_OUTPUT
     - name: Run the tests
       env:
         DOTNET_DbgEnableMiniDump: 1
         DOTNET_EnableCrashReport: 1
-      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net8.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      run: ./tools/coverlet ./Tests/Realm.Tests/bin/Release/net10.0/linux-x64 -t ${{ steps.dotnet-publish.outputs.executable-path }} -a '--result=TestResults.xml --labels=After' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Archive core dump
       if: ${{ failure() && runner.os != 'Windows' }}
       uses: actions/upload-artifact@v4
@@ -860,11 +859,11 @@ jobs:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Tests.XUnit
-      run: dotnet publish Tests/Tests.XUnit -c Release -f net8.0 -r win-x64  --no-self-contained
+      run: dotnet publish Tests/Tests.XUnit -c Release -f net10.0 -r win-x64  --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net8.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net10.0/win-x64/Tests.XUnit' >> $GITHUB_OUTPUT
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   benchmark-linux:
@@ -894,11 +893,11 @@ jobs:
     - name: Clear nuget cache
       run: dotnet nuget locals all --clear
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net8.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net10.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net8.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net10.0/linux-x64/PerformanceTests' >> $GITHUB_OUTPUT
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
