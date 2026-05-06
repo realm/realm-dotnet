@@ -1,0 +1,175 @@
+﻿name: Local Package Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-suffix:
+        description: 'Optional version suffix (e.g. "local.1"). Leave empty for auto-generated alpha suffix.'
+        required: false
+        type: string
+        default: ''
+
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+
+jobs:
+  build-wrappers:
+    name: Wrappers
+    uses: ./.github/workflows/wrappers.yml
+
+  build-packages:
+    name: Package NuGet
+    needs: build-wrappers
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      package_version: ${{ steps.get-version.outputs.package_version }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+
+    - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Set version suffix
+      id: set-version-suffix
+      shell: pwsh
+      run: |
+        $suffix = "${{ inputs.version-suffix }}"
+        if ([string]::IsNullOrEmpty($suffix)) {
+          $suffix = "local.$env:GITHUB_RUN_NUMBER"
+        }
+        echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
+
+    - name: Fetch wrappers for macos
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-macos
+        path: wrappers/build
+    - name: Fetch wrappers for catalyst
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-catalyst
+        path: wrappers/build
+    - name: Fetch wrappers for linux-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for linux-armhf
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-armhf
+        path: wrappers/build
+    - name: Fetch wrappers for linux-aarch64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-linux-aarch64
+        path: wrappers/build
+    - name: Fetch wrappers for android-armeabi-v7a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: wrappers/build
+    - name: Fetch wrappers for android-arm64-v8a
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-arm64-v8a
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86
+        path: wrappers/build
+    - name: Fetch wrappers for android-x86_64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-android-x86_64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-Win32
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-Win32
+        path: wrappers/build
+    - name: Fetch wrappers for windows-x64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-x64
+        path: wrappers/build
+    - name: Fetch wrappers for windows-ARM64
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-windows-ARM64
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Device
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Device
+        path: wrappers/build
+    - name: Fetch wrappers for iOS-Simulator
+      uses: actions/download-artifact@v4
+      with:
+        name: wrappers-iOS-Simulator
+        path: wrappers/build
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@70b70342ae97ca98d5eaad06cafd26d30f9592a9
+
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -restore -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+
+    - name: Read version
+      id: get-version
+      shell: bash
+      run: |
+        cd Realm/packages
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+        echo "package_version=$pkgVersion" >> $GITHUB_OUTPUT
+
+    - name: Store Realm.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: 90
+        if-no-files-found: error
+
+    - name: Store Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityUtils.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: 90
+        if-no-files-found: error
+
+    - name: Store Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}
+        path: Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.package_version }}.*nupkg
+        retention-days: 90
+        if-no-files-found: error
+
+    - name: Print usage instructions
+      shell: pwsh
+      run: |
+        Write-Host ""
+        Write-Host "=== Local NuGet packages ready ===" -ForegroundColor Green
+        Write-Host "Version: ${{ steps.get-version.outputs.package_version }}"
+        Write-Host ""
+        Write-Host "To use these packages locally:"
+        Write-Host "1. Download the artifacts from this workflow run in the Actions tab."
+        Write-Host "2. Extract to a local folder, e.g. C:\nuget-local\"
+        Write-Host "3. Register the folder as a NuGet source:"
+        Write-Host "     dotnet nuget add source C:\nuget-local --name local-realm"
+        Write-Host "4. Reference the version in your project:"
+        Write-Host "     dotnet add package Realm --version ${{ steps.get-version.outputs.package_version }}"
+        Write-Host ""
