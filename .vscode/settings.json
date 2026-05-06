@@ -35,4 +35,5 @@
         "variant": "cpp",
         "vector": "cpp"
     },
+    "dotnet.preferCSharpExtension": true,
 }

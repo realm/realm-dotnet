@@ -50,7 +50,7 @@ jobs:
         echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: Set version suffix
       id: set-version-suffix
       shell: pwsh
@@ -422,7 +422,7 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Setup Xcode
@@ -430,9 +430,9 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: dotnet build Tests/Tests.Maui -c Release -f net10.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.Maui/bin/Release/net8.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
+      run: Tests/Tests.Maui/bin/Release/net10.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
     - name: Transform Results
       run: xsltproc --output TestResults.xml_transformed.xml Tests/Realm.Tests/EmbeddedResources/nunit3-junit.xslt TestResults.xml
     - name: Publish Unit Test Results
@@ -469,7 +469,7 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Setup Xcode
@@ -477,11 +477,11 @@ jobs:
       with:
         xcode-version: latest-stable
     - name: Build Tests/Tests.Maui
-      run: dotnet build Tests/Tests.Maui -c Release -f net8.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: dotnet build Tests/Tests.Maui -c Release -f net10.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run on Simulator
       uses: realm/ci-actions/run-ios-simulator@6418e15ed9bbdb19b7d456a347e5623779f95cdf
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net8.0-ios/iossimulator-arm64/Tests.Maui.app
+        appPath: Tests/Tests.Maui/bin/Release/net10.0-ios/iossimulator-arm64/Tests.Maui.app
         bundleId: io.realm.mauitests
         iphoneToSimulate: iPhone-15
         arguments: --headless --result=${{ github.workspace }}/TestResults.xml --labels=All
@@ -527,15 +527,15 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@5d1464d5da459f3d7085106d52e499f4dc5d0f59
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: Setup Maui workload
       run: dotnet workload install maui
     - name: Publish Tests/Tests.Maui
-      run: dotnet publish Tests/Tests.Maui -c Release -f net8.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Tests.Maui -c Release -f net10.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       shell: bash
-      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net8.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net10.0-android/null/Tests.Maui' >> $GITHUB_OUTPUT
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
@@ -546,7 +546,7 @@ jobs:
       id: run_tests
       uses: ./.github/actions/run-android-device-farm-test
       with:
-        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net8.0-android/publish/io.realm.mauitests-Signed.apk
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net10.0-android/publish/io.realm.mauitests-Signed.apk
         app-id: io.realm.mauitests
         project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}

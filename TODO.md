@@ -5,14 +5,14 @@
 - [x] MAUI Android, iOS, MacCatalyst und Windows als aktive Zielplattformen festschreiben.
 - [x] UWP, Xamarin, Avalonia und Sync-bezogene Weiterentwicklung aus dem aktiven Scope nehmen.
 - [x] `net6.0` aus `Realm/Realm/Realm.csproj` entfernt.
-- [ ] `.NET 10` als aktive Basis festlegen: `Realm/Realm/Realm.csproj`, `Tests/Tests.Maui/Tests.Maui.csproj` und die MAUI-Pipeline auf `net10.0` bzw. `net10.0-*` anheben; `net8.0` nur temporaer behalten, falls die Umstellung das kurzfristig erzwingt.
-- [ ] `.NET 10` SDK-, MAUI-Workload- und CI-Voraussetzungen festziehen.
+- [x] `.NET 10` als aktive Basis festlegen: `Realm/Realm/Realm.csproj`, `Tests/Tests.Maui/Tests.Maui.csproj` und die MAUI-Pipeline auf `net10.0` bzw. `net10.0-*` anheben; `net8.0` nur temporaer behalten, falls die Umstellung das kurzfristig erzwingt.
+- [x] `.NET 10` SDK-, MAUI-Workload- und CI-Voraussetzungen festziehen.
 
 ## Phase 1 - Leitplanken
 
 - [x] Projektweite Leitplanken fuer MAUI-only Entwicklung in `.github/` angelegt.
 - [x] Dateispezifische Instructions fuer MAUI-Projekte und Workflows angelegt.
-- [ ] Optional ein wiederverwendbares Skill fuer MAUI-Wartungsaufgaben definieren.
+- [x] Optional ein wiederverwendbares Skill fuer MAUI-Wartungsaufgaben definieren.
 
 ## Phase 2 - Projektbaseline
 
