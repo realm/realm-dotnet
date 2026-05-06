@@ -177,8 +177,6 @@ namespace Realms.Tests
             }
         }
 
-        public static bool IsUWP { get; set; }
-
         public static bool IsUnity
         {
             get

@@ -74,6 +74,7 @@ const function defaultBuildJobs(netCoreVersions: Listing<NetFramework>): Mapping
   ["test-source-generation"] = TestJobs.sourceGeneration()
   ["test-weaver"] = TestJobs.weaver()
   ["test-code-coverage"] = TestJobs.codeCoverage(job_Wrappers)
+  ["smoke-quickjournal"] = TestJobs.quickJournalSmoke()
   ["verify-namespaces"] = Lint.verifyNamespaces()
   ["lint"] = Lint.lint()
 }

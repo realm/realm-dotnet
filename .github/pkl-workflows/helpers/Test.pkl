@@ -241,6 +241,24 @@ function codeCoverage(wrappersJob: String): gha.Job = (testJob(
   }
 }
 
+/// Builds examples/QuickJournal on Windows to verify the project file, package
+/// references, and MAUI tooling remain healthy. No wrappers or Realm nuget needed.
+function quickJournalSmoke(): gha.Job = new gha.Job {
+  name = "Smoke QuickJournal"
+  `runs-on` = new gha.WindowsLatest {}
+  `timeout-minutes` = 20
+  `if` = Common.ifNotCanceledCondition
+  steps {
+    ...Steps.checkout(false)
+    Steps.setupDotnet(null)
+    ...Steps.setupMaui()
+    new {
+      name = "Build examples/QuickJournal"
+      run = "dotnet build examples/QuickJournal -f net10.0-windows10.0.19041.0 -c Release"
+    }
+  }
+}
+
 function unity(config: UnityTestConfig): Mapping<String, gha.Job> = new Mapping<String, gha.Job> {
   ["build-unity-tests-\(config.os)"] = new gha.Job {
     name = "Build Unity \(config.os)"

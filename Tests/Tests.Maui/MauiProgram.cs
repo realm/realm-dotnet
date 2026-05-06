@@ -31,6 +31,15 @@ public static class MauiProgram
 
         Args = args;
 
+        // Ensure a writable storage folder is set before the test harness initialises Realm.
+        // On MAUI platforms Environment.SpecialFolder.LocalApplicationData resolves to the
+        // app-specific data directory on all active targets (Android, iOS, macOS, Windows).
+        var storageRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (!string.IsNullOrEmpty(storageRoot))
+        {
+            Realms.InteropConfig.SetDefaultStorageFolder(storageRoot);
+        }
+
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()

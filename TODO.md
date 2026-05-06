@@ -42,9 +42,9 @@
 
 ## Phase 5 - Tests
 
-- [ ] MAUI-spezifische Regressionstests fuer Storage, Native Loading und Headless-Runs ergaenzen.
-- [ ] Gemeinsame Tests in `Tests/Realm.Tests` auf Legacy-Annahmen pruefen.
-- [ ] `examples/QuickJournal` als Smoke-Test-App in die Verifikation aufnehmen.
+- [x] MAUI-spezifische Regressionstests fuer Storage, Native Loading und Headless-Runs ergaenzen.
+- [x] Gemeinsame Tests in `Tests/Realm.Tests` auf Legacy-Annahmen pruefen.
+- [x] `examples/QuickJournal` als Smoke-Test-App in die Verifikation aufnehmen.
 
 ## Phase 6 - Dokumentation
 
