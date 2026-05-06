@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Realms.Tests.Maui
@@ -34,7 +35,6 @@ namespace Realms.Tests.Maui
         // ----------------------------------------------------------------
         // Storage tests
         // ----------------------------------------------------------------
-
         [Test]
         public void Storage_DefaultFolder_IsNonNullAndWritable()
         {
@@ -89,7 +89,6 @@ namespace Realms.Tests.Maui
         // ----------------------------------------------------------------
         // Native loading test
         // ----------------------------------------------------------------
-
         [Test]
         public void NativeWrapper_OpenAndWriteRealm_Succeeds()
         {
@@ -121,7 +120,6 @@ namespace Realms.Tests.Maui
         // ----------------------------------------------------------------
         // Headless-run argument detection tests
         // ----------------------------------------------------------------
-
         [Test]
         public void HeadlessArgs_WithHeadlessFlag_ReturnsTrue()
         {
