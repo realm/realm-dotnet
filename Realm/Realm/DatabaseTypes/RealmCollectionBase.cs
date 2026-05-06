@@ -36,7 +36,7 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
-    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for MAUI and WPF data binding (CollectionView, ListView). IList<T> is not necessary.")]
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,

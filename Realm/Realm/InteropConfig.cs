@@ -41,16 +41,18 @@ namespace Realms
             Path.Combine(Directory.GetCurrentDirectory(), "Documents")
         };
 
+        // Default storage folder resolution for MAUI platforms:
+        // - Android:  /data/data/<package>/files  (Environment.SpecialFolder.Personal)
+        // - iOS:      <app bundle>/Documents       (Environment.SpecialFolder.Personal)
+        // - macOS/Catalyst: ~/Documents           (Environment.SpecialFolder.Personal)
+        // - Windows:  C:\Users\<user>\Documents   (Environment.SpecialFolder.Personal)
+        // MAUI apps should call SetDefaultStorageFolder or AddPotentialStorageFolder
+        // from MauiProgram / App startup to override these defaults if needed.
         private static readonly Lazy<string?> _defaultStorageFolder = new(() =>
         {
-            if (TryGetUWPFolder(out var folder))
-            {
-                return folder;
-            }
-
             foreach (var potentialFolder in _potentialStorageFolders)
             {
-                if (TryGetDatabaseFolder(() => potentialFolder, out folder))
+                if (TryGetDatabaseFolder(() => potentialFolder, out var folder))
                 {
                     return folder;
                 }
@@ -119,25 +121,6 @@ namespace Realms
 
             return false;
         }
-
-        private static bool TryGetUWPFolder([MaybeNullWhen(false)] out string folder) => TryGetDatabaseFolder(() =>
-        {
-            // On UWP, the sandbox folder is obtained by:
-            // ApplicationData.Current.LocalFolder.Path
-            var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
-            if (applicationData == null)
-            {
-                return null;
-            }
-
-            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public)!;
-            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance)!;
-            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance)!;
-
-            var currentApplicationData = currentProperty.GetValue(null);
-            var localFolder = localFolderProperty.GetValue(currentApplicationData);
-            return (string)pathProperty.GetValue(localFolder)!;
-        }, out folder);
 
         private static bool TryGetDatabaseFolder(Func<string?> getter, [MaybeNullWhen(false)] out string folder)
         {

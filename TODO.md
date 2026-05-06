@@ -26,10 +26,10 @@
 
 ## Phase 3 - Laufzeit und Storage
 
-- [ ] UWP-spezifische Ordnerermittlung in `Realm/Realm/InteropConfig.cs` entfernen oder sauber isolieren.
-- [ ] Auswirkungen der Storage-Aenderung in `Realm/Realm/Configurations/RealmConfigurationBase.cs` pruefen.
-- [ ] Aufrufer von `AddPotentialStorageFolder`, `SetDefaultStorageFolder` und `GetDefaultStorageFolder` auf MAUI-Relevanz pruefen.
-- [ ] Defaultpfade auf Android, iOS und Windows verifizieren.
+- [x] UWP-spezifische Ordnerermittlung in `Realm/Realm/InteropConfig.cs` entfernen oder sauber isolieren.
+- [x] Auswirkungen der Storage-Aenderung in `Realm/Realm/Configurations/RealmConfigurationBase.cs` pruefen.
+- [x] Aufrufer von `AddPotentialStorageFolder`, `SetDefaultStorageFolder` und `GetDefaultStorageFolder` auf MAUI-Relevanz pruefen.
+- [x] Defaultpfade auf Android, iOS und Windows verifizieren.
 
 ## Phase 4 - CI und Wrapper
 
