@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(RecursiveBacklinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static RecursiveBacklinksObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new RecursiveBacklinksObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="RecursiveBacklinksObject"/> class.
@@ -386,48 +380,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RecursiveBacklinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RecursiveBacklinksObject>
-        {
-            public override string SchemaName => "RecursiveBacklinksObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RecursiveBacklinksObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Id", value.Id);
-                WriteValue(context, args, "Parent", value.Parent);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override RecursiveBacklinksObject CreateInstance() => new RecursiveBacklinksObject();
-
-            protected override void ReadValue(RecursiveBacklinksObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "Parent":
-                        instance.Parent = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.RecursiveBacklinksObject?>()!.DeserializeById(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(RecursiveBacklinksObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(RecursiveBacklinksObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyInt64ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyInt64Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static PrimaryKeyInt64Object()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyInt64ObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyInt64Object"/> class.
@@ -341,44 +335,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyInt64ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyInt64Object>
-        {
-            public override string SchemaName => "PrimaryKeyInt64Object";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyInt64Object value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override PrimaryKeyInt64Object CreateInstance() => new PrimaryKeyInt64Object();
-
-            protected override void ReadValue(PrimaryKeyInt64Object instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<long>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(PrimaryKeyInt64Object instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(PrimaryKeyInt64Object instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

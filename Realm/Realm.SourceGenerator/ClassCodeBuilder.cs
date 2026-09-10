@@ -30,7 +30,6 @@ namespace Realms.SourceGenerator
     {
         private readonly string[] _defaultNamespaces =
         {
-            "MongoDB.Bson.Serialization",
             "System",
             "System.Collections.Generic",
             "System.Linq",
@@ -51,7 +50,6 @@ namespace Realms.SourceGenerator
         private readonly string _accessorInterfaceName;
         private readonly string _managedAccessorClassName;
         private readonly string _unmanagedAccessorClassName;
-        private readonly string _serializerClassName;
 
         public ClassCodeBuilder(ClassInfo classInfo, GeneratorConfig generatorConfig)
         {
@@ -75,7 +73,6 @@ namespace Realms.SourceGenerator
             _accessorInterfaceName = $"I{className}Accessor";
             _managedAccessorClassName = $"{className}ManagedAccessor";
             _unmanagedAccessorClassName = $"{className}UnmanagedAccessor";
-            _serializerClassName = $"{className}Serializer";
         }
 
         public string GenerateSource()
@@ -497,12 +494,6 @@ public override string? ToString() => Accessor.ToString();")}";
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{
 
-    [Realms.Preserve]
-    static {_classInfo.Name}()
-    {{
-        Realms.Serialization.RealmObjectSerializer.Register(new {_serializerClassName}());
-    }}
-
 {contents.Indent()}
 
 {GenerateClassObjectHelper().Indent()}
@@ -513,7 +504,6 @@ public override string? ToString() => Accessor.ToString();")}";
 
 {GenerateUnmanagedAccessor().Indent()}
 
-{GenerateSerializer().Indent()}
 }}";
 
             foreach (var enclosingClass in _classInfo.EnclosingClasses)
@@ -875,134 +865,6 @@ public {type} {name}
 private class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
-}}";
-        }
-
-        private string GenerateSerializer()
-        {
-            var serializeValueLines = new StringBuilder();
-            var readValueLines = new StringBuilder();
-            var readArrayElementLines = new StringBuilder();
-            var readDocumentFieldLines = new StringBuilder();
-            var readArrayLines = new StringBuilder();
-            var readDictionaryLines = new StringBuilder();
-
-            foreach (var property in _classInfo.Properties)
-            {
-                var name = property.Name;
-                var stringName = property.GetMappedOrOriginalName();
-
-                if (property.TypeInfo.IsBacklink)
-                {
-                    continue; // Backlinks are not de/serialized
-                }
-                else if (property.TypeInfo.IsCollection)
-                {
-                    serializeValueLines.AppendLine($"Write{property.TypeInfo.CollectionType}(context, args, \"{stringName}\", value.{name});");
-                    if (property.TypeInfo.IsDictionary)
-                    {
-                        var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).InternalType;
-
-                        var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
-                            ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                            : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)!";
-
-                        readDocumentFieldLines.AppendLine($@"case ""{stringName}"":
-    instance.{name}[fieldName] = {deserialize};
-    break;");
-
-                        readDictionaryLines.AppendLine($@"case ""{stringName}"":");
-                    }
-                    else
-                    {
-                        var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).InternalType;
-
-                        var deserialize = property.TypeInfo.InternalType!.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
-                            ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                            : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)!";
-
-                        readArrayElementLines.AppendLine($@"case ""{stringName}"":
-    instance.{name}.Add({deserialize});
-    break;");
-                        readArrayLines.AppendLine($@"case ""{stringName}"":");
-                    }
-                }
-                else
-                {
-                    var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).CompleteType;
-
-                    serializeValueLines.AppendLine($"WriteValue(context, args, \"{stringName}\", value.{name});");
-                    var deserialize = property.TypeInfo.ObjectType is ObjectType.None or ObjectType.EmbeddedObject
-                        ? $"BsonSerializer.LookupSerializer<{type}>().Deserialize(context)"
-                        : $"Realms.Serialization.RealmObjectSerializer.LookupSerializer<{type}>()!.DeserializeById(context)";
-                    readValueLines.AppendLine($@"case ""{stringName}"":
-    instance.{name} = {deserialize};
-    break;");
-                }
-            }
-
-            if (readArrayLines.Length > 0)
-            {
-                readValueLines.Append(readArrayLines);
-                readValueLines.AppendLine(@"    ReadArray(instance, name, context);
-    break;");
-            }
-
-            if (readDictionaryLines.Length > 0)
-            {
-                readValueLines.Append(readDictionaryLines);
-                readValueLines.AppendLine(@"    ReadDictionary(instance, name, context);
-    break;");
-            }
-
-            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-private class {_serializerClassName} : Realms.Serialization.RealmObjectSerializerBase<{_classInfo.Name}>
-{{
-    public override string SchemaName => ""{_classInfo.MapTo ?? _classInfo.Name}"";
-
-    protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, {_classInfo.Name} value)
-    {{
-        context.Writer.WriteStartDocument();
-
-{serializeValueLines.Indent(2, trimNewLines: true)}
-
-        context.Writer.WriteEndDocument();
-    }}
-
-    protected override {_classInfo.Name} CreateInstance() => new {_classInfo.Name}();
-
-    protected override void ReadValue({_classInfo.Name} instance, string name, BsonDeserializationContext context)
-    {{
-{(readValueLines.Length == 0
-    ? "// No Realm properties to deserialize"
-    : $@"switch (name)
-{{
-{readValueLines.Indent(trimNewLines: true)}
-    default:
-        context.Reader.SkipValue();
-        break;
-}}").Indent(2)}
-    }}
-
-    protected override void ReadArrayElement({_classInfo.Name} instance, string name, BsonDeserializationContext context)
-    {{
-{(readArrayElementLines.Length == 0
-    ? "// No persisted list/set properties to deserialize"
-    : $@"switch (name)
-{{
-{readArrayElementLines.Indent(trimNewLines: true)}
-}}").Indent(2)}
-    }}
-
-    protected override void ReadDocumentField({_classInfo.Name} instance, string name, string fieldName, BsonDeserializationContext context)
-    {{
-{(readDocumentFieldLines.Length == 0
-    ? "// No persisted dictionary properties to deserialize"
-    : $@"switch (name)
-{{
-{readDocumentFieldLines.Indent(trimNewLines: true)}
-}}").Indent(2)}
-    }}
 }}";
         }
 

@@ -19,7 +19,6 @@
 #nullable disable
 
 using System;
-using MongoDB.Bson;
 using Realms;
 
 namespace SourceGeneratorPlayground

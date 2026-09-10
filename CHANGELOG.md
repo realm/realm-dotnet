@@ -1,7 +1,11 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* `ObjectId` has moved from `MongoDB.Bson` to `Realms`. Models and queries using it need `using Realms;` instead of `using MongoDB.Bson;`, or a `using ObjectId = Realms.ObjectId;` alias where both namespaces are imported. `Decimal128` is unchanged and still comes from `MongoDB.Bson`. (PR [#3728](https://github.com/realm/realm-dotnet/pull/3728))
+* Removed the BSON serialization support for Realm objects, completing the removal of Atlas Device Sync. This drops `Realms.Serialization.RealmObjectSerializer`, `Realms.Serialization.RealmObjectSerializerBase` and the per-model serializers the source generator emitted. It existed to serialize Realm objects for `MongoClient.Collection` and Atlas Functions, both of which were removed with sync. Code that relied on `BsonSerializer.Deserialize<MyRealmObject>` will now fall back to the driver's reflective class map rather than a generated serializer, and should register its own serializer instead. (PR [#3728](https://github.com/realm/realm-dotnet/pull/3728))
+
 ### Enhancements
-* None
+* A trimmed or NativeAOT app no longer sees the 22 trim warnings that `MongoDB.Bson` produced when reached through Realm. (PR [#3728](https://github.com/realm/realm-dotnet/pull/3728))
 
 ### Fixed
 * None

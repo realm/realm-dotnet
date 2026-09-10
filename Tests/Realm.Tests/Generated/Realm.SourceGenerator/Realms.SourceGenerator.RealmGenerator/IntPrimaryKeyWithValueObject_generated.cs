@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(IntPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IntPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static IntPrimaryKeyWithValueObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new IntPrimaryKeyWithValueObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="IntPrimaryKeyWithValueObject"/> class.
@@ -369,48 +363,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IntPrimaryKeyWithValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IntPrimaryKeyWithValueObject>
-        {
-            public override string SchemaName => "IntPrimaryKeyWithValueObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IntPrimaryKeyWithValueObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "StringValue", value.StringValue);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override IntPrimaryKeyWithValueObject CreateInstance() => new IntPrimaryKeyWithValueObject();
-
-            protected override void ReadValue(IntPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "StringValue":
-                        instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(IntPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(IntPrimaryKeyWithValueObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

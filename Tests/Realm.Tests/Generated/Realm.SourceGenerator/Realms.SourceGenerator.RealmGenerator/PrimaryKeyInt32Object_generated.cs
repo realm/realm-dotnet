@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyInt32ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyInt32Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static PrimaryKeyInt32Object()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyInt32ObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyInt32Object"/> class.
@@ -341,44 +335,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyInt32ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyInt32Object>
-        {
-            public override string SchemaName => "PrimaryKeyInt32Object";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyInt32Object value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override PrimaryKeyInt32Object CreateInstance() => new PrimaryKeyInt32Object();
-
-            protected override void ReadValue(PrimaryKeyInt32Object instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(PrimaryKeyInt32Object instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(PrimaryKeyInt32Object instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

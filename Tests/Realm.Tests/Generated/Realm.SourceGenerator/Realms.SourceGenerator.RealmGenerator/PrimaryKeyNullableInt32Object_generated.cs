@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyNullableInt32ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableInt32Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static PrimaryKeyNullableInt32Object()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyNullableInt32ObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyNullableInt32Object"/> class.
@@ -341,44 +335,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyNullableInt32ObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyNullableInt32Object>
-        {
-            public override string SchemaName => "PrimaryKeyNullableInt32Object";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyNullableInt32Object value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override PrimaryKeyNullableInt32Object CreateInstance() => new PrimaryKeyNullableInt32Object();
-
-            protected override void ReadValue(PrimaryKeyNullableInt32Object instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(PrimaryKeyNullableInt32Object instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(PrimaryKeyNullableInt32Object instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

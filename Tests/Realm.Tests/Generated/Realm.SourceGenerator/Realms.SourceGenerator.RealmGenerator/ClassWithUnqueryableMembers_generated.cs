@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ClassWithUnqueryableMembersObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ClassWithUnqueryableMembers()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ClassWithUnqueryableMembersSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ClassWithUnqueryableMembers"/> class.
@@ -443,61 +437,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ClassWithUnqueryableMembersSerializer : Realms.Serialization.RealmObjectSerializerBase<ClassWithUnqueryableMembers>
-        {
-            public override string SchemaName => "ClassWithUnqueryableMembers";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ClassWithUnqueryableMembers value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "RealPropertyToSatisfyWeaver", value.RealPropertyToSatisfyWeaver);
-                WriteValue(context, args, "RealmObjectProperty", value.RealmObjectProperty);
-                WriteList(context, args, "RealmListProperty", value.RealmListProperty);
-                WriteValue(context, args, "FirstName", value.FirstName);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ClassWithUnqueryableMembers CreateInstance() => new ClassWithUnqueryableMembers();
-
-            protected override void ReadValue(ClassWithUnqueryableMembers instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RealPropertyToSatisfyWeaver":
-                        instance.RealPropertyToSatisfyWeaver = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "RealmObjectProperty":
-                        instance.RealmObjectProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person?>()!.DeserializeById(context);
-                        break;
-                    case "FirstName":
-                        instance.FirstName = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "RealmListProperty":
-                        ReadArray(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ClassWithUnqueryableMembers instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RealmListProperty":
-                        instance.RealmListProperty.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.Person>()!.DeserializeById(context)!);
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(ClassWithUnqueryableMembers instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

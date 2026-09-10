@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyCharObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyCharObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static PrimaryKeyCharObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new PrimaryKeyCharObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="PrimaryKeyCharObject"/> class.
@@ -341,44 +335,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PrimaryKeyCharObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<PrimaryKeyCharObject>
-        {
-            public override string SchemaName => "PrimaryKeyCharObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, PrimaryKeyCharObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override PrimaryKeyCharObject CreateInstance() => new PrimaryKeyCharObject();
-
-            protected override void ReadValue(PrimaryKeyCharObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<char>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(PrimaryKeyCharObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(PrimaryKeyCharObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

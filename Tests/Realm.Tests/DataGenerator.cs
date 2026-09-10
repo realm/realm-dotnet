@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using MongoDB.Bson;
 using Realms.Helpers;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Tests
 {

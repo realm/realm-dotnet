@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithFtsIndexObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithFtsIndex : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ObjectWithFtsIndex()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithFtsIndexSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithFtsIndex"/> class.
@@ -395,52 +389,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithFtsIndexSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithFtsIndex>
-        {
-            public override string SchemaName => "ObjectWithFtsIndex";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithFtsIndex value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Title", value.Title);
-                WriteValue(context, args, "Summary", value.Summary);
-                WriteValue(context, args, "NullableSummary", value.NullableSummary);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ObjectWithFtsIndex CreateInstance() => new ObjectWithFtsIndex();
-
-            protected override void ReadValue(ObjectWithFtsIndex instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Title":
-                        instance.Title = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    case "Summary":
-                        instance.Summary = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    case "NullableSummary":
-                        instance.NullableSummary = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ObjectWithFtsIndex instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(ObjectWithFtsIndex instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

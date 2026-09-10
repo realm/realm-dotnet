@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithEmbeddedPropertiesObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithEmbeddedProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ObjectWithEmbeddedProperties()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithEmbeddedPropertiesSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithEmbeddedProperties"/> class.
@@ -96,7 +90,7 @@ namespace Realms.Tests
                     newAccessor.DictionaryOfAllTypesObjects.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.PrimaryKey != default(MongoDB.Bson.ObjectId))
+                if (!skipDefaults || oldAccessor.PrimaryKey != default(Realms.ObjectId))
                 {
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
@@ -276,7 +270,7 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithEmbeddedPropertiesAccessor : Realms.IRealmAccessor
         {
-            MongoDB.Bson.ObjectId PrimaryKey { get; set; }
+            Realms.ObjectId PrimaryKey { get; set; }
 
             Realms.Tests.EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
@@ -290,9 +284,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithEmbeddedPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
         {
-            public MongoDB.Bson.ObjectId PrimaryKey
+            public Realms.ObjectId PrimaryKey
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                get => (Realms.ObjectId)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
@@ -342,8 +336,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ObjectWithEmbeddedProperties.RealmSchema;
 
-            private MongoDB.Bson.ObjectId _primaryKey = ObjectId.GenerateNewId();
-            public MongoDB.Bson.ObjectId PrimaryKey
+            private Realms.ObjectId _primaryKey = ObjectId.GenerateNewId();
+            public Realms.ObjectId PrimaryKey
             {
                 get => _primaryKey;
                 set
@@ -418,7 +412,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                PrimaryKey = (MongoDB.Bson.ObjectId)val;
+                PrimaryKey = (Realms.ObjectId)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -445,70 +439,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithEmbeddedPropertiesSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithEmbeddedProperties>
-        {
-            public override string SchemaName => "ObjectWithEmbeddedProperties";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithEmbeddedProperties value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.PrimaryKey);
-                WriteValue(context, args, "AllTypesObject", value.AllTypesObject);
-                WriteValue(context, args, "RecursiveObject", value.RecursiveObject);
-                WriteList(context, args, "ListOfAllTypesObjects", value.ListOfAllTypesObjects);
-                WriteDictionary(context, args, "DictionaryOfAllTypesObjects", value.DictionaryOfAllTypesObjects);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ObjectWithEmbeddedProperties CreateInstance() => new ObjectWithEmbeddedProperties();
-
-            protected override void ReadValue(ObjectWithEmbeddedProperties instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.PrimaryKey = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                        break;
-                    case "AllTypesObject":
-                        instance.AllTypesObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>().Deserialize(context);
-                        break;
-                    case "RecursiveObject":
-                        instance.RecursiveObject = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel1?>().Deserialize(context);
-                        break;
-                    case "ListOfAllTypesObjects":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "DictionaryOfAllTypesObjects":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ObjectWithEmbeddedProperties instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "ListOfAllTypesObjects":
-                        instance.ListOfAllTypesObjects.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(ObjectWithEmbeddedProperties instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "DictionaryOfAllTypesObjects":
-                        instance.DictionaryOfAllTypesObjects[fieldName] = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedAllTypesObject?>().Deserialize(context);
-                        break;
-                }
-            }
-        }
     }
 }

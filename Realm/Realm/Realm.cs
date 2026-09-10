@@ -25,7 +25,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Extensions;

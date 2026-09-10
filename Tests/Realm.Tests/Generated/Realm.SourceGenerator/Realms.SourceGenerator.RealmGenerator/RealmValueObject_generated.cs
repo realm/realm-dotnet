@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(RealmValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RealmValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static RealmValueObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new RealmValueObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="RealmValueObject"/> class.
@@ -467,76 +461,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<RealmValueObject>
-        {
-            public override string SchemaName => "RealmValueObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RealmValueObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "RealmValueProperty", value.RealmValueProperty);
-                WriteList(context, args, "RealmValueList", value.RealmValueList);
-                WriteSet(context, args, "RealmValueSet", value.RealmValueSet);
-                WriteDictionary(context, args, "RealmValueDictionary", value.RealmValueDictionary);
-                WriteDictionary(context, args, "TestDict", value.TestDict);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override RealmValueObject CreateInstance() => new RealmValueObject();
-
-            protected override void ReadValue(RealmValueObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "RealmValueProperty":
-                        instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                        break;
-                    case "RealmValueList":
-                    case "RealmValueSet":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "RealmValueDictionary":
-                    case "TestDict":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(RealmValueObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RealmValueList":
-                        instance.RealmValueList.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
-                        break;
-                    case "RealmValueSet":
-                        instance.RealmValueSet.Add(BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(RealmValueObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RealmValueDictionary":
-                        instance.RealmValueDictionary[fieldName] = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                        break;
-                    case "TestDict":
-                        instance.TestDict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                }
-            }
-        }
     }
 }

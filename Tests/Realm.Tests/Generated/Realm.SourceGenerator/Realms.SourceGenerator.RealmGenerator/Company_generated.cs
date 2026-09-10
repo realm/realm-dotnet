@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
@@ -28,12 +28,6 @@ namespace Realms.Tests.Database
         [Woven(typeof(CompanyObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class Company : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
-
-            [Realms.Preserve]
-            static Company()
-            {
-                Realms.Serialization.RealmObjectSerializer.Register(new CompanySerializer());
-            }
 
             /// <summary>
             /// Defines the schema for the <see cref="Company"/> class.
@@ -96,7 +90,7 @@ namespace Realms.Tests.Database
                         newAccessor.Offices.Clear();
                     }
 
-                    if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                    if (!skipDefaults || oldAccessor.Id != default(Realms.ObjectId))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
@@ -275,7 +269,7 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface ICompanyAccessor : Realms.IRealmAccessor
             {
-                MongoDB.Bson.ObjectId Id { get; set; }
+                Realms.ObjectId Id { get; set; }
 
                 string Name { get; set; }
 
@@ -287,9 +281,9 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class CompanyManagedAccessor : Realms.ManagedAccessor, ICompanyAccessor
             {
-                public MongoDB.Bson.ObjectId Id
+                public Realms.ObjectId Id
                 {
-                    get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                    get => (Realms.ObjectId)GetValue("_id");
                     set => SetValue("_id", value);
                 }
 
@@ -325,8 +319,8 @@ namespace Realms.Tests.Database
             {
                 public override ObjectSchema ObjectSchema => Company.RealmSchema;
 
-                private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-                public MongoDB.Bson.ObjectId Id
+                private Realms.ObjectId _id = ObjectId.GenerateNewId();
+                public Realms.ObjectId Id
                 {
                     get => _id;
                     set
@@ -380,7 +374,7 @@ namespace Realms.Tests.Database
                     switch (propertyName)
                     {
                         case "_id":
-                            Id = (MongoDB.Bson.ObjectId)val;
+                            Id = (Realms.ObjectId)val;
                             return;
                         case "Name":
                             Name = (string)val!;
@@ -418,62 +412,6 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CompanySerializer : Realms.Serialization.RealmObjectSerializerBase<Company>
-            {
-                public override string SchemaName => "Company";
-
-                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Company value)
-                {
-                    context.Writer.WriteStartDocument();
-
-                    WriteValue(context, args, "_id", value.Id);
-                    WriteValue(context, args, "Name", value.Name);
-                    WriteValue(context, args, "Location", value.Location);
-                    WriteList(context, args, "Offices", value.Offices);
-
-                    context.Writer.WriteEndDocument();
-                }
-
-                protected override Company CreateInstance() => new Company();
-
-                protected override void ReadValue(Company instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "_id":
-                            instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                            break;
-                        case "Name":
-                            instance.Name = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                            break;
-                        case "Location":
-                            instance.Location = BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint?>().Deserialize(context);
-                            break;
-                        case "Offices":
-                            ReadArray(instance, name, context);
-                            break;
-                        default:
-                            context.Reader.SkipValue();
-                            break;
-                    }
-                }
-
-                protected override void ReadArrayElement(Company instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "Offices":
-                            instance.Offices.Add(BsonSerializer.LookupSerializer<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>().Deserialize(context));
-                            break;
-                    }
-                }
-
-                protected override void ReadDocumentField(Company instance, string name, string fieldName, BsonDeserializationContext context)
-                {
-                    // No persisted dictionary properties to deserialize
-                }
-            }
         }
     }
 }

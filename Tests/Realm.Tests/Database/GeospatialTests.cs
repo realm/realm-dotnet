@@ -29,6 +29,7 @@ using TestRealmObject = Realms.RealmObject;
 #else
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
+using ObjectId = Realms.ObjectId;
 #endif
 
 namespace Realms.Tests.Database

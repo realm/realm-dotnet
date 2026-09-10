@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedIntPropertyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedIntPropertyObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static EmbeddedIntPropertyObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedIntPropertyObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedIntPropertyObject"/> class.
@@ -338,44 +332,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedIntPropertyObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedIntPropertyObject>
-        {
-            public override string SchemaName => "EmbeddedIntPropertyObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedIntPropertyObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Int", value.Int);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override EmbeddedIntPropertyObject CreateInstance() => new EmbeddedIntPropertyObject();
-
-            protected override void ReadValue(EmbeddedIntPropertyObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Int":
-                        instance.Int = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(EmbeddedIntPropertyObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(EmbeddedIntPropertyObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

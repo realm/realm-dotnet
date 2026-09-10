@@ -1,6 +1,5 @@
 ﻿using System;
 using Realms;
-using MongoDB.Bson;
 
 namespace SourceGeneratorAssemblyToProcess
 {

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Tests.Database
 {

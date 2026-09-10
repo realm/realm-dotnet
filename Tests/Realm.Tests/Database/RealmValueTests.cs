@@ -27,6 +27,7 @@ using System.ComponentModel;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Tests.Database
 {

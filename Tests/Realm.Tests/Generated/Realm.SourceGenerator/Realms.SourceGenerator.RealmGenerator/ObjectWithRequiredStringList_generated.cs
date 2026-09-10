@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithRequiredStringListObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ObjectWithRequiredStringList()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ObjectWithRequiredStringListSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ObjectWithRequiredStringList"/> class.
@@ -331,49 +325,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectWithRequiredStringListSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectWithRequiredStringList>
-        {
-            public override string SchemaName => "ObjectWithRequiredStringList";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectWithRequiredStringList value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteList(context, args, "Strings", value.Strings);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ObjectWithRequiredStringList CreateInstance() => new ObjectWithRequiredStringList();
-
-            protected override void ReadValue(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Strings":
-                        ReadArray(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ObjectWithRequiredStringList instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Strings":
-                        instance.Strings.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(ObjectWithRequiredStringList instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

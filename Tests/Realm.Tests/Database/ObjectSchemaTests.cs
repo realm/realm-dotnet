@@ -26,6 +26,7 @@ using Realms.Schema;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestRealmObject = Realms.IRealmObject;
+using ObjectId = Realms.ObjectId;
 #endif
 
 namespace Realms.Tests.Database

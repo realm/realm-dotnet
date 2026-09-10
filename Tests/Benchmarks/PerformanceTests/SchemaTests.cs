@@ -24,6 +24,7 @@ using BenchmarkDotNet.Attributes;
 using MongoDB.Bson;
 using Realms;
 using Realms.Schema;
+using ObjectId = Realms.ObjectId;
 
 namespace PerformanceTests
 {

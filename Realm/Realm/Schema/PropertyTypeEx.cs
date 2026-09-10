@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using Realms.Helpers;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Schema
 {

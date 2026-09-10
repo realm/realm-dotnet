@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Helpers
 {

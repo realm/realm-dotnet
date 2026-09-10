@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
@@ -28,12 +28,6 @@ namespace Realms.Tests.Database
         [Woven(typeof(CustomGeoPointObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class CustomGeoPoint : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
         {
-
-            [Realms.Preserve]
-            static CustomGeoPoint()
-            {
-                Realms.Serialization.RealmObjectSerializer.Register(new CustomGeoPointSerializer());
-            }
 
             /// <summary>
             /// Defines the schema for the <see cref="CustomGeoPoint"/> class.
@@ -373,54 +367,6 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CustomGeoPointSerializer : Realms.Serialization.RealmObjectSerializerBase<CustomGeoPoint>
-            {
-                public override string SchemaName => "CustomGeoPoint";
-
-                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CustomGeoPoint value)
-                {
-                    context.Writer.WriteStartDocument();
-
-                    WriteList(context, args, "coordinates", value.Coordinates);
-                    WriteValue(context, args, "type", value.Type);
-
-                    context.Writer.WriteEndDocument();
-                }
-
-                protected override CustomGeoPoint CreateInstance() => new CustomGeoPoint();
-
-                protected override void ReadValue(CustomGeoPoint instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "type":
-                            instance.Type = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                            break;
-                        case "coordinates":
-                            ReadArray(instance, name, context);
-                            break;
-                        default:
-                            context.Reader.SkipValue();
-                            break;
-                    }
-                }
-
-                protected override void ReadArrayElement(CustomGeoPoint instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "coordinates":
-                            instance.Coordinates.Add(BsonSerializer.LookupSerializer<double>().Deserialize(context));
-                            break;
-                    }
-                }
-
-                protected override void ReadDocumentField(CustomGeoPoint instance, string name, string fieldName, BsonDeserializationContext context)
-                {
-                    // No persisted dictionary properties to deserialize
-                }
-            }
         }
     }
 }

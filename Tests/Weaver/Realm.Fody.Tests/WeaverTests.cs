@@ -30,6 +30,7 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms;
 using Realms.Weaving;
+using ObjectId = Realms.ObjectId;
 
 namespace RealmWeaver
 {

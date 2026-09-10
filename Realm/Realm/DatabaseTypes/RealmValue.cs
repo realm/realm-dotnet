@@ -28,6 +28,7 @@ using MongoDB.Bson;
 using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Native;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms
 {

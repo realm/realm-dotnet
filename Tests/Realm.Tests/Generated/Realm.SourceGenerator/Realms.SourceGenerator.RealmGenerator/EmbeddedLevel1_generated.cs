@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedLevel1ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedLevel1 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static EmbeddedLevel1()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new EmbeddedLevel1Serializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="EmbeddedLevel1"/> class.
@@ -395,57 +389,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedLevel1Serializer : Realms.Serialization.RealmObjectSerializerBase<EmbeddedLevel1>
-        {
-            public override string SchemaName => "EmbeddedLevel1";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, EmbeddedLevel1 value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "String", value.String);
-                WriteValue(context, args, "Child", value.Child);
-                WriteList(context, args, "Children", value.Children);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override EmbeddedLevel1 CreateInstance() => new EmbeddedLevel1();
-
-            protected override void ReadValue(EmbeddedLevel1 instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "String":
-                        instance.String = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "Child":
-                        instance.Child = BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel2?>().Deserialize(context);
-                        break;
-                    case "Children":
-                        ReadArray(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(EmbeddedLevel1 instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Children":
-                        instance.Children.Add(BsonSerializer.LookupSerializer<Realms.Tests.EmbeddedLevel2>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(EmbeddedLevel1 instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

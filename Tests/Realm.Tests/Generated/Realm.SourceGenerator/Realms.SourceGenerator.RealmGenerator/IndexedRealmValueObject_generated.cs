@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(IndexedRealmValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IndexedRealmValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static IndexedRealmValueObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new IndexedRealmValueObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="IndexedRealmValueObject"/> class.
@@ -366,48 +360,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexedRealmValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexedRealmValueObject>
-        {
-            public override string SchemaName => "IndexedRealmValueObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexedRealmValueObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "RealmValueProperty", value.RealmValueProperty);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override IndexedRealmValueObject CreateInstance() => new IndexedRealmValueObject();
-
-            protected override void ReadValue(IndexedRealmValueObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "RealmValueProperty":
-                        instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(IndexedRealmValueObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(IndexedRealmValueObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

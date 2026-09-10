@@ -1,5 +1,6 @@
 using System;
 using MongoDB.Bson;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms
 {
