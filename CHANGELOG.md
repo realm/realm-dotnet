@@ -1,4 +1,4 @@
-﻿## vNext (TBD)
+## vNext (TBD)
 
 ### Breaking Changes
 * `ObjectId` has moved from `MongoDB.Bson` to `Realms`. Models and queries using it need `using Realms;` instead of `using MongoDB.Bson;`, or a `using ObjectId = Realms.ObjectId;` alias where both namespaces are imported. `Decimal128` is unchanged and still comes from `MongoDB.Bson`. (PR [#3728](https://github.com/realm/realm-dotnet/pull/3728))

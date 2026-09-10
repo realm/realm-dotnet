@@ -72,7 +72,6 @@ namespace Realms
 
                 SynchronizationContextScheduler.Initialize();
                 SharedRealmHandle.Initialize();
-
             }
         }
 
