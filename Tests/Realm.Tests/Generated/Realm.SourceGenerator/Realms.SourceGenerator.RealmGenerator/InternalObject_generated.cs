@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
@@ -24,12 +24,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(InternalObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class InternalObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static InternalObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new InternalObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="InternalObject"/> class.
@@ -334,48 +328,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class InternalObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<InternalObject>
-        {
-            public override string SchemaName => "InternalObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, InternalObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "IntProperty", value.IntProperty);
-                WriteValue(context, args, "StringProperty", value.StringProperty);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override InternalObject CreateInstance() => new InternalObject();
-
-            protected override void ReadValue(InternalObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "IntProperty":
-                        instance.IntProperty = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "StringProperty":
-                        instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(InternalObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(InternalObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

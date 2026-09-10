@@ -2,7 +2,6 @@
 #nullable enable
 
 using Bar;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -26,12 +25,6 @@ namespace Bar
     [Woven(typeof(DuplicateClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static DuplicateClass()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new DuplicateClassSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="DuplicateClass"/> class.
@@ -337,44 +330,5 @@ namespace Bar
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DuplicateClassSerializer : Realms.Serialization.RealmObjectSerializerBase<DuplicateClass>
-        {
-            public override string SchemaName => "DuplicateClass";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, DuplicateClass value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "StringValue", value.StringValue);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override DuplicateClass CreateInstance() => new DuplicateClass();
-
-            protected override void ReadValue(DuplicateClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "StringValue":
-                        instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(DuplicateClass instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(DuplicateClass instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

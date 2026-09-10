@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
@@ -28,12 +28,6 @@ namespace Realms.Tests.Database
         [Woven(typeof(CoordinatesEmbeddedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class CoordinatesEmbeddedObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
         {
-
-            [Realms.Preserve]
-            static CoordinatesEmbeddedObject()
-            {
-                Realms.Serialization.RealmObjectSerializer.Register(new CoordinatesEmbeddedObjectSerializer());
-            }
 
             /// <summary>
             /// Defines the schema for the <see cref="CoordinatesEmbeddedObject"/> class.
@@ -337,50 +331,6 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CoordinatesEmbeddedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CoordinatesEmbeddedObject>
-            {
-                public override string SchemaName => "CoordinatesEmbeddedObject";
-
-                protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CoordinatesEmbeddedObject value)
-                {
-                    context.Writer.WriteStartDocument();
-
-                    WriteList(context, args, "coordinate", value.Coordinates);
-
-                    context.Writer.WriteEndDocument();
-                }
-
-                protected override CoordinatesEmbeddedObject CreateInstance() => new CoordinatesEmbeddedObject();
-
-                protected override void ReadValue(CoordinatesEmbeddedObject instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "coordinate":
-                            ReadArray(instance, name, context);
-                            break;
-                        default:
-                            context.Reader.SkipValue();
-                            break;
-                    }
-                }
-
-                protected override void ReadArrayElement(CoordinatesEmbeddedObject instance, string name, BsonDeserializationContext context)
-                {
-                    switch (name)
-                    {
-                        case "coordinate":
-                            instance.Coordinates.Add(BsonSerializer.LookupSerializer<double>().Deserialize(context));
-                            break;
-                    }
-                }
-
-                protected override void ReadDocumentField(CoordinatesEmbeddedObject instance, string name, string fieldName, BsonDeserializationContext context)
-                {
-                    // No persisted dictionary properties to deserialize
-                }
-            }
         }
     }
 }

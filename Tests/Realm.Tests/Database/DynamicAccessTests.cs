@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -25,6 +25,7 @@ using NUnit.Framework;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Tests.Database
 {

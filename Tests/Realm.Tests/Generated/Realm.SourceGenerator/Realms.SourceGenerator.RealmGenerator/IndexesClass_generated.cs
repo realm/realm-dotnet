@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
@@ -24,12 +24,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(IndexesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IndexesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static IndexesClass()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new IndexesClassSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="IndexesClass"/> class.
@@ -91,7 +85,7 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                if (!skipDefaults || oldAccessor.Id != default(Realms.ObjectId))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
@@ -295,7 +289,7 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IIndexesClassAccessor : Realms.IRealmAccessor
         {
-            MongoDB.Bson.ObjectId Id { get; set; }
+            Realms.ObjectId Id { get; set; }
 
             string? StringFts { get; set; }
 
@@ -315,9 +309,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IndexesClassManagedAccessor : Realms.ManagedAccessor, IIndexesClassAccessor
         {
-            public MongoDB.Bson.ObjectId Id
+            public Realms.ObjectId Id
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("Id");
+                get => (Realms.ObjectId)GetValue("Id");
                 set => SetValueUnique("Id", value);
             }
 
@@ -369,8 +363,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => IndexesClass.RealmSchema;
 
-            private MongoDB.Bson.ObjectId _id;
-            public MongoDB.Bson.ObjectId Id
+            private Realms.ObjectId _id;
+            public Realms.ObjectId Id
             {
                 get => _id;
                 set
@@ -516,7 +510,7 @@ namespace Realms.Tests.Database
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (MongoDB.Bson.ObjectId)val;
+                Id = (Realms.ObjectId)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -535,72 +529,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<IndexesClass>
-        {
-            public override string SchemaName => "IndexesClass";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, IndexesClass value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Id", value.Id);
-                WriteValue(context, args, "StringFts", value.StringFts);
-                WriteValue(context, args, "StringGeneral", value.StringGeneral);
-                WriteValue(context, args, "StringDefault", value.StringDefault);
-                WriteValue(context, args, "StringNone", value.StringNone);
-                WriteValue(context, args, "IntGeneral", value.IntGeneral);
-                WriteValue(context, args, "IntDefault", value.IntDefault);
-                WriteValue(context, args, "IntNone", value.IntNone);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override IndexesClass CreateInstance() => new IndexesClass();
-
-            protected override void ReadValue(IndexesClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Id":
-                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                        break;
-                    case "StringFts":
-                        instance.StringFts = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "StringGeneral":
-                        instance.StringGeneral = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "StringDefault":
-                        instance.StringDefault = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "StringNone":
-                        instance.StringNone = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "IntGeneral":
-                        instance.IntGeneral = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "IntDefault":
-                        instance.IntDefault = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "IntNone":
-                        instance.IntNone = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(IndexesClass instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(IndexesClass instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

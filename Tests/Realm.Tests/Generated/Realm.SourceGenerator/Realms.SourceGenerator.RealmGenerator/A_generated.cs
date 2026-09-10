@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
@@ -26,12 +26,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(AObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class A : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static A()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ASerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="A"/> class.
@@ -366,48 +360,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ASerializer : Realms.Serialization.RealmObjectSerializerBase<A>
-        {
-            public override string SchemaName => "A";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, A value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Value", value.Value);
-                WriteValue(context, args, "B", value.B);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override A CreateInstance() => new A();
-
-            protected override void ReadValue(A instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Value":
-                        instance.Value = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
-                        break;
-                    case "B":
-                        instance.B = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.B?>()!.DeserializeById(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(A instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(A instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

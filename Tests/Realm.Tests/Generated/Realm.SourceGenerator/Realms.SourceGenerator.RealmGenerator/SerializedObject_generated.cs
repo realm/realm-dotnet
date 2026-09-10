@@ -2,7 +2,6 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -28,12 +27,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(SerializedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static SerializedObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new SerializedObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="SerializedObject"/> class.
@@ -446,71 +439,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SerializedObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<SerializedObject>
-        {
-            public override string SchemaName => "SerializedObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, SerializedObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "IntValue", value.IntValue);
-                WriteValue(context, args, "Name", value.Name);
-                WriteDictionary(context, args, "Dict", value.Dict);
-                WriteList(context, args, "List", value.List);
-                WriteSet(context, args, "Set", value.Set);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override SerializedObject CreateInstance() => new SerializedObject();
-
-            protected override void ReadValue(SerializedObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "IntValue":
-                        instance.IntValue = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "Name":
-                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "List":
-                    case "Set":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "Dict":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(SerializedObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "List":
-                        instance.List.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                    case "Set":
-                        instance.Set.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(SerializedObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Dict":
-                        instance.Dict[fieldName] = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                }
-            }
-        }
     }
 }

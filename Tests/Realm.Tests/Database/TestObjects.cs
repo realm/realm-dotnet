@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -29,6 +29,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MongoDB.Bson;
 using Realms.Tests.Database;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms.Tests
 {

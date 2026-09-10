@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using MongoDB.Bson;
 using Realms;
+using ObjectId = Realms.ObjectId;
 
 namespace AssemblyToProcess
 {

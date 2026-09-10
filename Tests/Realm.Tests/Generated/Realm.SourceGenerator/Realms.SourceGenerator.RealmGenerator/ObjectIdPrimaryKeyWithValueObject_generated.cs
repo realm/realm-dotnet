@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectIdPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ObjectIdPrimaryKeyWithValueObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ObjectIdPrimaryKeyWithValueObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ObjectIdPrimaryKeyWithValueObject"/> class.
@@ -87,7 +81,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                if (!skipDefaults || oldAccessor.Id != default(Realms.ObjectId))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
@@ -267,7 +261,7 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectIdPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
         {
-            MongoDB.Bson.ObjectId Id { get; set; }
+            Realms.ObjectId Id { get; set; }
 
             string? StringValue { get; set; }
         }
@@ -275,9 +269,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectIdPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
         {
-            public MongoDB.Bson.ObjectId Id
+            public Realms.ObjectId Id
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                get => (Realms.ObjectId)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
@@ -293,8 +287,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ObjectIdPrimaryKeyWithValueObject.RealmSchema;
 
-            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-            public MongoDB.Bson.ObjectId Id
+            private Realms.ObjectId _id = ObjectId.GenerateNewId();
+            public Realms.ObjectId Id
             {
                 get => _id;
                 set
@@ -350,7 +344,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (MongoDB.Bson.ObjectId)val;
+                Id = (Realms.ObjectId)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -369,48 +363,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectIdPrimaryKeyWithValueObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<ObjectIdPrimaryKeyWithValueObject>
-        {
-            public override string SchemaName => "ObjectIdPrimaryKeyWithValueObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ObjectIdPrimaryKeyWithValueObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "StringValue", value.StringValue);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ObjectIdPrimaryKeyWithValueObject CreateInstance() => new ObjectIdPrimaryKeyWithValueObject();
-
-            protected override void ReadValue(ObjectIdPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                        break;
-                    case "StringValue":
-                        instance.StringValue = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ObjectIdPrimaryKeyWithValueObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(ObjectIdPrimaryKeyWithValueObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

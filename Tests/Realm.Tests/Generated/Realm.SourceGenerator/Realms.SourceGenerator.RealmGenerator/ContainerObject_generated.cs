@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(ContainerObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static ContainerObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new ContainerObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="ContainerObject"/> class.
@@ -331,49 +325,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ContainerObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<ContainerObject>
-        {
-            public override string SchemaName => "ContainerObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, ContainerObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteList(context, args, "Items", value.Items);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override ContainerObject CreateInstance() => new ContainerObject();
-
-            protected override void ReadValue(ContainerObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Items":
-                        ReadArray(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(ContainerObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Items":
-                        instance.Items.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.IntPropertyObject>()!.DeserializeById(context)!);
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(ContainerObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

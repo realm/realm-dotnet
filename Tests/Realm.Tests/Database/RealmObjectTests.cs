@@ -287,12 +287,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_WhenSerialized_WithMongoDBBson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
-        {
-            TestSerialization(managed, obj => SerializationHelper.ToNativeJson(obj));
-        }
-
-        [Test]
         public void RealmObject_WhenSerialized_Xml_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
             TestSerialization(managed, obj =>

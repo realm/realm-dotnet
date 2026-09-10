@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(HugeSyncObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class HugeSyncObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static HugeSyncObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new HugeSyncObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="HugeSyncObject"/> class.
@@ -87,7 +81,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                if (!skipDefaults || oldAccessor.Id != default(Realms.ObjectId))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
@@ -267,7 +261,7 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IHugeSyncObjectAccessor : Realms.IRealmAccessor
         {
-            MongoDB.Bson.ObjectId Id { get; set; }
+            Realms.ObjectId Id { get; set; }
 
             byte[]? Data { get; set; }
         }
@@ -275,9 +269,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class HugeSyncObjectManagedAccessor : Realms.ManagedAccessor, IHugeSyncObjectAccessor
         {
-            public MongoDB.Bson.ObjectId Id
+            public Realms.ObjectId Id
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                get => (Realms.ObjectId)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
@@ -293,8 +287,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => HugeSyncObject.RealmSchema;
 
-            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-            public MongoDB.Bson.ObjectId Id
+            private Realms.ObjectId _id = ObjectId.GenerateNewId();
+            public Realms.ObjectId Id
             {
                 get => _id;
                 set
@@ -350,7 +344,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (MongoDB.Bson.ObjectId)val;
+                Id = (Realms.ObjectId)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)
@@ -369,48 +363,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class HugeSyncObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<HugeSyncObject>
-        {
-            public override string SchemaName => "HugeSyncObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, HugeSyncObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "Data", value.Data);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override HugeSyncObject CreateInstance() => new HugeSyncObject();
-
-            protected override void ReadValue(HugeSyncObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                        break;
-                    case "Data":
-                        instance.Data = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(HugeSyncObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(HugeSyncObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

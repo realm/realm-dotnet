@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(OwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Owner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static Owner()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new OwnerSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="Owner"/> class.
@@ -445,71 +439,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OwnerSerializer : Realms.Serialization.RealmObjectSerializerBase<Owner>
-        {
-            public override string SchemaName => "Owner";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, Owner value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Name", value.Name);
-                WriteValue(context, args, "TopDog", value.TopDog);
-                WriteList(context, args, "ListOfDogs", value.ListOfDogs);
-                WriteSet(context, args, "SetOfDogs", value.SetOfDogs);
-                WriteDictionary(context, args, "DictOfDogs", value.DictOfDogs);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override Owner CreateInstance() => new Owner();
-
-            protected override void ReadValue(Owner instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Name":
-                        instance.Name = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "TopDog":
-                        instance.TopDog = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context);
-                        break;
-                    case "ListOfDogs":
-                    case "SetOfDogs":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "DictOfDogs":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(Owner instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "ListOfDogs":
-                        instance.ListOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
-                        break;
-                    case "SetOfDogs":
-                        instance.SetOfDogs.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog>()!.DeserializeById(context)!);
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(Owner instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "DictOfDogs":
-                        instance.DictOfDogs[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Dog?>()!.DeserializeById(context)!;
-                        break;
-                }
-            }
-        }
     }
 }

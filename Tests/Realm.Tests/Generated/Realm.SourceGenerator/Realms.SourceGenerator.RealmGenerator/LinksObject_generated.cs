@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(LinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class LinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static LinksObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new LinksObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="LinksObject"/> class.
@@ -478,75 +472,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class LinksObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<LinksObject>
-        {
-            public override string SchemaName => "LinksObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, LinksObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "Value", value.Value);
-                WriteValue(context, args, "Link", value.Link);
-                WriteList(context, args, "List", value.List);
-                WriteSet(context, args, "Set", value.Set);
-                WriteDictionary(context, args, "Dictionary", value.Dictionary);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override LinksObject CreateInstance() => new LinksObject();
-
-            protected override void ReadValue(LinksObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    case "Value":
-                        instance.Value = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "Link":
-                        instance.Link = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context);
-                        break;
-                    case "List":
-                    case "Set":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "Dictionary":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(LinksObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "List":
-                        instance.List.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
-                        break;
-                    case "Set":
-                        instance.Set.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject>()!.DeserializeById(context)!);
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(LinksObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Dictionary":
-                        instance.Dictionary[fieldName] = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.LinksObject?>()!.DeserializeById(context)!;
-                        break;
-                }
-            }
-        }
     }
 }

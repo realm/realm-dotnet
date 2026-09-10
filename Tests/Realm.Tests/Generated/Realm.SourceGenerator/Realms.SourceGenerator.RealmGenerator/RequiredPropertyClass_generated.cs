@@ -2,8 +2,8 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
@@ -24,12 +24,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(RequiredPropertyClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RequiredPropertyClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static RequiredPropertyClass()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new RequiredPropertyClassSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="RequiredPropertyClass"/> class.
@@ -332,44 +326,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RequiredPropertyClassSerializer : Realms.Serialization.RealmObjectSerializerBase<RequiredPropertyClass>
-        {
-            public override string SchemaName => "RequiredPropertyClass";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, RequiredPropertyClass value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "FooRequired", value.FooRequired);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override RequiredPropertyClass CreateInstance() => new RequiredPropertyClass();
-
-            protected override void ReadValue(RequiredPropertyClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "FooRequired":
-                        instance.FooRequired = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(RequiredPropertyClass instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(RequiredPropertyClass instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

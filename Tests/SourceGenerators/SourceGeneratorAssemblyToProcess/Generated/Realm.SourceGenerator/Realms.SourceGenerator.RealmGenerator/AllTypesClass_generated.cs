@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Weaving;
@@ -22,12 +22,6 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(AllTypesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static AllTypesClass()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new AllTypesClassSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="AllTypesClass"/> class.
@@ -182,7 +176,7 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
                 }
-                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(MongoDB.Bson.ObjectId))
+                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(Realms.ObjectId))
                 {
                     newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 }
@@ -241,7 +235,7 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
                 }
-                if (!skipDefaults || oldAccessor.NullableObjectIdProperty != default(MongoDB.Bson.ObjectId?))
+                if (!skipDefaults || oldAccessor.NullableObjectIdProperty != default(Realms.ObjectId?))
                 {
                     newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
                 }
@@ -475,7 +469,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             MongoDB.Bson.Decimal128 Decimal128Property { get; set; }
 
-            MongoDB.Bson.ObjectId ObjectIdProperty { get; set; }
+            Realms.ObjectId ObjectIdProperty { get; set; }
 
             System.Guid GuidProperty { get; set; }
 
@@ -509,7 +503,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             MongoDB.Bson.Decimal128? NullableDecimal128Property { get; set; }
 
-            MongoDB.Bson.ObjectId? NullableObjectIdProperty { get; set; }
+            Realms.ObjectId? NullableObjectIdProperty { get; set; }
 
             System.Guid? NullableGuidProperty { get; set; }
 
@@ -615,9 +609,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("Decimal128Property", value);
             }
 
-            public MongoDB.Bson.ObjectId ObjectIdProperty
+            public Realms.ObjectId ObjectIdProperty
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("ObjectIdProperty");
+                get => (Realms.ObjectId)GetValue("ObjectIdProperty");
                 set => SetValue("ObjectIdProperty", value);
             }
 
@@ -717,9 +711,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("NullableDecimal128Property", value);
             }
 
-            public MongoDB.Bson.ObjectId? NullableObjectIdProperty
+            public Realms.ObjectId? NullableObjectIdProperty
             {
-                get => (MongoDB.Bson.ObjectId?)GetValue("NullableObjectIdProperty");
+                get => (Realms.ObjectId?)GetValue("NullableObjectIdProperty");
                 set => SetValue("NullableObjectIdProperty", value);
             }
 
@@ -1032,8 +1026,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private MongoDB.Bson.ObjectId _objectIdProperty;
-            public MongoDB.Bson.ObjectId ObjectIdProperty
+            private Realms.ObjectId _objectIdProperty;
+            public Realms.ObjectId ObjectIdProperty
             {
                 get => _objectIdProperty;
                 set
@@ -1219,8 +1213,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private MongoDB.Bson.ObjectId? _nullableObjectIdProperty;
-            public MongoDB.Bson.ObjectId? NullableObjectIdProperty
+            private Realms.ObjectId? _nullableObjectIdProperty;
+            public Realms.ObjectId? NullableObjectIdProperty
             {
                 get => _nullableObjectIdProperty;
                 set
@@ -1413,7 +1407,7 @@ namespace SourceGeneratorAssemblyToProcess
                         Decimal128Property = (MongoDB.Bson.Decimal128)val;
                         return;
                     case "ObjectIdProperty":
-                        ObjectIdProperty = (MongoDB.Bson.ObjectId)val;
+                        ObjectIdProperty = (Realms.ObjectId)val;
                         return;
                     case "GuidProperty":
                         GuidProperty = (System.Guid)val;
@@ -1464,7 +1458,7 @@ namespace SourceGeneratorAssemblyToProcess
                         NullableDecimal128Property = (MongoDB.Bson.Decimal128?)val;
                         return;
                     case "NullableObjectIdProperty":
-                        NullableObjectIdProperty = (MongoDB.Bson.ObjectId?)val;
+                        NullableObjectIdProperty = (Realms.ObjectId?)val;
                         return;
                     case "NullableGuidProperty":
                         NullableGuidProperty = (System.Guid?)val;
@@ -1532,242 +1526,5 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class AllTypesClassSerializer : Realms.Serialization.RealmObjectSerializerBase<AllTypesClass>
-        {
-            public override string SchemaName => "AllTypesClass";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, AllTypesClass value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "CharProperty", value.CharProperty);
-                WriteValue(context, args, "ByteProperty", value.ByteProperty);
-                WriteValue(context, args, "Int16Property", value.Int16Property);
-                WriteValue(context, args, "Int32Property", value.Int32Property);
-                WriteValue(context, args, "Int64Property", value.Int64Property);
-                WriteValue(context, args, "SingleProperty", value.SingleProperty);
-                WriteValue(context, args, "DoubleProperty", value.DoubleProperty);
-                WriteValue(context, args, "BooleanProperty", value.BooleanProperty);
-                WriteValue(context, args, "DateTimeOffsetProperty", value.DateTimeOffsetProperty);
-                WriteValue(context, args, "DecimalProperty", value.DecimalProperty);
-                WriteValue(context, args, "Decimal128Property", value.Decimal128Property);
-                WriteValue(context, args, "ObjectIdProperty", value.ObjectIdProperty);
-                WriteValue(context, args, "GuidProperty", value.GuidProperty);
-                WriteValue(context, args, "RequiredStringProperty", value.RequiredStringProperty);
-                WriteValue(context, args, "StringProperty", value.StringProperty);
-                WriteValue(context, args, "RequiredByteArrayProperty", value.RequiredByteArrayProperty);
-                WriteValue(context, args, "ByteArrayProperty", value.ByteArrayProperty);
-                WriteValue(context, args, "NullableCharProperty", value.NullableCharProperty);
-                WriteValue(context, args, "NullableByteProperty", value.NullableByteProperty);
-                WriteValue(context, args, "NullableInt16Property", value.NullableInt16Property);
-                WriteValue(context, args, "NullableInt32Property", value.NullableInt32Property);
-                WriteValue(context, args, "NullableInt64Property", value.NullableInt64Property);
-                WriteValue(context, args, "NullableSingleProperty", value.NullableSingleProperty);
-                WriteValue(context, args, "NullableDoubleProperty", value.NullableDoubleProperty);
-                WriteValue(context, args, "NullableBooleanProperty", value.NullableBooleanProperty);
-                WriteValue(context, args, "NullableDateTimeOffsetProperty", value.NullableDateTimeOffsetProperty);
-                WriteValue(context, args, "NullableDecimalProperty", value.NullableDecimalProperty);
-                WriteValue(context, args, "NullableDecimal128Property", value.NullableDecimal128Property);
-                WriteValue(context, args, "NullableObjectIdProperty", value.NullableObjectIdProperty);
-                WriteValue(context, args, "NullableGuidProperty", value.NullableGuidProperty);
-                WriteValue(context, args, "ByteCounterProperty", value.ByteCounterProperty);
-                WriteValue(context, args, "Int16CounterProperty", value.Int16CounterProperty);
-                WriteValue(context, args, "Int32CounterProperty", value.Int32CounterProperty);
-                WriteValue(context, args, "Int64CounterProperty", value.Int64CounterProperty);
-                WriteValue(context, args, "RealmValueProperty", value.RealmValueProperty);
-                WriteValue(context, args, "ObjectProperty", value.ObjectProperty);
-                WriteList(context, args, "ObjectCollectionProperty", value.ObjectCollectionProperty);
-                WriteList(context, args, "IntCollectionProperty", value.IntCollectionProperty);
-                WriteList(context, args, "NullableIntCollectionProperty", value.NullableIntCollectionProperty);
-                WriteList(context, args, "StringCollectionProperty", value.StringCollectionProperty);
-                WriteList(context, args, "RequiredStringListProperty", value.RequiredStringListProperty);
-                WriteSet(context, args, "RequiredStringSetProperty", value.RequiredStringSetProperty);
-                WriteDictionary(context, args, "RequiredStringDictionaryProperty", value.RequiredStringDictionaryProperty);
-                WriteList(context, args, "NonRequiredStringListProperty", value.NonRequiredStringListProperty);
-                WriteSet(context, args, "NonRequiredStringSetProperty", value.NonRequiredStringSetProperty);
-                WriteDictionary(context, args, "NonRequiredStringDictionaryProperty", value.NonRequiredStringDictionaryProperty);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override AllTypesClass CreateInstance() => new AllTypesClass();
-
-            protected override void ReadValue(AllTypesClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "CharProperty":
-                        instance.CharProperty = BsonSerializer.LookupSerializer<char>().Deserialize(context);
-                        break;
-                    case "ByteProperty":
-                        instance.ByteProperty = BsonSerializer.LookupSerializer<byte>().Deserialize(context);
-                        break;
-                    case "Int16Property":
-                        instance.Int16Property = BsonSerializer.LookupSerializer<short>().Deserialize(context);
-                        break;
-                    case "Int32Property":
-                        instance.Int32Property = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "Int64Property":
-                        instance.Int64Property = BsonSerializer.LookupSerializer<long>().Deserialize(context);
-                        break;
-                    case "SingleProperty":
-                        instance.SingleProperty = BsonSerializer.LookupSerializer<float>().Deserialize(context);
-                        break;
-                    case "DoubleProperty":
-                        instance.DoubleProperty = BsonSerializer.LookupSerializer<double>().Deserialize(context);
-                        break;
-                    case "BooleanProperty":
-                        instance.BooleanProperty = BsonSerializer.LookupSerializer<bool>().Deserialize(context);
-                        break;
-                    case "DateTimeOffsetProperty":
-                        instance.DateTimeOffsetProperty = BsonSerializer.LookupSerializer<System.DateTimeOffset>().Deserialize(context);
-                        break;
-                    case "DecimalProperty":
-                        instance.DecimalProperty = BsonSerializer.LookupSerializer<decimal>().Deserialize(context);
-                        break;
-                    case "Decimal128Property":
-                        instance.Decimal128Property = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128>().Deserialize(context);
-                        break;
-                    case "ObjectIdProperty":
-                        instance.ObjectIdProperty = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId>().Deserialize(context);
-                        break;
-                    case "GuidProperty":
-                        instance.GuidProperty = BsonSerializer.LookupSerializer<System.Guid>().Deserialize(context);
-                        break;
-                    case "RequiredStringProperty":
-                        instance.RequiredStringProperty = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    case "StringProperty":
-                        instance.StringProperty = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                    case "RequiredByteArrayProperty":
-                        instance.RequiredByteArrayProperty = BsonSerializer.LookupSerializer<byte[]>().Deserialize(context);
-                        break;
-                    case "ByteArrayProperty":
-                        instance.ByteArrayProperty = BsonSerializer.LookupSerializer<byte[]?>().Deserialize(context);
-                        break;
-                    case "NullableCharProperty":
-                        instance.NullableCharProperty = BsonSerializer.LookupSerializer<char?>().Deserialize(context);
-                        break;
-                    case "NullableByteProperty":
-                        instance.NullableByteProperty = BsonSerializer.LookupSerializer<byte?>().Deserialize(context);
-                        break;
-                    case "NullableInt16Property":
-                        instance.NullableInt16Property = BsonSerializer.LookupSerializer<short?>().Deserialize(context);
-                        break;
-                    case "NullableInt32Property":
-                        instance.NullableInt32Property = BsonSerializer.LookupSerializer<int?>().Deserialize(context);
-                        break;
-                    case "NullableInt64Property":
-                        instance.NullableInt64Property = BsonSerializer.LookupSerializer<long?>().Deserialize(context);
-                        break;
-                    case "NullableSingleProperty":
-                        instance.NullableSingleProperty = BsonSerializer.LookupSerializer<float?>().Deserialize(context);
-                        break;
-                    case "NullableDoubleProperty":
-                        instance.NullableDoubleProperty = BsonSerializer.LookupSerializer<double?>().Deserialize(context);
-                        break;
-                    case "NullableBooleanProperty":
-                        instance.NullableBooleanProperty = BsonSerializer.LookupSerializer<bool?>().Deserialize(context);
-                        break;
-                    case "NullableDateTimeOffsetProperty":
-                        instance.NullableDateTimeOffsetProperty = BsonSerializer.LookupSerializer<System.DateTimeOffset?>().Deserialize(context);
-                        break;
-                    case "NullableDecimalProperty":
-                        instance.NullableDecimalProperty = BsonSerializer.LookupSerializer<decimal?>().Deserialize(context);
-                        break;
-                    case "NullableDecimal128Property":
-                        instance.NullableDecimal128Property = BsonSerializer.LookupSerializer<MongoDB.Bson.Decimal128?>().Deserialize(context);
-                        break;
-                    case "NullableObjectIdProperty":
-                        instance.NullableObjectIdProperty = BsonSerializer.LookupSerializer<MongoDB.Bson.ObjectId?>().Deserialize(context);
-                        break;
-                    case "NullableGuidProperty":
-                        instance.NullableGuidProperty = BsonSerializer.LookupSerializer<System.Guid?>().Deserialize(context);
-                        break;
-                    case "ByteCounterProperty":
-                        instance.ByteCounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<byte>>().Deserialize(context);
-                        break;
-                    case "Int16CounterProperty":
-                        instance.Int16CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<short>>().Deserialize(context);
-                        break;
-                    case "Int32CounterProperty":
-                        instance.Int32CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>>().Deserialize(context);
-                        break;
-                    case "Int64CounterProperty":
-                        instance.Int64CounterProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>>().Deserialize(context);
-                        break;
-                    case "RealmValueProperty":
-                        instance.RealmValueProperty = BsonSerializer.LookupSerializer<Realms.RealmValue>().Deserialize(context);
-                        break;
-                    case "ObjectProperty":
-                        instance.ObjectProperty = Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass?>()!.DeserializeById(context);
-                        break;
-                    case "ObjectCollectionProperty":
-                    case "IntCollectionProperty":
-                    case "NullableIntCollectionProperty":
-                    case "StringCollectionProperty":
-                    case "RequiredStringListProperty":
-                    case "RequiredStringSetProperty":
-                    case "NonRequiredStringListProperty":
-                    case "NonRequiredStringSetProperty":
-                        ReadArray(instance, name, context);
-                        break;
-                    case "RequiredStringDictionaryProperty":
-                    case "NonRequiredStringDictionaryProperty":
-                        ReadDictionary(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(AllTypesClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "ObjectCollectionProperty":
-                        instance.ObjectCollectionProperty.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<SourceGeneratorAssemblyToProcess.AllTypesClass>()!.DeserializeById(context)!);
-                        break;
-                    case "IntCollectionProperty":
-                        instance.IntCollectionProperty.Add(BsonSerializer.LookupSerializer<int>().Deserialize(context));
-                        break;
-                    case "NullableIntCollectionProperty":
-                        instance.NullableIntCollectionProperty.Add(BsonSerializer.LookupSerializer<int?>().Deserialize(context));
-                        break;
-                    case "StringCollectionProperty":
-                        instance.StringCollectionProperty.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                    case "RequiredStringListProperty":
-                        instance.RequiredStringListProperty.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                    case "RequiredStringSetProperty":
-                        instance.RequiredStringSetProperty.Add(BsonSerializer.LookupSerializer<string>().Deserialize(context));
-                        break;
-                    case "NonRequiredStringListProperty":
-                        instance.NonRequiredStringListProperty.Add(BsonSerializer.LookupSerializer<string?>().Deserialize(context));
-                        break;
-                    case "NonRequiredStringSetProperty":
-                        instance.NonRequiredStringSetProperty.Add(BsonSerializer.LookupSerializer<string?>().Deserialize(context));
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(AllTypesClass instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RequiredStringDictionaryProperty":
-                        instance.RequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string>().Deserialize(context);
-                        break;
-                    case "NonRequiredStringDictionaryProperty":
-                        instance.NonRequiredStringDictionaryProperty[fieldName] = BsonSerializer.LookupSerializer<string?>().Deserialize(context);
-                        break;
-                }
-            }
-        }
     }
 }

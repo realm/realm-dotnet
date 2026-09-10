@@ -2,7 +2,7 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+using ObjectId = Realms.ObjectId;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
@@ -26,12 +26,6 @@ namespace Realms.Tests
     [Woven(typeof(CounterObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static CounterObject()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new CounterObjectSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="CounterObject"/> class.
@@ -562,76 +556,5 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CounterObjectSerializer : Realms.Serialization.RealmObjectSerializerBase<CounterObject>
-        {
-            public override string SchemaName => "CounterObject";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, CounterObject value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "_id", value.Id);
-                WriteValue(context, args, "ByteProperty", value.ByteProperty);
-                WriteValue(context, args, "Int16Property", value.Int16Property);
-                WriteValue(context, args, "Int32Property", value.Int32Property);
-                WriteValue(context, args, "Int64Property", value.Int64Property);
-                WriteValue(context, args, "NullableByteProperty", value.NullableByteProperty);
-                WriteValue(context, args, "NullableInt16Property", value.NullableInt16Property);
-                WriteValue(context, args, "NullableInt32Property", value.NullableInt32Property);
-                WriteValue(context, args, "NullableInt64Property", value.NullableInt64Property);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override CounterObject CreateInstance() => new CounterObject();
-
-            protected override void ReadValue(CounterObject instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "_id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "ByteProperty":
-                        instance.ByteProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<byte>>().Deserialize(context);
-                        break;
-                    case "Int16Property":
-                        instance.Int16Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<short>>().Deserialize(context);
-                        break;
-                    case "Int32Property":
-                        instance.Int32Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>>().Deserialize(context);
-                        break;
-                    case "Int64Property":
-                        instance.Int64Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>>().Deserialize(context);
-                        break;
-                    case "NullableByteProperty":
-                        instance.NullableByteProperty = BsonSerializer.LookupSerializer<Realms.RealmInteger<byte>?>().Deserialize(context);
-                        break;
-                    case "NullableInt16Property":
-                        instance.NullableInt16Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<short>?>().Deserialize(context);
-                        break;
-                    case "NullableInt32Property":
-                        instance.NullableInt32Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<int>?>().Deserialize(context);
-                        break;
-                    case "NullableInt64Property":
-                        instance.NullableInt64Property = BsonSerializer.LookupSerializer<Realms.RealmInteger<long>?>().Deserialize(context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(CounterObject instance, string name, BsonDeserializationContext context)
-            {
-                // No persisted list/set properties to deserialize
-            }
-
-            protected override void ReadDocumentField(CounterObject instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }

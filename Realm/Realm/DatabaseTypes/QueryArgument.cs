@@ -20,6 +20,7 @@ using System;
 using System.Linq;
 using MongoDB.Bson;
 using Realms.Native;
+using ObjectId = Realms.ObjectId;
 
 namespace Realms
 {

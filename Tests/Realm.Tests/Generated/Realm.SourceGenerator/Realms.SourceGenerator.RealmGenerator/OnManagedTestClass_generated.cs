@@ -2,7 +2,6 @@
 #nullable enable
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -28,12 +27,6 @@ namespace Realms.Tests.Database
     [Woven(typeof(OnManagedTestClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OnManagedTestClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-
-        [Realms.Preserve]
-        static OnManagedTestClass()
-        {
-            Realms.Serialization.RealmObjectSerializer.Register(new OnManagedTestClassSerializer());
-        }
 
         /// <summary>
         /// Defines the schema for the <see cref="OnManagedTestClass"/> class.
@@ -401,57 +394,5 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OnManagedTestClassSerializer : Realms.Serialization.RealmObjectSerializerBase<OnManagedTestClass>
-        {
-            public override string SchemaName => "OnManagedTestClass";
-
-            protected override void SerializeValue(MongoDB.Bson.Serialization.BsonSerializationContext context, BsonSerializationArgs args, OnManagedTestClass value)
-            {
-                context.Writer.WriteStartDocument();
-
-                WriteValue(context, args, "Id", value.Id);
-                WriteValue(context, args, "RelatedObject", value.RelatedObject);
-                WriteList(context, args, "RelatedCollection", value.RelatedCollection);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            protected override OnManagedTestClass CreateInstance() => new OnManagedTestClass();
-
-            protected override void ReadValue(OnManagedTestClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "Id":
-                        instance.Id = BsonSerializer.LookupSerializer<int>().Deserialize(context);
-                        break;
-                    case "RelatedObject":
-                        instance.RelatedObject = Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OnManagedTestClass?>()!.DeserializeById(context);
-                        break;
-                    case "RelatedCollection":
-                        ReadArray(instance, name, context);
-                        break;
-                    default:
-                        context.Reader.SkipValue();
-                        break;
-                }
-            }
-
-            protected override void ReadArrayElement(OnManagedTestClass instance, string name, BsonDeserializationContext context)
-            {
-                switch (name)
-                {
-                    case "RelatedCollection":
-                        instance.RelatedCollection.Add(Realms.Serialization.RealmObjectSerializer.LookupSerializer<Realms.Tests.Database.OnManagedTestClass>()!.DeserializeById(context)!);
-                        break;
-                }
-            }
-
-            protected override void ReadDocumentField(OnManagedTestClass instance, string name, string fieldName, BsonDeserializationContext context)
-            {
-                // No persisted dictionary properties to deserialize
-            }
-        }
     }
 }
