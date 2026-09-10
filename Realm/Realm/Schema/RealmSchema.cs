@@ -45,26 +45,33 @@ namespace Realms.Schema
         {
             if (_defaultTypes.Count == 0)
             {
-                // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
-                // so we manually do what .Net-like frameworks usually do with module initializers
-                try
-                {
-                    var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
-                        .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
-                        .Where(method => method != null);
-
-                    foreach (var moduleInitializer in moduleInitializers)
-                    {
-                        moduleInitializer!.Invoke(null, null);
-                    }
-                }
-                catch
-                {
-                }
+                RunModuleInitializers();
             }
 
             return _defaultTypes;
         });
+
+        // Unity's IL2CPP does not run module initializers, so invoke them by hand. On trimmed .NET
+        // the module initializer emitted by the weaver has already registered the types and _defaultTypes is non-empty.
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "RealmModuleInitializer is emitted by the weaver into assemblies that reference Realm and is not trimmed away; a missing type is skipped.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "RealmModuleInitializer is emitted by the weaver into assemblies that reference Realm and is not trimmed away; a missing method is skipped.")]
+        private static void RunModuleInitializers()
+        {
+            try
+            {
+                var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
+                    .Where(method => method != null);
+
+                foreach (var moduleInitializer in moduleInitializers)
+                {
+                    moduleInitializer!.Invoke(null, null);
+                }
+            }
+            catch
+            {
+            }
+        }
 
         /// <summary>
         /// Adds a collection of types to the default schema.
