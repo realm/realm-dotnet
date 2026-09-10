@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Removed most of the trimming and AOT analysis warnings reported for `Realm.dll`, by annotating the reflection it performs and replacing a `MakeGenericType` call with a closed-generic switch. (PR [#3727](https://github.com/realm/realm-dotnet/pull/3727))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

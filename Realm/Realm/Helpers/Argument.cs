@@ -47,7 +47,7 @@ namespace Realms.Helpers
             }
         }
 
-        public static void Ensure<T>([DoesNotReturnIf(false)] bool condition, string message)
+        public static void Ensure<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>([DoesNotReturnIf(false)] bool condition, string message)
             where T : Exception
         {
             if (!condition)

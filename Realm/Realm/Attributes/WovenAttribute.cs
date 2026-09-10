@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Realms
 {
@@ -28,13 +29,14 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Class)]
     public class WovenAttribute : Attribute
     {
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         internal Type HelperType { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WovenAttribute"/> class.
         /// </summary>
         /// <param name="helperType">The type of the generated RealmObjectHelper for that class.</param>
-        public WovenAttribute(Type helperType)
+        public WovenAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type helperType)
         {
             HelperType = helperType;
         }
