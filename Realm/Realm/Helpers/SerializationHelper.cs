@@ -166,11 +166,14 @@ namespace Realms.Helpers
                 type.IsGenericType &&
                 type.Name.Contains("Anon");
 
-            private static IBsonSerializer CreateRealmIntegerSerializer(Type type)
+            private static IBsonSerializer? CreateRealmIntegerSerializer(Type type) => type switch
             {
-                var serializerType = typeof(RealmIntegerSerializer<>).MakeGenericType(type);
-                return (IBsonSerializer)Activator.CreateInstance(serializerType)!;
-            }
+                _ when type == typeof(byte) => new RealmIntegerSerializer<byte>(),
+                _ when type == typeof(short) => new RealmIntegerSerializer<short>(),
+                _ when type == typeof(int) => new RealmIntegerSerializer<int>(),
+                _ when type == typeof(long) => new RealmIntegerSerializer<long>(),
+                _ => null
+            };
         }
 
         private class LegacyRealmSerializationProvider : IBsonSerializationProvider

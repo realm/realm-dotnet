@@ -267,7 +267,7 @@ namespace SourceGeneratorAssemblyToProcess
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IgnoreObjectNullabilityClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class IgnoreObjectNullabilityClassObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -277,6 +277,8 @@ namespace SourceGeneratorAssemblyToProcess
             public Realms.ManagedAccessor CreateAccessor() => new IgnoreObjectNullabilityClassManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new IgnoreObjectNullabilityClass();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => IgnoreObjectNullabilityClass.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

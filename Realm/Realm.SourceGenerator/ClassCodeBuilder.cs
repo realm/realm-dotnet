@@ -541,7 +541,7 @@ public override string? ToString() => Accessor.ToString();")}";
             var valueAccessor = primaryKeyProperty == null ? "RealmValue.Null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
+private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
 {{
     public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
     {{
@@ -551,6 +551,8 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
     public Realms.ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
 
     public Realms.IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
+
+    public Realms.Schema.ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
 
     public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
     {{

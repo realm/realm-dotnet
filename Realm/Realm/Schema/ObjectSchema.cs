@@ -22,10 +22,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Realms.Helpers;
 using Realms.Native;
+using Realms.Weaving;
 
 namespace Realms.Schema
 {
@@ -253,10 +255,9 @@ namespace Realms.Schema
 
                 RealmSchemaType = type.GetRealmSchemaType();
 
-                var schemaField = type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static);
-                if (schemaField != null)
+                var objectSchema = GetGeneratedSchema(type);
+                if (objectSchema != null)
                 {
-                    var objectSchema = (ObjectSchema)schemaField.GetValue(null)!;
                     Name = objectSchema.Name;
 
                     foreach (var prop in objectSchema)
@@ -267,9 +268,9 @@ namespace Realms.Schema
                 else
                 {
                     Name = type.GetMappedOrOriginalName();
-                    foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                    foreach (var property in GetWovenProperties(type))
                     {
-                        Add(Property.FromPropertyInfo(property));
+                        Add(property);
                     }
                 }
 
@@ -281,6 +282,26 @@ namespace Realms.Schema
 
                 Type = type;
             }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "The RealmSchema lookup is only needed for classes woven by Fody or generated before IRealmObjectSchemaProvider existed.")]
+            private static ObjectSchema? GetGeneratedSchema(Type type)
+            {
+                // inherit: false, to match the old GetField lookup, which did not see base class members
+                var wovenAttribute = type.GetCustomAttribute<WovenAttribute>(inherit: false);
+                if (wovenAttribute != null && Activator.CreateInstance(wovenAttribute.HelperType) is IRealmObjectSchemaProvider provider)
+                {
+                    return provider.ObjectSchema;
+                }
+
+                // Classes generated before IRealmObjectSchemaProvider existed
+                return (ObjectSchema?)type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only reached for Fody-woven classes, which predate the source generator.")]
+            private static IEnumerable<Property> GetWovenProperties(Type type) =>
+                type.GetTypeInfo().DeclaredProperties
+                    .Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>())
+                    .Select(Property.FromPropertyInfo);
 
             /// <summary>
             /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.

@@ -236,7 +236,7 @@ namespace SourceGeneratorPlayground
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class RealmObjObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class RealmObjObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -246,6 +246,8 @@ namespace SourceGeneratorPlayground
             public Realms.ManagedAccessor CreateAccessor() => new RealmObjManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new RealmObj();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => RealmObj.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

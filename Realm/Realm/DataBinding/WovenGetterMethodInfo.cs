@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Realms.Helpers;
@@ -57,6 +58,7 @@ namespace Realms.DataBinding
 
         public override ParameterInfo[] GetParameters() => _mi.GetParameters();
 
+        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "CreateInstance is only reached for a value type, which does not require a constructor.")]
         public override object? Invoke(object? obj, BindingFlags invokeAttr, Binder? binder, object?[]? parameters, CultureInfo? culture)
         {
             if (obj is not IRealmObjectBase ro || ro.IsValid)

@@ -242,7 +242,7 @@ namespace SourceGeneratorPlayground
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -252,6 +252,8 @@ namespace SourceGeneratorPlayground
             public Realms.ManagedAccessor CreateAccessor() => new DogManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new Dog();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => Dog.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

@@ -411,6 +411,7 @@ namespace Realms.Schema
             return new Property(name, PropertyType.Array | PropertyType.LinkingObjects, originObjectType, originPropertyName, managedName: managedName);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Only reached for Fody-woven classes, which predate the source generator.")]
         internal static Property FromPropertyInfo(PropertyInfo prop)
         {
             var propertyName = prop.GetMappedOrOriginalName();

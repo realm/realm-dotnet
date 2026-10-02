@@ -278,7 +278,7 @@ namespace Realms.Tests
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class CounterObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class CounterObjectObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -288,6 +288,8 @@ namespace Realms.Tests
             public Realms.ManagedAccessor CreateAccessor() => new CounterObjectManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new CounterObject();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => CounterObject.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

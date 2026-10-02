@@ -241,7 +241,7 @@ namespace Realms.Tests.Database
             public override string? ToString() => Accessor.ToString();
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class NonPrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+            private class NonPrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
                 {
@@ -251,6 +251,8 @@ namespace Realms.Tests.Database
                 public Realms.ManagedAccessor CreateAccessor() => new NonPrimaryKeyObjectManagedAccessor();
 
                 public Realms.IRealmObjectBase CreateInstance() => new NonPrimaryKeyObject();
+
+                public Realms.Schema.ObjectSchema ObjectSchema => NonPrimaryKeyObject.RealmSchema;
 
                 public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
                 {

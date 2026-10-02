@@ -237,7 +237,7 @@ namespace SourceGeneratorAssemblyToProcess
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ClassWithoutParameterlessConstructorObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class ClassWithoutParameterlessConstructorObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -247,6 +247,8 @@ namespace SourceGeneratorAssemblyToProcess
             public Realms.ManagedAccessor CreateAccessor() => new ClassWithoutParameterlessConstructorManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new ClassWithoutParameterlessConstructor();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

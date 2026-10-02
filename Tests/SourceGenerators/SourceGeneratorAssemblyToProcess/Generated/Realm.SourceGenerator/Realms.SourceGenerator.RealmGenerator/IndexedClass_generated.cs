@@ -262,7 +262,7 @@ namespace SourceGeneratorAssemblyToProcess
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class IndexedClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class IndexedClassObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -272,6 +272,8 @@ namespace SourceGeneratorAssemblyToProcess
             public Realms.ManagedAccessor CreateAccessor() => new IndexedClassManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new IndexedClass();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => IndexedClass.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

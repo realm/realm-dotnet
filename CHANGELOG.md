@@ -4,7 +4,8 @@
 * None
 
 ### Fixed
-* None
+* Removed most of the trimming and AOT analysis warnings reported for `Realm.dll`, by annotating the reflection it performs and replacing a `MakeGenericType` call with a closed-generic switch. (PR [#3727](https://github.com/realm/realm-dotnet/pull/3727))
+* Fixed opening a Realm in an app published with NativeAOT throwing `No properties in <class>, has linker stripped it?`. Source generated classes now supply their schema through their generated helper, instead of Realm looking it up by reflection. (Issue [#3417](https://github.com/realm/realm-dotnet/issues/3417))
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.

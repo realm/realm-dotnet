@@ -253,7 +253,7 @@ namespace Realms.Tests.Database
             public override string? ToString() => Accessor.ToString();
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class PrimaryKeyWithPKListObjectHelper : Realms.Weaving.IRealmObjectHelper
+            private class PrimaryKeyWithPKListObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
                 {
@@ -263,6 +263,8 @@ namespace Realms.Tests.Database
                 public Realms.ManagedAccessor CreateAccessor() => new PrimaryKeyWithPKListManagedAccessor();
 
                 public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyWithPKList();
+
+                public Realms.Schema.ObjectSchema ObjectSchema => PrimaryKeyWithPKList.RealmSchema;
 
                 public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
                 {

@@ -230,7 +230,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     public override string? ToString() => Accessor.ToString();
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-    private class NoNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+    private class NoNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
         {
@@ -240,6 +240,8 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         public Realms.ManagedAccessor CreateAccessor() => new NoNamespaceClassManagedAccessor();
 
         public Realms.IRealmObjectBase CreateInstance() => new NoNamespaceClass();
+
+        public Realms.Schema.ObjectSchema ObjectSchema => NoNamespaceClass.RealmSchema;
 
         public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
         {

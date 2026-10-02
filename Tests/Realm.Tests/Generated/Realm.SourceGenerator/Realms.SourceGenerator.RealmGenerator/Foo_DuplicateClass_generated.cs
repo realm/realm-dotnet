@@ -241,7 +241,7 @@ namespace Foo
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class DuplicateClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class DuplicateClassObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -251,6 +251,8 @@ namespace Foo
             public Realms.ManagedAccessor CreateAccessor() => new DuplicateClassManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new DuplicateClass();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

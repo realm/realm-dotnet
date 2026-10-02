@@ -242,7 +242,7 @@ namespace Realms.Tests
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedIntPropertyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class EmbeddedIntPropertyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -252,6 +252,8 @@ namespace Realms.Tests
             public Realms.ManagedAccessor CreateAccessor() => new EmbeddedIntPropertyObjectManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new EmbeddedIntPropertyObject();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => EmbeddedIntPropertyObject.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

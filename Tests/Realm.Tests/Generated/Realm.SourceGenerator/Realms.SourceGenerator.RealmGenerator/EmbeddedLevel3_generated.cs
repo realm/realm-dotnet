@@ -245,7 +245,7 @@ namespace Realms.Tests
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class EmbeddedLevel3ObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class EmbeddedLevel3ObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -255,6 +255,8 @@ namespace Realms.Tests
             public Realms.ManagedAccessor CreateAccessor() => new EmbeddedLevel3ManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new EmbeddedLevel3();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

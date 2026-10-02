@@ -236,7 +236,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ConfusingNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class ConfusingNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -246,6 +246,8 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             public Realms.ManagedAccessor CreateAccessor() => new ConfusingNamespaceClassManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new ConfusingNamespaceClass();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => ConfusingNamespaceClass.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

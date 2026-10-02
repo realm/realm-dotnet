@@ -293,7 +293,7 @@ namespace Realms.Tests.Database
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -303,6 +303,8 @@ namespace Realms.Tests.Database
             public Realms.ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new Person();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => Person.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

@@ -323,7 +323,7 @@ namespace Realms.Tests
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class SyncAllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class SyncAllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -333,6 +333,8 @@ namespace Realms.Tests
             public Realms.ManagedAccessor CreateAccessor() => new SyncAllTypesObjectManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new SyncAllTypesObject();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {

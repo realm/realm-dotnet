@@ -98,6 +98,7 @@ namespace Realms
             };
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Realm.UnityUtils ships only with the Unity package and is not part of a trimmed .NET app; a missing type returns false.")]
         private static bool TryInitializeUnity()
         {
             try
@@ -120,6 +121,7 @@ namespace Realms
             return false;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Windows.Storage.ApplicationData is a WinRT type provided by the OS and is never trimmed; a missing type returns null.")]
         private static bool TryGetUWPFolder([MaybeNullWhen(false)] out string folder) => TryGetDatabaseFolder(() =>
         {
             // On UWP, the sandbox folder is obtained by:

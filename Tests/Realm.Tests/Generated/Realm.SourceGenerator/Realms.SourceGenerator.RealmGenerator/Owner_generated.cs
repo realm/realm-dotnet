@@ -260,7 +260,7 @@ namespace Realms.Tests
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class OwnerObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class OwnerObjectHelper : Realms.Weaving.IRealmObjectHelper, Realms.Weaving.IRealmObjectSchemaProvider
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
@@ -270,6 +270,8 @@ namespace Realms.Tests
             public Realms.ManagedAccessor CreateAccessor() => new OwnerManagedAccessor();
 
             public Realms.IRealmObjectBase CreateInstance() => new Owner();
+
+            public Realms.Schema.ObjectSchema ObjectSchema => Owner.RealmSchema;
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
